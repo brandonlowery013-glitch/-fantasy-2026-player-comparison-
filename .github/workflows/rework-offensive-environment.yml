@@ -1,0 +1,117 @@
+name: Rework Offensive Environment
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  rework:
+    if: github.event.head_commit.message == 'Trigger offensive environment rework'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Normalize team environments and update UI
+        run: |
+          python - <<'PY'
+          import json, statistics
+          from pathlib import Path
+
+          files=[Path(f'players{i}.json') for i in range(13)]
+          all_players=[]
+          by_file={}
+          for f in files:
+              arr=json.loads(f.read_text())
+              by_file[f]=arr
+              all_players.extend(arr)
+
+          by_team={}
+          for p in all_players:
+              by_team.setdefault(p['t'],[]).append(float(p.get('e',7.5)))
+
+          # Preserve the accumulated board work by using each offense's existing median,
+          # then correct known cohesion failures explicitly.
+          team_score={t:round(statistics.median(v),1) for t,v in by_team.items()}
+          team_score['Miami Dolphins']=6.5
+          team_score['Philadelphia Eagles']=8.2
+
+          team_note={
+            'Miami Dolphins':'Major offensive transition: new quarterback, new offense/play-calling structure, top two wide receivers gone and major continuity concerns. Achane can still earn heavy volume, but that volume is scored under Usage—not Offensive Environment.',
+            'Philadelphia Eagles':'The environment has declined from its prior elite level because of staff/scheme transition and continuity changes, but the offense still has a strong quarterback, quality line foundation and scoring infrastructure. This is a good environment, not an elite one.',
+          }
+
+          def env_label(v):
+              if v>=9.2: return 'Elite'
+              if v>=8.7: return 'Very Good'
+              if v>=8.1: return 'Good'
+              if v>=7.4: return 'Average'
+              if v>=6.7: return 'Below Average'
+              return 'Poor'
+
+          def generic_note(team,score):
+              label=env_label(score)
+              if label=='Elite':
+                  return 'High-end team scoring setup with strong quarterback/scheme support and few structural concerns.'
+              if label=='Very Good':
+                  return 'Very favorable overall setup with strong scoring support and only minor structural questions.'
+              if label=='Good':
+                  return 'Positive overall setup, but at least one meaningful quarterback, scheme, line, continuity or supporting-cast limitation keeps it below the top tier.'
+              if label=='Average':
+                  return 'Mixed offensive setup: enough support for fantasy production, but meaningful questions keep the environment from being a clear advantage.'
+              if label=='Below Average':
+                  return 'Several offensive questions can reduce efficiency or touchdown opportunity even when an individual player has a strong role.'
+              return 'Major structural concerns around quarterback, scheme, line, supporting cast or continuity can suppress efficiency and scoring opportunities.'
+
+          # Environment is 10% of True Value. Update the stored weighted score when e changes.
+          for p in all_players:
+              old=float(p.get('e',7.5))
+              new=team_score[p['t']]
+              p['e']=new
+              p['en']=team_note.get(p['t'],generic_note(p['t'],new))
+              if p.get('s') is not None:
+                  p['s']=round(float(p['s']) + (new-old)*0.10, 3)
+
+          # Re-rank True Value after the component changes.
+          ranked=sorted(all_players,key=lambda p:(-float(p.get('s',0)),int(p.get('tr',9999))))
+          for i,p in enumerate(ranked,1): p['tr']=i
+          by_pos={}
+          for p in ranked: by_pos.setdefault(p['p'],[]).append(p)
+          for pos,arr in by_pos.items():
+              for i,p in enumerate(arr,1): p['tp']=f'{pos}{i}'
+
+          lookup={p['n']:p for p in all_players}
+          for f,arr in by_file.items():
+              arr=[lookup[p['n']] for p in arr]
+              f.write_text(json.dumps(arr,separators=(',',':')))
+
+          # Save team-level audit output as the source of truth for this category.
+          out={'scale':['Elite','Very Good','Good','Average','Below Average','Poor'],'teams':{}}
+          for team in sorted(team_score):
+              score=team_score[team]
+              out['teams'][team]={'score':score,'label':env_label(score),'explanation':team_note.get(team,generic_note(team,score))}
+          Path('environment2026.json').write_text(json.dumps(out,indent=2))
+
+          # Public UI: environment has its own labels and explanation; do not use generic model-grade labels.
+          p=Path('index.html')
+          s=p.read_text()
+          anchor="function riskLabel(v){if(v==null)return '—';if(v<=1.2)return 'Low';if(v<=1.8)return 'Moderate';if(v<=2.4)return 'Elevated';return 'High'}"
+          add=anchor+"\nfunction environmentLabel(v){if(v==null)return '—';if(v>=9.2)return 'Elite';if(v>=8.7)return 'Very Good';if(v>=8.1)return 'Good';if(v>=7.4)return 'Average';if(v>=6.7)return 'Below Average';return 'Poor'}"
+          if 'function environmentLabel(' not in s:
+              if anchor not in s: raise SystemExit('environment label anchor missing')
+              s=s.replace(anchor,add)
+
+          old="if(checked.includes('env'))ds.push(shell('Offensive Environment','Which player has the better team, scheme, quarterback and scoring setup.',ps,x=>x.e,p=>blocks([['Environment',gradeLabel(p.e)],['Team',p.t]]),.08,[.08,.25,.55]));"
+          new="if(checked.includes('env'))ds.push(shell('Offensive Environment','Quarterback stability, play-calling/scheme, offensive line, supporting cast, scoring outlook and continuity. Player volume is scored separately under Usage / Opportunity.',ps,x=>x.e,p=>blocks([['Environment',environmentLabel(p.e)],['Team',p.t]])+readBlock('Why',p.en||'Team-level environment evaluation.'),.08,[.08,.25,.55]));"
+          if old in s:
+              s=s.replace(old,new)
+          else:
+              # Handle the newer environmentPanel variant if it is already present.
+              s=s.replace("blocks([['Environment',gradeLabel(p.e)],['Team',p.t]])+readBlock('Why',environmentRead(p))","blocks([['Environment',environmentLabel(p.e)],['Team',p.t]])+readBlock('Why',p.en||environmentRead(p))")
+          p.write_text(s)
+          PY
+      - name: Commit environment audit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html environment2026.json players*.json
+          git commit -m 'Rework Offensive Environment across full board [skip ci]'
+          git push
