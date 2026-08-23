@@ -1,0 +1,48 @@
+name: Production Tier Thresholds
+on:
+  push:
+    paths:
+      - '.github/workflows/production-thresholds.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make Expected Production objective
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+
+          # Expected Production tier is based directly on OUR projected PPR, by position.
+          marker="function riskLabel(v){"
+          tier="""function productionTier(p){\n  const x=Number(p.mp);\n  if(!Number.isFinite(x))return '—';\n  const bands={\n    QB:[[320,'Elite'],[290,'Very strong'],[260,'Strong'],[230,'Solid'],[200,'Moderate']],\n    RB:[[280,'Elite'],[250,'Very strong'],[220,'Strong'],[190,'Solid'],[160,'Moderate']],\n    WR:[[290,'Elite'],[255,'Very strong'],[225,'Strong'],[195,'Solid'],[165,'Moderate']],\n    TE:[[235,'Elite'],[205,'Very strong'],[175,'Strong'],[150,'Solid'],[125,'Moderate']]\n  };\n  const b=bands[p.p]||[];\n  for(const [cut,label] of b)if(x>=cut)return label;\n  return 'Concern';\n}\n"""
+          if 'function productionTier(p)' not in s:
+              s=s.replace(marker,tier+marker)
+
+          # Replace the old hidden 1-10 production grade label with the objective PPR tier.
+          s=s.replace("function prodPanel(p){return blocks([['Production Outlook',gradeLabel(p.pd)],['Our Projected PPR',fmt(p.mp,1)],['Consensus PPR',fmt(p.cp,1)]])+projectionBlock('Our Median Projection',p.m)}",
+                      "function prodPanel(p){return blocks([['Production Outlook',productionTier(p)],['Our Projected PPR',fmt(p.mp,1)],['Consensus PPR',fmt(p.cp,1)]])+projectionBlock('Our Median Projection',p.m)}")
+          s=s.replace("function prodPanel(p){return blocks([['Production Outlook',gradeLabel(p.pd)],['Our Projected PPR',fmt(p.mp,1)],['Consensus PPR',fmt(p.cp,1)]])+projectionBlock('Our Median Projection',p.m)+projectionBlock('Consensus Projection',p.cn||'—')+projectionBlock('Vegas Projection',p.vl||'No current line')}",
+                      "function prodPanel(p){return blocks([['Production Outlook',productionTier(p)],['Our Projected PPR',fmt(p.mp,1)],['Consensus PPR',fmt(p.cp,1)]])+projectionBlock('Our Median Projection',p.m)+projectionBlock('Consensus Projection',p.cn||'—')+projectionBlock('Vegas Projection',p.vl||'No current line')}")
+
+          # The Expected Production winner is also based on projected PPR, not the old 1-10 grade.
+          s=s.replace("ps,x=>x.pd,prodPanel,.08,[.08,.25,.55]", "ps,x=>x.mp,prodPanel,1,[5,12,25]")
+
+          # Make the explanation explicit and auditable.
+          s=s.replace("Most likely fantasy output; consensus is shown beside our projection so you can see where the model differs.",
+                      "Production tier is determined directly by our projected PPR using position-specific thresholds. Consensus and Vegas are shown as outside checks and do not determine our tier.")
+
+          p.write_text(s)
+          PY
+      - name: Commit production thresholds
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Make Expected Production tiers PPR-based [skip ci]"
+          git push
