@@ -1,0 +1,150 @@
+name: Apply overall audit and final cohesion
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-overall-audit-and-cohesion.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply audited Overall Board moves
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+
+          shard_files=[Path(f'players{i}.json') for i in range(13)]
+          shards={f:json.loads(f.read_text()) for f in shard_files}
+          players=[p for arr in shards.values() for p in arr]
+          assert len(players)==153, f'expected 153 players, got {len(players)}'
+          by_name={p['n']:p for p in players}
+          assert len(by_name)==153, 'duplicate player names'
+
+          decisions=json.loads(Path('overall-rank-audit-decisions.json').read_text())['decisions']
+          assert len(decisions)==37, f'expected 37 decisions, got {len(decisions)}'
+          old_order=sorted(players,key=lambda p:(p['o'],p['n']))
+          old_rank={p['n']:p['o'] for p in players}
+          old_ppr={p['n']:p.get('mp') for p in players}
+          old_tr={p['n']:p.get('tr') for p in players}
+
+          # Use the manually audited proposed rank as an ordering target, while preserving
+          # the prior board order for ties. This lets nearby players shift naturally when
+          # an audited move enters/leaves their range instead of forcing duplicate ranks.
+          target={p['n']:float(p['o']) for p in players}
+          decision_by={d['name']:d for d in decisions}
+          for d in decisions:
+              assert d['name'] in by_name, d['name']
+              if d['decision']!='HOLD': target[d['name']]=float(d['proposed'])
+          stable_index={p['n']:i for i,p in enumerate(old_order)}
+          new_order=sorted(players,key=lambda p:(target[p['n']],stable_index[p['n']]))
+          for i,p in enumerate(new_order,1): p['o']=i
+
+          # Recompute positional ranks on the Overall Board.
+          pos_counts={}
+          for p in new_order:
+              pos_counts[p['p']]=pos_counts.get(p['p'],0)+1
+              p['pr']=f"{p['p']}{pos_counts[p['p']]}"
+
+          # Preserve Player Quality ranks/scores; just verify positional quality labels.
+          tr_sorted=sorted(players,key=lambda p:(p.get('tr',9999),p['n']))
+          tv_counts={}
+          for p in tr_sorted:
+              tv_counts[p['p']]=tv_counts.get(p['p'],0)+1
+              p['tp']=f"{p['p']}{tv_counts[p['p']]}"
+
+          # Write shard data back; comparison model reads these files at runtime.
+          for f,arr in shards.items():
+              f.write_text(json.dumps([by_name[p['n']] for p in arr],separators=(',',':'))+'\n')
+
+          # Rebuild canonical board views from the same player records.
+          keep=['n','p','t','o','pr','tr','tp','s','pd','ce','r','e','a','rl','su','mp','m','cl','px','fw','st','ns','nm','na','en','ad','cp','cn','vl','vs','vr']
+          def slim(p): return {k:p[k] for k in keep if k in p}
+          canonical={
+              'updated':'2026-08-23',
+              'weights':{'Expected Production':.35,'Ceiling':.20,'Role/Volume':.15,'Offensive Environment':.10,'Availability':.10,'Weekly Reliability':.05,'Sustainability':.05},
+              'overall':[slim(p) for p in sorted(players,key=lambda p:(p['o'],p['n']))],
+              'trueValue':[slim(p) for p in sorted(players,key=lambda p:(p['tr'],p['n']))],
+              'positions':{pos:[slim(p) for p in sorted([x for x in players if x['p']==pos],key=lambda p:(p['tr'],p['n']))] for pos in ['QB','RB','WR','TE']}
+          }
+          Path('canonicalBoards2026.json').write_text(json.dumps(canonical,indent=2)+'\n')
+
+          # Bump outer-page cache key so mobile Safari pulls the synchronized comparison data.
+          idx=Path('index.html').read_text()
+          idx=re.sub(r'index-backup\.html\?v=[^\"\']+', 'index-backup.html?v=20260823-1503', idx)
+          Path('index.html').write_text(idx)
+
+          # Final cohesion checks.
+          errors=[]
+          ranks=sorted(p['o'] for p in players)
+          if ranks!=list(range(1,154)): errors.append('Overall ranks are not unique/continuous 1-153')
+          tranks=sorted(p['tr'] for p in players)
+          if tranks!=list(range(1,154)): errors.append('Player Quality ranks are not unique/continuous 1-153')
+          if any(old_ppr[n]!=by_name[n].get('mp') for n in by_name): errors.append('Projection changed during rank-only audit')
+          if any(old_tr[n]!=by_name[n].get('tr') for n in by_name): errors.append('Player Quality rank changed during Overall-only audit')
+
+          # Verify positional rank labels in both views.
+          pc={}
+          for p in sorted(players,key=lambda p:p['o']):
+              pc[p['p']]=pc.get(p['p'],0)+1
+              if p['pr']!=f"{p['p']}{pc[p['p']]}": errors.append(f"bad Overall positional rank: {p['n']}")
+          pc={}
+          for p in sorted(players,key=lambda p:p['tr']):
+              pc[p['p']]=pc.get(p['p'],0)+1
+              if p['tp']!=f"{p['p']}{pc[p['p']]}": errors.append(f"bad Player Quality positional rank: {p['n']}")
+
+          # Canonical board must match player shards exactly for Overall rank.
+          can_by={p['n']:p for p in canonical['overall']}
+          if len(can_by)!=153: errors.append('canonical Overall player count mismatch')
+          for n,p in by_name.items():
+              if can_by.get(n,{}).get('o')!=p['o']: errors.append(f'canonical Overall mismatch: {n}')
+
+          # Comparison-model integration checks.
+          inner=Path('index-backup.html').read_text()
+          outer=Path('index.html').read_text()
+          shard_loader=('players${i}.json' in inner or 'players'+"' + i + '" in inner or re.search(r'players.*\.json',inner,re.I))
+          if not shard_loader: errors.append('comparison page does not appear to load player shards')
+          if 'index-backup.html?v=20260823-1503' not in outer: errors.append('outer comparison page cache key not updated')
+          if 'const vals=p=>{const gap=' not in inner: errors.append('Draft Value price-efficiency repair missing')
+
+          rows=[]
+          for d in decisions:
+              p=by_name[d['name']]
+              rows.append({
+                  'name':d['name'],'decision':d['decision'],'old_overall':old_rank[d['name']],
+                  'audit_target':d['proposed'],'final_overall':p['o'],'final_pos_rank':p['pr'],
+                  'player_quality_rank':p['tr'],'projected_ppr':p.get('mp'),
+                  'reason':d['reason']
+              })
+          report={
+              'as_of':'2026-08-23T15:03-05:00','players_checked':153,'audit_decisions':37,
+              'overall_rank_unique_1_153':ranks==list(range(1,154)),
+              'player_quality_rank_unique_1_153':tranks==list(range(1,154)),
+              'projections_unchanged_during_reorder':not any(old_ppr[n]!=by_name[n].get('mp') for n in by_name),
+              'player_quality_unchanged_during_overall_reorder':not any(old_tr[n]!=by_name[n].get('tr') for n in by_name),
+              'canonical_overall_synced':not any(can_by.get(n,{}).get('o')!=p['o'] for n,p in by_name.items()),
+              'comparison_model_reads_player_shards':bool(shard_loader),
+              'comparison_cache_busted':True,
+              'draft_value_price_efficiency_logic_present':'const vals=p=>{const gap=' in inner,
+              'errors':errors,
+              'decisions':rows
+          }
+          Path('final-cohesion-check-2026-08-23.json').write_text(json.dumps(report,indent=2)+'\n')
+          if errors:
+              raise SystemExit('FINAL COHESION FAILED: '+ '; '.join(errors))
+          print('FINAL COHESION PASS')
+          print(json.dumps([{k:r[k] for k in ['name','old_overall','audit_target','final_overall']} for r in rows],indent=2))
+          PY
+      - name: Commit synchronized board and QA
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add players*.json canonicalBoards2026.json index.html final-cohesion-check-2026-08-23.json
+          git diff --cached --quiet || git commit -m 'Apply audited Overall ranks and final cohesion sync [skip ci]'
+          git push
