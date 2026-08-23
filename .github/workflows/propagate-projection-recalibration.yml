@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Propagate material projection changes
+      - name: Propagate projection changes deterministically
         run: |
           node <<'NODE'
           const fs=require('fs');
@@ -29,34 +29,35 @@ jobs:
             for(const [cut,l] of (bands[p.p]||[])) if(x>=cut) return l;
             return 'Concern';
           };
+          const anchors={
+            QB:[[170,6.0],[200,7.0],[230,7.7],[260,8.3],[290,8.8],[320,9.3],[380,10.0]],
+            RB:[[130,6.0],[160,7.0],[190,7.7],[220,8.3],[250,8.8],[280,9.3],[340,10.0]],
+            WR:[[135,6.0],[165,7.0],[195,7.7],[225,8.3],[255,8.8],[290,9.3],[350,10.0]],
+            TE:[[100,6.0],[125,7.0],[150,7.7],[175,8.3],[205,8.8],[235,9.3],[290,10.0]]
+          };
+          function interp(pos,x){const a=anchors[pos]||anchors.WR;if(x<=a[0][0])return a[0][1];if(x>=a[a.length-1][0])return a[a.length-1][1];for(let i=0;i<a.length-1;i++){const [x0,y0]=a[i],[x1,y1]=a[i+1];if(x>=x0&&x<=x1)return Math.round((y0+(x-x0)*(y1-y0)/(x1-x0))*1000)/1000;}return 7;}
           const audit=[];
           for(const p of all){
             const c=p.projection_context;
             if(!c) continue;
-            const old=Number(c.prior_projected_ppr), neu=Number(p.mp), delta=neu-old;
-            const oldTier=prodTier(p,old), newTier=prodTier(p,neu);
+            const base=Number(c.prior_projected_ppr), neu=Number(p.mp), delta=neu-base;
+            const oldTier=prodTier(p,base), newTier=prodTier(p,neu);
             const material=Math.abs(delta)>=8 || oldTier!==newTier;
-            if(material){
-              // Convert projection movement into the production component conservatively.
-              // 10 PPR = 0.10 production-grade movement; cap to the established 6-10 scale.
-              p.pd=Math.max(6,Math.min(10,Math.round((Number(p.pd||7.5)+delta/100)*1000)/1000));
-            }
-            // Recompute the locked True Value score from its published weights.
+            p.pd=interp(p.p,neu);
             p.s=Math.round((p.pd*.35+p.ce*.20+p.r*.15+p.e*.10+p.a*.10+p.rl*.05+p.su*.05)*1000)/1000;
             p.projection_context.material_downstream_change=material;
             p.projection_context.old_production_tier=oldTier;
             p.projection_context.new_production_tier=newTier;
-            audit.push({name:p.n,pos:p.p,overall_rank:p.o,old_ppr:old,new_ppr:neu,delta:Math.round(delta*100)/100,old_tier:oldTier,new_tier:newTier,material,old_pd:oldPD.get(p.n),new_pd:p.pd,old_true_value_score:oldS.get(p.n),new_true_value_score:p.s});
+            audit.push({name:p.n,pos:p.p,overall_rank:p.o,base_ppr:base,new_ppr:neu,delta:Math.round(delta*100)/100,old_tier:oldTier,new_tier:newTier,material,old_pd:oldPD.get(p.n),new_pd:p.pd,old_player_quality_score:oldS.get(p.n),new_player_quality_score:p.s});
           }
-          // Re-rank Player Quality / True Value from the recalculated weighted score.
           const ranked=[...all].sort((a,b)=>(b.s??0)-(a.s??0)||(a.o??999)-(b.o??999));
           ranked.forEach((p,i)=>p.tr=i+1);
           const byPos={}; ranked.forEach(p=>(byPos[p.p]??=[]).push(p));
           Object.values(byPos).forEach(arr=>arr.forEach((p,i)=>p.tp=`${p.p}${i+1}`));
-          for(const a of audit){ const p=all.find(x=>x.n===a.name); a.old_player_quality_rank=oldTR.get(a.name); a.new_player_quality_rank=p.tr; a.rank_move=(oldTR.get(a.name)??p.tr)-p.tr; a.overall_rank_review = a.material && (Math.abs(a.rank_move)>=3 || Math.abs(a.delta)>=12 || a.old_tier!==a.new_tier); }
-          for(const g of groups) fs.writeFileSync(g.file,JSON.stringify(g.players)+'\n');
+          for(const a of audit){const p=all.find(x=>x.n===a.name);a.old_player_quality_rank=oldTR.get(a.name);a.new_player_quality_rank=p.tr;a.rank_move=(oldTR.get(a.name)??p.tr)-p.tr;a.overall_rank_review=a.material&&(Math.abs(a.rank_move)>=3||Math.abs(a.delta)>=12||a.old_tier!==a.new_tier);}
+          for(const g of groups)fs.writeFileSync(g.file,JSON.stringify(g.players)+'\n');
           const mat=audit.filter(x=>x.material).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
-          const out={generated_at:new Date().toISOString(),players_checked:all.length,material_changes:mat.length,overall_rank_review_count:mat.filter(x=>x.overall_rank_review).length,policy:'Expected Production and Player Quality/True Value are propagated automatically. Overall Rank is intentionally not auto-shuffled by a hidden formula; material cases are flagged for board review because Overall Rank also includes positional/draft-strategy judgment.',changes:mat};
+          const out={generated_at:new Date().toISOString(),players_checked:all.length,material_changes:mat.length,overall_rank_review_count:mat.filter(x=>x.overall_rank_review).length,policy:'Expected Production is derived directly from current projected PPR using position-specific anchors. Player Quality is then recalculated from the published seven-component weights. Overall Rank is not automatically shuffled.',changes:mat};
           fs.writeFileSync('projection-downstream-audit.json',JSON.stringify(out,null,2)+'\n');
           NODE
       - name: Repair Draft Value to price efficiency only
@@ -65,7 +66,6 @@ jobs:
           const fs=require('fs');
           const f='index-backup.html'; let s=fs.readFileSync(f,'utf8');
           s=s.replace(/const vals=p=>[^;]+;/,`const vals=p=>{const gap=(p.ad!=null&&p.o!=null)?(p.ad-p.o):0;const verdict=({BUY:.6,FAIR:0,REACH:-.3,FADE:-.8}[p.px]??0);const step=({TARGET:.2,ACCEPTABLE:0,AVOID:-.4}[p.s7]??0);return gap/15+verdict+step;};`);
-          s=s.replace('This is where our rank, consensus rank, market ADP, fair range and full player profile become the price decision.','Price efficiency only: how the market cost compares with our valuation and fair range. Absolute player quality is handled separately by Better Player.');
           fs.writeFileSync(f,s);
           NODE
       - name: Commit propagated changes
@@ -73,5 +73,5 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add players*.json projection-downstream-audit.json index-backup.html
-          git diff --cached --quiet || git commit -m 'Propagate projection changes and repair Draft Value scaling'
+          git diff --cached --quiet || git commit -m 'Sync production and Player Quality after history audit'
           git push
