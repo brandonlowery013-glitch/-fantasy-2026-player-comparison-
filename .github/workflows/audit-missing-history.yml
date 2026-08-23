@@ -1,0 +1,36 @@
+name: Audit missing historical stats
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-missing-history.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build missing-history audit
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const files=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
+          const players=files.flatMap(f=>JSON.parse(fs.readFileSync(f,'utf8')));
+          const hist=JSON.parse(fs.readFileSync('historicalStats2026.json','utf8')).players||{};
+          const missing=players.filter(p=>!Array.isArray(hist[p.n])||hist[p.n].length===0).map(p=>({name:p.n,position:p.p,overall_rank:p.o,team:p.t}));
+          const present=players.filter(p=>Array.isArray(hist[p.n])&&hist[p.n].length>0);
+          const out={generated_at:new Date().toISOString(),player_count:players.length,with_history:present.length,missing_count:missing.length,missing};
+          fs.writeFileSync('missing-history-audit.json',JSON.stringify(out,null,2)+'\n');
+          console.log(JSON.stringify(out,null,2));
+          NODE
+      - name: Commit audit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add missing-history-audit.json
+          git diff --cached --quiet || git commit -m 'Audit players missing historical stats'
+          git push
