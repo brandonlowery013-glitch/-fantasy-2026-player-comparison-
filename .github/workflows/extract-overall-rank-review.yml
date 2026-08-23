@@ -19,15 +19,16 @@ jobs:
           node <<'NODE'
           const fs=require('fs');
           const a=JSON.parse(fs.readFileSync('projection-downstream-audit.json','utf8'));
-          const out=a.changes.filter(x=>x.overall_rank_review).map(x=>({name:x.name,pos:x.pos,overall_rank:x.overall_rank,old_ppr:x.old_ppr,new_ppr:x.new_ppr,delta:x.delta,old_tier:x.old_tier,new_tier:x.new_tier,old_player_quality_rank:x.old_player_quality_rank,new_player_quality_rank:x.new_player_quality_rank,rank_move:x.rank_move}));
-          fs.writeFileSync('overall-rank-review.json',JSON.stringify(out,null,2)+'\n');
-          console.log(out.length);
+          const full=a.changes.filter(x=>x.overall_rank_review).map(x=>({name:x.name,pos:x.pos,overall_rank:x.overall_rank,old_ppr:x.old_ppr,new_ppr:x.new_ppr,delta:x.delta,old_tier:x.old_tier,new_tier:x.new_tier,old_player_quality_rank:x.old_player_quality_rank,new_player_quality_rank:x.new_player_quality_rank,rank_move:x.rank_move}));
+          fs.writeFileSync('overall-rank-review.json',JSON.stringify(full,null,2)+'\n');
+          fs.writeFileSync('overall-rank-review-names.json',JSON.stringify(full.map(x=>({name:x.name,pos:x.pos,overall_rank:x.overall_rank,delta:x.delta})),null,2)+'\n');
+          console.log(full.length);
           NODE
       - name: Commit review list
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add overall-rank-review.json
+          git add overall-rank-review.json overall-rank-review-names.json
           git diff --cached --quiet || git commit -m 'Extract overall rank review list'
           git push
-# retrigger 2026-08-23T18:31Z
+# retrigger compact names
