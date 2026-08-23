@@ -10,7 +10,7 @@ let P=[];const CATS=[['tv','Model vs Market'],['prod','Expected Production'],['c
 const fmt=(v,d=1)=>v==null?'—':typeof v==='number'?v.toFixed(d).replace(/\.0+$/,'').replace(/(\.\d*?)0+$/,'$1'):v;
 const strength=(x,t=[.15,.35,.7])=>Math.abs(x)<t[0]?'Toss-up':Math.abs(x)<t[1]?'Slight edge':Math.abs(x)<t[2]?'Moderate edge':'Clear edge';
 const eqs=p=>p.s;
-const vals=p=>({BUY:3,FAIR:2,REACH:1,FADE:0}[p.px]??1.5)*1.6+({TARGET:2,ACCEPTABLE:1,AVOID:0}[p.s7]??1)*.9+Math.max(-2,Math.min(2,((p.ad??p.o)-p.o)/12))*.45+p.s*.12;
+const vals=p=>{const gap=(p.ad!=null&&p.o!=null)?(p.ad-p.o):0;const verdict=({BUY:.6,FAIR:0,REACH:-.3,FADE:-.8}[p.px]??0);const step=({TARGET:.2,ACCEPTABLE:0,AVOID:-.4}[p.s7]??0);return gap/15+verdict+step;};
 const bust=p=>10-(p.a*.45+p.rl*.35+p.su*.2);
 const lastKey=name=>{let a=name.trim().split(/\s+/);while(a.length>1&&/^(Jr\.?|Sr\.?|II|III|IV|V)$/i.test(a[a.length-1]))a.pop();return a[a.length-1].replace(/[^A-Za-z'-]/g,'').toLowerCase()};
 function win(ps,f){let q=ps.filter(x=>f(x)!=null).sort((a,b)=>f(b)-f(a));return[q[0],q[1],q[1]?f(q[0])-f(q[1]):0,q]}
@@ -81,7 +81,7 @@ if(checked.includes('env'))ds.push(shell('Offensive Environment','Weapons/suppor
 if(checked.includes('avail'))ds.push(trackSection(ps));
 if(checked.includes('news'))ds.push(newsSection(ps));
 if(checked.includes('vegas'))ds.push(vegasSection(ps));
-if(checked.includes('value'))ds.push(shell('Draft Value','This is where our rank, consensus rank, market ADP, fair range and full player profile become the price decision.',ps,vals,valuePanel,.25,[.25,.70,1.40]));
+if(checked.includes('value'))ds.push(shell('Draft Value','Price efficiency only: how the market cost compares with our valuation and fair range. Absolute player quality is handled separately by Better Player.',ps,vals,valuePanel,.25,[.25,.70,1.40]));
 if(checked.includes('final')){let same=q[0].n===v[0].n;ds.push(`<div class="finalbox"><b>Final Decision</b><div style="margin-top:6px">${same?`${q[0].n} is the better player head to head and the better buy at current ADP.`:`${q[0].n} is the better player head to head, but ${v[0].n} is the better buy at current ADP.`}</div></div>`)}details.innerHTML=ds.join('');results.style.display='block';results.scrollIntoView({behavior:'smooth'})}
 function fill(){['p1','p2','p3'].forEach(id=>{let s=document.getElementById(id);s.innerHTML='<option value="">— Select player —</option>';['QB','RB','WR','TE'].forEach(pos=>{let g=document.createElement('optgroup');g.label=pos;P.filter(x=>x.p===pos).sort((a,b)=>lastKey(a.n).localeCompare(lastKey(b.n))||a.n.localeCompare(b.n)).forEach(p=>{let o=document.createElement('option');o.value=p.n;o.textContent=p.n;g.appendChild(o)});s.appendChild(g)})});cats.innerHTML=CATS.map(c=>`<label class="cat"><input class="cb" type="checkbox" value="${c[0]}" checked> ${c[1]}</label>`).join('')}
 function resetForm(){['p1','p2','p3'].forEach(id=>document.getElementById(id).selectedIndex=0);document.querySelectorAll('.cb').forEach(x=>x.checked=true);results.style.display='none'}
