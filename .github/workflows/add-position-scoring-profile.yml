@@ -17,7 +17,6 @@ jobs:
           p=Path('index.html')
           s=p.read_text()
 
-          # Add a separate position-specific scoring-profile category.
           s=s.replace("['role','Past 3 Seasons'],['env','Offensive Environment']", "['role','Past 3 Seasons'],['score','Position Scoring Profile'],['env','Offensive Environment']")
 
           anchor="function trackSection(ps){"
@@ -54,7 +53,6 @@ function scoringProfileSection(ps){return `<div class="detail"><div class="detai
           if 'function scoringProfileSection(ps)' not in s:
               s=s.replace(anchor,insert+anchor)
 
-          # Replace generic ceiling/bust paths with position-specific football paths.
           start=s.find('function ceilingPathText(p){')
           end=s.find('function envDetail(p){', start)
           if start!=-1 and end!=-1:
@@ -98,7 +96,6 @@ function bustPathText(p){
 '''
               s=s[:start]+replacement+s[end:]
 
-          # Ensure scoring profile renders immediately after Past 3 Seasons.
           needle="if(checked.includes('role'))ds.push(historySection(ps));"
           if "checked.includes('score')" not in s:
               s=s.replace(needle,needle+"\nif(checked.includes('score'))ds.push(scoringProfileSection(ps));")
@@ -113,3 +110,4 @@ function bustPathText(p){
           git diff --cached --quiet && exit 0
           git commit -m "Add position scoring profiles and specific ceiling-bust paths [skip ci]"
           git push
+# trigger: 2026-08-23T10:57-05:00
