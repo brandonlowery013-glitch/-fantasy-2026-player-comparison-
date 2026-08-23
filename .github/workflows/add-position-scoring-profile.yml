@@ -1,0 +1,115 @@
+name: Add Position Scoring Profile
+on:
+  push:
+    paths:
+      - '.github/workflows/add-position-scoring-profile.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add scoring profile and improve ceiling-bust paths
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+
+          # Add a separate position-specific scoring-profile category.
+          s=s.replace("['role','Past 3 Seasons'],['env','Offensive Environment']", "['role','Past 3 Seasons'],['score','Position Scoring Profile'],['env','Offensive Environment']")
+
+          anchor="function trackSection(ps){"
+          insert=r'''function rowVal(r,keys){for(const k of keys){if(r&&r[k]!=null&&String(r[k]).trim()!=='')return r[k]}return '—'}
+function scoringProfilePanel(p){
+  let h=histRows(p),r=h.length?h[h.length-1]:null;
+  if(!r)return readBlock('Scoring Profile','No NFL regular-season scoring history in the stored table.');
+  let items=[];
+  if(p.p==='QB')items=[
+    ['Pass yds',rowVal(r,['Pass Yards','PassYds','Passing Yards'])],
+    ['Pass TDs',rowVal(r,['Pass TD','PassTD','Passing TD'])],
+    ['Rush yds',rowVal(r,['Rush Yards','RushYds','Rush Yds'])],
+    ['Rush TDs',rowVal(r,['Rush TD','RushTD'])],
+    ['INT',rowVal(r,['INT','Interceptions'])]
+  ];
+  else if(p.p==='RB')items=[
+    ['Carries',rowVal(r,['Carries','Rush Att','Rush Att.','Car'])],
+    ['Rush yds',rowVal(r,['Rush Yards','Rush Yds','RushYds'])],
+    ['Rush TDs',rowVal(r,['Rush TD','RushTD'])],
+    ['Receptions',rowVal(r,['Receptions','Rec','Rec.'])],
+    ['Rec yds',rowVal(r,['Receiving Yards','Rec Yards','Rec. Yards','RecYds'])],
+    ['Rec TDs',rowVal(r,['Receiving TD','Rec TD','Rec. TD','RecTD'])]
+  ];
+  else items=[
+    ['Receptions',rowVal(r,['Receptions','Rec','Rec.'])],
+    ['Rec yds',rowVal(r,['Receiving Yards','Rec Yards','Rec. Yards','RecYds'])],
+    ['Rec TDs',rowVal(r,['TD','Receiving TD','Rec TD','Rec. TD','RecTD'])],
+    ['Yds / rec',rowVal(r,['Yards/Reception','YPR','Yards per Reception'])]
+  ];
+  return `<div class="metricBlock"><span class="metricLabel">${seasonLabel(r)} scoring profile</span><div class="projectionGroup">${items.map(([k,v])=>`<div class="statLine"><span>${k}:</span><b>${v}</b></div>`).join('')}</div></div>`;
+}
+function scoringProfileSection(ps){return `<div class="detail"><div class="detailHead"><h3>Position Scoring Profile</h3><span class="edge">Context only</span></div><div class="categoryPurpose">How each player generated fantasy production in his most recent NFL season, using the scoring components that matter for his position. This is descriptive context, not a winner/loser category.</div><div class="compareRows ${ps.length===3?'three':''}">${ps.map(p=>`<div class="compareCell"><div class="playerName">${p.n}</div>${scoringProfilePanel(p)}</div>`).join('')}</div></div>`}
+'''
+          if 'function scoringProfileSection(ps)' not in s:
+              s=s.replace(anchor,insert+anchor)
+
+          # Replace generic ceiling/bust paths with position-specific football paths.
+          start=s.find('function ceilingPathText(p){')
+          end=s.find('function envDetail(p){', start)
+          if start!=-1 and end!=-1:
+              replacement=r'''function ceilingPathText(p){
+  let x=[];
+  if(p.p==='QB'){
+    x.push('passing volume and touchdown efficiency land near the top of our upside range');
+    if(p.r>=8.5)x.push('the designed-run/scramble contribution remains a meaningful weekly scoring source');
+  }else if(p.p==='RB'){
+    x.push('lead-back touch share holds or expands');
+    if(p.r>=8.5)x.push('receiving work keeps him involved on passing downs');
+    x.push('goal-line and red-zone opportunities convert at the high end of the projection');
+  }else{
+    x.push('target share stays at or above the expected level');
+    x.push('reception and yardage volume reach the upper end of the projection');
+    x.push('red-zone targets convert into enough touchdowns to separate from the position');
+  }
+  if(p.e>=8.7)x.push('the offensive environment supports sustained scoring chances');
+  if(p.su>=8.7)x.push('efficiency remains sustainable rather than regressing');
+  return x.join('; ')+'.';
+}
+function bustPathText(p){
+  let x=[];
+  if(p.st&&p.st!=='PASS')x.push(`health/status issue (${p.st}) costs games, snaps or workload`);
+  if(p.p==='QB'){
+    x.push('passing efficiency or touchdown rate falls below the median projection');
+    x.push('rushing production fails to provide the expected weekly cushion');
+  }else if(p.p==='RB'){
+    x.push('committee usage cuts carries or goal-line work');
+    x.push('receiving involvement comes in below expectation');
+    x.push('touchdown regression leaves the volume less valuable');
+  }else{
+    x.push('target share or route participation comes in below expectation');
+    x.push('yardage efficiency falls without enough volume to compensate');
+    x.push('touchdown production fails to offset weaker weekly volume');
+  }
+  if(p.e<8)x.push('offensive/QB environment limits scoring opportunities');
+  if(p.rl<8)x.push('week-to-week volatility makes the season total harder to realize');
+  return x.join('; ')+'.';
+}
+'''
+              s=s[:start]+replacement+s[end:]
+
+          # Ensure scoring profile renders immediately after Past 3 Seasons.
+          needle="if(checked.includes('role'))ds.push(historySection(ps));"
+          if "checked.includes('score')" not in s:
+              s=s.replace(needle,needle+"\nif(checked.includes('score'))ds.push(scoringProfileSection(ps));")
+
+          p.write_text(s)
+          PY
+      - name: Commit comparison upgrade
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Add position scoring profiles and specific ceiling-bust paths [skip ci]"
+          git push
