@@ -14,6 +14,7 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import json
           p=Path('index.html')
           s=p.read_text()
           old="function ceilPanel(p){return blocks([['Ceiling',gradeLabel(p.ce)],['Bust Risk',riskLabel(bust(p))],['Sustainability',gradeLabel(p.su)]])}"
@@ -49,11 +50,13 @@ function draftTakeaway(p){let parts=[];if(p.cr!=null&&p.o!=null){let d=Math.abs(
               raise SystemExit('snapshot market read anchor not found')
           s=s.replace(old4,new4)
           p.write_text(s)
-          # Correct Achane offensive environment and weighted True Value score.
           q=Path('players0.json')
-          t=q.read_text()
-          t=t.replace('"n":"De\'Von Achane","p":"RB","pr":"RB4","o":9,"t":"Miami Dolphins","tr":11,"tp":"RB5","s":9.195,"pd":9.3,"ce":9.8,"r":9.5,"e":7.9', '"n":"De\'Von Achane","p":"RB","pr":"RB4","o":9,"t":"Miami Dolphins","tr":11,"tp":"RB5","s":9.125,"pd":9.3,"ce":9.8,"r":9.5,"e":7.2')
-          q.write_text(t)
+          arr=json.loads(q.read_text())
+          for x in arr:
+              if x.get('n')=="De'Von Achane":
+                  x['e']=7.2
+                  x['s']=9.125
+          q.write_text(json.dumps(arr,separators=(',',':')))
           PY
       - name: Commit public explanation upgrade
         run: |
