@@ -1,0 +1,35 @@
+name: Replace True Value public label
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/replace-true-value-label.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  replace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace public-facing True Value wording
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for name in ['index-backup.html','index.html']:
+              p=Path(name)
+              if not p.exists():
+                  continue
+              s=p.read_text()
+              s=s.replace('TRUE VALUE RANK','PLAYER QUALITY RANK')
+              s=s.replace('True Value Rank','Player Quality Rank')
+              s=s.replace('True Value','Player Quality')
+              p.write_text(s)
+          PY
+      - name: Commit public label fix
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index-backup.html index.html
+          git diff --cached --quiet || git commit -m 'Replace True Value with Player Quality in public UI [skip ci]'
+          git push
