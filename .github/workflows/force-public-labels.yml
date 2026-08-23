@@ -1,0 +1,36 @@
+name: Force Public Labels
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Trigger public label refresh'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Force label-only public model display
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('<head><meta charset="utf-8">','<head><meta charset="utf-8"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">')
+          # Ensure all internal component scores are translated to public labels.
+          s=s.replace("function prodPanel(p){return blocks([['Production Grade',fmt(p.pd)],", "function prodPanel(p){return blocks([['Production Outlook',gradeLabel(p.pd)],")
+          s=s.replace("function ceilPanel(p){return blocks([['Ceiling Grade',fmt(p.ce)],['Bust Risk',fmt(bust(p),2)],['Sustainability',fmt(p.su)]])}", "function ceilPanel(p){return blocks([['Ceiling',gradeLabel(p.ce)],['Bust Risk',riskLabel(bust(p))],['Sustainability',gradeLabel(p.su)]])}")
+          s=s.replace("return blocks([[label,fmt(usageScore(p))]])", "return blocks([[label,gradeLabel(usageScore(p))]])")
+          s=s.replace("p=>blocks([['Environment Grade',fmt(p.e)],['Team',p.t]])", "p=>blocks([['Environment',gradeLabel(p.e)],['Team',p.t]])")
+          s=s.replace("p=>blocks([['Availability Grade',fmt(p.a)],['Weekly Reliability',fmt(p.rl)]", "p=>blocks([['Availability',publicAvailability(p)],['Weekly Reliability',gradeLabel(p.rl)]")
+          # Add a build token so Pages/browser cache definitely receives a changed document.
+          s=s.replace('</body></html>', '<!-- public-label-build-20260822-2353 --></body></html>')
+          p.write_text(s)
+          PY
+      - name: Commit refresh
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git commit -m 'Force public labels and bust stale Pages cache [skip ci]'
+          git push
