@@ -1,0 +1,128 @@
+name: Integrate history-only batch 1
+on:
+  push:
+    paths:
+      - '.github/workflows/integrate-history-batch-1.yml'
+      - '.trigger-history-batch-1'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Correct history, evaluate and add first three players
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const playerFiles=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
+          const groups=playerFiles.map(file=>({file,players:JSON.parse(fs.readFileSync(file,'utf8'))}));
+          let all=groups.flatMap(g=>g.players);
+          const existing=new Set(all.map(p=>p.n));
+
+          // Correct authoritative 2023-25 history before using it in evaluations.
+          const hf='historicalStats2026.json';
+          const h=JSON.parse(fs.readFileSync(hf,'utf8'));
+          h.players['Aaron Jones Sr.']=[
+            {Season:'2023',Games:'11',Carries:'142','Rush Yards':'656',YPC:'4.6','Rush TD':'2','Rec.':'30','Rec. Yards':'233','Rec. TD':'1'},
+            {Season:'2024',Games:'17',Carries:'255','Rush Yards':'1,138',YPC:'4.5','Rush TD':'5','Rec.':'51','Rec. Yards':'408','Rec. TD':'2'},
+            {Season:'2025',Games:'12',Carries:'132','Rush Yards':'548',YPC:'4.2','Rush TD':'2','Rec.':'28','Rec. Yards':'199','Rec. TD':'1'}
+          ];
+          h.players['Dallas Goedert']=[
+            {Season:'2023',Games:'14',Receptions:'59','Receiving Yards':'592','Yards/Reception':'10.0',TD:'3'},
+            {Season:'2024',Games:'10',Receptions:'42','Receiving Yards':'496','Yards/Reception':'11.8',TD:'2'},
+            {Season:'2025',Games:'15',Receptions:'60','Receiving Yards':'591','Yards/Reception':'9.8',TD:'11'}
+          ];
+          h.players['Deebo Samuel Sr.']=[
+            {Season:'2023',Games:'15',Receptions:'60','Receiving Yards':'892','Yards/Reception':'14.9',TD:'7','Rush Att':'37','Rush Yards':'225','Rush TD':'5'},
+            {Season:'2024',Games:'15',Receptions:'51','Receiving Yards':'670','Yards/Reception':'13.1',TD:'3','Rush Att':'42','Rush Yards':'136','Rush TD':'1'},
+            {Season:'2025',Games:'16',Receptions:'72','Receiving Yards':'727','Yards/Reception':'10.1',TD:'5','Rush Att':'17','Rush Yards':'75','Rush TD':'1'}
+          ];
+          delete h.players['Deebo Samuel'];
+          fs.writeFileSync(hf,JSON.stringify(h));
+
+          const additions=[
+            {
+              n:'Dallas Goedert',p:'TE',t:'Philadelphia Eagles',target:104,ad:119,mp:181.5,cp:179.4,
+              pd:8.35,ce:7.8,r:8.6,e:8.8,a:7.4,rl:7.9,su:7.3,
+              s6:'CEILING VALUE',s7:'TARGET',px:'BUY',fw:'105–125',st:'PASS',
+              m:'Rec 62-69 / 650-735 yd / 6-8 TD',cl:'Rec 72-80 / 780-900 yd / 8-11 TD',
+              cn:'Rec 65.5 / 688.9 yd / 7.6 TD',vl:'No comparable saved Vegas line.',vs:null,vr:'Consensus closely aligned.',
+              en:'Strong scoring environment with Jalen Hurts, an elite offensive-line foundation and a realistic path to remain one of the top two pass-game options after A.J. Brown’s departure. New OC Sean Mannion adds some goal-line usage uncertainty.',
+              hist:193.6,
+              eval:{production:'Strong TE1 production profile. Our 181.5 PPR median is essentially aligned with current consensus.',ceiling:'Top-six TE finish remains reachable if the red-zone role survives the coordinator change; 2025’s 11 TDs should not be treated as the median.',role:'Starting TE with a strong first-read/target-share history and a plausible No. 2 receiving role.',environment:'Hurts plus Philadelphia’s line and scoring infrastructure are clear positives.',availability:'Age 31 with a multi-year missed-game history lowers full-season confidence.',reliability:'Useful weekly TE1 floor, but 2025 scoring was unusually touchdown-driven.',sustainability:'Reception volume is sustainable; double-digit TD repetition is not the base case.',price:'At ADP 119 versus our Overall target 104, he is a value at current cost.'}
+            },
+            {
+              n:'Deebo Samuel Sr.',p:'WR',t:'San Francisco 49ers',target:118,ad:130,mp:176.5,cp:168.8,
+              pd:7.45,ce:7.9,r:8.2,e:8.7,a:7.3,rl:7.2,su:7.1,
+              s6:'CEILING VALUE',s7:'TARGET',px:'BUY',fw:'110–135',st:'PASS',
+              m:'Rec 58-66 / 680-780 yd / 4-6 TD · Rush 20-30 / 90-140 yd / 1-3 TD',
+              cl:'Rec 68-78 / 820-950 yd / 6-8 TD · Rush 30-40 / 140-220 yd / 2-4 TD',
+              cn:'Rec 58.3 / 666.2 yd / 4.5 TD · Rush 111.7 yd / 1.1 TD',vl:'No comparable saved Vegas line.',vs:null,vr:'Our model slightly more bullish.',
+              en:'Familiar Kyle Shanahan offense, Brock Purdy at quarterback and an immediate opportunity created by Ricky Pearsall’s season-ending knee injury. Mike Evans and Christian Kirk still cap pure target dominance.',
+              hist:203.5,
+              eval:{production:'Moderate-to-solid season-long production with a better early-season path than his market price implies.',ceiling:'The ceiling comes from hybrid receiving/rushing usage rather than a return to his 2021 target profile.',role:'Expected to work across receiver, backfield and return packages, with a credible WR2 role while Pearsall is out.',environment:'Returning to a system he knows is a major transition advantage; surrounding competition keeps it below elite.',availability:'Age 30 and a long physical-usage history create meaningful missed-time risk.',reliability:'2025 showed a strong opening stretch followed by a second-half fade, so weekly consistency is not a strength.',sustainability:'YAC skill remains useful, but career trend and age argue against projecting a full rebound to peak Deebo.',price:'At ADP 130 versus our Overall target 118, the late-round price is favorable.'}
+            },
+            {
+              n:'Aaron Jones Sr.',p:'RB',t:'Minnesota Vikings',target:128,ad:119,mp:158.5,cp:161.1,
+              pd:6.95,ce:6.5,r:7.0,e:8.3,a:6.1,rl:6.6,su:6.3,
+              s6:'OVERPRICED',s7:'ACCEPTABLE',px:'REACH',fw:'125–145',st:'AGE / DURABILITY WATCH',
+              m:'Rush 135-155 / 575-660 yd / 2-4 TD · Rec 35-43 / 255-320 yd / 1-3 TD',
+              cl:'Rush 165-185 / 710-800 yd / 4-6 TD · Rec 45-52 / 335-395 yd / 2-4 TD',
+              cn:'Rush 149.9 / 638.1 yd / 3.1 TD · Rec 40.7 / 300.7 yd / 1.7 TD',vl:'No comparable saved Vegas line.',vs:null,vr:'Our model essentially aligned with consensus.',
+              en:'Minnesota provides a competent scoring environment, but Jordan Mason materially limits early-down volume. Jones still projects as the better passing-game back.',
+              hist:194.1,
+              eval:{production:'Moderate PPR-flex production; the 2025 injury-shortened season is normalized per game rather than treated as a talent collapse.',ceiling:'A healthy season with receiving usage can still produce RB2 stretches, but workhorse volume is no longer a realistic base assumption.',role:'Committee back with Jordan Mason; strongest path to value is passing-down work and efficient touches.',environment:'Minnesota is a positive enough environment, but committee structure matters more than team scoring here.',availability:'Missed five games in 2025 with hamstring, shoulder and hip issues and enters his age-31/32 season; this is the main drag.',reliability:'Useful when active but reduced touch volume makes weekly outcomes more game-script dependent.',sustainability:'Receiving ability has held up better than early-down explosiveness; age-related decline is now a real projection input.',price:'ADP 119 is slightly ahead of our Overall target 128, so he is not a priority at market cost.'}
+            }
+          ];
+
+          // Remove names if a partial prior run exists.
+          const addNames=new Set(additions.map(x=>x.n));
+          for(const g of groups) g.players=g.players.filter(p=>!addNames.has(p.n));
+          all=groups.flatMap(g=>g.players);
+
+          // Insert by target Overall rank, shifting the existing 153-player board without changing relative order.
+          let ordered=[...all].sort((a,b)=>(a.o??999)-(b.o??999));
+          for(const x of additions.sort((a,b)=>a.target-b.target)){
+            const p={n:x.n,p:x.p,pr:'',o:x.target,t:x.t,tr:null,tp:'',s:0,pd:x.pd,ce:x.ce,r:x.r,e:x.e,a:x.a,rl:x.rl,su:x.su,ad:x.ad,s6:x.s6,s7:x.s7,px:x.px,fw:x.fw,st:x.st,m:x.m,cl:x.cl,mp:x.mp,cp:x.cp,dp:(x.mp-x.cp)/x.cp,cn:x.cn,vl:x.vl,vs:x.vs,vr:x.vr,en:x.en,
+              projection_context:{history_seasons:3,history_baseline_ppr:x.hist,context_factor:1,prior_projected_ppr:x.mp,recalibrated_projected_ppr:x.mp,note:'Historical per-game production is contextual evidence only; 2026 role, team environment, age/injury risk and current usage remain primary.',material_downstream_change:false},
+              evaluation_2026:x.eval};
+            const idx=Math.max(0,Math.min(ordered.length,x.target-1)); ordered.splice(idx,0,p);
+          }
+          ordered.forEach((p,i)=>p.o=i+1);
+
+          // Recompute Overall positional ranks.
+          const posOverall={};
+          for(const p of ordered){(posOverall[p.p]??=[]).push(p)}
+          for(const [pos,arr] of Object.entries(posOverall)) arr.forEach((p,i)=>p.pr=`${pos}${i+1}`);
+
+          // Player Quality score/rank stays price-independent.
+          for(const p of ordered) p.s=Math.round((Number(p.pd)*.35+Number(p.ce)*.20+Number(p.r)*.15+Number(p.e)*.10+Number(p.a)*.10+Number(p.rl)*.05+Number(p.su)*.05)*1000)/1000;
+          const quality=[...ordered].sort((a,b)=>b.s-a.s||a.o-b.o);
+          quality.forEach((p,i)=>p.tr=i+1);
+          const posQ={}; quality.forEach(p=>(posQ[p.p]??=[]).push(p));
+          for(const [pos,arr] of Object.entries(posQ)) arr.forEach((p,i)=>p.tp=`${pos}${i+1}`);
+
+          // Preserve 13 shards; append the three additions to players12 and redistribute by original membership.
+          const fileOf=new Map();
+          for(const g of groups) for(const p of g.players) fileOf.set(p.n,g.file);
+          const byFile=Object.fromEntries(playerFiles.map(f=>[f,[]]));
+          for(const p of ordered){ const f=fileOf.get(p.n)||'players12.json'; byFile[f].push(p); }
+          for(const f of playerFiles) fs.writeFileSync(f,JSON.stringify(byFile[f])+'\n');
+
+          const report={generated_at:new Date().toISOString(),batch:'1 of 3',active_players_before:153,active_players_after:ordered.length,players:additions.map(x=>{
+            const p=ordered.find(y=>y.n===x.n);return {name:p.n,pos:p.p,team:p.t,overall_rank:p.o,position_rank:p.pr,player_quality_rank:p.tr,player_quality_position_rank:p.tp,projected_ppr:p.mp,consensus_ppr:p.cp,market_adp:p.ad,price_read:p.px,fair_window:p.fw,component_scores:{expected_production:p.pd,ceiling:p.ce,role:p.r,environment:p.e,availability:p.a,reliability:p.rl,sustainability:p.su},evaluation:p.evaluation_2026};
+          })};
+          fs.writeFileSync('history-integration-batch-1-evaluations.json',JSON.stringify(report,null,2)+'\n');
+          NODE
+      - name: Commit first batch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add historicalStats2026.json players*.json history-integration-batch-1-evaluations.json
+          git diff --cached --quiet || git commit -m 'Evaluate and integrate Aaron Jones Goedert Deebo'
+          git push
