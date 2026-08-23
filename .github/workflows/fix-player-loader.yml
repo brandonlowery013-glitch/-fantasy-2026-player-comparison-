@@ -1,0 +1,34 @@
+name: Fix Player Loader
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Trigger player loader fix'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fix player shard filenames
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old="`players${String(i).padStart(2,'0')}.json`"
+          new="`players${i}.json`"
+          if old not in s:
+              raise SystemExit('old loader pattern not found')
+          s=s.replace(old,new)
+          p.write_text(s)
+          PY
+      - name: Commit loader fix
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git commit -m 'Fix player shard loader filenames [skip ci]'
+          git push
