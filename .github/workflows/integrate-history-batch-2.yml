@@ -1,0 +1,103 @@
+name: Integrate history-only batch 2
+on:
+  push:
+    paths:
+      - '.github/workflows/integrate-history-batch-2.yml'
+      - '.trigger-history-batch-2'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Correct history, evaluate and add next three players
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const playerFiles=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
+          const groups=playerFiles.map(file=>({file,players:JSON.parse(fs.readFileSync(file,'utf8'))}));
+          let all=groups.flatMap(g=>g.players);
+
+          const hf='historicalStats2026.json';
+          const h=JSON.parse(fs.readFileSync(hf,'utf8'));
+          h.players['George Kittle']=[
+            {Season:'2023',Games:'16',Receptions:'65','Receiving Yards':'1,020','Yards/Reception':'15.7',TD:'6'},
+            {Season:'2024',Games:'15',Receptions:'78','Receiving Yards':'1,106','Yards/Reception':'14.2',TD:'8'},
+            {Season:'2025',Games:'11',Receptions:'57','Receiving Yards':'628','Yards/Reception':'11.0',TD:'7'}
+          ];
+          h.players['Mark Andrews']=[
+            {Season:'2023',Games:'10',Receptions:'45','Receiving Yards':'544','Yards/Reception':'12.1',TD:'6'},
+            {Season:'2024',Games:'17',Receptions:'55','Receiving Yards':'673','Yards/Reception':'12.2',TD:'11'},
+            {Season:'2025',Games:'17',Receptions:'48','Receiving Yards':'422','Yards/Reception':'8.8',TD:'5','Rush Att':'10','Rush Yards':'48','Rush TD':'1'}
+          ];
+          h.players['Malik Washington']=[
+            {Season:'2024',Games:'14',Receptions:'26','Receiving Yards':'223','Yards/Reception':'8.6',TD:'0','Rush Att':'5','Rush Yards':'25','Rush TD':'1'},
+            {Season:'2025',Games:'17',Receptions:'46','Receiving Yards':'317','Yards/Reception':'6.9',TD:'3','Rush Att':'17','Rush Yards':'110','Rush TD':'1'}
+          ];
+          fs.writeFileSync(hf,JSON.stringify(h));
+
+          const additions=[
+            {
+              n:'George Kittle',p:'TE',t:'San Francisco 49ers',target:96,ad:92,mp:169.5,cp:175.8,
+              pd:7.75,ce:8.6,r:9.1,e:8.6,a:5.2,rl:7.4,su:7.5,
+              s6:'OVERPRICED',s7:'ACCEPTABLE',px:'FAIR',fw:'90–110',st:'ACHILLES RECOVERY / WEEK 1 WATCH',
+              m:'Rec 60-68 / 690-790 yd / 5-7 TD',cl:'Rec 72-80 / 900-1020 yd / 7-10 TD',
+              cn:'Rec 66.3 / 753.4 yd / 5.7 TD',vl:'No comparable saved Vegas line.',vs:null,vr:'Consensus slightly more bullish because our median carries an Achilles-return discount.',
+              en:'Brock Purdy and Kyle Shanahan keep the per-route environment strong, and San Francisco still uses Kittle as a high-value middle-of-field and red-zone target. The limiting factor is not offensive quality; it is how quickly his workload normalizes after the Achilles tear.',
+              hist:199.8,
+              eval:{production:'Still profiles as a TE1 on a per-game basis, but the season median is deliberately held below a healthy-Kittle projection because of the Achilles return.',ceiling:'If the Achilles recovery holds and his route rate normalizes quickly, a top-five TE finish is still reachable.',role:'Clear starting tight end and one of the offense’s most important receiving pieces; role quality remains excellent when active.',environment:'Purdy/Shanahan and a concentrated passing game remain strong positives.',availability:'Torn right Achilles in January; activated from PUP on August 23 and returned only to individual work. Week 1 is possible, but early-season workload and re-injury risk must be priced in.',reliability:'Historically strong per-game scorer, but early 2026 weekly reliability is reduced until full-team work and normal snap volume return.',sustainability:'Efficiency and YAC history remain strong, but age 32 plus Achilles recovery makes peak-rate continuation less bankable.',price:'ADP around 92 is close to our target around 96, so he is fair rather than a clear value.'}
+            },
+            {
+              n:'Mark Andrews',p:'TE',t:'Baltimore Ravens',target:101,ad:126,mp:174.0,cp:167.2,
+              pd:7.95,ce:8.4,r:9.3,e:8.8,a:8.0,rl:7.2,su:7.4,
+              s6:'CEILING VALUE',s7:'TARGET',px:'BUY',fw:'95–115',st:'ROLE REBOUND / AGE WATCH',
+              m:'Rec 58-66 / 620-710 yd / 6-9 TD',cl:'Rec 68-76 / 780-900 yd / 8-11 TD',
+              cn:'Rec 59.7 / 618.9 yd / 7.7 TD',vl:'No comparable saved Vegas line.',vs:null,vr:'Our model is modestly more bullish than consensus because of the cleaner 2026 depth chart.',
+              en:'Lamar Jackson plus Baltimore’s scoring environment remain positives. Isaiah Likely and Charlie Kolar are gone, leaving Andrews as the lone returning tight end and the clear receiving leader at the position, though the offensive-line center injury is a small downgrade.',
+              hist:143.0,
+              eval:{production:'2025 was a real decline season, but the 2026 target path is materially cleaner than it was a year ago.',ceiling:'A return to strong red-zone volume can still produce a top-eight TE season even without a full efficiency rebound.',role:'Clear projected starter and Baltimore’s lone returning tight end; Likely’s departure materially improves route and target security.',environment:'Lamar Jackson and a high-scoring offense support touchdown upside, though the line has taken a hit with Danny Pinter expected to miss the season.',availability:'Age 30 but currently healthy; far less immediate availability concern than Kittle.',reliability:'The 2025 weekly floor was poor and late-season usage was inconsistent, so the model does not treat the role rebound as guaranteed.',sustainability:'Expect some rebound from 2025’s depressed yardage, but not a return to peak 2021 Andrews as the median.',price:'PPR ADP around 126 is well behind our target around 101, making him a value at current cost.'}
+            },
+            {
+              n:'Malik Washington',p:'WR',t:'Miami Dolphins',target:132,ad:224,mp:139.5,cp:117.0,
+              pd:6.3,ce:7.4,r:8.2,e:6.5,a:8.8,rl:6.1,su:6.6,
+              s6:'CEILING VALUE',s7:'TARGET',px:'BUY',fw:'125–155',st:'CAMP RISER / ROLE EXPANSION',
+              m:'Rec 58-67 / 620-730 yd / 3-5 TD · Rush 12-20 / 70-120 yd / 0-2 TD',cl:'Rec 72-82 / 820-950 yd / 5-7 TD · Rush 18-26 / 100-160 yd / 1-3 TD',
+              cn:'Rec 55-60 / 560-650 yd / 3-4 TD',vl:'No comparable saved Vegas line.',vs:null,vr:'Our model is materially more bullish than public projection baselines because of the current depth-chart opportunity and strong camp.',
+              en:'Miami’s receiver room has opened dramatically after Tyreek Hill’s release and Jaylen Waddle’s trade. Malik Willis is a downgrade from an established high-volume passer and the line has struggled in camp, so opportunity is much better than environment.',
+              hist:83.5,
+              eval:{production:'The historical NFL production is modest, but 2026 volume can be much larger because the receiver depth chart has been stripped down.',ceiling:'If his strong camp translates into true No. 1/No. 2 target volume, he can beat a typical late-round WR ceiling by a wide margin.',role:'One of Miami’s top receivers in camp and repeatedly connecting with Malik Willis on explosive plays; a substantial role increase is justified.',environment:'The new quarterback, new offensive structure and pass-protection concerns cap efficiency expectations despite the open target tree.',availability:'Healthy entering the season with no major current availability penalty.',reliability:'He has never handled this kind of NFL receiving workload, so weekly consistency remains unproven.',sustainability:'The role opportunity is real, but we should not project alpha-WR efficiency from a player whose 2025 line was 46-317-3 receiving.',price:'Consensus PPR ADP around 224 is far behind our target around 132, making him a late-round value and upside bench target.'}
+            }
+          ];
+
+          const addNames=new Set(additions.map(x=>x.n));
+          for(const g of groups) g.players=g.players.filter(p=>!addNames.has(p.n));
+          all=groups.flatMap(g=>g.players);
+          let ordered=[...all].sort((a,b)=>(a.o??999)-(b.o??999));
+          for(const x of additions.sort((a,b)=>a.target-b.target)){
+            const p={n:x.n,p:x.p,pr:'',o:x.target,t:x.t,tr:null,tp:'',s:0,pd:x.pd,ce:x.ce,r:x.r,e:x.e,a:x.a,rl:x.rl,su:x.su,ad:x.ad,s6:x.s6,s7:x.s7,px:x.px,fw:x.fw,st:x.st,m:x.m,cl:x.cl,mp:x.mp,cp:x.cp,dp:(x.mp-x.cp)/x.cp,cn:x.cn,vl:x.vl,vs:x.vs,vr:x.vr,en:x.en,projection_context:{history_seasons:x.n==='Malik Washington'?2:3,history_baseline_ppr:x.hist,context_factor:1,prior_projected_ppr:x.mp,recalibrated_projected_ppr:x.mp,note:'Historical production is contextual evidence only; current 2026 role, team environment, injuries and camp usage remain primary.',material_downstream_change:false},evaluation_2026:x.eval};
+            const idx=Math.max(0,Math.min(ordered.length,x.target-1)); ordered.splice(idx,0,p);
+          }
+          ordered.forEach((p,i)=>p.o=i+1);
+          const posOverall={}; for(const p of ordered)(posOverall[p.p]??=[]).push(p);
+          for(const [pos,arr] of Object.entries(posOverall))arr.forEach((p,i)=>p.pr=`${pos}${i+1}`);
+          for(const p of ordered)p.s=Math.round((Number(p.pd)*.35+Number(p.ce)*.20+Number(p.r)*.15+Number(p.e)*.10+Number(p.a)*.10+Number(p.rl)*.05+Number(p.su)*.05)*1000)/1000;
+          const quality=[...ordered].sort((a,b)=>b.s-a.s||a.o-b.o); quality.forEach((p,i)=>p.tr=i+1);
+          const posQ={}; quality.forEach(p=>(posQ[p.p]??=[]).push(p)); for(const [pos,arr] of Object.entries(posQ))arr.forEach((p,i)=>p.tp=`${pos}${i+1}`);
+          const fileOf=new Map(); for(const g of groups)for(const p of g.players)fileOf.set(p.n,g.file);
+          const byFile=Object.fromEntries(playerFiles.map(f=>[f,[]])); for(const p of ordered){const f=fileOf.get(p.n)||'players12.json';byFile[f].push(p)}
+          for(const f of playerFiles)fs.writeFileSync(f,JSON.stringify(byFile[f])+'\n');
+          const report={generated_at:new Date().toISOString(),batch:'2 of 3',active_players_before:all.length,active_players_after:ordered.length,players:additions.map(x=>{const p=ordered.find(y=>y.n===x.n);return {name:p.n,pos:p.p,team:p.t,overall_rank:p.o,position_rank:p.pr,player_quality_rank:p.tr,player_quality_position_rank:p.tp,projected_ppr:p.mp,consensus_ppr:p.cp,market_adp:p.ad,price_read:p.px,fair_window:p.fw,component_scores:{expected_production:p.pd,ceiling:p.ce,role:p.r,environment:p.e,availability:p.a,reliability:p.rl,sustainability:p.su},evaluation:p.evaluation_2026};})};
+          fs.writeFileSync('history-integration-batch-2-evaluations.json',JSON.stringify(report,null,2)+'\n');
+          NODE
+      - name: Commit second batch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add historicalStats2026.json players*.json history-integration-batch-2-evaluations.json
+          git diff --cached --quiet || git commit -m 'Evaluate and integrate Kittle Andrews Malik Washington'
+          git push
