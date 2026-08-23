@@ -1,0 +1,109 @@
+name: Sync Canonical Boards
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  sync:
+    if: github.event.head_commit.message == 'Run canonical board sync'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Persist current model changes into canonical boards
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          files=[Path(f'players{i}.json') for i in range(13)]
+          shards={f:json.loads(f.read_text()) for f in files}
+          players=[p for arr in shards.values() for p in arr]
+          by_name={p['n']:p for p in players}
+
+          ov=json.loads(Path('injuryOverrides2026.json').read_text())
+          env=json.loads(Path('environment2026.json').read_text())
+          team_env=env.get('teams',{})
+
+          # Persist the current team environment board into every player record.
+          for p in players:
+              te=team_env.get(p.get('t'))
+              if te:
+                  p['e']=te['score']
+                  p['en']=te['explanation']
+
+          # Persist accepted injury/camp/role changes into the actual player boards.
+          for name,chg in ov.get('players',{}).items():
+              p=by_name.get(name)
+              if not p: continue
+              for k,v in chg.items():
+                  p[k]=v
+
+          # Recalculate True Value from the canonical seven components.
+          def tv(p):
+              return round(float(p.get('pd',0))*.35 + float(p.get('ce',0))*.20 + float(p.get('r',0))*.15 + float(p.get('e',0))*.10 + float(p.get('a',0))*.10 + float(p.get('rl',0))*.05 + float(p.get('su',0))*.05,3)
+          for p in players:
+              p['s']=tv(p)
+
+          # Natural True Value ordering first.
+          tv_sorted=sorted(players,key=lambda p:(-p['s'],p.get('tr',9999),p['n']))
+          for i,p in enumerate(tv_sorted,1): p['tr']=i
+
+          def apply_rank_moves(field,moves):
+              names=[n for n in (moves or {}) if n in by_name]
+              if not names: return
+              ordered=sorted(players,key=lambda p:(p.get(field,9999),p['n']))
+              moved=set(names)
+              slots=[None]*len(ordered)
+              for n in names:
+                  target=max(1,min(len(ordered),int(round(moves[n]))))
+                  # Resolve occupied requested slots by moving to next open slot.
+                  idx=target-1
+                  while idx<len(slots) and slots[idx] is not None: idx+=1
+                  if idx>=len(slots):
+                      idx=target-1
+                      while idx>=0 and slots[idx] is not None: idx-=1
+                  if idx>=0: slots[idx]=by_name[n]
+              rest=[p for p in ordered if p['n'] not in moved]
+              it=iter(rest)
+              for i in range(len(slots)):
+                  if slots[i] is None: slots[i]=next(it)
+              for i,p in enumerate(slots,1): p[field]=i
+
+          moves=ov.get('rankMoves',{})
+          apply_rank_moves('tr',moves.get('trueValue',{}))
+          apply_rank_moves('o',moves.get('overall',{}))
+
+          # Re-sync positional ranks to both boards.
+          counts={}
+          for p in sorted(players,key=lambda p:(p.get('o',9999),p['n'])):
+              counts[p['p']]=counts.get(p['p'],0)+1
+              p['pr']=f"{p['p']}{counts[p['p']]}"
+          counts={}
+          for p in sorted(players,key=lambda p:(p.get('tr',9999),p['n'])):
+              counts[p['p']]=counts.get(p['p'],0)+1
+              p['tp']=f"{p['p']}{counts[p['p']]}"
+
+          # Write the canonical shards back in place.
+          for f,arr in shards.items():
+              f.write_text(json.dumps([by_name[p['n']] for p in arr],separators=(',',':')))
+
+          # One auditable board file tying all views together.
+          keep=['n','p','t','o','pr','tr','tp','s','pd','ce','r','e','a','rl','su','mp','m','cl','px','fw','st','ns','nm','na','en']
+          def slim(p): return {k:p[k] for k in keep if k in p}
+          canonical={
+              'updated':'2026-08-23',
+              'weights':{'Expected Production':.35,'Ceiling':.20,'Role/Volume':.15,'Offensive Environment':.10,'Availability':.10,'Weekly Reliability':.05,'Sustainability':.05},
+              'overall':[slim(p) for p in sorted(players,key=lambda p:(p['o'],p['n']))],
+              'trueValue':[slim(p) for p in sorted(players,key=lambda p:(p['tr'],p['n']))],
+              'positions':{pos:[slim(p) for p in sorted([x for x in players if x['p']==pos],key=lambda p:(p['tr'],p['n']))] for pos in ['QB','RB','WR','TE']}
+          }
+          Path('canonicalBoards2026.json').write_text(json.dumps(canonical,indent=2))
+          PY
+      - name: Commit canonical board sync
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add players*.json canonicalBoards2026.json
+          git commit -m 'Sync canonical boards with current model changes [skip ci]'
+          git push
