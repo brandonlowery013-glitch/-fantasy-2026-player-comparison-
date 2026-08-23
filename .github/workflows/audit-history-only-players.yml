@@ -1,0 +1,38 @@
+name: Audit history-only players
+on:
+  push:
+    paths:
+      - '.github/workflows/audit-history-only-players.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Compare historical database to active player pool
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const hist=(JSON.parse(fs.readFileSync('historicalStats2026.json','utf8')).players)||{};
+          const files=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f));
+          const active=new Set();
+          for(const f of files){for(const p of JSON.parse(fs.readFileSync(f,'utf8'))) active.add(p.n)}
+          const history=new Set(Object.keys(hist));
+          const historyOnly=[...history].filter(n=>!active.has(n)).sort();
+          const activeWithoutHistory=[...active].filter(n=>!history.has(n)).sort();
+          const out={generated_at:new Date().toISOString(),historical_players:history.size,active_players:active.size,history_only_count:historyOnly.length,history_only:historyOnly,active_without_history_count:activeWithoutHistory.length,active_without_history:activeWithoutHistory};
+          fs.writeFileSync('history-vs-active-player-audit.json',JSON.stringify(out,null,2)+'\n');
+          console.log(out);
+          NODE
+      - name: Commit audit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add history-vs-active-player-audit.json
+          git diff --cached --quiet || git commit -m 'Audit historical versus active player pool'
+          git push
