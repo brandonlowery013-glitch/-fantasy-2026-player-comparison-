@@ -1,0 +1,50 @@
+name: Runtime Environment Normalization
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Trigger runtime environment normalization'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch runtime environment normalization
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          anchor="function applyRankMoves(field,moves){"
+          fn=r'''function normalizeTeamEnvironments(){
+const groups={};P.forEach(p=>(groups[p.t]??=[]).push(Number(p.e??7.5)));
+const median=a=>{let q=[...a].sort((x,y)=>x-y),m=Math.floor(q.length/2);return q.length%2?q[m]:(q[m-1]+q[m])/2};
+const scores={};Object.keys(groups).forEach(t=>scores[t]=Math.round(median(groups[t])*10)/10);
+Object.assign(scores,{'Miami Dolphins':6.5,'Philadelphia Eagles':8.2});
+const special={
+'Miami Dolphins':'Major offensive transition: new quarterback, new offense/play-calling structure, top two wide receivers gone and major continuity concerns. Achane can still earn heavy volume, but that volume belongs under Usage / Opportunity—not Offensive Environment.',
+'Philadelphia Eagles':'The setup has declined from its prior elite level because of staff, scheme and continuity changes, but the offense still has a strong quarterback, quality line foundation and scoring infrastructure. Good environment, not elite.'};
+const generic=(v)=>v>=9.2?'High-end scoring setup with strong quarterback/scheme support and few structural concerns.':v>=8.7?'Very favorable overall setup with strong scoring support and only minor structural questions.':v>=8.1?'Positive overall setup, but at least one meaningful quarterback, scheme, line, continuity or supporting-cast limitation keeps it below the top tier.':v>=7.4?'Mixed setup: enough support for production, but meaningful questions keep the environment from being a clear advantage.':v>=6.7?'Several offensive questions can reduce efficiency or touchdown opportunity even when an individual player has a strong role.':'Major structural concerns around quarterback, scheme, line, supporting cast or continuity can suppress efficiency and scoring opportunities.';
+P.forEach(p=>{let old=Number(p.e??7.5),neu=scores[p.t]??old;p.e=neu;p.en=special[p.t]||generic(neu);if(p.s!=null)p.s=Math.round((Number(p.s)+(neu-old)*.10)*1000)/1000});
+let ranked=[...P].sort((a,b)=>(b.s??0)-(a.s??0)||(a.tr??9999)-(b.tr??9999));ranked.forEach((p,i)=>p.tr=i+1);
+const pos={};ranked.forEach(p=>(pos[p.p]??=[]).push(p));Object.values(pos).forEach(arr=>arr.forEach((p,i)=>p.tp=`${p.p}${i+1}`));
+}
+'''
+          if 'function normalizeTeamEnvironments()' not in s:
+              if anchor not in s: raise SystemExit('rank anchor missing')
+              s=s.replace(anchor,fn+anchor)
+          old="if(ov&&ov.players){P.forEach(p=>{delete p.ns;delete p.nm;delete p.na;let x=ov.players[p.n];if(x)Object.assign(p,x)});applyRankMoves('o',ov.rankMoves?.overall);applyRankMoves('tr',ov.rankMoves?.trueValue)}fill()"
+          new="if(ov&&ov.players){P.forEach(p=>{delete p.ns;delete p.nm;delete p.na;let x=ov.players[p.n];if(x)Object.assign(p,x)})}normalizeTeamEnvironments();if(ov){applyRankMoves('o',ov.rankMoves?.overall);applyRankMoves('tr',ov.rankMoves?.trueValue)}fill()"
+          if old not in s:
+              raise SystemExit('loader normalization anchor missing')
+          s=s.replace(old,new)
+          p.write_text(s)
+          PY
+      - name: Commit runtime environment normalization
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git commit -m 'Normalize Offensive Environment by team at runtime [skip ci]'
+          git push
