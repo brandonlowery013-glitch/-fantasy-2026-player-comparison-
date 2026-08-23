@@ -1,0 +1,32 @@
+name: Merge Market Data
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Trigger market data merge'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Merge consensus and ADP data in loader
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old="P=parts.flat();let ov=null;try{let r=await fetch('injuryOverrides2026.json',{cache:'no-store'});if(r.ok)ov=await r.json()}catch(e){}"
+          new="P=parts.flat();let mk=null;try{let r=await fetch('market2026.json',{cache:'no-store'});if(r.ok)mk=await r.json()}catch(e){}if(mk&&mk.players){P.forEach(p=>{let m=mk.players[p.n];if(m){if(m.ecr!=null)p.cr=m.ecr;if(m.adp!=null)p.ad=m.adp}})}let ov=null;try{let r=await fetch('injuryOverrides2026.json',{cache:'no-store'});if(r.ok)ov=await r.json()}catch(e){}"
+          if old not in s:
+              raise SystemExit('loader anchor not found')
+          s=s.replace(old,new)
+          p.write_text(s)
+          PY
+      - name: Commit loader fix
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git commit -m 'Merge consensus rank and ADP into player data [skip ci]'
+          git push
