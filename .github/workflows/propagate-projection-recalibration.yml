@@ -1,0 +1,77 @@
+name: Propagate projection recalibration
+on:
+  push:
+    paths:
+      - '.github/workflows/propagate-projection-recalibration.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  propagate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Propagate material projection changes
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const files=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
+          const groups=files.map(f=>({file:f,players:JSON.parse(fs.readFileSync(f,'utf8'))}));
+          const all=groups.flatMap(g=>g.players);
+          const oldTR=new Map(all.map(p=>[p.n,p.tr]));
+          const oldS=new Map(all.map(p=>[p.n,p.s]));
+          const oldPD=new Map(all.map(p=>[p.n,p.pd]));
+          const prodTier=(p,x)=>{
+            const bands={QB:[[320,'Elite'],[290,'Very strong'],[260,'Strong'],[230,'Solid'],[200,'Moderate']],RB:[[280,'Elite'],[250,'Very strong'],[220,'Strong'],[190,'Solid'],[160,'Moderate']],WR:[[290,'Elite'],[255,'Very strong'],[225,'Strong'],[195,'Solid'],[165,'Moderate']],TE:[[235,'Elite'],[205,'Very strong'],[175,'Strong'],[150,'Solid'],[125,'Moderate']]};
+            for(const [cut,l] of (bands[p.p]||[])) if(x>=cut) return l;
+            return 'Concern';
+          };
+          const audit=[];
+          for(const p of all){
+            const c=p.projection_context;
+            if(!c) continue;
+            const old=Number(c.prior_projected_ppr), neu=Number(p.mp), delta=neu-old;
+            const oldTier=prodTier(p,old), newTier=prodTier(p,neu);
+            const material=Math.abs(delta)>=8 || oldTier!==newTier;
+            if(material){
+              // Convert projection movement into the production component conservatively.
+              // 10 PPR = 0.10 production-grade movement; cap to the established 6-10 scale.
+              p.pd=Math.max(6,Math.min(10,Math.round((Number(p.pd||7.5)+delta/100)*1000)/1000));
+            }
+            // Recompute the locked True Value score from its published weights.
+            p.s=Math.round((p.pd*.35+p.ce*.20+p.r*.15+p.e*.10+p.a*.10+p.rl*.05+p.su*.05)*1000)/1000;
+            p.projection_context.material_downstream_change=material;
+            p.projection_context.old_production_tier=oldTier;
+            p.projection_context.new_production_tier=newTier;
+            audit.push({name:p.n,pos:p.p,overall_rank:p.o,old_ppr:old,new_ppr:neu,delta:Math.round(delta*100)/100,old_tier:oldTier,new_tier:newTier,material,old_pd:oldPD.get(p.n),new_pd:p.pd,old_true_value_score:oldS.get(p.n),new_true_value_score:p.s});
+          }
+          // Re-rank Player Quality / True Value from the recalculated weighted score.
+          const ranked=[...all].sort((a,b)=>(b.s??0)-(a.s??0)||(a.o??999)-(b.o??999));
+          ranked.forEach((p,i)=>p.tr=i+1);
+          const byPos={}; ranked.forEach(p=>(byPos[p.p]??=[]).push(p));
+          Object.values(byPos).forEach(arr=>arr.forEach((p,i)=>p.tp=`${p.p}${i+1}`));
+          for(const a of audit){ const p=all.find(x=>x.n===a.name); a.old_player_quality_rank=oldTR.get(a.name); a.new_player_quality_rank=p.tr; a.rank_move=(oldTR.get(a.name)??p.tr)-p.tr; a.overall_rank_review = a.material && (Math.abs(a.rank_move)>=3 || Math.abs(a.delta)>=12 || a.old_tier!==a.new_tier); }
+          for(const g of groups) fs.writeFileSync(g.file,JSON.stringify(g.players)+'\n');
+          const mat=audit.filter(x=>x.material).sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+          const out={generated_at:new Date().toISOString(),players_checked:all.length,material_changes:mat.length,overall_rank_review_count:mat.filter(x=>x.overall_rank_review).length,policy:'Expected Production and Player Quality/True Value are propagated automatically. Overall Rank is intentionally not auto-shuffled by a hidden formula; material cases are flagged for board review because Overall Rank also includes positional/draft-strategy judgment.',changes:mat};
+          fs.writeFileSync('projection-downstream-audit.json',JSON.stringify(out,null,2)+'\n');
+          NODE
+      - name: Repair Draft Value to price efficiency only
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const f='index-backup.html'; let s=fs.readFileSync(f,'utf8');
+          s=s.replace(/const vals=p=>[^;]+;/,`const vals=p=>{const gap=(p.ad!=null&&p.o!=null)?(p.ad-p.o):0;const verdict=({BUY:.6,FAIR:0,REACH:-.3,FADE:-.8}[p.px]??0);const step=({TARGET:.2,ACCEPTABLE:0,AVOID:-.4}[p.s7]??0);return gap/15+verdict+step;};`);
+          s=s.replace('This is where our rank, consensus rank, market ADP, fair range and full player profile become the price decision.','Price efficiency only: how the market cost compares with our valuation and fair range. Absolute player quality is handled separately by Better Player.');
+          fs.writeFileSync(f,s);
+          NODE
+      - name: Commit propagated changes
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add players*.json projection-downstream-audit.json index-backup.html
+          git diff --cached --quiet || git commit -m 'Propagate projection changes and repair Draft Value scaling'
+          git push
