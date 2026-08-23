@@ -1,0 +1,116 @@
+name: Recalibrate 2026 projections with historical context
+on:
+  push:
+    paths:
+      - '.github/workflows/recalibrate-projections.yml'
+      - '.trigger-projection-rerun'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  recalibrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Recalibrate all player projections
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const files=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
+          const hist=(JSON.parse(fs.readFileSync('historicalStats2026.json','utf8')).players)||{};
+          const num=v=>{if(v==null)return 0;const n=Number(String(v).replace(/,/g,'').replace(/[^0-9.-]/g,''));return Number.isFinite(n)?n:0};
+          const get=(r,ks)=>{for(const k of ks)if(r[k]!=null)return num(r[k]);return 0};
+          const gp=r=>get(r,['Games','GP','G'])||17;
+          function ppr(row,pos){
+            if(pos==='QB'){
+              const py=get(row,['Pass Yards','PassYds']); const ptd=get(row,['Pass TD','PassTD']); const ints=get(row,['INT']); const ry=get(row,['Rush Yards','RushYds']); const rtd=get(row,['Rush TD','RushTD']);
+              return py*.04+ptd*4-ints*2+ry*.1+rtd*6;
+            }
+            const rec=get(row,['Receptions','Rec','Rec.']); const recY=get(row,['Receiving Yards','Rec Yds','RecYds','Rec. Yards']); const recTD=get(row,['TD','Rec TD','RecTD','Rec. TD']);
+            const rushY=get(row,['Rush Yards','Rush Yds','RushYds']); const rushTD=get(row,['Rush TD','RushTD']);
+            return rec+recY*.1+recTD*6+rushY*.1+rushTD*6;
+          }
+          function histBaseline(p){
+            const rows=(hist[p.n]||[]).slice(-3); if(!rows.length)return null;
+            const weights=rows.length===1?[1]:rows.length===2?[.35,.65]:[.2,.3,.5];
+            let ppg=0, sw=0;
+            rows.forEach((r,i)=>{const g=Math.max(1,gp(r)); const pts=ppr(r,p.p); if(pts>0){ppg+=(pts/g)*weights[i];sw+=weights[i]}});
+            if(!sw)return null; return ppg/sw*17;
+          }
+          function contextFactor(p){
+            const role=1+((Number(p.r??8.5)-8.5)*.018);
+            const env=1+((Number(p.e??8.5)-8.5)*.012);
+            const rel=1+((Number(p.rl??8.5)-8.5)*.006);
+            const sust=1+((Number(p.su??8.5)-8.5)*.006);
+            let avail=1;
+            const a=Number(p.a??8.5);
+            if(a<8.5)avail-=Math.min(.08,(8.5-a)*.018);
+            const st=String(p.st||'PASS').toUpperCase();
+            if(st!=='PASS'&&!st.includes('ACTIVE')&&!st.includes('HEALTHY'))avail-=.015;
+            return Math.max(.88,Math.min(1.12,role*env*rel*sust*avail));
+          }
+          function scaleRange(text,ratio){
+            if(!text||!Number.isFinite(ratio)||Math.abs(ratio-1)<.002)return text;
+            return String(text).replace(/\d+(?:\.\d+)?/g,m=>{
+              const n=Number(m); if(!Number.isFinite(n))return m;
+              const out=n*ratio;
+              if(n<20)return String(Math.max(0,Math.round(out*10)/10)).replace(/\.0$/,'');
+              return String(Math.max(0,Math.round(out)));
+            });
+          }
+          const audit=[];
+          let total=0,withHist=0,changed=0;
+          for(const file of files){
+            const arr=JSON.parse(fs.readFileSync(file,'utf8'));
+            for(const p of arr){
+              total++;
+              const old=Number(p.mp); if(!Number.isFinite(old))continue;
+              const hb=histBaseline(p);
+              if(hb!=null)withHist++;
+              const years=(hist[p.n]||[]).length;
+              const histWeight=years>=3?.28:years===2?.20:years===1?.12:0;
+              const ctx=hb==null?old:hb*contextFactor(p);
+              let next=old*(1-histWeight)+ctx*histWeight;
+              // Current-team/coaching/injury context remains primary. Clamp history-driven movement to avoid overriding known 2026 role changes.
+              const clamp=old*.075;
+              next=Math.max(old-clamp,Math.min(old+clamp,next));
+              // Very low availability gets an additional season-total haircut; per-game talent history itself is not penalized for games missed.
+              const a=Number(p.a??8.5);
+              if(a<7.5)next*=.985;
+              next=Math.round(next*4)/4;
+              const delta=next-old;
+              const ratio=old?next/old:1;
+              p.projection_context={
+                history_seasons:years,
+                history_baseline_ppr:hb==null?null:Math.round(hb*10)/10,
+                context_factor:Math.round(contextFactor(p)*1000)/1000,
+                prior_projected_ppr:old,
+                recalibrated_projected_ppr:next,
+                note:'Historical per-game production is a baseline only. Current 2026 role, team environment, injuries, reliability and sustainability remain primary; missed games do not automatically reduce per-game ability.'
+              };
+              if(Math.abs(delta)>=1){
+                p.mp=next;
+                p.dp=p.cp?((p.mp-p.cp)/p.cp):p.dp;
+                p.m=scaleRange(p.m,ratio);
+                p.cl=scaleRange(p.cl,Math.max(.96,Math.min(1.04,ratio)));
+                changed++;
+              }
+              audit.push({name:p.n,pos:p.p,team:p.t,history_seasons:years,old_ppr:old,new_ppr:p.mp,delta:Math.round((p.mp-old)*100)/100,history_baseline:hb==null?null:Math.round(hb*10)/10,availability:p.a,role:p.r,environment:p.e,status:p.st});
+            }
+            fs.writeFileSync(file,JSON.stringify(arr));
+          }
+          audit.sort((a,b)=>Math.abs(b.delta)-Math.abs(a.delta));
+          const report={generated_at:new Date().toISOString(),method:'Full 153-player historical-context recalibration. Historical production uses per-game PPR so injury-shortened seasons do not falsely suppress ability. Current role/team/scheme/environment/injury/reliability/sustainability remain the primary forward-looking layer. Consensus and Vegas are calibration checks and were not overwritten.',players_checked:total,players_with_history:withHist,players_materially_changed:changed,changes:audit};
+          fs.writeFileSync('projection-context-audit-2026.json',JSON.stringify(report,null,2)+'\n');
+          console.log(`checked ${total}; history ${withHist}; changed ${changed}`);
+          NODE
+      - name: Commit projection recalibration
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add players*.json projection-context-audit-2026.json
+          git diff --cached --quiet || git commit -m 'Recalibrate all 2026 projections with historical context'
+          git push
