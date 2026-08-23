@@ -1,0 +1,64 @@
+name: Global Explanation Upgrade
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Trigger global explanation upgrade'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch public comparison logic
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old="function ceilPanel(p){return blocks([['Ceiling',gradeLabel(p.ce)],['Bust Risk',riskLabel(bust(p))],['Sustainability',gradeLabel(p.su)]])}"
+          new=r'''function ceilingTier(v){if(v==null)return '—';if(v>=9.6)return 'Elite — top of tier';if(v>=9.1)return 'Elite';if(v>=8.8)return 'Very strong — top of tier';if(v>=8.6)return 'Very strong';if(v>=8.35)return 'Strong — top of tier';if(v>=8.1)return 'Strong';if(v>=7.8)return 'Solid — top of tier';if(v>=7.6)return 'Solid';if(v>=7.3)return 'Moderate — top of tier';if(v>=7.0)return 'Moderate';return 'Limited'}
+function bustTier(v){if(v==null)return '—';if(v<=.8)return 'Low — lower end';if(v<=1.2)return 'Low';if(v<=1.5)return 'Moderate — lower end';if(v<=1.8)return 'Moderate';if(v<=2.1)return 'Elevated — lower end';if(v<=2.4)return 'Elevated';return 'High'}
+function downsideRead(p){if(p.st&&p.st!=='PASS')return `Current ${String(p.st).toLowerCase()} is the main downside because it can cost games, workload or efficiency.`;let parts=[];if(p.a<8.0)parts.push('availability risk');if(p.rl<8.0)parts.push('week-to-week volatility');if(p.su<8.0)parts.push('a less stable path to sustaining peak production');if(p.r<8.0)parts.push('role or workload uncertainty');return parts.length?`Main downside: ${parts.join(', ')}.`:'No major structural red flag; the main bust path is normal touchdown/efficiency variance or an unexpected role change.'}
+function ceilPanel(p){return blocks([['Ceiling',ceilingTier(p.ce)],['Bust Risk',bustTier(bust(p))],['Sustainability',gradeLabel(p.su)]])+projectionBlock('Upside Projection',p.cl)+readBlock('What can go wrong',downsideRead(p))}
+function ceilingWhy(ps){let score=x=>x.ce-bust(x)*.18, q=[...ps].sort((a,b)=>score(b)-score(a));if(q.length<2)return '';let a=q[0],b=q[1],reasons=[];if(a.ce>b.ce+.05)reasons.push('higher ceiling');if(bust(a)<bust(b)-.05)reasons.push('lower bust risk');if(a.su>b.su+.05)reasons.push('better sustainability');if(!reasons.length)reasons.push('slightly better overall balance of upside and downside protection');return `${a.n} gets the edge because of ${reasons.join(' and ')}.`}
+function ceilingSection(ps){let f=x=>x.ce-bust(x)*.18,[w,r,d]=win(ps,f),m=clsMap(ps,f,.08),label=!r||Math.abs(d)<.08?'Toss-up':`${strength(d,[.08,.25,.55])}: ${w.n}`;return `<div class="detail"><div class="detailHead"><h3>Ceiling / Bust</h3><span class="edge ${label==='Toss-up'?'':'win'}">${label}</span></div><div class="categoryPurpose">How high each player can realistically finish, how likely the pick is to disappoint, and what creates that downside.</div>${label!=='Toss-up'?`<div class="categoryPurpose"><b>Why this edge:</b> ${ceilingWhy(ps)}</div>`:''}<div class="compareRows ${ps.length===3?'three':''}">${ps.map(p=>`<div class="compareCell ${m.get(p.n)}"><div class="playerName">${p.n}</div><div class="statusline"><span class="dot"></span>${status(m.get(p.n))}</div>${ceilPanel(p)}</div>`).join('')}</div></div>`}'''
+          if old not in s:
+              raise SystemExit('ceilPanel anchor not found')
+          s=s.replace(old,new)
+          old2="if(checked.includes('ceil'))ds.push(shell('Ceiling / Bust','Upside compared with the chance the pick disappoints.',ps,x=>x.ce-bust(x)*.18,ceilPanel,.08,[.08,.25,.55]));"
+          new2="if(checked.includes('ceil'))ds.push(ceilingSection(ps));"
+          if old2 not in s:
+              raise SystemExit('ceiling run anchor not found')
+          s=s.replace(old2,new2)
+          old3="if(checked.includes('env'))ds.push(shell('Offensive Environment','Which player has the better team, scheme, quarterback and scoring setup.',ps,x=>x.e,p=>blocks([['Environment',gradeLabel(p.e)],['Team',p.t]]),.08,[.08,.25,.55]));"
+          new3="if(checked.includes('env'))ds.push(shell('Offensive Environment','Team scoring ecosystem, quarterback play, scheme and supporting cast — separate from the player’s own talent or workload.',ps,x=>x.e,environmentPanel,.08,[.08,.25,.55]));"
+          if old3 not in s:
+              raise SystemExit('environment run anchor not found')
+          s=s.replace(old3,new3)
+          anchor="function usagePanel(p){let label=p.p==='QB'?'QB Scoring Outlook':p.p==='RB'?'Backfield Usage Outlook':'Receiving Role Outlook';return blocks([[label,gradeLabel(usageScore(p))]])+projectionBlock('Median Projection',p.m)}"
+          insert=anchor+"\n"+r'''function environmentRead(p){if(p.n==="De'Von Achane")return 'Miami is rebuilding around Malik Willis, has an unsettled receiving corps and has shown pass-protection concerns. Achane’s individual workload is strong, but that does not make the surrounding offense a strong environment.';if(p.e>=9.1)return 'High-end scoring environment with strong quarterback/scheme support and a favorable path to touchdowns.';if(p.e>=8.6)return 'Very favorable offensive setup with few structural concerns.';if(p.e>=8.1)return 'Good overall setup, though not without some quarterback, line, scheme or supporting-cast limitations.';if(p.e>=7.6)return 'Mixed environment: enough positives to support production, but meaningful concerns cap the setup.';if(p.e>=7.0)return 'Uncertain environment with real quarterback, scheme, line or supporting-cast questions.';return 'Poor or highly unstable offensive environment that can suppress efficiency and scoring opportunities.'}
+function environmentPanel(p){return blocks([['Environment',gradeLabel(p.e)],['Team',p.t]])+readBlock('Why',environmentRead(p))}
+function draftTakeaway(p){let parts=[];if(p.cr!=null&&p.o!=null){let d=Math.abs(p.o-p.cr);parts.push(p.o<p.cr?`We rank him ${d} spot${d===1?'':'s'} higher than consensus.`:p.o>p.cr?`Consensus ranks him ${d} spot${d===1?'':'s'} higher than we do.`:'Our draft rank matches consensus.')}if(p.ad!=null&&p.o!=null){let d=Math.abs(p.ad-p.o);parts.push(p.ad>p.o?`ADP is ${d} pick${d===1?'':'s'} cheaper than our draft rank.`:p.ad<p.o?`ADP is ${d} pick${d===1?'':'s'} more expensive than our draft rank.`:'ADP matches our draft rank.')}if(p.mp!=null&&p.cp!=null){let g=p.mp-p.cp;parts.push(Math.abs(g)<3?'Our PPR projection is essentially in line with consensus.':g>0?`Our PPR projection is ${fmt(g,1)} points above consensus.`:`Our PPR projection is ${fmt(Math.abs(g),1)} points below consensus.`)}parts.push(`${p.px} at current price${p.fw?`; preferred range ${p.fw}`:''}.`);return parts.join(' ')}'''
+          if anchor not in s:
+              raise SystemExit('usagePanel anchor not found')
+          s=s.replace(anchor,insert)
+          old4="${readBlock('Market read',marketRead(p))}</div>`}"
+          new4="${readBlock('Draft takeaway',draftTakeaway(p))}</div>`}"
+          if old4 not in s:
+              raise SystemExit('snapshot market read anchor not found')
+          s=s.replace(old4,new4)
+          p.write_text(s)
+          # Correct Achane offensive environment and weighted True Value score.
+          q=Path('players0.json')
+          t=q.read_text()
+          t=t.replace('"n":"De\'Von Achane","p":"RB","pr":"RB4","o":9,"t":"Miami Dolphins","tr":11,"tp":"RB5","s":9.195,"pd":9.3,"ce":9.8,"r":9.5,"e":7.9', '"n":"De\'Von Achane","p":"RB","pr":"RB4","o":9,"t":"Miami Dolphins","tr":11,"tp":"RB5","s":9.125,"pd":9.3,"ce":9.8,"r":9.5,"e":7.2')
+          q.write_text(t)
+          PY
+      - name: Commit public explanation upgrade
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html players0.json
+          git commit -m 'Upgrade ceiling environment and draft explanations [skip ci]'
+          git push
