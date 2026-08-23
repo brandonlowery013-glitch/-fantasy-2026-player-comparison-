@@ -18,6 +18,19 @@ function clsMap(ps,f,t=.06){let [,r,d,q]=win(ps,f),m=new Map(ps.map(x=>[x.n,'neu
 function css(x){return['BUY','TARGET'].includes(x)?'good':['FADE','AVOID'].includes(x)?'bad':['REACH','OVERPRICED'].includes(x)?'warn':''}
 function status(c){return c==='winner'?'✓ Category winner':c==='loser'?'Trails here':'Very close'}
 function gradeLabel(v){if(v==null)return '—';if(v>=9.1)return 'Elite';if(v>=8.6)return 'Very strong';if(v>=8.1)return 'Strong';if(v>=7.6)return 'Solid';if(v>=7.0)return 'Moderate';return 'Concern'}
+function productionTier(p){
+  const x=Number(p.mp);
+  if(!Number.isFinite(x))return '—';
+  const bands={
+    QB:[[320,'Elite'],[290,'Very strong'],[260,'Strong'],[230,'Solid'],[200,'Moderate']],
+    RB:[[280,'Elite'],[250,'Very strong'],[220,'Strong'],[190,'Solid'],[160,'Moderate']],
+    WR:[[290,'Elite'],[255,'Very strong'],[225,'Strong'],[195,'Solid'],[165,'Moderate']],
+    TE:[[235,'Elite'],[205,'Very strong'],[175,'Strong'],[150,'Solid'],[125,'Moderate']]
+  };
+  const b=bands[p.p]||[];
+  for(const [cut,label] of b)if(x>=cut)return label;
+  return 'Concern';
+}
 function riskLabel(v){if(v==null)return '—';if(v<=1.2)return 'Low';if(v<=1.8)return 'Moderate';if(v<=2.4)return 'Elevated';return 'High'}
 function environmentLabel(v){if(v==null)return '—';if(v>=9.2)return 'Elite';if(v>=8.7)return 'Very Good';if(v>=8.1)return 'Good';if(v>=7.4)return 'Average';if(v>=6.7)return 'Below Average';return 'Poor'}
 function blocks(items){return items.map(x=>`<div class="metricBlock"><span class="metricLabel">${x[0]}</span><div class="metric">${x[1]??'—'}</div></div>`).join('')}
@@ -31,7 +44,7 @@ function priceRead(p){return p.px==='BUY'?'VALUE':p.px||'—'}
 function marketRead(p){if(p.o==null||p.ad==null)return 'Market comparison unavailable.';let adGap=rankGap(p.o,p.ad),adSide=p.ad<p.o?`ADP is ${adGap} pick${adGap===1?'':'s'} earlier than our draft rank`:p.ad>p.o?`ADP is ${adGap} pick${adGap===1?'':'s'} later than our draft rank`:'ADP matches our draft rank';let c='';if(p.cr!=null){let cg=rankGap(p.o,p.cr);c=p.cr<p.o?` Consensus ranks him ${cg} spot${cg===1?'':'s'} higher than we do.`:p.cr>p.o?` We rank him ${cg} spot${cg===1?'':'s'} higher than consensus.`:' We match consensus.'}let price=p.ad<p.o?' The market is paying more than our draft ranking supports.':p.ad>p.o?' The market is cheaper than our draft ranking supports.':' Price and our valuation are aligned.';return adSide+'.'+c+price}
 function truePanel(p){return blocks([['Our Rank',`#${p.o}`],['Consensus Rank',p.cr==null?'—':`#${p.cr}`],['Market ADP',fmt(p.ad)],['Vs Market',marketGap(p)],['True Value Rank',`#${p.tr}`]])}
 function marketSection(ps){return `<div class="detail"><div class="detailHead"><h3>Model vs Market</h3><span class="edge">Context only</span></div><div class="categoryPurpose">Our rank, consensus rank and market ADP are shown separately. Vs Market is simply Market ADP minus Our Rank.</div><div class="compareRows ${ps.length===3?'three':''}">${ps.map(p=>`<div class="compareCell"><div class="playerName">${p.n}</div><div class="statusline"><span class="dot"></span>Market comparison</div>${truePanel(p)}</div>`).join('')}</div></div>`}
-function prodPanel(p){return blocks([['Production Outlook',gradeLabel(p.pd)],['Our Projected PPR',fmt(p.mp,1)],['Consensus PPR',fmt(p.cp,1)]])+projectionBlock('Our Median Projection',p.m)}
+function prodPanel(p){return blocks([['Production Outlook',productionTier(p)],['Our Projected PPR',fmt(p.mp,1)],['Consensus PPR',fmt(p.cp,1)]])+projectionBlock('Our Median Projection',p.m)}
 function ceilPanel(p){return blocks([['Ceiling',gradeLabel(p.ce)],['Bust Risk',riskLabel(bust(p))],['Sustainability',gradeLabel(p.su)]])}
 function usageTitle(ps){return ps.every(p=>p.p==='QB')?'QB Scoring Profile':ps.every(p=>p.p==='RB')?'Backfield Usage':ps.every(p=>['WR','TE'].includes(p.p))?'Receiving Role':'Usage / Opportunity'}
 function usagePurpose(ps){return ps.every(p=>p.p==='QB')?'Passing volume plus rushing contribution — the two primary workload paths for QB fantasy scoring.':ps.every(p=>p.p==='RB')?'Carries, receiving work and touch security in the backfield.':ps.every(p=>['WR','TE'].includes(p.p))?'Targets, receptions and receiving opportunity.':'Position-adjusted opportunity and workload.'}
@@ -49,7 +62,7 @@ function card(p,ps){let rankWin=snapshotWinner(ps,'o',true),tvWin=snapshotWinner
 function selected(){return [...new Set(['p1','p2','p3'].map(id=>document.getElementById(id).value).filter(Boolean))].map(n=>P.find(x=>x.n===n)).filter(Boolean)}
 function run(){let ps=selected();if(ps.length<2){alert('Choose at least two different players.');return}let q=[...ps].sort((a,b)=>eqs(b)-eqs(a)),v=[...ps].sort((a,b)=>vals(b)-vals(a));eq.textContent=q[0].n;eqr.textContent='Better fantasy player based on our price-independent evaluation.';val.textContent=v[0].n;valr.textContent='Best value after comparing our draft rank with consensus, ADP and fair draft range.';straightEdge.textContent=q[0].n;priceEdge.textContent=v[0].n;cards.innerHTML=ps.map(p=>card(p,ps)).join('');let checked=[...document.querySelectorAll('.cb:checked')].map(x=>x.value),ds=[];
 if(checked.includes('tv'))ds.push(marketSection(ps));
-if(checked.includes('prod'))ds.push(shell('Expected Production','Most likely fantasy output; consensus is shown beside our projection so you can see where the model differs.',ps,x=>x.pd,prodPanel,.08,[.08,.25,.55]));
+if(checked.includes('prod'))ds.push(shell('Expected Production','Production tier is determined directly by our projected PPR using position-specific thresholds. Consensus and Vegas are shown as outside checks and do not determine our tier.',ps,x=>x.mp,prodPanel,1,[5,12,25]));
 if(checked.includes('ceil'))ds.push(shell('Ceiling / Bust','Upside compared with the chance the pick disappoints.',ps,x=>x.ce-bust(x)*.18,ceilPanel,.08,[.08,.25,.55]));
 if(checked.includes('role'))ds.push(shell(usageTitle(ps),usagePurpose(ps),ps,usageScore,usagePanel,.08,[.08,.25,.55]));
 if(checked.includes('env'))ds.push(shell('Offensive Environment','Quarterback stability, play-calling/scheme, offensive line, supporting cast, scoring outlook and continuity. Player volume is scored separately under Usage / Opportunity.',ps,x=>x.e,p=>blocks([['Environment',environmentLabel(p.e)],['Team',p.t]])+readBlock('Why',p.en||'Team-level environment evaluation.'),.08,[.08,.25,.55]));
