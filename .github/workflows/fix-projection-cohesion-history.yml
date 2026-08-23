@@ -1,0 +1,143 @@
+name: Fix Projection Cohesion and History
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Run projection cohesion and history fix'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Correct Jeanty history, tighten ranges, and resync player quality
+        run: |
+          python - <<'PY'
+          import json,re
+          from pathlib import Path
+
+          # 1) Correct Ashton Jeanty's actual 2025 NFL line.
+          hp=Path('historicalStats2026.json')
+          h=json.loads(hp.read_text())
+          h['players']['Ashton Jeanty']=[{
+            'Season':'2025','Games':'17','Carries':'266','Rush Yards':'975','YPC':'3.7','Rush TD':'5',
+            'Rec.':'55','Rec. Yards':'346','Rec. TD':'5','Scrim Yds':'1,321'
+          }]
+          h['as_of']='2026-08-23'
+          h['source']='NFL.com career statistics + existing Master Player Evaluations career statistics'
+          hp.write_text(json.dumps(h,separators=(',',':')))
+
+          files=[Path(f'players{i}.json') for i in range(13)]
+          shards={f:json.loads(f.read_text()) for f in files}
+          players=[p for arr in shards.values() for p in arr]
+
+          # 2) Make Expected Production grade come directly from projected PPR.
+          anchors={
+            'QB':[(170,6.0),(200,7.0),(230,7.7),(260,8.3),(290,8.8),(320,9.3),(380,10.0)],
+            'RB':[(130,6.0),(160,7.0),(190,7.7),(220,8.3),(250,8.8),(280,9.3),(340,10.0)],
+            'WR':[(135,6.0),(165,7.0),(195,7.7),(225,8.3),(255,8.8),(290,9.3),(350,10.0)],
+            'TE':[(100,6.0),(125,7.0),(150,7.7),(175,8.3),(205,8.8),(235,9.3),(290,10.0)]
+          }
+          def interp(pos,x):
+            a=anchors.get(pos,anchors['WR'])
+            if x<=a[0][0]: return a[0][1]
+            if x>=a[-1][0]: return a[-1][1]
+            for (x0,y0),(x1,y1) in zip(a,a[1:]):
+              if x0<=x<=x1:
+                return round(y0+(x-x0)*(y1-y0)/(x1-x0),3)
+            return 7.0
+
+          # 3) Tighten displayed projection intervals around their existing midpoint.
+          rgx=re.compile(r'(\d+(?:\.\d+)?)[-–](\d+(?:\.\d+)?)')
+          def fmt_num(v,small=False):
+            if small:
+              return str(int(round(v)))
+            return str(int(round(v)))
+          def tighten(text,ceiling=False):
+            if not text: return text
+            def repl(m):
+              a,b=float(m.group(1)),float(m.group(2))
+              if b<a: a,b=b,a
+              mid=(a+b)/2
+              if mid<20:
+                half=max(1.0,mid*(0.12 if ceiling else 0.14))
+                lo=max(0,round(mid-half)); hi=round(mid+half)
+                if hi<=lo: hi=lo+1
+                return f'{lo}-{hi}'
+              if mid<100:
+                half=max(3.0,mid*(0.06 if ceiling else 0.07))
+              elif mid<500:
+                half=max(20.0,mid*(0.065 if ceiling else 0.07))
+              else:
+                half=max(55.0,mid*(0.05 if ceiling else 0.06))
+              lo=round(mid-half); hi=round(mid+half)
+              if hi<=lo: hi=lo+1
+              return f'{lo}-{hi}'
+            return rgx.sub(repl,text)
+
+          for p in players:
+            if p.get('mp') is not None:
+              p['pd']=interp(p.get('p'),float(p['mp']))
+            p['m']=tighten(p.get('m'),False)
+            p['cl']=tighten(p.get('cl'),True)
+            p['s']=round(float(p.get('pd',0))*.35+float(p.get('ce',0))*.20+float(p.get('r',0))*.15+float(p.get('e',0))*.10+float(p.get('a',0))*.10+float(p.get('rl',0))*.05+float(p.get('su',0))*.05,3)
+
+          # Re-rank price-independent Player Quality only; Overall board is intentionally untouched.
+          ordered=sorted(players,key=lambda p:(-p['s'],p.get('tr',9999),p['n']))
+          counts={}
+          for i,p in enumerate(ordered,1):
+            p['tr']=i
+            counts[p['p']]=counts.get(p['p'],0)+1
+            p['tp']=f"{p['p']}{counts[p['p']]}"
+
+          by={p['n']:p for p in players}
+          for f,arr in shards.items():
+            f.write_text(json.dumps([by[p['n']] for p in arr],separators=(',',':')))
+
+          # Rebuild canonical board with unchanged Overall ranks and refreshed Player Quality.
+          keep=['n','p','t','o','pr','tr','tp','s','pd','ce','r','e','a','rl','su','mp','m','cl','px','fw','st','ns','nm','na','en','ad','cp','cn','vl','vs','vr']
+          def slim(p): return {k:p[k] for k in keep if k in p}
+          canonical={
+            'updated':'2026-08-23',
+            'weights':{'Expected Production':.35,'Ceiling':.20,'Role/Volume':.15,'Offensive Environment':.10,'Availability':.10,'Weekly Reliability':.05,'Sustainability':.05},
+            'overall':[slim(p) for p in sorted(players,key=lambda p:(p['o'],p['n']))],
+            'trueValue':[slim(p) for p in sorted(players,key=lambda p:(p['tr'],p['n']))],
+            'positions':{pos:[slim(p) for p in sorted([x for x in players if x['p']==pos],key=lambda p:(p['tr'],p['n']))] for pos in ['QB','RB','WR','TE']}
+          }
+          Path('canonicalBoards2026.json').write_text(json.dumps(canonical,indent=2))
+
+          # 4) Head-to-head uses the corrected price-independent weighted profile, not Overall Rank.
+          ip=Path('index-backup.html')
+          s=ip.read_text()
+          s=s.replace('const eqs=p=>-Number(p.o||9999);','const eqs=p=>p.s;')
+          s=s.replace('Better fantasy player at equal cost based on our Overall Draft Board.','Better fantasy player at equal cost based on our price-independent player profile.')
+          s=s.replace("['role','Past 3 Seasons']","['role','Scoring Profile']")
+          s=s.replace('Past 3 Seasons','Scoring Profile')
+          s=s.replace('True Value Rank','Player Quality Rank').replace('True Value','Player Quality')
+          ip.write_text(s)
+
+          # Cache bust.
+          op=Path('index.html')
+          x=op.read_text()
+          x=re.sub(r'index-backup\.html\?v=[^"\']+','index-backup.html?v=20260823-1525',x)
+          op.write_text(x)
+
+          # QA snapshot for the specific matchup that exposed the issue.
+          j=by['Ashton Jeanty']; c=by['Chase Brown']
+          qa={
+            'as_of':'2026-08-23T15:25-05:00',
+            'jeanty_history':h['players']['Ashton Jeanty'][0],
+            'chase':{'overall':c['o'],'player_quality':c['tr'],'score':c['s'],'pd':c['pd'],'mp':c['mp'],'median':c['m'],'ceiling':c['cl']},
+            'jeanty':{'overall':j['o'],'player_quality':j['tr'],'score':j['s'],'pd':j['pd'],'mp':j['mp'],'median':j['m'],'ceiling':j['cl']},
+            'head_to_head_uses':'price-independent weighted player profile',
+            'overall_rank_changed':False
+          }
+          Path('projection-cohesion-qa.json').write_text(json.dumps(qa,indent=2))
+          PY
+      - name: Commit corrected model inputs and UI
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add historicalStats2026.json players*.json canonicalBoards2026.json index-backup.html index.html projection-cohesion-qa.json
+          git commit -m 'Correct Jeanty history and tighten projection ranges [skip ci]'
+          git push
