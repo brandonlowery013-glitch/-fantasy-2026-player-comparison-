@@ -18,17 +18,15 @@ jobs:
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text()
-
-          # Head-to-head must be price independent.
           s=s.replace("const eqs=p=>p.s*.85+((154-p.o)/153)*1.5;", "const eqs=p=>p.s;")
-
-          # Public labels: distinguish player quality from draft/market decisions.
           s=s.replace('Straight-Up Pick', 'Head-to-Head Winner')
           s=s.replace('Straight-Up Edge', 'Better Player')
           s=s.replace("Our preferred player if every option cost the same pick.", "Better fantasy player based on our price-independent evaluation.")
-          s=s.replace("Our preferred player straight up, but", "Our better player head to head, but")
-
-          # Clarify draft-rank language anywhere it is shown publicly.
+          s=s.replace("Best value after comparing our rank with consensus, ADP and fair draft range.", "Best value after comparing our draft rank with consensus, ADP and fair draft range.")
+          s=s.replace("This is where our rank, consensus and ADP become the price decision.", "This is where our draft rank, consensus and ADP become the price decision.")
+          s=s.replace("is our preferred player and the better buy at current ADP.", "is the better player head to head and the better buy at current ADP.")
+          s=s.replace("is our preferred player straight up, but", "is the better player head to head, but")
+          s=s.replace("is our better player head to head, but", "is the better player head to head, but")
           s=s.replace("['Our Rank',`#${p.o}`]", "['Our Draft Rank',`#${p.o}`]")
           s=s.replace("snapshotStat('Our Rank',`#${p.o}`", "snapshotStat('Our Draft Rank',`#${p.o}`")
           s=s.replace("Our rank is the opinion. Consensus shows the outside baseline. ADP shows what you actually have to pay.", "Our draft rank, consensus and ADP are market/draft context. They do not determine the head-to-head player winner.")
@@ -37,22 +35,12 @@ jobs:
           s=s.replace("ADP matches our rank", "ADP matches our draft rank")
           s=s.replace("The market is paying more than our ranking supports.", "The market is paying more than our draft ranking supports.")
           s=s.replace("The market is cheaper than our ranking supports.", "The market is cheaper than our draft ranking supports.")
-
-          # Model vs Market is informational, like Vegas and Pivotal News; no fake category winner.
           anchor="function prodPanel(p){"
           market_fn="""function marketSection(ps){return `<div class=\"detail\"><div class=\"detailHead\"><h3>Model vs Market</h3><span class=\"edge\">Context only</span></div><div class=\"categoryPurpose\">Our draft rank, consensus and ADP show where our valuation differs from the market. This section does not decide who is the better player.</div><div class=\"compareRows ${ps.length===3?'three':''}\">${ps.map(p=>`<div class=\"compareCell\"><div class=\"playerName\">${p.n}</div><div class=\"statusline\"><span class=\"dot\"></span>Market comparison</div>${truePanel(p)}</div>`).join('')}</div></div>`}\n"""
           if 'function marketSection(ps)' not in s:
               s=s.replace(anchor, market_fn+anchor)
-          old="if(checked.includes('tv'))ds.push(shell('Model vs Market','Our draft rank, consensus and ADP are market/draft context. They do not determine the head-to-head player winner.',ps,x=>x.s,truePanel,.03,[.03,.10,.22]));"
-          old2="if(checked.includes('tv'))ds.push(shell('Model vs Market','Our rank is the opinion. Consensus shows the outside baseline. ADP shows what you actually have to pay.',ps,x=>x.s,truePanel,.03,[.03,.10,.22]));"
-          if old in s:
-              s=s.replace(old, "if(checked.includes('tv'))ds.push(marketSection(ps));")
-          elif old2 in s:
-              s=s.replace(old2, "if(checked.includes('tv'))ds.push(marketSection(ps));")
-
-          # Final decision copy explicitly separates quality from price.
-          s=s.replace("${same?`${q[0].n} is our preferred player and the better buy at current ADP.`:`${q[0].n} is our better player head to head, but ${v[0].n} is the better buy at current ADP.`}", "${same?`${q[0].n} is the better player head to head and the better buy at current ADP.`:`${q[0].n} is the better player head to head, but ${v[0].n} is the better buy at current ADP.`}")
-
+          import re
+          s=re.sub(r"if\(checked\.includes\('tv'\)\)ds\.push\(shell\('Model vs Market'.*?\);", "if(checked.includes('tv'))ds.push(marketSection(ps));", s)
           p.write_text(s)
           PY
       - name: Commit final comparison cleanup
@@ -60,5 +48,5 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add index.html
-          git commit -m 'Separate player quality from market context [skip ci]'
+          git commit -m 'Finalize player-quality and market-context separation [skip ci]'
           git push
