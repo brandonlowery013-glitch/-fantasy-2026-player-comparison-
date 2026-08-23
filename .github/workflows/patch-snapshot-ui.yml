@@ -1,0 +1,41 @@
+name: Patch Snapshot UI
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Trigger snapshot UI patch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch snapshot winner markers and public labels
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace(".snapshotStat{padding:8px 0;border-bottom:1px solid #26395b}.snapshotStat span{display:block;color:var(--muted);font-size:11px}.snapshotStat b{display:block;font-size:14px;margin-top:2px}", ".snapshotStat{padding:8px 0;border-bottom:1px solid #26395b;border-radius:8px;position:relative}.snapshotStat span{display:block;color:var(--muted);font-size:11px}.snapshotStat b{display:block;font-size:14px;margin-top:2px}.snapshotStat.metricWin{background:rgba(24,63,42,.48);border:1px solid var(--greenline);padding:8px}.snapshotStat.metricWin span,.snapshotStat.metricWin b{color:#eafff0}.winCheck{float:right;color:#53d27d;font-size:15px;font-weight:1000;margin-left:6px}.snapshotNote{color:var(--muted);font-size:10px;line-height:1.35;margin-top:3px}")
+          old="""function card(p){return `<div class=\"pcard\"><h3>${p.n}</h3><div class=\"small\">${p.t} · ${p.p}</div><span class=\"tag ${css(p.px)}\">${p.px}: ${priceMeaning(p)}</span><div class=\"snapshotStat\"><span>Our Rank</span><b>#${p.o}</b></div><div class=\"snapshotStat\"><span>Consensus</span><b>${p.cr==null?'—':`#${p.cr}`}</b></div><div class=\"snapshotStat\"><span>ADP</span><b>${fmt(p.ad)}</b></div><div class=\"snapshotStat\"><span>True Value</span><b>#${p.tr} · ${fmt(p.s,3)}</b></div><div class=\"snapshotStat\"><span>Our Projected PPR</span><b>${fmt(p.mp,1)}</b></div><div class=\"snapshotStat\"><span>Consensus PPR</span><b>${fmt(p.cp,1)}</b></div><div class=\"snapshotStat\"><span>Availability</span><b>${fmt(p.a)}</b></div>${readBlock('Market read',marketRead(p))}</div>`}"""
+          new="""function snapshotWinner(ps,key,lowerBetter=false){let vals=ps.filter(x=>x[key]!=null);if(!vals.length)return null;return [...vals].sort((a,b)=>lowerBetter?a[key]-b[key]:b[key]-a[key])[0].n}
+function publicAvailability(p){if(p.st&&p.st!=='PASS')return p.st;return p.a>=8.7?'Strong':p.a>=7.5?'Moderate':'Elevated risk'}
+function snapshotStat(label,value,isWin=false,note=''){return `<div class=\"snapshotStat ${isWin?'metricWin':''}\"><span>${label}${isWin?'<b class=\"winCheck\">✓</b>':''}</span><b>${value}</b>${note?`<div class=\"snapshotNote\">${note}</div>`:''}</div>`}
+function card(p,ps){let rankWin=snapshotWinner(ps,'o',true),tvWin=snapshotWinner(ps,'tr',true),projWin=snapshotWinner(ps,'mp'),consProjWin=snapshotWinner(ps,'cp'),availWin=snapshotWinner(ps,'a');return `<div class=\"pcard\"><h3>${p.n}</h3><div class=\"small\">${p.t} · ${p.p}</div><span class=\"tag ${css(p.px)}\">${p.px}: ${priceMeaning(p)}</span>${snapshotStat('Our Rank',`#${p.o}`,p.n===rankWin)}${snapshotStat('Consensus',p.cr==null?'—':`#${p.cr}`)}${snapshotStat('ADP',fmt(p.ad))}${snapshotStat('True Value Rank',`#${p.tr}`,p.n===tvWin,'Our price-independent player ranking')}${snapshotStat('Our Projected PPR',fmt(p.mp,1),p.n===projWin)}${snapshotStat('Consensus PPR',fmt(p.cp,1),p.n===consProjWin)}${snapshotStat('Availability',publicAvailability(p),p.n===availWin,'Current health / expected availability')}${readBlock('Market read',marketRead(p))}</div>`}"""
+          if old not in s:
+              raise SystemExit('card block not found')
+          s=s.replace(old,new)
+          s=s.replace("cards.innerHTML=ps.map(card).join('');", "cards.innerHTML=ps.map(p=>card(p,ps)).join('');")
+          # Remove naked internal grades from category panels where context is weak; keep decisions/ranks/projections public-facing.
+          s=s.replace("function truePanel(p){return blocks([['Our True Value',fmt(p.s,3)],['Our Rank',`#${p.o}`],['True Value Rank',`#${p.tr} · ${p.pr}`],['Consensus Rank',p.cr==null?'—':`#${p.cr}`],['Market ADP',fmt(p.ad)]])+readBlock('What it means',marketRead(p))}", "function truePanel(p){return blocks([['Our Rank',`#${p.o}`],['True Value Rank',`#${p.tr}`],['Consensus Rank',p.cr==null?'—':`#${p.cr}`],['Market ADP',fmt(p.ad)]])+readBlock('What it means',marketRead(p))}")
+          p.write_text(s)
+          PY
+      - name: Commit snapshot UI patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git commit -m 'Highlight snapshot winners and remove naked model scores [skip ci]'
+          git push
