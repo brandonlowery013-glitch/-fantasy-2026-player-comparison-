@@ -1,0 +1,37 @@
+name: Apply Current News Sync
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Install one-time injury sync workflow'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch comparison engine loader
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old="""function resetForm(){['p1','p2','p3'].forEach(id=>document.getElementById(id).selectedIndex=0);document.querySelectorAll('.cb').forEach(x=>x.checked=true);results.style.display='none'}
+(async()=>{try{let [parts,market,injury]=await Promise.all([Promise.all(Array.from({length:13},(_,i)=>fetch(`players${i}.json?v=24`).then(r=>{if(!r.ok)throw Error(`players${i}.json`);return r.json()}))),fetch('market2026.json?v=20260822').then(r=>r.ok?r.json():({players:{}})),fetch('injuryOverrides2026.json?v=20260822').then(r=>r.ok?r.json():({players:{}}))]);P=parts.flat();let M=market.players||{},I=injury.players||{};P.forEach(p=>{let m=M[p.n];if(m){if(m.ecr!=null)p.cr=m.ecr;if(m.adp!=null)p.ad=m.adp}let i=I[p.n];if(i)Object.assign(p,i)});fill()}catch(e){document.querySelector('.sub').textContent='Player data failed to load. Refresh the page.';console.error(e)}})();"""
+          new="""function resetForm(){['p1','p2','p3'].forEach(id=>document.getElementById(id).selectedIndex=0);document.querySelectorAll('.cb').forEach(x=>x.checked=true);results.style.display='none'}
+function applyRankMoves(field,moves){let names=Object.keys(moves||{});if(!names.length)return;let sorted=[...P].sort((a,b)=>(a[field]??9999)-(b[field]??9999)),picked=new Map(),moved=new Set(names);sorted.forEach(p=>{if(moved.has(p.n))picked.set(p.n,p)});let slots=Array(sorted.length).fill(null);names.forEach(n=>{let p=picked.get(n),t=Math.max(1,Math.min(sorted.length,Math.round(moves[n])));if(p)slots[t-1]=p});let rest=sorted.filter(p=>!moved.has(p.n)),j=0;for(let i=0;i<slots.length;i++)if(!slots[i])slots[i]=rest[j++];slots.forEach((p,i)=>p[field]=i+1)}
+function refreshPositionRanks(){let c={QB:0,RB:0,WR:0,TE:0};[...P].sort((a,b)=>a.o-b.o).forEach(p=>{c[p.p]=(c[p.p]||0)+1;p.pr=`${p.p}${c[p.p]}`});c={QB:0,RB:0,WR:0,TE:0};[...P].sort((a,b)=>a.tr-b.tr).forEach(p=>{c[p.p]=(c[p.p]||0)+1;p.tp=`${p.p}${c[p.p]}`})}
+(async()=>{try{let [parts,market,injury]=await Promise.all([Promise.all(Array.from({length:13},(_,i)=>fetch(`players${i}.json?v=25`).then(r=>{if(!r.ok)throw Error(`players${i}.json`);return r.json()}))),fetch('market2026.json?v=20260822').then(r=>r.ok?r.json():({players:{}})),fetch('injuryOverrides2026.json?v=20260822b').then(r=>r.ok?r.json():({players:{}}))]);P=parts.flat();let M=market.players||{},I=injury.players||{};P.forEach(p=>{delete p.ns;delete p.nm;delete p.na;let m=M[p.n];if(m){if(m.ecr!=null)p.cr=m.ecr;if(m.adp!=null)p.ad=m.adp}let i=I[p.n];if(i)Object.assign(p,i);p.s=Number((p.pd*.35+p.ce*.20+p.r*.15+p.e*.10+p.a*.10+p.rl*.05+p.su*.05).toFixed(3))});let R=injury.rankMoves||{};applyRankMoves('o',R.overall||{});applyRankMoves('tr',R.trueValue||{});refreshPositionRanks();fill()}catch(e){document.querySelector('.sub').textContent='Player data failed to load. Refresh the page.';console.error(e)}})();"""
+          if old not in s:
+              raise SystemExit('Expected loader block not found')
+          p.write_text(s.replace(old,new))
+          PY
+      - name: Commit patched engine
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git commit -m 'Apply systemic current-news and injury rank sync [skip ci]'
+          git push
