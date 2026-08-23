@@ -1,0 +1,39 @@
+name: Build overall rank audit context
+on:
+  push:
+    paths:
+      - '.github/workflows/build-overall-rank-audit-context.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build audit context
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const files=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f));
+          const all=files.flatMap(f=>JSON.parse(fs.readFileSync(f,'utf8'))).sort((a,b)=>a.o-b.o);
+          const flagged=JSON.parse(fs.readFileSync('overall-rank-review-names.json','utf8'));
+          const names=new Set(flagged.map(x=>x.name));
+          const slim=p=>({name:p.n,pos:p.p,overall:p.o,player_quality:p.tr,pos_quality:p.tp,score:p.s,ppr:p.mp,adp:p.ad,price:p.px,step6:p.s6,step7:p.s7,status:p.st,production:p.pd,ceiling:p.ce,role:p.r,environment:p.e,availability:p.a,reliability:p.rl,sustainability:p.su,fair:p.fw});
+          const out=[];
+          for(const f of flagged){
+            const i=all.findIndex(p=>p.n===f.name);
+            out.push({flag:f,player:slim(all[i]),neighbors:all.slice(Math.max(0,i-3),Math.min(all.length,i+4)).filter(p=>p.n!==f.name).map(slim)});
+          }
+          fs.writeFileSync('overall-rank-audit-context.json',JSON.stringify(out,null,2)+'\n');
+          NODE
+      - name: Commit audit context
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add overall-rank-audit-context.json
+          git diff --cached --quiet || git commit -m 'Build overall rank audit context'
+          git push
