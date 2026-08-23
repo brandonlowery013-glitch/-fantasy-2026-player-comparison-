@@ -1,0 +1,40 @@
+name: Force Structural Comparison Fix
+on:
+  push:
+    paths:
+      - '.github/workflows/force-structural-comparison-fix.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch filler categories
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace("['role','Usage / Opportunity']","['role','Past 3 Seasons']")
+          s=s.replace("['avail','Durability / Availability']","['avail','Track Record / Reliability']")
+          anchor="function projectionBlock(label,text){return `<div class=\"metricBlock\"><span class=\"metricLabel\">${label}</span>${statLines(text)}</div>`}"
+          insert='''\nlet HIST={};\nfunction seasonLabel(r){return r.Season||r.Year||\'Season\'}\nfunction histRows(p){return HIST[p.n]||[]}\nfunction historyPanel(p){let h=histRows(p);if(!h.length)return readBlock(\'NFL History\',\'No NFL regular-season history in the stored table.\');return h.slice(-3).reverse().map(r=>{let y=seasonLabel(r),items=Object.entries(r).filter(([k])=>![\'Season\',\'Year\'].includes(k));return `<div class="metricBlock"><span class="metricLabel">${y}</span><div class="projectionGroup">${items.map(([k,v])=>`<div class="statLine"><span>${k}:</span><b>${v}</b></div>`).join(\'\')}</div></div>`}).join(\'\')}\nfunction historySection(ps){return `<div class="detail"><div class="detailHead"><h3>Past 3 Seasons</h3><span class="edge">History only</span></div><div class="categoryPurpose">Actual NFL production from the most recent three seasons available. Players with one or two NFL seasons show only those seasons.</div><div class="compareRows ${ps.length===3?\'three\':\'\'}">${ps.map(p=>`<div class="compareCell"><div class="playerName">${p.n}</div>${historyPanel(p)}</div>`).join(\'\')}</div></div>`}\nfunction gamesPlayedLine(p){let h=histRows(p);if(!h.length)return \'No NFL game history in table\';return h.slice(-3).map(r=>`${seasonLabel(r)}: ${r.Games??r.GP??r.G??\'—\'} games`).join(\' · \')}\nfunction trackSection(ps){return `<div class="detail"><div class="detailHead"><h3>Track Record / Reliability</h3><span class="edge">Context only</span></div><div class="categoryPurpose">Games played, current health status, weekly reliability and sustainability. This is context, not a winner/loser category.</div><div class="compareRows ${ps.length===3?\'three\':\'\'}">${ps.map(p=>`<div class="compareCell"><div class="playerName">${p.n}</div>${readBlock(\'Games played\',gamesPlayedLine(p))}${blocks([[\'Current Status\',p.st===\'PASS\'?\'No major current flag\':p.st],[\'Weekly Reliability\',gradeLabel(p.rl)],[\'Sustainability\',gradeLabel(p.su)]])}</div>`).join(\'\')}</div></div>`}\nfunction ceilingPathText(p){let x=[];if(p.r>=9)x.push(\'premium role/workload holds\');if(p.e>=9)x.push(\'the offense converts scoring opportunities\');if(p.su>=9)x.push(\'high-end efficiency proves sustainable\');return x.length?`Ceiling is reached if ${x.join(\', \')}.`:\'Ceiling requires the upside projection to hit while role, efficiency and touchdown access stay near the top of the expected range.\'}\nfunction bustPathText(p){let x=[];if(p.st&&p.st!==\'PASS\')x.push(`Current ${String(p.st).toLowerCase()} can cost games or workload.`);if(p.a<8)x.push(\'Availability is below the strong tier.\');if(p.rl<8)x.push(\'Weekly reliability is below the strong tier.\');if(p.r<8)x.push(\'Role or workload security can disappoint.\');if(p.e<8)x.push(\'The offensive environment can suppress efficiency or touchdowns.\');if(p.su<8)x.push(\'Sustainability or regression risk is elevated.\');return x.length?x.join(\' \'):\'Main downside is efficiency or touchdown regression, or an unexpected role change.\'}\nfunction envDetail(p){const s={\'Drake Maye\':\'Weapons: upgraded receiving support. Coach/scheme: continuity supports the passing ceiling. O-line/protection: transition remains a specific risk.\',\'Trevor Lawrence\':\'Weapons: enough support for a 4,000-yard baseline. Coach/scheme: Liam Coen drove the 2025 breakout. O-line/protection: pressure and sack-rate concerns remain part of the downside.\'};return s[p.n]||p.en||\'No more specific team-context note is stored yet.\'}\nfunction environmentPanel(p){return blocks([[\'Environment\',environmentLabel(p.e)],[\'Team\',p.t]])+readBlock(\'Weapons / Coach / O-line\',envDetail(p))}\n'''
+          if 'function historySection(ps)' not in s:s=s.replace(anchor,anchor+insert)
+          s=s.replace("function ceilPanel(p){return blocks([['Ceiling',gradeLabel(p.ce)],['Bust Risk',riskLabel(bust(p))],['Sustainability',gradeLabel(p.su)]])}","function ceilPanel(p){return blocks([['Ceiling',gradeLabel(p.ce)],['Bust Risk',riskLabel(bust(p))],['Sustainability',gradeLabel(p.su)]])+projectionBlock('Upside Projection',p.cl||'—')+readBlock('Ceiling Path',ceilingPathText(p))+readBlock('Bust Path',bustPathText(p))}")
+          s=s.replace("if(checked.includes('role'))ds.push(shell(usageTitle(ps),usagePurpose(ps),ps,usageScore,usagePanel,.08,[.08,.25,.55]));","if(checked.includes('role'))ds.push(historySection(ps));")
+          s=s.replace("if(checked.includes('avail'))ds.push(shell('Durability / Availability','Current health and the risk of losing games or workload.',ps,x=>x.a,p=>blocks([['Availability',publicAvailability(p)],['Weekly Reliability',gradeLabel(p.rl)],['Current Status',p.st==='PASS'?'No major current flag':p.st]]),.08,[.08,.25,.55]));","if(checked.includes('avail'))ds.push(trackSection(ps));")
+          s=s.replace("if(checked.includes('env'))ds.push(shell('Offensive Environment','Quarterback stability, play-calling/scheme, offensive line, supporting cast, scoring outlook and continuity. Player volume is scored separately under Usage / Opportunity.',ps,x=>x.e,p=>blocks([['Environment',environmentLabel(p.e)],['Team',p.t]])+readBlock('Why',p.en||'Team-level environment evaluation.'),.08,[.08,.25,.55]));","if(checked.includes('env'))ds.push(shell('Offensive Environment','Weapons/supporting cast, coaching/scheme and offensive-line/protection context.',ps,x=>x.e,environmentPanel,.08,[.08,.25,.55]));")
+          old="normalizeTeamEnvironments();if(ov){applyRankMoves('o',ov.rankMoves?.overall);applyRankMoves('tr',ov.rankMoves?.trueValue)}fill()"
+          new="normalizeTeamEnvironments();if(ov){applyRankMoves('o',ov.rankMoves?.overall);applyRankMoves('tr',ov.rankMoves?.trueValue)};try{let hr=await fetch('historicalStats2026.json',{cache:'no-store'});if(hr.ok){let hj=await hr.json();HIST=hj.players||{}}}catch(e){};fill()"
+          s=s.replace(old,new)
+          p.write_text(s)
+          PY
+      - name: Commit structural fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Replace filler categories with history and reliability [skip ci]"
+          git push
