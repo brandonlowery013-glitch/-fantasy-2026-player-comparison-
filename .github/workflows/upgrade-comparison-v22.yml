@@ -1,0 +1,86 @@
+name: Upgrade Comparison v22
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.trigger-comparison-v22'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch comparison model
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text()
+
+          s=s.replace("['role','Usage / Opportunity']","['role','Past 3 Seasons']")
+          s=s.replace("['avail','Durability / Availability']","['avail','Track Record / Reliability']")
+
+          # Draft-value logic: price relative to fair range + market gap; profile quality is only a small tiebreaker.
+          s=re.sub(r"const vals=p=>.*?;\nconst bust=", """function pickNum(x){let m=String(x||'').match(/(\\d+)\\.(\\d+)/);return m?(Number(m[1])-1)*12+Number(m[2]):null}\nfunction fairBounds(fw){let a=String(fw||'').split(/[–-]/).map(pickNum).filter(x=>x!=null);return a.length>=2?[Math.min(...a),Math.max(...a)]:a.length===1?[a[0],a[0]]:null}\nfunction priceRead(p){let b=fairBounds(p.fw),ad=Number(p.ad);if(b&&Number.isFinite(ad)){let [lo,hi]=b;if(ad>hi+5)return 'VALUE';if(ad>=lo-3&&ad<=hi+3)return 'FAIR';if(ad<lo-10)return 'FADE';return 'REACH'}return p.px==='BUY'?'VALUE':p.px||'—'}\nfunction vals(p){let q={VALUE:3,FAIR:2,REACH:1,FADE:0}[priceRead(p)]??1.5,g=(p.ad!=null&&p.o!=null)?Math.max(-2.5,Math.min(2.5,(p.ad-p.o)/12)):0;return q*1.7+g*.8+(p.s??8)*.05}\nconst bust=""", s, count=1, flags=re.S)
+          # Remove older duplicate simple priceRead if present.
+          s=re.sub(r"function priceRead\(p\)\{return p\.px==='BUY'\?'VALUE':p\.px\|\|'—'\}\n?",'',s)
+
+          # Model-v-market should not display True Value rank; locked TV lives in its own player-quality logic.
+          s=s.replace("['Vs Market',marketGap(p)],['True Value Rank',`#${p.tr}`]","['Vs Market',marketGap(p)]")
+
+          old="function prodPanel(p){return blocks([['Production Outlook',gradeLabel(p.pd)],['Our Projected PPR',fmt(p.mp,1)],['Consensus PPR',fmt(p.cp,1)]])+projectionBlock('Our Median Projection',p.m)}"
+          new="function prodPanel(p){return blocks([['Production Outlook',gradeLabel(p.pd)],['Our Projected PPR',fmt(p.mp,1)],['Consensus PPR',fmt(p.cp,1)]])+projectionBlock('Our Median Projection',p.m)+projectionBlock('Consensus Projection',p.cn||'—')+projectionBlock('Vegas Projection',p.vl||'No current line')}"
+          s=s.replace(old,new)
+
+          anchor="function projectionBlock(label,text){return `<div class=\"metricBlock\"><span class=\"metricLabel\">${label}</span>${statLines(text)}</div>`}"
+          extra=r'''
+let HIST={};
+function seasonLabel(r){return r.Season||r.Year||'Season'}
+function histRows(p){return HIST[p.n]||[]}
+function historyPanel(p){let h=histRows(p);if(!h.length)return readBlock('NFL History','No NFL regular-season history in the stored table.');return h.slice(-3).reverse().map(r=>{let y=seasonLabel(r),items=Object.entries(r).filter(([k])=>!['Season','Year'].includes(k));return `<div class="metricBlock"><span class="metricLabel">${y}</span><div class="projectionGroup">${items.map(([k,v])=>`<div class="statLine"><span>${k}:</span><b>${v}</b></div>`).join('')}</div></div>`}).join('')}
+function historySection(ps){return `<div class="detail"><div class="detailHead"><h3>Past 3 Seasons</h3><span class="edge">History only</span></div><div class="categoryPurpose">Actual NFL production from the most recent three seasons available. Players with one or two NFL seasons only show those seasons. This is context, not a winner/loser category.</div><div class="compareRows ${ps.length===3?'three':''}">${ps.map(p=>`<div class="compareCell"><div class="playerName">${p.n}</div>${historyPanel(p)}</div>`).join('')}</div></div>`}
+function gamesPlayedLine(p){let h=histRows(p);if(!h.length)return 'No NFL game history in table';return h.slice(-3).map(r=>`${seasonLabel(r)}: ${r.Games??r.GP??r.G??'—'} games`).join(' · ')}
+function trackSection(ps){return `<div class="detail"><div class="detailHead"><h3>Track Record / Reliability</h3><span class="edge">Context only</span></div><div class="categoryPurpose">Games played, current health status, weekly reliability and sustainability. This replaces the old generic durability winner/loser card.</div><div class="compareRows ${ps.length===3?'three':''}">${ps.map(p=>`<div class="compareCell"><div class="playerName">${p.n}</div>${readBlock('Games played',gamesPlayedLine(p))}${blocks([['Current Status',p.st==='PASS'?'No major current flag':p.st],['Weekly Reliability',gradeLabel(p.rl)],['Sustainability',gradeLabel(p.su)]])}</div>`).join('')}</div></div>`}
+function latestRow(p){let h=histRows(p);return h.length?h[h.length-1]:null}
+function bustPathText(p){let parts=[],r=latestRow(p);if(p.st&&p.st!=='PASS')parts.push(`Current ${String(p.st).toLowerCase()} can cost games or workload.`);if(p.p==='QB'&&r){let rt=Number(String(r['Rush TD']??r.RushTD??'').replace(/,/g,''));if(Number.isFinite(rt)&&rt>=7)parts.push(`${seasonLabel(r)} rushing TDs (${rt}) create a specific regression risk.`)}if(p.a<8)parts.push('Availability is below the strong tier.');if(p.rl<8)parts.push('Weekly reliability is below the strong tier.');if(p.r<8)parts.push('Role/workload security is a downside variable.');if(p.e<8)parts.push('The offensive environment can suppress efficiency or touchdowns.');if(p.su<8)parts.push('Sustainability/regression risk is elevated.');if(!parts.length)parts.push('The main downside is efficiency or touchdown regression, or an unexpected role change.');return parts.join(' ')}
+function ceilingPathText(p){let pieces=[];if(p.r>=9)pieces.push('premium role/workload holds');if(p.e>=9)pieces.push('the offense converts its strong scoring environment');if(p.su>=9)pieces.push('high-end efficiency proves sustainable');if(p.p==='QB'&&p.m)pieces.push('rushing production stays additive to the passing ceiling');return pieces.length?`Ceiling is reached if ${pieces.join(', ')}.`:'Ceiling requires the upside projection to hit while role, efficiency and touchdown access stay near the top of the expected range.'}
+function envDetail(p){const special={
+'Drake Maye':'Weapons/coach: continuity plus an upgraded receiving corps support the passing ceiling. O-line: transition remains a specific risk in his evaluation.',
+'Trevor Lawrence':'Coach/scheme: Liam Coen drove the 2025 breakout. Weapons: enough support for a 4,000-yard baseline. O-line/protection: pressure and sack-rate concerns remain part of the downside.'
+};return special[p.n]||p.en||'No specific team-context note is stored beyond the current environment grade.'}
+function environmentPanel(p){return blocks([['Environment',environmentLabel(p.e)],['Team',p.t]])+readBlock('Weapons / coach / O-line',envDetail(p))}
+'''
+          if 'function historySection' not in s:
+              s=s.replace(anchor,anchor+'\n'+extra)
+
+          # Replace the simple ceiling panel with paths and upside projection.
+          s=re.sub(r"function ceilPanel\(p\)\{return blocks\(\[\['Ceiling',gradeLabel\(p\.ce\)\],\['Bust Risk',riskLabel\(bust\(p\)\)\],\['Sustainability',gradeLabel\(p\.su\)\]\]\)\}",
+                   "function ceilPanel(p){return blocks([['Ceiling',gradeLabel(p.ce)],['Bust Risk',riskLabel(bust(p))],['Sustainability',gradeLabel(p.su)]])+projectionBlock('Upside Projection',p.cl)+readBlock('Ceiling Path',ceilingPathText(p))+readBlock('Bust Path',bustPathText(p))}",s)
+
+          # Replace category renderers.
+          s=re.sub(r"if\(checked\.includes\('role'\)\)ds\.push\(shell\(usageTitle\(ps\),usagePurpose\(ps\),ps,usageScore,usagePanel,.08,\[.08,.25,.55\]\)\);",
+                   "if(checked.includes('role'))ds.push(historySection(ps));",s)
+          s=re.sub(r"if\(checked\.includes\('env'\)\)ds\.push\(shell\('Offensive Environment'.*?\);\n",
+                   "if(checked.includes('env'))ds.push(shell('Offensive Environment','Concrete team context: weapons/supporting cast, coaching/scheme and offensive-line/protection factors.',ps,x=>x.e,environmentPanel,.08,[.08,.25,.55]));\n",s,flags=re.S)
+          s=re.sub(r"if\(checked\.includes\('avail'\)\)ds\.push\(shell\('Durability / Availability'.*?\);\n",
+                   "if(checked.includes('avail'))ds.push(trackSection(ps));\n",s,flags=re.S)
+
+          # Load historical stats and force the authoritative locked True-Value ranks after any dynamic transforms.
+          old="normalizeTeamEnvironments();if(ov){applyRankMoves('o',ov.rankMoves?.overall);applyRankMoves('tr',ov.rankMoves?.trueValue)}fill()"
+          new="normalizeTeamEnvironments();if(ov){applyRankMoves('o',ov.rankMoves?.overall);applyRankMoves('tr',ov.rankMoves?.trueValue)};try{let hr=await fetch('historicalStats2026.json',{cache:'no-store'});if(hr.ok){let hj=await hr.json();HIST=hj.players||{}}}catch(e){};try{let lr=await fetch('lockedRanks2026.json',{cache:'no-store'});if(lr.ok){let lj=await lr.json();P.forEach(p=>{let x=lj.players?.[p.n];if(x){p.tr=x.trueValueRank;p.tp=x.trueValuePos}})}}catch(e){};fill()"
+          s=s.replace(old,new)
+
+          # Cleaner price legend wording.
+          s=s.replace('<div class="legendItem good"><b>BUY</b><span>ADP is cheaper than our valuation.</span></div>','<div class="legendItem good"><b>VALUE</b><span>Current ADP is favorable relative to our fair draft range.</span></div>')
+          p.write_text(s)
+          PY
+      - name: Commit upgrade
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Upgrade comparison categories, history and value logic [skip ci]"
+          git push
