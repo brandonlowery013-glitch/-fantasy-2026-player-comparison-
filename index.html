@@ -3,30 +3,49 @@ const frame=document.getElementById('app');
 frame.addEventListener('load',()=>{
   const w=frame.contentWindow,d=frame.contentDocument;
   if(!w||!d)return;
-  const rowVal=(r,keys)=>{for(const k of keys){if(r&&r[k]!=null&&String(r[k]).trim()!=='')return r[k]}return '—'};
-  function profilePanel(p){
-    const h=typeof w.histRows==='function'?w.histRows(p):[];
-    const r=h.length?h[h.length-1]:null;
-    if(!r)return w.readBlock('Scoring Profile','No NFL regular-season scoring history in the stored table.');
-    let items=[];
-    if(p.p==='QB')items=[['Pass yds',rowVal(r,['Pass Yards','PassYds','Passing Yards'])],['Pass TDs',rowVal(r,['Pass TD','PassTD','Passing TD'])],['Rush yds',rowVal(r,['Rush Yards','RushYds','Rush Yds'])],['Rush TDs',rowVal(r,['Rush TD','RushTD'])],['INT',rowVal(r,['INT','Interceptions'])]];
-    else if(p.p==='RB')items=[['Carries',rowVal(r,['Carries','Rush Att','Rush Att.','Car'])],['Rush yds',rowVal(r,['Rush Yards','Rush Yds','RushYds'])],['Rush TDs',rowVal(r,['Rush TD','RushTD'])],['Receptions',rowVal(r,['Receptions','Rec','Rec.'])],['Rec yds',rowVal(r,['Receiving Yards','Rec Yards','Rec. Yards','RecYds'])],['Rec TDs',rowVal(r,['Receiving TD','Rec TD','Rec. TD','RecTD'])]];
-    else items=[['Receptions',rowVal(r,['Receptions','Rec','Rec.'])],['Rec yds',rowVal(r,['Receiving Yards','Rec Yards','Rec. Yards','RecYds'])],['Rec TDs',rowVal(r,['TD','Receiving TD','Rec TD','Rec. TD','RecTD'])],['Yds / rec',rowVal(r,['Yards/Reception','YPR','Yards per Reception'])]];
-    return `<div class="metricBlock"><span class="metricLabel">${w.seasonLabel(r)} scoring profile</span><div class="projectionGroup">${items.map(([k,v])=>`<div class="statLine"><span>${k}:</span><b>${v}</b></div>`).join('')}</div></div>`;
-  }
-  function scoringSection(ps){return `<div class="detail scoring-profile-live"><div class="detailHead"><h3>Position Scoring Profile</h3><span class="edge">Context only</span></div><div class="categoryPurpose">How each player generated fantasy production in his most recent NFL season using the scoring components that matter for his position.</div><div class="compareRows ${ps.length===3?'three':''}">${ps.map(p=>`<div class="compareCell"><div class="playerName">${p.n}</div>${profilePanel(p)}</div>`).join('')}</div></div>`}
+
+  const gamesPct=p=>{const h=typeof w.histRows==='function'?w.histRows(p):[];if(!h.length)return .5;let got=0,max=0;h.slice(-3).forEach(r=>{const g=Number(r.Games??r.GP??r.G);if(Number.isFinite(g)){got+=g;max+=17}});return max?got/max:.5};
+  const reliabilityScore=p=>(Number(p.a??7.5)*.35)+(Number(p.rl??7.5)*.30)+(Number(p.su??7.5)*.20)+(gamesPct(p)*10*.15);
+
+  w.truePanel=function(p){return w.blocks([
+    ['Our Rank',`#${p.o}`],
+    ['Consensus Rank',p.cr==null?'—':`#${p.cr}`],
+    ['Market ADP',w.fmt(p.ad)],
+    ['Vs Market',w.marketGap(p)],
+    ['Player Quality Rank',`#${p.tr}`],
+    ['Player Quality Score',w.fmt(p.s,3)]
+  ])+w.readBlock('What Player Quality Means','Price-independent profile strength before draft cost. It summarizes expected production, ceiling, role, environment, availability, reliability and sustainability. It is NOT where we would draft the player.');};
+
+  w.marketSection=function(ps){return `<div class="detail"><div class="detailHead"><h3>Model vs Market</h3><span class="edge">Context only</span></div><div class="categoryPurpose">Our Rank is where we would draft the player. Consensus Rank is the outside expert valuation. Market ADP is where drafts are actually taking him. Player Quality Rank is our price-independent profile ranking before draft cost.</div><div class="compareRows ${ps.length===3?'three':''}">${ps.map(p=>`<div class="compareCell"><div class="playerName">${p.n}</div><div class="statusline"><span class="dot"></span>Market comparison</div>${w.truePanel(p)}</div>`).join('')}</div></div>`};
+
+  w.historySection=function(ps){return `<div class="detail"><div class="detailHead"><h3>Scoring Profile</h3><span class="edge">History only</span></div><div class="categoryPurpose">Actual NFL scoring components from the most recent three seasons available. This shows how each player has produced fantasy points over time; players with only one or two NFL seasons show only those seasons.</div><div class="compareRows ${ps.length===3?'three':''}">${ps.map(p=>`<div class="compareCell"><div class="playerName">${p.n}</div>${w.historyPanel(p)}</div>`).join('')}</div></div>`};
+
+  w.trackSection=function(ps){
+    const ranked=[...ps].sort((a,b)=>reliabilityScore(b)-reliabilityScore(a));
+    const diff=ranked.length>1?reliabilityScore(ranked[0])-reliabilityScore(ranked[1]):0;
+    const toss=diff<.12;
+    const winner=toss?null:ranked[0].n;
+    const loser=toss?null:ranked[ranked.length-1].n;
+    const edge=toss?'Toss-up':`${w.strength(diff,[.12,.30,.60])}: ${ranked[0].n}`;
+    return `<div class="detail"><div class="detailHead"><h3>Track Record / Reliability</h3><span class="edge ${toss?'':'win'}">${edge}</span></div><div class="categoryPurpose">Durability history, current availability, weekly reliability and sustainability. Games played provides the track record; current health and repeatability determine how much confidence we have in realizing the projection.</div><div class="compareRows ${ps.length===3?'three':''}">${ps.map(p=>{const cls=p.n===winner?'winner':p.n===loser?'loser':'neutral';return `<div class="compareCell ${cls}"><div class="playerName">${p.n}</div><div class="statusline"><span class="dot"></span>${w.status(cls)}</div>${w.readBlock('Games played',w.gamesPlayedLine(p))}${w.blocks([['Current Status',p.st==='PASS'?'No major current flag':p.st],['Availability',w.gradeLabel(p.a)],['Weekly Reliability',w.gradeLabel(p.rl)],['Sustainability',w.gradeLabel(p.su)]])}</div>`}).join('')}</div></div>`;
+  };
+
+  w.vegasPanel=function(p){return w.projectionBlock('Sportsbook',p.vl||'No line available')+w.projectionBlock('Our Projection',p.m)+w.projectionBlock('Consensus Projection',p.cn||'No consensus stat projection available')+w.blocks([['Our Projected PPR',w.fmt(p.mp,1)],['Consensus PPR',w.fmt(p.cp,1)]])+w.readBlock('Our vs Vegas',p.vr||'No meaningful gap.');};
+  w.vegasSection=function(ps){return `<div class="detail"><div class="detailHead"><h3>Vegas Context</h3><span class="edge">Independent market check</span></div><div class="categoryPurpose">Sportsbook lines are shown against both our projection and consensus projection. This lets you see whether our model, the expert consensus and the betting market are aligned or disagreeing.</div><div class="compareRows ${ps.length===3?'three':''}">${ps.map(p=>`<div class="compareCell"><div class="playerName">${p.n}</div><div class="statusline"><span class="dot"></span>${p.vl?'Three-way comparison':'No sportsbook line'}</div>${w.vegasPanel(p)}</div>`).join('')}</div></div>`};
+
   w.ceilingPathText=function(p){const x=[];if(p.p==='QB'){x.push('passing volume and touchdown efficiency finish near the top of the upside projection');x.push('rushing production remains a meaningful weekly scoring source')}else if(p.p==='RB'){x.push('lead-back touch share holds or expands');x.push('receiving work stays involved enough to raise the PPR floor');x.push('goal-line and red-zone chances convert near the high end of the projection')}else if(p.p==='WR'){x.push('route participation and target share stay at or above expectation');x.push('reception and yardage volume reach the upper end of the projection');x.push('red-zone targets convert into enough touchdowns to separate from the WR field')}else{x.push('route participation and target share stay at or above expectation');x.push('reception volume reaches the upper end of the projection');x.push('red-zone usage converts into enough touchdowns to create a positional edge')}if(p.e>=8.7)x.push('the offensive environment sustains scoring opportunities');if(p.su>=8.7)x.push('efficiency remains sustainable rather than regressing');return x.join('; ')+'.'};
   w.bustPathText=function(p){const x=[];if(p.st&&p.st!=='PASS')x.push(`health/status issue (${p.st}) costs games, snaps or workload`);if(p.p==='QB'){x.push('passing efficiency or touchdown rate falls below the median projection');x.push('rushing production fails to provide the expected weekly cushion')}else if(p.p==='RB'){x.push('committee usage cuts carries or goal-line work');x.push('receiving involvement comes in below expectation');x.push('touchdown regression makes the workload less valuable')}else if(p.p==='WR'){x.push('route participation or target share falls below expectation');x.push('yardage efficiency drops without enough volume to compensate');x.push('touchdown production fails to offset weaker weekly volume')}else{x.push('route participation or target share falls below expectation');x.push('reception volume does not reach a difference-making level');x.push('touchdown production is too low to separate at tight end')}if(p.e<8)x.push('the offensive environment limits scoring opportunities');if(p.rl<8)x.push('week-to-week volatility makes the season projection harder to realize');return x.join('; ')+'.'};
-  const cats=d.getElementById('cats');
-  if(cats&&!cats.querySelector('input[value="score"]')){
-    const label=d.createElement('label');label.className='cat';label.innerHTML='<input class="cb" type="checkbox" value="score" checked> Position Scoring Profile';
-    const env=[...cats.querySelectorAll('label')].find(x=>x.textContent.includes('Offensive Environment'));
-    cats.insertBefore(label,env||null);
-  }
-  if(typeof w.run==='function'&&!w.__scoringRunWrapped){
+
+  const renameCategory=()=>{const cats=d.getElementById('cats');if(!cats)return;[...cats.querySelectorAll('label')].forEach(el=>{if(el.textContent.includes('Past 3 Seasons')){const cb=el.querySelector('input');el.innerHTML='';if(cb)el.appendChild(cb);el.append(' Scoring Profile')}})};
+  renameCategory();
+
+  if(typeof w.run==='function'&&!w.__clarityPatch){
     const baseRun=w.run;
-    w.run=function(){baseRun();try{const cb=d.querySelector('input.cb[value="score"]');if(cb&&cb.checked){const ps=w.selected();const html=scoringSection(ps);const details=d.getElementById('details');const hist=[...details.querySelectorAll('.detail')].find(el=>el.querySelector('h3')?.textContent.trim()==='Past 3 Seasons');if(hist)hist.insertAdjacentHTML('afterend',html);else details.insertAdjacentHTML('beforeend',html)}}catch(e){console.warn('Scoring profile render failed',e)}};
-    w.__scoringRunWrapped=true;
+    w.run=function(){baseRun();
+      d.querySelectorAll('.metricLabel').forEach(el=>{if(el.textContent.trim()==='True Value Rank')el.textContent='Player Quality Rank'});
+      d.querySelectorAll('.snapshotNote').forEach(el=>{if(el.textContent.includes('price-independent player ranking'))el.textContent='Price-independent player quality before draft cost'});
+    };
+    w.__clarityPatch=true;
   }
 });
 </script></body></html>
