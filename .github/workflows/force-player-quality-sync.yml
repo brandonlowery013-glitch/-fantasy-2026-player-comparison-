@@ -1,0 +1,86 @@
+name: Force Player Quality Sync
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  sync:
+    if: github.event.head_commit.message == 'Run direct Player Quality sync'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync board from comparison shards
+        run: |
+          python - <<'PY'
+          import json, glob, re
+          from pathlib import Path
+          source={}; shard_files=[]
+          for fn in sorted(glob.glob('players*.json')):
+              try: data=json.loads(Path(fn).read_text())
+              except Exception: continue
+              if isinstance(data,list) and data and all(isinstance(x,dict) and 'n' in x for x in data):
+                  shard_files.append(fn)
+                  for p in data: source[p['n']]=p
+          board=json.loads(Path('board-data-2026.json').read_text())
+          overall=board['overall']
+          before_o={p['n']:p.get('o') for p in overall}
+          fields=('pd','s','tr','tp','mp','m','cl','projection_context')
+          updated=[]; missing=[]
+          for p in overall:
+              q=source.get(p['n'])
+              if not q:
+                  missing.append(p['n']); continue
+              old=tuple(p.get(k) for k in fields)
+              for k in fields:
+                  if k in q: p[k]=q[k]
+              if old!=tuple(p.get(k) for k in fields): updated.append(p['n'])
+          def clean(v):
+              if isinstance(v,str): return v.replace('True Value Rank','Player Quality Rank').replace('True Value','Player Quality')
+              if isinstance(v,list): return [clean(x) for x in v]
+              if isinstance(v,dict): return {k:clean(x) for k,x in v.items()}
+              return v
+          board=clean(board)
+          Path('board-data-2026.json').write_text(json.dumps(board,indent=2,ensure_ascii=False)+'\n')
+          mism=[]
+          for p in board['overall']:
+              q=source.get(p['n'])
+              if not q: continue
+              for k in fields:
+                  if k in q and p.get(k)!=clean(q.get(k)): mism.append([p['n'],k])
+          overall_changes=[p['n'] for p in board['overall'] if p.get('o')!=before_o.get(p['n'])]
+          core=Path('index-backup.html').read_text()
+          core=core.replace('True Value Rank','Player Quality Rank').replace('True Value','Player Quality')
+          # Keep head-to-head on price-independent weighted profile.
+          core=core.replace('const eqs=p=>-Number(p.o||9999);','const eqs=p=>p.s;')
+          core=core.replace('Better fantasy player at equal cost based on our Overall Draft Board.','Better fantasy player based on our price-independent player profile.')
+          Path('index-backup.html').write_text(core)
+          wrapper=Path('index.html')
+          x=wrapper.read_text()
+          x=re.sub(r'index-backup\.html\?v=[^"\']+', 'index-backup.html?v=20260823-1605', x)
+          wrapper.write_text(x)
+          qa={
+            'as_of':'2026-08-23T16:05-05:00',
+            'comparison_player_count':len(source),
+            'canonical_board_count':len(board['overall']),
+            'shard_files':shard_files,
+            'canonical_players_changed_by_sync':len(updated),
+            'canonical_players_changed_names':updated,
+            'missing_from_comparison_shards':missing,
+            'field_mismatches_after_sync':mism,
+            'overall_rank_changes_from_sync':overall_changes,
+            'head_to_head_price_independent_profile':'const eqs=p=>p.s;' in core,
+            'public_true_value_remaining':('True Value' in core),
+            'chase_brown':next(({k:p.get(k) for k in ('o','tr','tp','mp')} for p in source.values() if p.get('n')=='Chase Brown'),{}),
+            'ashton_jeanty':next(({k:p.get(k) for k in ('o','tr','tp','mp')} for p in source.values() if p.get('n')=='Ashton Jeanty'),{}),
+          }
+          qa['status']='PASS' if not missing and not mism and not overall_changes and qa['head_to_head_price_independent_profile'] and not qa['public_true_value_remaining'] else 'PARTIAL'
+          Path('player-quality-sync-qa.json').write_text(json.dumps(qa,indent=2)+'\n')
+          PY
+      - name: Commit sync
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add board-data-2026.json index-backup.html index.html player-quality-sync-qa.json
+          git commit -m 'Force sync Player Quality board and comparison model [skip ci]' || exit 0
+          git push
