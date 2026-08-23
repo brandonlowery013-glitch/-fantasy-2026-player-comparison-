@@ -1,0 +1,132 @@
+name: Sync Player Quality Board
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  sync:
+    if: github.event.head_commit.message == 'Run full Player Quality board sync'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync recalculated Player Quality data into canonical board and verify comparison shards
+        run: |
+          python - <<'PY'
+          import json, glob, re
+          from pathlib import Path
+
+          # The latest projection-cohesion pass already recalculated the live comparison shards.
+          # Treat those shards as the current player-profile source and propagate the same fields
+          # into the canonical board, without changing Overall Draft Rank.
+          shard_paths=[]
+          source={}
+          duplicates=[]
+          for fn in sorted(glob.glob('players*.json')):
+              try:
+                  data=json.loads(Path(fn).read_text())
+              except Exception:
+                  continue
+              if not isinstance(data,list) or not data or not all(isinstance(x,dict) and 'n' in x for x in data):
+                  continue
+              shard_paths.append(fn)
+              for p in data:
+                  n=p['n']
+                  if n in source:
+                      # identical duplicates are harmless; divergent duplicates are a QC error.
+                      if any(source[n].get(k)!=p.get(k) for k in ('pd','s','tr','tp','mp','m','cl')):
+                          duplicates.append(n)
+                  source[n]=p
+
+          if not source:
+              raise SystemExit('No player shards found')
+          if duplicates:
+              raise SystemExit('Divergent duplicate players in shards: '+', '.join(sorted(set(duplicates))))
+
+          board_path=Path('board-data-2026.json')
+          board=json.loads(board_path.read_text())
+          overall=board.get('overall') if isinstance(board,dict) else None
+          if not isinstance(overall,list):
+              raise SystemExit('board-data-2026.json missing overall array')
+
+          sync_fields=('pd','s','tr','tp','mp','m','cl','projection_context')
+          changed=[]
+          missing=[]
+          overall_before={p['n']:p.get('o') for p in overall if isinstance(p,dict) and 'n' in p}
+          for p in overall:
+              n=p.get('n')
+              src=source.get(n)
+              if not src:
+                  missing.append(n)
+                  continue
+              before={k:p.get(k) for k in sync_fields}
+              for k in sync_fields:
+                  if k in src:
+                      p[k]=src[k]
+              after={k:p.get(k) for k in sync_fields}
+              if before!=after:
+                  changed.append(n)
+
+          # Public terminology cleanup in canonical board text only; internal keys stay stable.
+          def clean(v):
+              if isinstance(v,str):
+                  return v.replace('True Value Rank','Player Quality Rank').replace('True Value','Player Quality')
+              if isinstance(v,list): return [clean(x) for x in v]
+              if isinstance(v,dict): return {k:clean(x) for k,x in v.items()}
+              return v
+          board=clean(board)
+          board_path.write_text(json.dumps(board,indent=2,ensure_ascii=False)+'\n')
+
+          # Verify the canonical board now exactly matches live comparison shards on all
+          # Player Quality fields, while Overall Draft Rank remains untouched.
+          overall=board['overall']
+          mismatches=[]
+          overall_changed=[]
+          for p in overall:
+              n=p['n']; src=source.get(n)
+              if not src: continue
+              for k in sync_fields:
+                  if k in src and p.get(k)!=clean(src.get(k)):
+                      mismatches.append({'player':n,'field':k,'board':p.get(k),'comparison':clean(src.get(k))})
+              if p.get('o')!=overall_before.get(n):
+                  overall_changed.append({'player':n,'before':overall_before.get(n),'after':p.get('o')})
+
+          # Ensure the public comparison source is using the price-independent weighted profile
+          # for head-to-head and no public True Value label remains in the core HTML.
+          core=Path('index-backup.html').read_text()
+          head_to_head_ok='const eqs=p=>p.s;' in core
+          public_true_value_remaining=('True Value Rank' in core or '>True Value<' in core)
+
+          # Cache bust wrapper so iPhone Safari receives this synchronized model.
+          wrapper=Path('index.html')
+          if wrapper.exists():
+              x=wrapper.read_text()
+              x=re.sub(r'index-backup\.html\?v=[^"\']+', 'index-backup.html?v=20260823-1558', x)
+              wrapper.write_text(x)
+
+          qa={
+              'as_of':'2026-08-23T15:58-05:00',
+              'player_count_in_comparison_shards':len(source),
+              'canonical_board_count':len(overall),
+              'shard_files':shard_paths,
+              'canonical_players_updated':len(changed),
+              'missing_from_comparison_shards':missing,
+              'player_quality_mismatches_after_sync':mismatches,
+              'overall_rank_changes_from_this_sync':overall_changed,
+              'head_to_head_uses_price_independent_profile':head_to_head_ok,
+              'public_true_value_label_remaining_in_core':public_true_value_remaining,
+              'chase_brown':{k:source.get('Chase Brown',{}).get(k) for k in ('o','tr','tp','s','pd','mp')},
+              'ashton_jeanty':{k:source.get('Ashton Jeanty',{}).get(k) for k in ('o','tr','tp','s','pd','mp')},
+              'status':'PASS' if not missing and not mismatches and not overall_changed and head_to_head_ok and not public_true_value_remaining else 'FAIL'
+          }
+          Path('player-quality-sync-qa.json').write_text(json.dumps(qa,indent=2)+'\n')
+          if qa['status']!='PASS':
+              raise SystemExit(json.dumps(qa,indent=2))
+          PY
+      - name: Commit synchronized board
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add board-data-2026.json player-quality-sync-qa.json index.html
+          git commit -m 'Sync Player Quality board to comparison model [skip ci]'
+          git push
