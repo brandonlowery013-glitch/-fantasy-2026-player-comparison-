@@ -1,0 +1,123 @@
+name: Force Scoring Profile Live
+on:
+  push:
+    paths:
+      - '.github/workflows/force-scoring-profile-live.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch index directly
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          marker = '<!-- position-scoring-live-20260823 -->'
+          if marker not in s:
+              js = r'''
+<script>
+(function(){
+  function pv(r, keys){
+    for(const k of keys){ if(r && r[k] != null && String(r[k]).trim() !== '') return r[k]; }
+    return '—';
+  }
+  function scoringProfilePanelLive(p){
+    const h = (typeof histRows === 'function' ? histRows(p) : []);
+    const r = h.length ? h[h.length-1] : null;
+    if(!r) return readBlock('Position Scoring Profile','No NFL regular-season history in the stored table.');
+    let items = [];
+    if(p.p === 'QB') items = [
+      ['Pass yds',pv(r,['Pass Yards','PassYds','Passing Yards'])],
+      ['Pass TDs',pv(r,['Pass TD','PassTD','Passing TD'])],
+      ['Rush yds',pv(r,['Rush Yards','RushYds','Rush Yds'])],
+      ['Rush TDs',pv(r,['Rush TD','RushTD'])],
+      ['INT',pv(r,['INT','Interceptions'])]
+    ];
+    else if(p.p === 'RB') items = [
+      ['Carries',pv(r,['Carries','Rush Att','Rush Att.','Car'])],
+      ['Rush yds',pv(r,['Rush Yards','Rush Yds','RushYds'])],
+      ['Rush TDs',pv(r,['Rush TD','RushTD'])],
+      ['Receptions',pv(r,['Receptions','Rec','Rec.'])],
+      ['Rec yds',pv(r,['Receiving Yards','Rec Yards','Rec. Yards','RecYds'])],
+      ['Rec TDs',pv(r,['Receiving TD','Rec TD','Rec. TD','RecTD'])]
+    ];
+    else items = [
+      ['Receptions',pv(r,['Receptions','Rec','Rec.'])],
+      ['Rec yds',pv(r,['Receiving Yards','Rec Yards','Rec. Yards','RecYds'])],
+      ['Rec TDs',pv(r,['TD','Receiving TD','Rec TD','Rec. TD','RecTD'])],
+      ['Yds / rec',pv(r,['Yards/Reception','YPR','Yards per Reception'])]
+    ];
+    return `<div class="metricBlock"><span class="metricLabel">${seasonLabel(r)} scoring profile</span><div class="projectionGroup">${items.map(([k,v])=>`<div class="statLine"><span>${k}:</span><b>${v}</b></div>`).join('')}</div></div>`;
+  }
+  function scoringProfileSectionLive(ps){
+    return `<div class="detail"><div class="detailHead"><h3>Position Scoring Profile</h3><span class="edge">Context only</span></div><div class="categoryPurpose">How each player generated fantasy points in his most recent NFL season, using the scoring components that matter for his position.</div><div class="compareRows ${ps.length===3?'three':''}">${ps.map(p=>`<div class="compareCell"><div class="playerName">${p.n}</div>${scoringProfilePanelLive(p)}</div>`).join('')}</div></div>`;
+  }
+  if(typeof historySection === 'function' && !window.__historyProfileWrapped){
+    const baseHistory = historySection;
+    historySection = function(ps){ return baseHistory(ps) + scoringProfileSectionLive(ps); };
+    window.__historyProfileWrapped = true;
+  }
+  ceilingPathText = function(p){
+    const x=[];
+    if(p.p==='QB'){
+      x.push('passing volume and touchdown efficiency finish near the top of the upside projection');
+      x.push('rushing production remains a meaningful weekly scoring source');
+    } else if(p.p==='RB'){
+      x.push('lead-back touch share holds or expands');
+      x.push('receiving work stays involved enough to raise the PPR floor');
+      x.push('goal-line and red-zone chances convert near the high end of the projection');
+    } else if(p.p==='WR'){
+      x.push('route participation and target share stay at or above expectation');
+      x.push('reception and yardage volume reach the upper end of the projection');
+      x.push('red-zone targets convert into enough touchdowns to separate from the WR field');
+    } else {
+      x.push('route participation and target share stay at or above expectation');
+      x.push('reception volume reaches the upper end of the projection');
+      x.push('red-zone usage converts into enough touchdowns to create a positional edge');
+    }
+    if(p.e>=8.7) x.push('the offensive environment sustains scoring opportunities');
+    if(p.su>=8.7) x.push('efficiency remains sustainable rather than regressing');
+    return x.join('; ')+'.';
+  };
+  bustPathText = function(p){
+    const x=[];
+    if(p.st && p.st!=='PASS') x.push(`health/status issue (${p.st}) costs games, snaps or workload`);
+    if(p.p==='QB'){
+      x.push('passing efficiency or touchdown rate falls below the median projection');
+      x.push('rushing production fails to provide the expected weekly cushion');
+    } else if(p.p==='RB'){
+      x.push('committee usage cuts carries or goal-line work');
+      x.push('receiving involvement comes in below expectation');
+      x.push('touchdown regression makes the workload less valuable');
+    } else if(p.p==='WR'){
+      x.push('route participation or target share falls below expectation');
+      x.push('yardage efficiency drops without enough volume to compensate');
+      x.push('touchdown production fails to offset weaker weekly volume');
+    } else {
+      x.push('route participation or target share falls below expectation');
+      x.push('reception volume does not reach a difference-making level');
+      x.push('touchdown production is too low to separate at tight end');
+    }
+    if(p.e<8) x.push('the offensive environment limits scoring opportunities');
+    if(p.rl<8) x.push('week-to-week volatility makes the season projection harder to realize');
+    return x.join('; ')+'.';
+  };
+})();
+</script>
+<!-- position-scoring-live-20260823 -->
+'''
+              s = s.replace('</body>', js + '</body>')
+              p.write_text(s)
+          PY
+      - name: Commit live scoring profile patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Make position scoring profiles and ceiling-bust paths live [skip ci]"
+          git push
