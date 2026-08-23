@@ -24,38 +24,34 @@ function downsideRead(p){if(p.st&&p.st!=='PASS')return `Current ${String(p.st).t
 function ceilPanel(p){return blocks([['Ceiling',ceilingTier(p.ce)],['Bust Risk',bustTier(bust(p))],['Sustainability',gradeLabel(p.su)]])+projectionBlock('Upside Projection',p.cl)+readBlock('What can go wrong',downsideRead(p))}
 function ceilingWhy(ps){let score=x=>x.ce-bust(x)*.18, q=[...ps].sort((a,b)=>score(b)-score(a));if(q.length<2)return '';let a=q[0],b=q[1],reasons=[];if(a.ce>b.ce+.05)reasons.push('higher ceiling');if(bust(a)<bust(b)-.05)reasons.push('lower bust risk');if(a.su>b.su+.05)reasons.push('better sustainability');if(!reasons.length)reasons.push('slightly better overall balance of upside and downside protection');return `${a.n} gets the edge because of ${reasons.join(' and ')}.`}
 function ceilingSection(ps){let f=x=>x.ce-bust(x)*.18,[w,r,d]=win(ps,f),m=clsMap(ps,f,.08),label=!r||Math.abs(d)<.08?'Toss-up':`${strength(d,[.08,.25,.55])}: ${w.n}`;return `<div class="detail"><div class="detailHead"><h3>Ceiling / Bust</h3><span class="edge ${label==='Toss-up'?'':'win'}">${label}</span></div><div class="categoryPurpose">How high each player can realistically finish, how likely the pick is to disappoint, and what creates that downside.</div>${label!=='Toss-up'?`<div class="categoryPurpose"><b>Why this edge:</b> ${ceilingWhy(ps)}</div>`:''}<div class="compareRows ${ps.length===3?'three':''}">${ps.map(p=>`<div class="compareCell ${m.get(p.n)}"><div class="playerName">${p.n}</div><div class="statusline"><span class="dot"></span>${status(m.get(p.n))}</div>${ceilPanel(p)}</div>`).join('')}</div></div>`}'''
-          if old not in s:
-              raise SystemExit('ceilPanel anchor not found')
-          s=s.replace(old,new)
+          if old in s:
+              s=s.replace(old,new)
           old2="if(checked.includes('ceil'))ds.push(shell('Ceiling / Bust','Upside compared with the chance the pick disappoints.',ps,x=>x.ce-bust(x)*.18,ceilPanel,.08,[.08,.25,.55]));"
-          new2="if(checked.includes('ceil'))ds.push(ceilingSection(ps));"
-          if old2 not in s:
-              raise SystemExit('ceiling run anchor not found')
-          s=s.replace(old2,new2)
+          if old2 in s:
+              s=s.replace(old2,"if(checked.includes('ceil'))ds.push(ceilingSection(ps));")
           old3="if(checked.includes('env'))ds.push(shell('Offensive Environment','Which player has the better team, scheme, quarterback and scoring setup.',ps,x=>x.e,p=>blocks([['Environment',gradeLabel(p.e)],['Team',p.t]]),.08,[.08,.25,.55]));"
-          new3="if(checked.includes('env'))ds.push(shell('Offensive Environment','Team scoring ecosystem, quarterback play, scheme and supporting cast — separate from the player’s own talent or workload.',ps,x=>x.e,environmentPanel,.08,[.08,.25,.55]));"
-          if old3 not in s:
-              raise SystemExit('environment run anchor not found')
-          s=s.replace(old3,new3)
+          if old3 in s:
+              s=s.replace(old3,"if(checked.includes('env'))ds.push(shell('Offensive Environment','Team scoring ecosystem, quarterback play, scheme and supporting cast — separate from the player’s own talent or workload.',ps,x=>x.e,environmentPanel,.08,[.08,.25,.55]));")
           anchor="function usagePanel(p){let label=p.p==='QB'?'QB Scoring Outlook':p.p==='RB'?'Backfield Usage Outlook':'Receiving Role Outlook';return blocks([[label,gradeLabel(usageScore(p))]])+projectionBlock('Median Projection',p.m)}"
-          insert=anchor+"\n"+r'''function environmentRead(p){if(p.n==="De'Von Achane")return 'Miami is rebuilding around Malik Willis, has an unsettled receiving corps and has shown pass-protection concerns. Achane’s individual workload is strong, but that does not make the surrounding offense a strong environment.';if(p.e>=9.1)return 'High-end scoring environment with strong quarterback/scheme support and a favorable path to touchdowns.';if(p.e>=8.6)return 'Very favorable offensive setup with few structural concerns.';if(p.e>=8.1)return 'Good overall setup, though not without some quarterback, line, scheme or supporting-cast limitations.';if(p.e>=7.6)return 'Mixed environment: enough positives to support production, but meaningful concerns cap the setup.';if(p.e>=7.0)return 'Uncertain environment with real quarterback, scheme, line or supporting-cast questions.';return 'Poor or highly unstable offensive environment that can suppress efficiency and scoring opportunities.'}
-function environmentPanel(p){return blocks([['Environment',gradeLabel(p.e)],['Team',p.t]])+readBlock('Why',environmentRead(p))}
+          extra=r'''function environmentLabel(v){if(v==null)return '—';if(v>=9.1)return 'Elite';if(v>=8.6)return 'Very strong';if(v>=8.1)return 'Strong';if(v>=7.6)return 'Solid';if(v>=7.0)return 'Moderate';if(v>=6.3)return 'Weak';return 'Poor'}
+function environmentRead(p){if(p.n==="De'Von Achane")return 'Weak surrounding environment: Miami is installing a new offense with a new quarterback, its top two wide receivers are gone, and the offensive coordinator is gone. Achane is still projected for heavy rushing and receiving volume, but that volume belongs in his usage/production outlook — it does not make the offense around him better.';if(p.e>=9.1)return 'High-end scoring environment with strong quarterback/scheme support and a favorable path to touchdowns.';if(p.e>=8.6)return 'Very favorable offensive setup with few structural concerns.';if(p.e>=8.1)return 'Good overall setup, though not without some quarterback, line, scheme or supporting-cast limitations.';if(p.e>=7.6)return 'Mixed environment: enough positives to support production, but meaningful concerns cap the setup.';if(p.e>=7.0)return 'Uncertain environment with real quarterback, scheme, line or supporting-cast questions.';return 'Weak offensive environment with major continuity, quarterback, scheme or supporting-cast concerns that can suppress efficiency and scoring opportunities.'}
+function environmentPanel(p){return blocks([['Environment',environmentLabel(p.e)],['Team',p.t]])+readBlock('Why',environmentRead(p))}
 function draftTakeaway(p){let parts=[];if(p.cr!=null&&p.o!=null){let d=Math.abs(p.o-p.cr);parts.push(p.o<p.cr?`We rank him ${d} spot${d===1?'':'s'} higher than consensus.`:p.o>p.cr?`Consensus ranks him ${d} spot${d===1?'':'s'} higher than we do.`:'Our draft rank matches consensus.')}if(p.ad!=null&&p.o!=null){let d=Math.abs(p.ad-p.o);parts.push(p.ad>p.o?`ADP is ${d} pick${d===1?'':'s'} cheaper than our draft rank.`:p.ad<p.o?`ADP is ${d} pick${d===1?'':'s'} more expensive than our draft rank.`:'ADP matches our draft rank.')}if(p.mp!=null&&p.cp!=null){let g=p.mp-p.cp;parts.push(Math.abs(g)<3?'Our PPR projection is essentially in line with consensus.':g>0?`Our PPR projection is ${fmt(g,1)} points above consensus.`:`Our PPR projection is ${fmt(Math.abs(g),1)} points below consensus.`)}parts.push(`${p.px} at current price${p.fw?`; preferred range ${p.fw}`:''}.`);return parts.join(' ')}'''
-          if anchor not in s:
-              raise SystemExit('usagePanel anchor not found')
-          s=s.replace(anchor,insert)
+          if 'function environmentLabel' not in s and anchor in s:
+              s=s.replace(anchor,anchor+'\n'+extra)
+          elif 'function environmentRead' in s:
+              import re
+              s=re.sub(r"function environmentRead\(p\)\{.*?\}\nfunction environmentPanel\(p\)\{.*?\}",extra.split('\nfunction draftTakeaway')[0],s,flags=re.S)
           old4="${readBlock('Market read',marketRead(p))}</div>`}"
-          new4="${readBlock('Draft takeaway',draftTakeaway(p))}</div>`}"
-          if old4 not in s:
-              raise SystemExit('snapshot market read anchor not found')
-          s=s.replace(old4,new4)
+          if old4 in s:
+              s=s.replace(old4,"${readBlock('Draft takeaway',draftTakeaway(p))}</div>`}")
           p.write_text(s)
           q=Path('players0.json')
           arr=json.loads(q.read_text())
           for x in arr:
               if x.get('n')=="De'Von Achane":
-                  x['e']=7.2
-                  x['s']=9.125
+                  x['e']=6.5
+                  x['s']=round(x['pd']*.35+x['ce']*.20+x['r']*.15+x['e']*.10+x['a']*.10+x['rl']*.05+x['su']*.05,3)
           q.write_text(json.dumps(arr,separators=(',',':')))
           PY
       - name: Commit public explanation upgrade
@@ -63,5 +59,5 @@ function draftTakeaway(p){let parts=[];if(p.cr!=null&&p.o!=null){let d=Math.abs(
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add index.html players0.json
-          git commit -m 'Upgrade ceiling environment and draft explanations [skip ci]'
+          git commit -m 'Upgrade ceiling environment and draft explanations [skip ci]' || exit 0
           git push
