@@ -1,0 +1,69 @@
+name: Reconcile historical aliases
+on:
+  push:
+    paths:
+      - '.github/workflows/reconcile-history-aliases.yml'
+      - '.trigger-reconcile-history-aliases'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Audit aliases and remove accidental duplicate additions
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const files=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
+          const groups=files.map(f=>({file:f,players:JSON.parse(fs.readFileSync(f,'utf8'))}));
+          const hist=(JSON.parse(fs.readFileSync('historicalStats2026.json','utf8')).players)||{};
+          const norm=n=>String(n||'').replace(/\s+Sr\.?$/i,'').replace(/\s+/g,' ').trim();
+          const all=groups.flatMap(g=>g.players);
+          const byNorm=new Map();
+          all.forEach(p=>{const k=norm(p.n); if(!byNorm.has(k))byNorm.set(k,[]); byNorm.get(k).push(p)});
+          const duplicateGroups=[...byNorm.entries()].filter(([,arr])=>arr.length>1).map(([k,arr])=>({normalized:k,names:arr.map(p=>p.n),overall_ranks:arr.map(p=>p.o)}));
+          const historyNames=Object.keys(hist);
+          const activeNames=new Set(all.map(p=>p.n));
+          const activeNorm=new Set(all.map(p=>norm(p.n)));
+          const historyOnlyExact=historyNames.filter(n=>!activeNames.has(n));
+          const aliasMatches=historyOnlyExact.filter(n=>activeNorm.has(norm(n))).map(n=>({historical:n,active:all.find(p=>norm(p.n)===norm(n))?.n||null}));
+          const genuineMissing=historyOnlyExact.filter(n=>!activeNorm.has(norm(n))).sort();
+
+          // Remove accidental alias duplicates added by batch 1 when a canonical active profile already exists.
+          const removeNames=new Set();
+          for(const [k,arr] of byNorm){
+            if(arr.length<2) continue;
+            const canonical=arr.find(p=>!(/\s+Sr\.?$/i.test(p.n))) || arr.slice().sort((a,b)=>(a.o??999)-(b.o??999))[0];
+            for(const p of arr){ if(p!==canonical) removeNames.add(p.n); }
+          }
+          // Aaron Jones Sr. was added as a new profile but if Aaron Jones exists, remove the suffix duplicate.
+          for(const g of groups){ g.players=g.players.filter(p=>!removeNames.has(p.n)); fs.writeFileSync(g.file,JSON.stringify(g.players)+'\n'); }
+
+          const remaining=groups.flatMap(g=>g.players);
+          remaining.sort((a,b)=>(a.o??999)-(b.o??999));
+          remaining.forEach((p,i)=>p.o=i+1);
+          const byPos={}; remaining.forEach(p=>(byPos[p.p]??=[]).push(p));
+          Object.values(byPos).forEach(arr=>arr.sort((a,b)=>a.o-b.o).forEach((p,i)=>p.pr=`${p.p}${i+1}`));
+          // Re-rank Player Quality from existing scores after removals.
+          const pq=[...remaining].sort((a,b)=>(b.s??0)-(a.s??0)||(a.o??999)-(b.o??999));
+          pq.forEach((p,i)=>p.tr=i+1);
+          const pqPos={}; pq.forEach(p=>(pqPos[p.p]??=[]).push(p));
+          Object.values(pqPos).forEach(arr=>arr.forEach((p,i)=>p.tp=`${p.p}${i+1}`));
+          for(const g of groups){ fs.writeFileSync(g.file,JSON.stringify(g.players)+'\n'); }
+
+          const out={generated_at:new Date().toISOString(),active_before:all.length,duplicates_detected:duplicateGroups,aliases_in_historical_file:aliasMatches,genuine_missing_from_active:genuineMissing,removed_accidental_duplicates:[...removeNames].sort(),active_after:remaining.length};
+          fs.writeFileSync('history-alias-reconciliation-audit.json',JSON.stringify(out,null,2)+'\n');
+          console.log(out);
+          NODE
+      - name: Commit reconciliation
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add players*.json history-alias-reconciliation-audit.json
+          git diff --cached --quiet || git commit -m 'Reconcile historical aliases and remove duplicate profiles'
+          git push
