@@ -1,0 +1,39 @@
+name: Improve Ceiling Bust Explanation
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Trigger ceiling bust explainer'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Improve Ceiling Bust category
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old="function ceilPanel(p){return blocks([['Ceiling',gradeLabel(p.ce)],['Bust Risk',riskLabel(bust(p))],['Sustainability',gradeLabel(p.su)]])}"
+          new="""function ceilingDownsideRead(p){let parts=[];if(p.st&&p.st!=='PASS')parts.push(`Current concern: ${p.st}.`);else if(p.a<7.5)parts.push('Durability is a major part of the downside.');else if(p.a<8.5)parts.push('Availability adds some downside, but is not the main concern.');else parts.push('Availability is not a major downside driver.');if(p.su<7.5)parts.push('Role or efficiency sustainability is fragile.');else if(p.su<8.5)parts.push('Sustainability is solid, but not fully bankable.');else parts.push('Role and efficiency are relatively sustainable.');return parts.join(' ')}
+function ceilPanel(p){return blocks([['Ceiling',gradeLabel(p.ce)],['Bust Risk',riskLabel(bust(p))],['Sustainability',gradeLabel(p.su)]])+projectionBlock('Upside Projection',p.cl)+readBlock('Downside read',ceilingDownsideRead(p))}
+function ceilingWhy(ps){let[w,r,d]=win(ps,x=>x.ce-bust(x)*.18);if(!r||Math.abs(d)<.08)return 'The profiles are close enough that neither player has a meaningful ceiling/bust advantage.';let parts=[];let wc=gradeLabel(w.ce),rc=gradeLabel(r.ce),wb=riskLabel(bust(w)),rb=riskLabel(bust(r)),ws=gradeLabel(w.su),rs=gradeLabel(r.su);if(wc===rc&&w.ce>r.ce+.05)parts.push(`${w.n} rates higher within the same ${wc.toLowerCase()} ceiling tier`);else if(w.ce>r.ce+.05)parts.push(`${w.n} has the stronger ceiling tier`);if(wb===rb&&bust(w)<bust(r)-.05)parts.push(`${w.n} has the lower underlying risk within the same ${wb.toLowerCase()} bust tier`);else if(bust(w)<bust(r)-.05)parts.push(`${w.n} has the lower bust-risk tier`);if(ws===rs&&w.su>r.su+.05)parts.push(`${w.n} is stronger within the same ${ws.toLowerCase()} sustainability tier`);else if(w.su>r.su+.05)parts.push(`${w.n} has the stronger sustainability profile`);return parts.length?`Why ${w.n} leads: `+parts.join('; ')+'.':`${w.n} has a small composite advantage across ceiling, bust risk and sustainability, but the public tiers are otherwise very close.`}
+function ceilingSection(ps){let f=x=>x.ce-bust(x)*.18,[w,r,d]=win(ps,f),m=clsMap(ps,f,.08),label=!r||Math.abs(d)<.08?'Toss-up':`${strength(d,[.08,.25,.55])}: ${w.n}`;return `<div class=\"detail\"><div class=\"detailHead\"><h3>Ceiling / Bust</h3><span class=\"edge ${label==='Toss-up'?'':'win'}\">${label}</span></div><div class=\"categoryPurpose\">Best-case fantasy outcome weighed against the ways the pick can disappoint. The explanation below shows why one profile wins even when both players land in the same public tier.</div><div class=\"compareRows ${ps.length===3?'three':''}\">${ps.map(p=>`<div class=\"compareCell ${m.get(p.n)}\"><div class=\"playerName\">${p.n}</div><div class=\"statusline\"><span class=\"dot\"></span>${status(m.get(p.n))}</div>${ceilPanel(p)}</div>`).join('')}</div>${readBlock('Why this edge',ceilingWhy(ps))}</div>`}"
+          if old not in s:
+              raise SystemExit('ceilPanel anchor not found')
+          s=s.replace(old,new)
+          oldrun="if(checked.includes('ceil'))ds.push(shell('Ceiling / Bust','Upside compared with the chance the pick disappoints.',ps,x=>x.ce-bust(x)*.18,ceilPanel,.08,[.08,.25,.55]));"
+          if oldrun not in s:
+              raise SystemExit('ceiling run anchor not found')
+          s=s.replace(oldrun,"if(checked.includes('ceil'))ds.push(ceilingSection(ps));")
+          p.write_text(s)
+          PY
+      - name: Commit change
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git commit -m 'Explain ceiling and bust edges in plain English [skip ci]'
+          git push
