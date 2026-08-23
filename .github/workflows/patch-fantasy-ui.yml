@@ -1,0 +1,51 @@
+name: Patch Fantasy UI
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-fantasy-ui.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch comparison UI
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old="function marketNote(p){if(p.ad==null||p.o==null)return 'Market comparison unavailable';let g=Math.round(p.ad-p.o),n=Math.abs(g);if(n<=1)return `Our valuation is within ${n} spot${n===1?'':'s'} of market ADP.`;return g>0?`We value him ${n} spots higher than market ADP.`:`We value him ${n} spots lower than market ADP.`}function consensusNote(p){if(p.cr==null||p.o==null)return null;let g=Math.round(p.cr-p.o),n=Math.abs(g);if(n===0)return 'Same as consensus.';return g>0?`We rank him ${n} spots higher than consensus.`:`We rank him ${n} spots lower than consensus.`}function consensusBlocks(p){return p.cr==null?'':blocks([['Consensus Rank',`#${p.cr}`],['Vs Consensus',consensusNote(p)]])}"
+          new="function marketGap(p){if(p.ad==null||p.o==null)return '—';let g=Math.round(p.ad-p.o);return `${g>0?'+':''}${g}`}function consensusBlocks(p){return p.cr==null?'':blocks([['Consensus Rank',`#${p.cr}`]])}function priceRead(p){return p.px==='BUY'?'VALUE':p.px||'—'}"
+          s=s.replace(old,new)
+          s=s.replace("function truePanel(p){return blocks([['Our True Value',fmt(p.s,3)],['Our Overall Rank',`#${p.o}`],['True Value Rank',`#${p.tr} · ${p.tp}`]])+consensusBlocks(p)+blocks([['Market ADP',fmt(p.ad)],['Market Note',marketNote(p)]])}","function truePanel(p){return blocks([['Our Rank',`#${p.o}`]])+consensusBlocks(p)+blocks([['Market ADP',fmt(p.ad)],['Vs Market',marketGap(p)],['True Value Score',fmt(p.s,3)],['True Value Rank',`#${p.tr} · ${p.tp}`]])}")
+          s=s.replace("function valuePanel(p){return blocks([['Our Overall Rank',`#${p.o}`]])+consensusBlocks(p)+blocks([['Market ADP',fmt(p.ad)],['Market Note',marketNote(p)],['True Value',`#${p.tr} · ${fmt(p.s,3)}`],['Draft Price Verdict',`${p.px} — ${priceMeaning(p)}`],['Fair Draft Range',p.fw||'—']])}","function valuePanel(p){return blocks([['Our Rank',`#${p.o}`]])+consensusBlocks(p)+blocks([['Market ADP',fmt(p.ad)],['Vs Market',marketGap(p)],['Price Read',priceRead(p)],['Fair Draft Range',p.fw||'—'],['True Value',`#${p.tr} · ${fmt(p.s,3)}`]])}")
+          s=s.replace('<div class="legendItem good"><b>BUY</b><span>Market price is cheaper than our valuation.</span></div>','<div class="legendItem good"><b>VALUE</b><span>Market price is favorable relative to our full current-cost evaluation.</span></div>')
+          s=s.replace('<span class="tag ${css(p.px)}">${p.px}: ${priceMeaning(p)}</span><div class="snapshotStat"><span>Our Overall Rank</span><b>#${p.o}</b></div>','<span class="tag ${css(p.px)}">${priceRead(p)}</span><div class="snapshotStat"><span>Our Rank</span><b>#${p.o}</b></div><div class="snapshotStat"><span>Consensus Rank</span><b>${p.cr==null?\'—\':\'#\'+p.cr}</b></div><div class="snapshotStat"><span>Market ADP</span><b>${fmt(p.ad)}</b></div><div class="snapshotStat"><span>Vs Market</span><b>${marketGap(p)}</b></div>')
+          s=s.replace('<div class="snapshotStat"><span>ADP</span><b>${fmt(p.ad)}</b></div>','')
+          needle="function resetForm(){['p1','p2','p3'].forEach(id=>document.getElementById(id).selectedIndex=0);document.querySelectorAll('.cb').forEach(x=>x.checked=true);results.style.display='none'}\n"
+          insert=r'''function normMarketName(n){return String(n||'').toLowerCase().replace(/\b(jr\.?|sr\.?|ii|iii|iv|v)\b/g,'').replace(/[^a-z0-9]/g,'')}
+function parseCsvLine(line){let a=[],v='',q=false;for(let i=0;i<line.length;i++){let c=line[i];if(c==='"'){if(q&&line[i+1]==='"'){v+='"';i++}else q=!q}else if(c===','&&!q){a.push(v);v=''}else v+=c}a.push(v);return a}
+async function applyMarketSnapshot(){try{let u='https://raw.githubusercontent.com/willemmodels/fantasy-tools/main/FantasyPros_2026_Draft_ALL_Rankings.csv';let txt=await fetch(u,{cache:'no-store'}).then(r=>r.ok?r.text():Promise.reject());let rows=txt.split(/\r?\n/).slice(1).map(parseCsvLine).filter(r=>r.length>=10&&/^\d+$/.test(r[0]));let map=new Map;for(let r of rows){let cr=Number(r[0]),d=Number(String(r[9]).replace('+',''));if(!Number.isFinite(cr))continue;map.set(normMarketName(r[2]),{cr,ad:Number.isFinite(d)?cr+d:null})}const aliases={'kennethgainwell':'kennygainwell'};for(let p of P){let k=aliases[normMarketName(p.n)]||normMarketName(p.n),x=map.get(k);if(x){p.cr=x.cr;if(x.ad!=null)p.ad=x.ad}}}catch(e){console.warn('Market snapshot unavailable; using stored ADP.',e)}}
+function applyNewsOverrides(){let o={
+'christian mccaffrey':{st:'ACTIVE HEALTH WATCH',ns:'CURRENT CAMP INJURY UPDATE',nm:'Missed Aug. 10, 11, 16 and 18 practices with unspecified soreness; no structural diagnosis has been announced.',na:'Keep the existing durability discount. Rank held pending full return or a more specific diagnosis.'},
+'malik nabers':{st:'ACL RECOVERY / CAMP WORKLOAD WATCH',ns:'CURRENT CAMP INJURY UPDATE',nm:'Advanced into live team periods after ACL/meniscus rehab, but remained no-contact and not fully back to normal speed.',na:'Positive progress; Week 1 remains clearance-dependent. Existing recovery discount and rank are held.'},
+'daniel jones':{st:'POST-ACHILLES DURABILITY WATCH',ns:'CURRENT CAMP HEALTH UPDATE',nm:'Fully cleared and moving normally in camp, including scrambles and designed-run work.',na:'Current mobility concern is reduced; the recent Achilles tear remains a durability-history input.'},
+'jayden higgins':{st:'OUT 2026 — TORN ACL',ns:'SEASON-ENDING INJURY',nm:'Torn ACL confirmed; out for the 2026 season.',na:'Zero 2026 redraft production remains appropriate.'},
+'jeremiyah love':{st:'INJURY WATCH',ns:'CURRENT CAMP INJURY UPDATE',nm:'High-ankle sprain is expected to cost the rest of preseason; Arizona remains hopeful for Week 1.',na:'Existing availability/early-volume downgrade is confirmed; no additional drop without a delayed regular-season return.'},
+'tyler allgeier':{st:'BACKFIELD WATCH',ns:'CURRENT OPPORTUNITY UPDATE',nm:'Healthy and active while Jeremiyah Love is sidelined.',na:'Existing modest contingent-opportunity bump is retained without assuming a season-long lead role.'}}
+for(let p of P){let x=o[p.n.toLowerCase()];if(x)Object.assign(p,x)}}
+'''
+          s=s.replace(needle,needle+insert)
+          s=s.replace("(async()=>{try{let parts=await Promise.all(Array.from({length:13},(_,i)=>fetch(`players${i}.json?v=20`).then(r=>{if(!r.ok)throw Error(`players${i}.json`);return r.json()})));P=parts.flat();fill()}","(async()=>{try{let parts=await Promise.all(Array.from({length:13},(_,i)=>fetch(`players${i}.json?v=21`).then(r=>{if(!r.ok)throw Error(`players${i}.json`);return r.json()})));P=parts.flat();applyNewsOverrides();await applyMarketSnapshot();fill()}")
+          p.write_text(s)
+          PY
+      - name: Commit patched UI
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Finalize market layer and injury sync"
+          git push
