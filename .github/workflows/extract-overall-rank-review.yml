@@ -1,0 +1,32 @@
+name: Extract overall rank review
+on:
+  push:
+    paths:
+      - '.github/workflows/extract-overall-rank-review.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Extract review list
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const a=JSON.parse(fs.readFileSync('projection-downstream-audit.json','utf8'));
+          const out=a.changes.filter(x=>x.overall_rank_review).map(x=>({name:x.name,pos:x.pos,overall_rank:x.overall_rank,old_ppr:x.old_ppr,new_ppr:x.new_ppr,delta:x.delta,old_tier:x.old_tier,new_tier:x.new_tier,old_player_quality_rank:x.old_player_quality_rank,new_player_quality_rank:x.new_player_quality_rank,rank_move:x.rank_move}));
+          fs.writeFileSync('overall-rank-review.json',JSON.stringify(out,null,2)+'\n');
+          console.log(out.length);
+          NODE
+      - name: Commit review list
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add overall-rank-review.json
+          git diff --cached --quiet || git commit -m 'Extract overall rank review list'
+          git push
