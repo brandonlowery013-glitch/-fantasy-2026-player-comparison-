@@ -39,13 +39,12 @@ frame.addEventListener('load',()=>{
   const renameCategory=()=>{const cats=d.getElementById('cats');if(!cats)return;[...cats.querySelectorAll('label')].forEach(el=>{if(el.textContent.includes('Past 3 Seasons')){const cb=el.querySelector('input');el.innerHTML='';if(cb)el.appendChild(cb);el.append(' Scoring Profile')}})};
   renameCategory();
 
-  if(typeof w.run==='function'&&!w.__clarityPatch){
-    const baseRun=w.run;
-    w.run=function(){baseRun();
-      d.querySelectorAll('.metricLabel').forEach(el=>{if(el.textContent.trim()==='True Value Rank')el.textContent='Player Quality Rank'});
-      d.querySelectorAll('.snapshotNote').forEach(el=>{if(el.textContent.includes('price-independent player ranking'))el.textContent='Price-independent player quality before draft cost'});
-    };
-    w.__clarityPatch=true;
-  }
+  const relabel=()=>{
+    d.querySelectorAll('.metricLabel').forEach(el=>{if(el.textContent.trim()==='True Value Rank')el.textContent='Player Quality Rank'});
+    d.querySelectorAll('.snapshotNote').forEach(el=>{if(el.textContent.includes('price-independent player ranking'))el.textContent='Price-independent player quality before draft cost'});
+  };
+  relabel();
+  const observer=new MutationObserver(relabel);
+  observer.observe(d.body,{childList:true,subtree:true});
 });
 </script></body></html>
