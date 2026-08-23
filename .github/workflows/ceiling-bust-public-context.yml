@@ -1,0 +1,36 @@
+name: Ceiling Bust Public Context
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Trigger ceiling bust public context'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch public ceiling bust context
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old="function ceilPanel(p){return blocks([['Ceiling',gradeLabel(p.ce)],['Bust Risk',riskLabel(bust(p))],['Sustainability',gradeLabel(p.su)]])}"
+          new="""function ceilingTier(v){if(v==null)return '—';if(v>=9.7)return 'Elite — top of tier';if(v>=9.1)return 'Elite';if(v>=8.9)return 'Very strong — upper tier';if(v>=8.6)return 'Very strong';if(v>=8.3)return 'Strong — upper tier';if(v>=8.1)return 'Strong';if(v>=7.8)return 'Solid — upper tier';if(v>=7.6)return 'Solid';if(v>=7.3)return 'Moderate — upper tier';if(v>=7.0)return 'Moderate';return 'Concern'}
+function bustTier(v){if(v==null)return '—';if(v<=1.0)return 'Low — best end';if(v<=1.2)return 'Low';if(v<=1.5)return 'Moderate — lower end';if(v<=1.8)return 'Moderate';if(v<=2.1)return 'Elevated — lower end';if(v<=2.4)return 'Elevated';return 'High'}
+function ceilingDownsideRead(p){if(p.st&&p.st!=='PASS')return `Primary downside: ${p.st}.`;if(p.a<7.5)return 'Primary downside: durability and missed-time risk.';if(p.su<7.5)return 'Primary downside: the role or efficiency may not hold at the projected level.';if(p.a<8.5)return 'Main downside: some availability risk plus normal workload/TD variance.';if(p.su<8.5)return 'Main downside: workload or efficiency sustainability is good, not fully bankable.';return 'Main downside: normal workload, efficiency and touchdown variance rather than a major structural concern.'}
+function ceilPanel(p){return blocks([['Ceiling',ceilingTier(p.ce)],['Bust Risk',bustTier(bust(p))],['Sustainability',ceilingTier(p.su)]])+projectionBlock('Upside Projection',p.cl)+readBlock('What can go wrong',ceilingDownsideRead(p))}"""
+          if old not in s:
+              raise SystemExit('ceilPanel anchor not found')
+          s=s.replace(old,new)
+          s=s.replace("'Upside compared with the chance the pick disappoints.'","'Best-case fantasy outcome balanced against the realistic ways the pick can disappoint. Public labels show where each player sits inside the tier.'")
+          p.write_text(s)
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html
+          git commit -m 'Add plain-English ceiling and bust context [skip ci]'
+          git push
