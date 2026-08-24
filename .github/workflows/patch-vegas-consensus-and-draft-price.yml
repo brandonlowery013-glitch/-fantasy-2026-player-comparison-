@@ -1,0 +1,76 @@
+name: Patch Vegas consensus and draft price scaling
+on:
+  push:
+    paths:
+      - '.trigger-vegas-price-fix'
+      - '.github/workflows/patch-vegas-consensus-and-draft-price.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Patch comparison UI logic
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const file='index-backup.html';
+          let s=fs.readFileSync(file,'utf8');
+
+          const oldVals="const vals=p=>{const gap=(p.ad!=null&&p.o!=null)?(p.ad-p.o):0;const verdict=({BUY:.6,FAIR:0,REACH:-.3,FADE:-.8}[p.px]??0);const step=({TARGET:.2,ACCEPTABLE:0,AVOID:-.4}[p.s7]??0);return gap/15+verdict+step;};";
+          const newVals="const vals=p=>{const gap=(p.ad!=null&&p.o!=null)?(p.ad-p.o):0;const verdict=({BUY:.6,FAIR:0,REACH:-.3,FADE:-.8}[priceClass(p)]??0);const step=({TARGET:.2,ACCEPTABLE:0,AVOID:-.4}[p.s7]??0);return gap/15+verdict+step;};";
+          if(!s.includes(oldVals)) throw new Error('vals pattern not found');
+          s=s.replace(oldVals,newVals);
+
+          const oldCeil="function ceilingPathText(p){let x=[];if(p.r>=9)x.push('premium role/workload holds');if(p.e>=9)x.push('the offense converts scoring opportunities');if(p.su>=9)x.push('high-end efficiency proves sustainable');return x.length?`Ceiling is reached if ${x.join(', ')}.`:'Ceiling requires the upside projection to hit while role, efficiency and touchdown access stay near the top of the expected range.'}";
+          const newCeil="function ceilingPathText(p){if(p.n==='Derrick Henry')return `Ceiling is reached if age does not materially erode his durability or efficiency, his workload remains elite, and Lamar Jackson does not absorb too large a share of Baltimore’s red-zone rushing TDs.`;let x=[];if(p.r>=9)x.push('premium role/workload holds');if(p.e>=9)x.push('the offense converts scoring opportunities');if(p.su>=9)x.push('high-end efficiency proves sustainable');return x.length?`Ceiling is reached if ${x.join(', ')}.`:'Ceiling requires the upside projection to hit while role, efficiency and touchdown access stay near the top of the expected range.'}";
+          if(!s.includes(oldCeil)) throw new Error('ceiling path pattern not found');
+          s=s.replace(oldCeil,newCeil);
+
+          const oldVegas="function vegasPanel(p){return projectionBlock('Sportsbook',p.vl||'No line available')+projectionBlock('Our Projection',p.m)+readBlock('Read',p.vr||'No meaningful gap.')}";
+          const newVegas="function vegasPanel(p){return projectionBlock('Sportsbook',p.vl||'No line available')+projectionBlock('Our Projection',p.m)+projectionBlock('Consensus Projection',p.cn||'No consensus projection available')+blocks([['Our Projected PPR',fmt(p.mp,1)],['Consensus PPR',fmt(p.cp,1)]])+readBlock('Read',p.vr||'No meaningful gap.')}";
+          if(!s.includes(oldVegas)) throw new Error('Vegas panel pattern not found');
+          s=s.replace(oldVegas,newVegas);
+
+          const oldPrice="function priceMeaning(p){return p.px==='BUY'?'ADP is cheaper than our valuation':p.px==='FAIR'?'ADP is close to our valuation':p.px==='REACH'?'ADP is ahead of our preferred range':p.px==='FADE'?'ADP is materially too expensive':'Price read unavailable'}";
+          const newPrice="function priceClass(p){if(p.ad==null||p.o==null)return p.px||'—';const gap=Math.round(p.ad-p.o);const tol=p.o<=36?2:p.o<=72?4:6;if(gap>=tol+2)return 'BUY';if(gap>=-tol)return 'FAIR';if(gap>=-(tol*2+3))return 'REACH';return 'FADE'}\nfunction priceMeaning(p){const c=priceClass(p);return c==='BUY'?'ADP is cheaper than our valuation':c==='FAIR'?'ADP is close to our valuation':c==='REACH'?'ADP is ahead of our preferred range':c==='FADE'?'ADP is materially too expensive':'Price read unavailable'}";
+          if(!s.includes(oldPrice)) throw new Error('priceMeaning pattern not found');
+          s=s.replace(oldPrice,newPrice);
+
+          const oldRead="function priceRead(p){return p.px==='BUY'?'VALUE':p.px||'—'}";
+          const newRead="function priceRead(p){const c=priceClass(p);return c==='BUY'?'VALUE':c||'—'}";
+          if(!s.includes(oldRead)) throw new Error('priceRead pattern not found');
+          s=s.replace(oldRead,newRead);
+
+          fs.writeFileSync(file,s);
+
+          let idx=fs.readFileSync('index.html','utf8');
+          idx=idx.replace(/index-backup\.html\?v=[^\"]+/,'index-backup.html?v=20260823-2008');
+          fs.writeFileSync('index.html',idx);
+
+          const audit={
+            updated:'2026-08-23',
+            vegas_consensus_projection:true,
+            vegas_consensus_ppr:true,
+            draft_price_runtime_scaling:{
+              early_rounds_our_rank_1_36:{fair:'within 2 picks',reach:'3-7 picks early',fade:'8+ picks early',buy:'4+ picks later'},
+              middle_rounds_37_72:{fair:'within 4 picks',reach:'5-11 picks early',fade:'12+ picks early',buy:'6+ picks later'},
+              later_rounds_73_plus:{fair:'within 6 picks',reach:'7-15 picks early',fade:'16+ picks early',buy:'8+ picks later'}
+            },
+            example:{derrick_henry_minus4:'REACH',james_cook_minus3:'REACH'},
+            derrick_henry_ceiling_path_specific:true
+          };
+          fs.writeFileSync('vegas-price-fix-audit.json',JSON.stringify(audit,null,2));
+          NODE
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index-backup.html index.html vegas-price-fix-audit.json
+          git diff --cached --quiet || git commit -m "Add consensus Vegas context and fix draft price scaling"
+          git push
