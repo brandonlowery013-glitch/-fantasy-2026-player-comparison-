@@ -1,0 +1,169 @@
+name: Sync comparison model to 162-player injury lock
+on:
+  push:
+    paths:
+      - '.trigger-comparison-162-sync'
+      - 'comparison-sync-162-2026-08-23.json'
+      - '.github/workflows/sync-comparison-model-162.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apply 162-player board and projection sync
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const sync=JSON.parse(fs.readFileSync('comparison-sync-162-2026-08-23.json','utf8'));
+          const files=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
+          let all=files.flatMap(f=>JSON.parse(fs.readFileSync(f,'utf8')));
+          const stripSuffix=n=>String(n||'').trim().replace(/[’]/g,"'").replace(/\s+(jr\.?|sr\.?|ii|iii|iv)$/i,'').toLowerCase();
+          const richScore=p=>Object.keys(p||{}).length + (p.evaluation_2026?20:0) + (p.projection_context?10:0) + (p.cn?3:0) + (p.en?3:0);
+
+          // De-duplicate aliases such as Deebo Samuel/Sr. and Kyle Pitts/Sr.; retain the richer record.
+          const dedup=new Map();
+          for(const p of all){
+            const k=stripSuffix(p.n);
+            if(!dedup.has(k)||richScore(p)>richScore(dedup.get(k))) dedup.set(k,p);
+          }
+          all=[...dedup.values()];
+          const byNorm=new Map(all.map(p=>[stripSuffix(p.n),p]));
+
+          function createPlayer(name,ov){
+            const rec={
+              n:name,p:ov.p,t:ov.t,pr:ov.pr,o:ov.o,tr:ov.tr,tp:ov.tp,s:ov.s,
+              pd:ov.pd,ce:ov.ce,r:ov.r,e:ov.e,a:ov.a,rl:ov.rl,su:ov.su,
+              ad:null,s6:'CURRENT EVALUATION',s7:'CURRENT EVALUATION',px:'TBD',fw:'TBD',
+              st:ov.st,m:ov.m,cl:ov.cl,mp:ov.mp,cp:null,dp:null,
+              cn:'Consensus projection not yet loaded for this newly integrated profile.',
+              vl:'No comparable saved Vegas line.',vs:null,
+              vr:'Market/consensus context remains separate from the intrinsic player evaluation.',
+              en:'Current offensive-environment context is carried by the completed 2026 evaluation.',
+              projection_context:{history_seasons:null,history_baseline_ppr:null,context_factor:1,prior_projected_ppr:ov.mp,recalibrated_projected_ppr:ov.mp,note:'Synced from the 162-player master projection model on 2026-08-23. Historical production is context, not a blind projection driver.',material_downstream_change:true},
+              evaluation_2026:{
+                production:ov.board_note||'Current production projection synced from the master model.',
+                ceiling:'Ceiling projection synced from the master model: '+ov.cl,
+                role:'Role/volume grade '+ov.r+'; current status: '+ov.st,
+                environment:'Offensive-environment grade '+ov.e+'.',
+                availability:'Availability grade '+ov.a+'; current status: '+ov.st,
+                reliability:'Weekly-reliability grade '+ov.rl+'.',
+                sustainability:'Sustainability grade '+ov.su+'.',
+                price:ov.recommendation||'Market-cost evaluation pending current ADP refresh.'
+              }
+            };
+            if(/BUY|TARGET|RISER/i.test(ov.recommendation||'')) rec.px='BUY';
+            if(/FADE|DO NOT DRAFT|OUT/i.test(ov.recommendation||'')) rec.px='FADE';
+            if(/HOLD/i.test(ov.recommendation||'')) rec.px='HOLD';
+            return rec;
+          }
+
+          // Ensure every one of the 162 board players exists.
+          for(const name of sync.overall_order){
+            const key=stripSuffix(name);
+            if(!byNorm.has(key)){
+              const ov=sync.overrides[name];
+              if(!ov) throw new Error('Missing player and no override: '+name);
+              const p=createPlayer(name,ov);
+              all.push(p); byNorm.set(key,p);
+            }
+          }
+
+          // Apply projection/component overrides from the current master model.
+          for(const [name,ov] of Object.entries(sync.overrides)){
+            const p=byNorm.get(stripSuffix(name));
+            if(!p) throw new Error('Override player missing: '+name);
+            p.n=name; p.p=ov.p; p.t=ov.t;
+            for(const k of ['s','pd','ce','r','e','a','rl','su','st','m','cl','mp']) p[k]=ov[k];
+            p.sync_note=ov.board_note;
+            p.current_recommendation=ov.recommendation;
+            p.projection_context={...(p.projection_context||{}),prior_projected_ppr:p.mp,recalibrated_projected_ppr:ov.mp,note:'2026-08-23 162-player master projection sync; injury/role context applied before downstream ranks.',material_downstream_change:true};
+            if(p.evaluation_2026){
+              p.evaluation_2026.availability='Current status: '+ov.st+' Availability grade: '+ov.a+'.';
+              p.evaluation_2026.ceiling='Current ceiling band: '+ov.cl+' Ceiling grade: '+ov.ce+'.';
+              p.evaluation_2026.production='Current median band: '+ov.m+' Expected Production grade: '+ov.pd+'.';
+            }
+          }
+
+          // Re-index both boards independently; position ranks are derived from each board order.
+          const overallIndex=new Map(sync.overall_order.map((n,i)=>[stripSuffix(n),i+1]));
+          const qualityIndex=new Map(sync.quality_order.map((n,i)=>[stripSuffix(n),i+1]));
+          const overallPos={};
+          for(const name of sync.overall_order){
+            const p=byNorm.get(stripSuffix(name));
+            overallPos[p.p]=(overallPos[p.p]||0)+1;
+            p.o=overallIndex.get(stripSuffix(name)); p.pr=p.p+overallPos[p.p];
+          }
+          const qualityPos={};
+          for(const name of sync.quality_order){
+            const p=byNorm.get(stripSuffix(name));
+            qualityPos[p.p]=(qualityPos[p.p]||0)+1;
+            p.tr=qualityIndex.get(stripSuffix(name)); p.tp=p.p+qualityPos[p.p];
+          }
+
+          // Keep only the 162 active players and canonical names from the board payload.
+          all=sync.overall_order.map(name=>{
+            const p=byNorm.get(stripSuffix(name)); p.n=name; return p;
+          });
+          if(all.length!==162) throw new Error('Active player count != 162: '+all.length);
+          const norms=all.map(p=>stripSuffix(p.n));
+          if(new Set(norms).size!==162) throw new Error('Alias duplicate remains after sync');
+          if(new Set(sync.quality_order.map(stripSuffix)).size!==162) throw new Error('Quality board duplicate');
+
+          // Re-shard across the existing 13 fixed loader files.
+          const shardCount=13, base=Math.floor(all.length/shardCount), extra=all.length%shardCount;
+          let at=0;
+          for(let i=0;i<shardCount;i++){
+            const size=base+(i<extra?1:0);
+            fs.writeFileSync(`players${i}.json`,JSON.stringify(all.slice(at,at+size)));
+            at+=size;
+          }
+
+          // Canonical boards: refresh from player records while preserving extra metadata/keys.
+          const boards=JSON.parse(fs.readFileSync('canonicalBoards2026.json','utf8'));
+          boards.updated=sync.updated;
+          const boardFields=['n','p','t','o','pr','tr','tp','s','pd','ce','r','e','a','rl','su','mp','m','cl','px','fw','st','en'];
+          const slim=p=>Object.fromEntries(boardFields.filter(k=>p[k]!==undefined).map(k=>[k,p[k]]));
+          boards.overall=all.slice().sort((a,b)=>a.o-b.o).map(slim);
+          const q=all.slice().sort((a,b)=>a.tr-b.tr).map(slim);
+          for(const key of ['trueValue','true_value','playerQuality','player_quality','quality']) if(Array.isArray(boards[key])) boards[key]=q;
+          fs.writeFileSync('canonicalBoards2026.json',JSON.stringify(boards,null,2));
+
+          // Authoritative Player Quality lock.
+          const locked={as_of:sync.updated,source:'Fantasy_2026_PLAYER_QUALITY_162_NFLCOM_INJURY_SWEEP_2026-08-23.xlsx',players:{}};
+          for(const p of all) locked.players[p.n]={trueValueRank:p.tr,trueValuePos:p.tp};
+          fs.writeFileSync('lockedRanks2026.json',JSON.stringify(locked));
+
+          // Replace stale injury rank moves with the exact Aug. 23 lock; preserve unrelated player notes.
+          const inj=JSON.parse(fs.readFileSync('injuryOverrides2026.json','utf8'));
+          inj.updated=sync.updated;
+          inj.rankMoves={overall:{},trueValue:{}};
+          for(const name of ['Ashton Jeanty','Alvin Kamara','Jordyn Tyson','Jayden Higgins','Travis Etienne Jr.','Mike Washington Jr.']){
+            const p=byNorm.get(stripSuffix(name));
+            inj.rankMoves.overall[name]=p.o; inj.rankMoves.trueValue[name]=p.tr;
+            inj.players=inj.players||{};
+            inj.players[name]={...(inj.players[name]||{}),a:p.a,st:p.st,ns:'2026-08-23 NFL.COM INJURY / PROJECTION SYNC',nm:p.sync_note||p.st,na:'Projection-first propagation applied; no duplicate injury penalty.'};
+          }
+          fs.writeFileSync('injuryOverrides2026.json',JSON.stringify(inj,null,2));
+
+          const needed=['George Kittle','Mark Andrews','Dallas Goedert','Travis Kelce','Michael Pittman Jr.','Aaron Jones Sr.','Malik Washington','Tyjae Spears','Mike Washington Jr.'];
+          const audit={updated:sync.updated,active_players:all.length,unique_normalized:new Set(norms).size,missing_required:needed.filter(n=>!byNorm.has(stripSuffix(n))),alias_duplicates:[],checks:{jeanty:byNorm.get(stripSuffix('Ashton Jeanty')),kamara:byNorm.get(stripSuffix('Alvin Kamara')),tyson:byNorm.get(stripSuffix('Jordyn Tyson')),higgins:byNorm.get(stripSuffix('Jayden Higgins')),mike_washington:byNorm.get(stripSuffix('Mike Washington Jr.'))}};
+          fs.writeFileSync('comparison-sync-162-audit.json',JSON.stringify(audit,null,2));
+          console.log(JSON.stringify({active:all.length,unique:new Set(norms).size,overall_first:all[0].n,overall_last:all[161].n,mike:audit.checks.mike_washington&&{o:audit.checks.mike_washington.o,tr:audit.checks.mike_washington.tr},jeanty:audit.checks.jeanty&&audit.checks.jeanty.st},null,2));
+          NODE
+      - name: Commit synchronized comparison model
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add players*.json canonicalBoards2026.json lockedRanks2026.json injuryOverrides2026.json comparison-sync-162-audit.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Sync comparison model to 162-player injury-adjusted projection lock"
+            git push
+          fi
