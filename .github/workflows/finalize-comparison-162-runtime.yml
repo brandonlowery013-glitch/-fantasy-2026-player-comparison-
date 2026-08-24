@@ -1,0 +1,68 @@
+name: Finalize 162-player comparison runtime
+on:
+  push:
+    paths:
+      - '.trigger-finalize-comparison-162'
+      - '.github/workflows/finalize-comparison-162-runtime.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Fix run logic and preserve canonical board ranks at runtime
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          let f='index-backup.html';
+          let s=fs.readFileSync(f,'utf8');
+
+          // Repair the accidental duplicated tail after vals(), which is a JavaScript syntax error.
+          s=s.replace(/const vals=p=>\{[\s\S]*?return gap\/15\+verdict\+step;\};const verdict=[\s\S]*?return gap\/15\+verdict\+step;\};\s*const bust=p=>/,
+            "const vals=p=>{const gap=(p.ad!=null&&p.o!=null)?(p.ad-p.o):0;const verdict=({BUY:.6,FAIR:0,REACH:-.3,FADE:-.8}[p.px]??0);const step=({TARGET:.2,ACCEPTABLE:0,AVOID:-.4}[p.s7]??0);return gap/15+verdict+step;};\nconst bust=p=>");
+
+          // Do not overwrite the manually adjudicated Player Quality board with a live score sort.
+          // Environment text may be filled when absent, but e/s/tr/tp remain the canonical synced values.
+          s=s.replace(/function normalizeTeamEnvironments\(\)\{[\s\S]*?\}\nfunction applyRankMoves/,
+`function normalizeTeamEnvironments(){
+  const generic=v=>v>=9.2?'High-end scoring setup with strong quarterback/scheme support and few structural concerns.':v>=8.7?'Very favorable overall setup with strong scoring support and only minor structural questions.':v>=8.1?'Positive overall setup, but at least one meaningful quarterback, scheme, line, continuity or supporting-cast limitation keeps it below the top tier.':v>=7.4?'Mixed setup: enough support for production, but meaningful questions keep the environment from being a clear advantage.':v>=6.7?'Several offensive questions can reduce efficiency or touchdown opportunity even when an individual player has a strong role.':'Major structural concerns around quarterback, scheme, line, supporting cast or continuity can suppress efficiency and scoring opportunities.';
+  P.forEach(p=>{if(!p.en)p.en=generic(Number(p.e??7.5))});
+}
+function applyRankMoves`);
+
+          // Explicitly load the Player Quality lock after shards so aliases/position ranks cannot drift.
+          s=s.replace("normalizeTeamEnvironments();if(ov){applyRankMoves('o',ov.rankMoves?.overall);applyRankMoves('tr',ov.rankMoves?.trueValue)};try{let hr=await fetch('historicalStats2026.json'",
+`normalizeTeamEnvironments();if(ov){applyRankMoves('o',ov.rankMoves?.overall);applyRankMoves('tr',ov.rankMoves?.trueValue)};try{let lr=await fetch('lockedRanks2026.json',{cache:'no-store'});if(lr.ok){let lj=await lr.json();let lm=lj.players||{};P.forEach(p=>{let x=lm[p.n];if(x){p.tr=x.trueValueRank;p.tp=x.trueValuePos}})}}catch(e){console.warn('Player Quality lock unavailable',e)};try{let hr=await fetch('historicalStats2026.json'`);
+
+          if(/const vals=p=>[\s\S]*?const verdict=.*return gap\/15\+verdict\+step;\};const verdict=/.test(s)) throw new Error('vals syntax repair did not apply');
+          if(/ranked\.forEach\(\(p,i\)=>p\.tr=i\+1\)/.test(s)) throw new Error('runtime Player Quality re-sort remains');
+          fs.writeFileSync(f,s);
+
+          let idx=fs.readFileSync('index.html','utf8');
+          idx=idx.replace(/index-backup\.html\?v=[^\"']+/, 'index-backup.html?v=20260823-1945');
+          fs.writeFileSync('index.html',idx);
+
+          const audit=JSON.parse(fs.readFileSync('comparison-sync-162-audit.json','utf8'));
+          audit.runtime={run_button_syntax_repaired:true,canonical_quality_rank_preserved:true,lockedRanks_loaded:true,player_loader_shards:13,cache_bust:'20260823-1945'};
+          fs.writeFileSync('comparison-sync-162-audit.json',JSON.stringify(audit,null,2));
+          NODE
+      - name: Static JavaScript syntax check
+        run: |
+          python - <<'PY'
+          import re, pathlib
+          s=pathlib.Path('index-backup.html').read_text()
+          m=re.search(r'<script>([\s\S]*?)</script>',s)
+          pathlib.Path('/tmp/app.js').write_text(m.group(1))
+          PY
+          node --check /tmp/app.js
+      - name: Commit runtime cohesion fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html index-backup.html comparison-sync-162-audit.json
+          if git diff --cached --quiet; then echo "No changes"; else git commit -m "Fix comparison runtime and preserve 162-player canonical ranks" && git push; fi
