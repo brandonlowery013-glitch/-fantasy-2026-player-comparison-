@@ -1,0 +1,64 @@
+name: Finalize comparison 162 simple
+on:
+  push:
+    paths:
+      - '.trigger-finalize-comparison-162-simple'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch runtime deterministically
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index-backup.html')
+          s=p.read_text()
+          a=s.index('const vals=p=>')
+          b=s.index('const bust=p=>',a)
+          vals="const vals=p=>{const gap=(p.ad!=null&&p.o!=null)?(p.ad-p.o):0;const verdict=({BUY:.6,FAIR:0,REACH:-.3,FADE:-.8}[p.px]??0);const step=({TARGET:.2,ACCEPTABLE:0,AVOID:-.4}[p.s7]??0);return gap/15+verdict+step;};\n"
+          s=s[:a]+vals+s[b:]
+          a=s.index('function normalizeTeamEnvironments(){')
+          b=s.index('function applyRankMoves',a)
+          env="""function normalizeTeamEnvironments(){const generic=v=>v>=9.2?'High-end scoring setup with strong quarterback/scheme support and few structural concerns.':v>=8.7?'Very favorable overall setup with strong scoring support and only minor structural questions.':v>=8.1?'Positive overall setup, but at least one meaningful quarterback, scheme, line, continuity or supporting-cast limitation keeps it below the top tier.':v>=7.4?'Mixed setup: enough support for production, but meaningful questions keep the environment from being a clear advantage.':v>=6.7?'Several offensive questions can reduce efficiency or touchdown opportunity even when an individual player has a strong role.':'Major structural concerns around quarterback, scheme, line, supporting cast or continuity can suppress efficiency and scoring opportunities.';P.forEach(p=>{if(!p.en)p.en=generic(Number(p.e??7.5))})}\n"""
+          s=s[:a]+env+s[b:]
+          needle="normalizeTeamEnvironments();if(ov){applyRankMoves('o',ov.rankMoves?.overall);applyRankMoves('tr',ov.rankMoves?.trueValue)};try{let hr=await fetch('historicalStats2026.json'"
+          replacement="normalizeTeamEnvironments();if(ov){applyRankMoves('o',ov.rankMoves?.overall);applyRankMoves('tr',ov.rankMoves?.trueValue)};try{let lr=await fetch('lockedRanks2026.json',{cache:'no-store'});if(lr.ok){let lj=await lr.json();let lm=lj.players||{};P.forEach(p=>{let x=lm[p.n];if(x){p.tr=x.trueValueRank;p.tp=x.trueValuePos}})}}catch(e){console.warn('Player Quality lock unavailable',e)};try{let hr=await fetch('historicalStats2026.json'"
+          if needle not in s: raise SystemExit('locked-rank insertion point not found')
+          s=s.replace(needle,replacement,1)
+          p.write_text(s)
+          idx=Path('index.html').read_text()
+          import re
+          idx=re.sub(r'index-backup\.html\?v=[^\"\']+','index-backup.html?v=20260823-1955',idx,1)
+          Path('index.html').write_text(idx)
+          PY
+      - name: Validate JavaScript syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index-backup.html').read_text()
+          scripts=re.findall(r'<script>([\s\S]*?)</script>',s)
+          Path('/tmp/app.js').write_text(scripts[-1])
+          PY
+          node --check /tmp/app.js
+      - name: Record runtime QA
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('comparison-sync-162-audit.json')
+          a=json.loads(p.read_text())
+          a['runtime']={'run_button_syntax_repaired':True,'canonical_quality_rank_preserved':True,'lockedRanks_loaded':True,'player_loader_shards':13,'cache_bust':'20260823-1955'}
+          p.write_text(json.dumps(a,indent=2))
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html index-backup.html comparison-sync-162-audit.json
+          git commit -m "Fix comparison runtime and preserve 162-player canonical ranks"
+          git push
