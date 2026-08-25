@@ -11,9 +11,9 @@ fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});
 
 const statsByPos={
   QB:['pass_yards','pass_tds','rush_yards'],
-  RB:['rush_yards','receiving_yards','receptions'],
-  WR:['receiving_yards','receptions'],
-  TE:['receiving_yards','receptions']
+  RB:['rush_yards','targets','receiving_yards','receptions'],
+  WR:['targets','receiving_yards','receptions'],
+  TE:['targets','receiving_yards','receptions']
 };
 const finite=x=>Number.isFinite(Number(x));
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -28,9 +28,9 @@ function syntheticInput(){
     schema_version:'self-test',season:2026,week:1,status:'SELF_TEST',generated_at:new Date().toISOString(),sportsbook_inputs_used:false,
     players:{
       'SELF_TEST_QB':{position:'QB',prior_player:null,expected_active:true,signals:{role:{stat_adjustments:{pass_yards:{mean_pct:.04,sd_pct:.02},pass_tds:{mean_pct:.03},rush_yards:{mean_pct:.01}},source:'self-test role'},qb_context:{stat_adjustments:{pass_yards:{mean_pct:.02}},source:'self-test qb'},opponent:{stat_adjustments:{pass_yards:{mean_pct:-.03},rush_yards:{mean_pct:.02}},source:'self-test opponent'}}},
-      'SELF_TEST_RB':{position:'RB',prior_player:null,expected_active:true,signals:{role:{stat_adjustments:{rush_yards:{mean_pct:.08,sd_pct:.05},receiving_yards:{mean_pct:.02},receptions:{mean_pct:.02}},source:'self-test role'},injury:{stat_adjustments:{rush_yards:{mean_pct:-.04,sd_pct:.08}},source:'self-test injury'}}},
-      'SELF_TEST_WR':{position:'WR',prior_player:null,expected_active:true,signals:{role:{stat_adjustments:{receiving_yards:{mean_pct:.07},receptions:{mean_pct:.05}},source:'self-test role'},team_environment:{stat_adjustments:{receiving_yards:{mean_pct:.03}},source:'self-test environment'}}},
-      'SELF_TEST_TE':{position:'TE',prior_player:null,expected_active:true,signals:{role:{stat_adjustments:{receiving_yards:{mean_pct:.05},receptions:{mean_pct:.06}},source:'self-test role'},opponent:{stat_adjustments:{receiving_yards:{mean_pct:-.02}},source:'self-test opponent'}}}
+      'SELF_TEST_RB':{position:'RB',prior_player:null,expected_active:true,signals:{role:{stat_adjustments:{rush_yards:{mean_pct:.08,sd_pct:.05},targets:{mean_pct:.06,sd_pct:.04},receiving_yards:{mean_pct:.02},receptions:{mean_pct:.02}},source:'self-test role'},injury:{stat_adjustments:{rush_yards:{mean_pct:-.04,sd_pct:.08},targets:{mean_pct:-.02,sd_pct:.05}},source:'self-test injury'}}},
+      'SELF_TEST_WR':{position:'WR',prior_player:null,expected_active:true,signals:{role:{stat_adjustments:{targets:{mean_pct:.08,sd_pct:.03},receiving_yards:{mean_pct:.07},receptions:{mean_pct:.05}},source:'self-test role'},team_environment:{stat_adjustments:{targets:{mean_pct:.02},receiving_yards:{mean_pct:.03}},source:'self-test environment'}}},
+      'SELF_TEST_TE':{position:'TE',prior_player:null,expected_active:true,signals:{role:{stat_adjustments:{targets:{mean_pct:.07},receiving_yards:{mean_pct:.05},receptions:{mean_pct:.06}},source:'self-test role'},opponent:{stat_adjustments:{targets:{mean_pct:-.01},receiving_yards:{mean_pct:-.02}},source:'self-test opponent'}}}
     }
   };
 }
@@ -73,7 +73,7 @@ function applySignals(base,p,stat){
 }
 
 const players={};
-let projected=0,review=0,insufficient=0,adjustmentCount=0;
+let projected=0,review=0,insufficient=0,adjustmentCount=0,targetProjected=0;
 for(const [name,p] of Object.entries(src.players||{})){
   const pos=String(p.position||'').toUpperCase();
   const stats=statsByPos[pos];
@@ -94,13 +94,15 @@ for(const [name,p] of Object.entries(src.players||{})){
       sportsbook_inputs_used:false
     };
     projected++;
+    if(stat==='targets')targetProjected++;
   }
   players[name]={position:pos,status:playerStatus,projections};
 }
 
 if(process.argv.includes('--self-test')){
-  if(projected<8) blocked.push(`self-test projected too few stats: ${projected}`);
-  if(adjustmentCount<8) blocked.push(`self-test applied too few context adjustments: ${adjustmentCount}`);
+  if(projected<11) blocked.push(`self-test projected too few stats: ${projected}`);
+  if(targetProjected<3) blocked.push(`self-test projected too few target distributions: ${targetProjected}`);
+  if(adjustmentCount<11) blocked.push(`self-test applied too few context adjustments: ${adjustmentCount}`);
 }
 for(const [name,p] of Object.entries(players)) for(const [stat,x] of Object.entries(p.projections||{})){
   if(x.status==='SHADOW_ONLY'&&(!finite(x.mean)||!finite(x.sd)||Number(x.sd)<=0)) blocked.push(`${name} ${stat} invalid projection`);
@@ -109,15 +111,16 @@ for(const [name,p] of Object.entries(players)) for(const [stat,x] of Object.entr
 
 const generatedAt=new Date().toISOString();
 const output={
-  schema_version:'1.0.0',season:2026,week:src.week,generated_at:generatedAt,
+  schema_version:'1.1.0',season:2026,week:src.week,generated_at:generatedAt,
   status:src.status==='SELF_TEST'?'SELF_TEST':'SHADOW_ONLY',sportsbook_inputs_used:false,players
 };
 const report={
   generated_at:generatedAt,result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,
-  input_status:src.status,projected_stats:projected,review_required:review,insufficient_data:insufficient,
+  input_status:src.status,projected_stats:projected,target_projections:targetProjected,review_required:review,insufficient_data:insufficient,
   context_adjustments_applied:adjustmentCount,sportsbook_inputs_used:false,blocked,
   safeguards:[
     'Historical player/position priors are the baseline; no sportsbook line or price is used.',
+    'Pregame targets are projected for RB/WR/TE from historical football-side priors before any reception probability is constructed.',
     'Context adjustments are explicit, source-attributed football-side inputs and are preserved in the output audit trail.',
     'Individual signal adjustments and total multipliers are capped to prevent a single bad input from creating an extreme projection.',
     'Missing context is reported rather than silently invented.',
