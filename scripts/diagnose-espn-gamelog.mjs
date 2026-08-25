@@ -1,0 +1,2 @@
+const u='https://site.web.api.espn.com/apis/common/v3/sports/football/nfl/athletes/3139477/gamelog?season=2024';
+const r=await fetch(u,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});console.log('status',r.status);const j=await r.json();console.log(JSON.stringify({keys:Object.keys(j),categories:j.categories,labels:j.labels,names:j.names,events:j.events?.slice?.(0,2),seasonTypes:j.seasonTypes?.slice?.(0,1)},null,2));
