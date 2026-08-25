@@ -47,7 +47,7 @@ const zero=()=>({
 });
 function rec(player,season,week){const k=`${player}|${season}|${week}`;if(!agg.has(k))agg.set(k,zero());return agg.get(k)}
 
-let pbpPlaysUsed=0,identifiedPassers=0,identifiedRushers=0,identifiedReceivers=0;
+let pbpPlaysUsed=0,identifiedPassers=0,identifiedRushers=0,identifiedReceivers=0,conversionPlaysExcluded=0;
 for(const season of seasons){
   const url=`https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_${season}.csv.gz`;
   const res=await fetch(url,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});
@@ -60,9 +60,11 @@ for(const season of seasons){
     if(String(val(p,'season_type')||'REG').toUpperCase()!=='REG') continue;
     const week=Number(val(p,'week')); if(!Number.isFinite(week)||week<1||week>18) continue;
     const y=num(val(p,'yardline_100')); if(y==null||y>=20) continue;
-    const rz=y<20,i10=y<10,i5=y<5;
     const noPlay=truth(val(p,'no_play'))||String(val(p,'play_type')).toLowerCase()==='no_play';
     if(noPlay) continue;
+    const conversion=truth(val(p,'two_point_attempt'))||truth(val(p,'extra_point_attempt'));
+    if(conversion){conversionPlaysExcluded++;continue;}
+    const rz=y<20,i10=y<=10,i5=y<5;
 
     const passer=canonFrom(val(p,'passer_player_id'),val(p,'passer_player_name','passer'));
     const receiver=canonFrom(val(p,'receiver_player_id'),val(p,'receiver_player_name','receiver'));
@@ -105,7 +107,7 @@ for(const r of rows){
   r.high_value_usage_source_date=new Date().toISOString().slice(0,10);
 }
 
-data.schema_version='1.2.2';
+data.schema_version='1.2.3';
 data.generated_at=new Date().toISOString();
 data.high_value_usage_source_files=sourceFiles;
 data.rows=rows;
@@ -118,18 +120,19 @@ const report={
   played_rows:playedRows,
   rows_with_high_value_activity:rowsWithHighValueActivity,
   participation_overrides_from_pbp:participationOverrides,
+  conversion_plays_excluded:conversionPlaysExcluded,
   identified_passer_events:identifiedPassers,
   identified_rusher_events:identifiedRushers,
   identified_receiver_events:identifiedReceivers,
   source_files:sourceFiles,
-  zone_definitions:{red_zone:'yardline_100 < 20',inside_10:'yardline_100 < 10',inside_5:'yardline_100 < 5'},
+  zone_definitions:{red_zone:'yardline_100 < 20',inside_10:'yardline_100 <= 10',inside_5:'yardline_100 < 5'},
   position_policy:{
     QB:['red_zone_pass_attempts','inside_10_pass_attempts','inside_5_pass_attempts','red_zone_rush_attempts','inside_10_rush_attempts','inside_5_rush_attempts','pass/rush TD splits'],
     RB:['red_zone_rush_attempts','inside_10_rush_attempts','inside_5_rush_attempts','red_zone_targets','receiving TD context'],
     WR:['red_zone_targets','inside_10_targets','inside_5_targets','end_zone_targets','red_zone_receptions','receiving TD splits'],
     TE:['red_zone_targets','inside_10_targets','inside_5_targets','end_zone_targets','red_zone_receptions','receiving TD splits']
   },
-  safeguards:['No sportsbook inputs used.','Identity matching prefers GSIS IDs from nflverse players master.','Pass attempts use official-stat play outcomes (complete/incomplete/interception), not sacks.','No-play/penalty-nullified plays are excluded.','PFR-style zone labels use strict inside boundaries, excluding snaps exactly at the 20, 10, or 5.','Direct PBP participation overrides an injury-derived inactive row and is flagged SOURCE_CONFLICT + MANUAL_REVIEW.','End-zone target requires air_yards >= yardline_100; it is not inferred when air_yards is missing.']
+  safeguards:['No sportsbook inputs used.','Identity matching prefers GSIS IDs from nflverse players master.','Pass attempts use official-stat play outcomes (complete/incomplete/interception), not sacks.','No-play/penalty-nullified plays are excluded.','Two-point and extra-point conversion plays are excluded from official passing/rushing/receiving opportunity counts.','Zone boundaries are independently audited against PFR rather than assumed uniform.','Direct PBP participation overrides an injury-derived inactive row and is flagged SOURCE_CONFLICT + MANUAL_REVIEW.','End-zone target requires air_yards >= yardline_100; it is not inferred when air_yards is missing.']
 };
 fs.writeFileSync(path.join(root,'guardrails/high-value-usage-report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));
