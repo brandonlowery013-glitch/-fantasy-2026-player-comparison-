@@ -41,14 +41,14 @@ jobs:
         run: node scripts/build-historical-uncertainty-calibration.mjs
       - name: Calibrate stat distribution families
         run: node scripts/calibrate-distribution-families.mjs
-      - name: Build leakage-safe catch-rate priors
-        run: node scripts/build-catch-rate-priors.mjs
       - name: Validate historical route source contract
         run: node scripts/validate-historical-route-source-contract.mjs
-      - name: Backfill observed historical WR/TE route participation
+      - name: Backfill observed historical WR/TE pass-play participation
         run: node scripts/backfill-historical-route-participation.mjs
       - name: Build position-specific role cohort priors
         run: node scripts/build-role-cohort-priors.mjs
+      - name: Build leakage-safe catch-rate priors from role cohorts
+        run: node scripts/build-catch-rate-priors.mjs
       - name: Validate weekly football projection generator
         run: node scripts/build-weekly-projection-generator.mjs --self-test
       - name: Validate weekly calibrated probability engine
@@ -93,7 +93,7 @@ jobs:
             data/probability/generated/historical-uncertainty-priors-2021-2025.json
             data/probability/generated/distribution-family-calibration-2021-2025.json
             data/probability/generated/catch-rate-priors-2021-2025.json
-            data/probability/generated/historical-route-participation-2021-2025.json
+            data/probability/generated/historical-pass-play-participation-2021-2025.json
             data/probability/generated/role-cohort-priors-2021-2025.json
             data/sources/historical-route-participation-2021-2025.json
             data/probability/weekly-projection-inputs-2026.json
