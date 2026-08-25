@@ -32,7 +32,10 @@ for(const p of playersCsv){
   const id=val(p,'gsis_id'); if(id) idToCanon.set(String(id),full);
   for(const k of ['short_name','display_name','full_name']){const x=val(p,k);if(x)shortToCanon.set(norm(x),full);}
 }
-function canonFrom(id,name){return (id&&idToCanon.get(String(id)))||shortToCanon.get(norm(name))||canonical(name)||null;}
+function canonFrom(id,name){
+  if(id) return idToCanon.get(String(id))||null;
+  return shortToCanon.get(norm(name))||canonical(name)||null;
+}
 
 const agg=new Map();
 const sourceFiles=[{type:'players',url:playersUrl}];
@@ -103,11 +106,11 @@ for(const r of rows){
   r.goal_line_carries=a.inside_5_rush_attempts;
   if(r.played) playedRows++;
   if(hasPbpActivity) rowsWithHighValueActivity++;
-  r.high_value_usage_source='nflverse play-by-play + nflverse GSIS player identity';
+  r.high_value_usage_source='nflverse play-by-play + authoritative nflverse GSIS player identity';
   r.high_value_usage_source_date=new Date().toISOString().slice(0,10);
 }
 
-data.schema_version='1.2.3';
+data.schema_version='1.2.4';
 data.generated_at=new Date().toISOString();
 data.high_value_usage_source_files=sourceFiles;
 data.rows=rows;
@@ -132,7 +135,7 @@ const report={
     WR:['red_zone_targets','inside_10_targets','inside_5_targets','end_zone_targets','red_zone_receptions','receiving TD splits'],
     TE:['red_zone_targets','inside_10_targets','inside_5_targets','end_zone_targets','red_zone_receptions','receiving TD splits']
   },
-  safeguards:['No sportsbook inputs used.','Identity matching prefers GSIS IDs from nflverse players master.','Pass attempts use official-stat play outcomes (complete/incomplete/interception), not sacks.','No-play/penalty-nullified plays are excluded.','Two-point and extra-point conversion plays are excluded from official passing/rushing/receiving opportunity counts.','Zone boundaries are independently audited against PFR rather than assumed uniform.','Direct PBP participation overrides an injury-derived inactive row and is flagged SOURCE_CONFLICT + MANUAL_REVIEW.','End-zone target requires air_yards >= yardline_100; it is not inferred when air_yards is missing.']
+  safeguards:['No sportsbook inputs used.','A present GSIS player ID is authoritative; unmatched IDs are ignored instead of falling back to ambiguous abbreviated names.','Pass attempts use official-stat play outcomes (complete/incomplete/interception), not sacks.','No-play/penalty-nullified plays are excluded.','Two-point and extra-point conversion plays are excluded from official passing/rushing/receiving opportunity counts.','Zone boundaries are independently audited against PFR rather than assumed uniform.','Direct PBP participation overrides an injury-derived inactive row and is flagged SOURCE_CONFLICT + MANUAL_REVIEW.','End-zone target requires air_yards >= yardline_100; it is not inferred when air_yards is missing.']
 };
 fs.writeFileSync(path.join(root,'guardrails/high-value-usage-report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));
