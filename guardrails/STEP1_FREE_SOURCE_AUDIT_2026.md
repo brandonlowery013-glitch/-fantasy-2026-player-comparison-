@@ -1,66 +1,81 @@
 # Step 1 — Free Weekly Data Source Audit (2026)
 
-Status: **IN PROGRESS**
+Status: **COMPLETE**
 
 Goal: exhaust free, reproducible weekly NFL data sources before purchasing a paid feed. Paid data should only be introduced for a field that remains materially unavailable, stale, or operationally unreliable for pregame use.
 
-## Current source hierarchy
+## Final decision
 
-### 1. nflverse / nflreadr — primary free backbone
-Use for reproducible machine-readable football data: play-by-play, weekly player stats, team stats, schedules, rosters, weekly rosters, depth charts, snap counts, Next Gen Stats, and PFR advanced stats.
+No paid feed is required at this time.
 
-Important limitations:
-- Participation data from 2023 onward is supplied after the postseason and therefore cannot serve as an in-season route feed.
-- The nflverse injury source died after 2024, so current 2025+ injuries cannot currently be treated as available from nflverse.
+Use a layered free-source approach rather than buying an all-in-one projection/data package.
 
-### 2. Fantasy Life Utilization Report — primary free weekly route/utilization candidate
-Observed public fields include:
-- snap percentage
-- routes / route percentage
-- targets per route run
-- targets / target share
+### Primary backbone — nflverse / nflreadr
+Use for machine-readable play-by-play, weekly player stats, schedules, rosters, depth charts, snap counts, Next Gen Stats, and PFR advanced data.
+
+Limitations:
+- participation/route data is not an in-season live route feed for recent seasons;
+- current injury coverage cannot be treated as available from nflverse for 2025+.
+
+### Primary weekly utilization — Fantasy Life Utilization Report
+Use as the first free reference for weekly:
+- snap share
+- route percentage / routes run
+- TPRR
+- target share
 - catchable targets
-- aDOT
-- air yards
-- end-zone targets
-- third/fourth-down targets
-- play-action targets
+- aDOT / air-yards share
+- end-zone and high-leverage targets
 - RB rush share
 - inside-five rushing share
-- short-down-and-distance snaps
-- long-down-and-distance snaps
-- two-minute snaps
+- short-down, long-down and two-minute usage
 
-This is currently the strongest free candidate for the route/role gap, especially TE, receiving RB, fringe WR, and role-change cases.
+This is especially important for TEs, receiving RBs, fringe/cusp WRs, injury returns, and role changes.
 
-Before automated model use, validate a stable machine-readable extraction or export method and confirm that automation is permitted by the source's terms.
+### Route verification — StatRankings
+Use as the secondary route source and fallback. Public pages expose routes run, route participation, TPRR and recent-game splits, and state a 24–36 hour post-game update window.
 
-### 3. StatRankings — route-participation verification
-The public route-participation page states that it updates within 24–36 hours post-game and provides season, Last 1, Last 3, Last 5, Last 10, home, and away route participation.
+### Primary official injury source — NFL.com
+Use official NFL practice and game-status reports once regular-season reporting begins. Preserve the report date/time and never silently replace a newer official designation with older news.
 
-Use as a cross-check unless a stable automated extraction method is validated.
+### Injury/news fallback — FantasyPros
+Use for training-camp injuries, practice absences/returns, beat-reporter sourced updates, and contextual role news between official NFL reports.
 
-### 4. NFL Savant — advanced verification candidate
-Candidate for route breakdowns, target share, air yards, EPA/CPOE, and advanced player context. Direct coverage, update cadence, and extraction method still require validation before model use.
+### Historical advanced verification — NFL Savant
+Retain as a free historical/verification source for target share, air yards, EPA/CPOE, expected fantasy points and route-tree context. Do not depend on it as the live 2026 route feed because its current public dataset is labeled through 2025 and its route/charting data ultimately relies on nflverse/FTN sources.
 
-### 5. PFF public weekly usage reports — manual spot-check source
-Useful for manual verification of routes, TPRR, carries, red-zone usage, alignment, aDOT, and snaps when publicly exposed. Do not make this a required automated dependency.
+### PFF public reports
+Manual spot-check source only. Never make the model dependent on public article availability.
 
-## Step 1 completion criteria
+## Fallback hierarchy
 
-Step 1 is complete only when all of the following are resolved:
+1. Weekly utilization: Fantasy Life → StatRankings → nflverse snap/usage context.
+2. Injuries: NFL.com official report → FantasyPros/current direct news context.
+3. Historical/advanced verification: nflverse → NFL Savant → PFF public spot check.
+4. Missing route data must not be invented.
+5. Missing route participation alone does not block a stable established WR1/WR2 projection when other usage evidence is strong.
+6. Missing route information for TEs, receiving RBs, fringe WRs, injury returns or changing roles reduces confidence and can trigger `REVIEW_REQUIRED`.
+7. Sportsbook lines/prices are never substitutes for missing football-side data.
 
-1. A free 2026 current injury/practice-status source is validated.
-2. Fantasy Life weekly utilization extraction is tested for reproducibility.
-3. StatRankings route participation extraction is tested for reproducibility.
-4. NFL Savant coverage/update cadence is validated or rejected.
-5. A source fallback hierarchy is defined for stale/missing data.
-6. Paid alternatives are priced only for fields that remain materially unresolved.
+## Architecture order
 
-## Modeling rule
+The preferred build order is:
 
-Routes are not a universal hard requirement for every established WR1/WR2. Prioritize route participation for TEs, receiving RBs, fringe/cusp WRs, injury returns, depth-chart changes, and other uncertain roles. For established full-time WRs, target share, TPRR, air-yard share, red-zone role, and other opportunity metrics often carry more incremental information than raw route participation alone.
+**safeguards → trusted football metrics → projection mechanics → player projection outputs → market comparison/EV**
 
-## No-market-contamination rule
+That keeps the projection foundation auditable and prevents sportsbook information from contaminating the football model.
 
-These sources are football-side inputs only. Sportsbook spreads, totals, player-prop lines, and prices remain downstream market data and must not be used to fit or backsolve the football projection probability.
+## Paid-feed trigger
+
+Revisit paid data only if, during live weekly operation, the free hierarchy repeatedly fails to supply a materially important input with sufficient freshness or reliability. Until that happens, cost = **$0** for Step 1 data sourcing.
+
+## Step 1 result
+
+- Free current route/utilization path: **RESOLVED**
+- Free official injury-status path: **RESOLVED**
+- Free injury/news fallback: **RESOLVED**
+- Historical advanced verification: **RESOLVED**
+- Source fallback hierarchy: **RESOLVED**
+- Paid feed required now: **NO**
+
+Step 1 is complete.
