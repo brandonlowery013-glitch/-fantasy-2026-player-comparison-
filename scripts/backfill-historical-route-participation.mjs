@@ -14,7 +14,11 @@ const pct=v=>{const n=Number(String(v??'').replace('%','').trim());return Number
 const num=v=>{const n=Number(String(v??'').replace(/,/g,'').trim());return Number.isFinite(n)?n:null};
 
 function htmlText(s){return String(s||'').replace(/<script[\s\S]*?<\/script>/gi,' ').replace(/<style[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&#x27;/g,"'").replace(/&quot;/g,'"').replace(/\s+/g,' ').trim()}
-function cleanPlayer(s){return String(s||'').replace(/([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+)+)([A-Z]\.[^0-9%]+)$/,'$1').trim()}
+function cleanPlayer(s){
+  const raw=String(s||'').trim();
+  const m=raw.match(/^(.+?)([A-Z]\.[A-Za-z.'-]+(?:\s+[A-Z]\.[A-Za-z.'-]+)*)$/);
+  return (m?m[1]:raw).trim();
+}
 function parseMetricTable(html,season,metric){
   const rows=[];
   for(const m of html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)){
@@ -35,16 +39,33 @@ function parseMetricTable(html,season,metric){
   return rows;
 }
 
-const sourceReports=[];const combined=new Map();
-for(const season of seasons){
-  for(const metric of ['route_participation','routes_run']){
-    const slug=metric==='route_participation'?'route-participation':'routes-run';
-    const url=`https://statrankings.com/nfl/advanced/players/usage/${slug}?season=${season}`;
+async function fetchMetricPages(season,metric){
+  const slug=metric==='route_participation'?'route-participation':'routes-run';
+  const all=new Map();
+  const pageReports=[];
+  let stagnantPages=0;
+  for(let page=1;page<=100;page++){
+    const url=`https://statrankings.com/nfl/advanced/players/usage/${slug}?season=${season}&page=${page}`;
     const res=await fetch(url,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});
     if(!res.ok)throw new Error(`Route source fetch failed ${res.status}: ${url}`);
     const html=await res.text();
     const rows=parseMetricTable(html,season,metric);
-    sourceReports.push({season,metric,url,http_status:res.status,bytes:Buffer.byteLength(html),parsed_rows:rows.length});
+    const before=all.size;
+    for(const r of rows)all.set(`${r.position}|${r.player_key}`,r);
+    const added=all.size-before;
+    pageReports.push({page,url,http_status:res.status,bytes:Buffer.byteLength(html),parsed_rows:rows.length,new_rows:added,total_unique_rows:all.size});
+    if(rows.length===0||added===0)stagnantPages++;else stagnantPages=0;
+    if(stagnantPages>=2)break;
+  }
+  return {rows:[...all.values()],pageReports};
+}
+
+const sourceReports=[];const combined=new Map();
+for(const season of seasons){
+  for(const metric of ['route_participation','routes_run']){
+    const fetched=await fetchMetricPages(season,metric);
+    const rows=fetched.rows;
+    sourceReports.push({season,metric,parsed_rows:rows.length,pages_fetched:fetched.pageReports.length,page_reports:fetched.pageReports});
     for(const r of rows){
       const key=`${r.season}|${r.position}|${r.player_key}`;
       if(!combined.has(key))combined.set(key,{season:r.season,player:r.player,player_key:r.player_key,position:r.position});
@@ -80,13 +101,13 @@ for(const season of seasons){for(const pos of positions){
 
 const blocked=[];
 if(ref.live_player_universe_count!==162)blocked.push(`live universe changed: ${ref.live_player_universe_count}`);
-for(const s of sourceReports)if(s.parsed_rows<25)blocked.push(`${s.season} ${s.metric} source parsed too few rows: ${s.parsed_rows}`);
+for(const s of sourceReports)if(s.parsed_rows<25)blocked.push(`${s.season} ${s.metric} source parsed too few unique rows after pagination: ${s.parsed_rows}`);
 for(const [k,v] of Object.entries(bySeasonPosition))if(v.candidate_receiving_seasons>=10&&(v.coverage==null||v.coverage<0.70))blocked.push(`${k} route coverage below 70%: ${v.coverage}`);
 if(matchedKeys.size<250)blocked.push(`matched route player-seasons unexpectedly small: ${matchedKeys.size}`);
 
 const generated_at=new Date().toISOString();
-const output={schema_version:'1.1.0',generated_at,mode:'SHADOW_ONLY',actionable:false,history_window:seasons,sportsbook_inputs_used:false,granularity:'PLAYER_SEASON',metric_definition:{route_participation:'StatRankings percentage of a player’s snaps where he runs a route',routes_run:'StatRankings total routes run during passing plays'},primary_use:'Replace WR/TE workload-proxy cohort classification with observed season route workload when coverage passes.',weekly_route_enrichment_status:'PENDING_SEPARATE_WEEK_LEVEL_BACKFILL',sources:{season_route_metrics:'StatRankings free season tables',weekly_primary:'Fantasy Life Utilization Game Log'},source_reports:sourceReports,rows:matched,unmatched_source_rows:unmatched};
-const report={generated_at,result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,source_player_seasons:combined.size,matched_complete_player_seasons:matchedKeys.size,unmatched_source_rows:unmatched.length,candidate_receiving_seasons:candidate.length,candidate_matched:candidateMatched.length,coverage:candidate.length?candidateMatched.length/candidate.length:null,coverage_by_season_position:bySeasonPosition,blocked,sportsbook_inputs_used:false,safeguards:['Observed route participation and routes run remain separate from workload proxies.','Only WR/TE player-season rows are admitted.','Missing route metrics remain missing and are never converted to zero.','Identity matching is season + position + normalized player name against the GSIS-backed historical reference population.','No projection or live fantasy rank is changed by this backfill script.','No sportsbook data is used.']};
+const output={schema_version:'1.2.0',generated_at,mode:'SHADOW_ONLY',actionable:false,history_window:seasons,sportsbook_inputs_used:false,granularity:'PLAYER_SEASON',metric_definition:{route_participation:'StatRankings percentage of a player’s snaps where he runs a route',routes_run:'StatRankings total routes run during passing plays'},primary_use:'Replace WR/TE workload-proxy cohort classification with observed season route workload when coverage passes.',weekly_route_enrichment_status:'PENDING_SEPARATE_WEEK_LEVEL_BACKFILL',sources:{season_route_metrics:'StatRankings free season tables with pagination',weekly_primary:'Fantasy Life Utilization Game Log'},source_reports:sourceReports,rows:matched,unmatched_source_rows:unmatched};
+const report={generated_at,result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,source_player_seasons:combined.size,matched_complete_player_seasons:matchedKeys.size,unmatched_source_rows:unmatched.length,candidate_receiving_seasons:candidate.length,candidate_matched:candidateMatched.length,coverage:candidate.length?candidateMatched.length/candidate.length:null,coverage_by_season_position:bySeasonPosition,source_reports:sourceReports.map(s=>({season:s.season,metric:s.metric,parsed_rows:s.parsed_rows,pages_fetched:s.pages_fetched,page_new_rows:s.page_reports.map(p=>p.new_rows)})),blocked,sportsbook_inputs_used:false,safeguards:['Observed route participation and routes run remain separate from workload proxies.','Only WR/TE player-season rows are admitted.','Missing route metrics remain missing and are never converted to zero.','Identity matching is season + position + normalized player name against the GSIS-backed historical reference population.','Pagination stops only after two consecutive pages add no new players.','Coverage requirements are not weakened to force a pass.','No projection or live fantasy rank is changed by this backfill script.','No sportsbook data is used.']};
 fs.writeFileSync(path.join(outDir,'historical-route-participation-2021-2025.json'),JSON.stringify(output,null,2)+'\n');
 fs.writeFileSync(path.join(root,'guardrails/historical-route-participation-backfill-report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));
