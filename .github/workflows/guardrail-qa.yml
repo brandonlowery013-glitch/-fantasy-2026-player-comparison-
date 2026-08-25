@@ -33,6 +33,8 @@ jobs:
         run: node scripts/enrich-high-value-usage.mjs
       - name: Audit high-value usage against PFR
         run: node scripts/audit-high-value-usage.mjs
+      - name: Enrich deeper leakage-safe football context
+        run: node scripts/enrich-deeper-football-context.mjs
       - name: Build and validate football probability distributions
         run: node scripts/build-probability-distributions.mjs --validate
       - name: Verify EV shadow layer synchronization
@@ -54,6 +56,7 @@ jobs:
             guardrails/historical-context-enrichment-report.json
             guardrails/high-value-usage-report.json
             guardrails/high-value-usage-accuracy-report.json
+            guardrails/deeper-football-context-report.json
             data/probability/generated/historical-core-2021-2025.json
             data/probability/generated/historical-enriched-2021-2025.json
           if-no-files-found: error
