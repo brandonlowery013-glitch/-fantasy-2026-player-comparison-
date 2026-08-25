@@ -10,7 +10,7 @@ const outDir=path.join(root,'data/probability/generated');
 fs.mkdirSync(outDir,{recursive:true});
 fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});
 
-const statsByPos={QB:['pass_yards','pass_tds','rush_yards'],RB:['rush_yards','receiving_yards','receptions'],WR:['receiving_yards','receptions'],TE:['receiving_yards','receptions']};
+const statsByPos={QB:['pass_yards','pass_tds','rush_yards'],RB:['rush_yards','targets','receiving_yards','receptions'],WR:['targets','receiving_yards','receptions'],TE:['targets','receiving_yards','receptions']};
 const tuneSeasons=new Set([2023,2024]);
 const evalSeason=2025;
 const kGrid=[5,10,20,40,80];
@@ -103,7 +103,7 @@ for(const [pos,stats] of Object.entries(statsByPos)){
 
 const generatedAt=new Date().toISOString();
 const limitations=['This is a distribution-calibration baseline, not a historical sportsbook backtest.','No archived sportsbook line or price is used here.','Historical projection snapshots are not yet available, so this tests a walk-forward football-history forecast rather than reconstruction of our exact historical projection model.','Gaussian likelihood is a baseline scoring family for tuning shrinkage; count-stat distribution families still require dedicated comparison.','Routes, broad-population injury detail, and broad-population red-zone context are not yet fully enriched.'];
-const output={schema_version:'1.0.0',generated_at:generatedAt,mode:'SHADOW_ONLY',actionable:false,purpose:'Football-only historical uncertainty priors and first walk-forward distribution calibration baseline.',history_window:[2021,2022,2023,2024,2025],tuning_window:[2023,2024],evaluation_window:[2025],sportsbook_inputs_used:false,reference_players:data.reference_unique_players,reference_player_games:data.row_count,stat_policy:statsByPos,tuning,position_priors:priorSummary,player_priors:playerPriors,holdout_calibration:calibration,limitations};
+const output={schema_version:'1.1.0',generated_at:generatedAt,mode:'SHADOW_ONLY',actionable:false,purpose:'Football-only historical uncertainty priors and first walk-forward distribution calibration baseline.',history_window:[2021,2022,2023,2024,2025],tuning_window:[2023,2024],evaluation_window:[2025],sportsbook_inputs_used:false,reference_players:data.reference_unique_players,reference_player_games:data.row_count,stat_policy:statsByPos,tuning,position_priors:priorSummary,player_priors:playerPriors,holdout_calibration:calibration,limitations};
 const blocked=[];
 if(data.live_player_universe_count!==162)blocked.push('live player universe changed');
 if(data.reference_unique_players<500)blocked.push('reference population too small');
