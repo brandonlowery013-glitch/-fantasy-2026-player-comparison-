@@ -39,6 +39,8 @@ jobs:
         run: node scripts/build-historical-reference-population.mjs
       - name: Build uncertainty priors and walk-forward calibration
         run: node scripts/build-historical-uncertainty-calibration.mjs
+      - name: Calibrate stat distribution families
+        run: node scripts/calibrate-distribution-families.mjs
       - name: Build and validate football probability distributions
         run: node scripts/build-probability-distributions.mjs --validate
       - name: Verify EV shadow layer synchronization
@@ -63,8 +65,10 @@ jobs:
             guardrails/deeper-football-context-report.json
             guardrails/historical-reference-population-report.json
             guardrails/historical-uncertainty-calibration-report.json
+            guardrails/distribution-family-calibration-report.json
             data/probability/generated/historical-core-2021-2025.json
             data/probability/generated/historical-enriched-2021-2025.json
             data/probability/generated/historical-reference-population-2021-2025.json
             data/probability/generated/historical-uncertainty-priors-2021-2025.json
+            data/probability/generated/distribution-family-calibration-2021-2025.json
           if-no-files-found: error
