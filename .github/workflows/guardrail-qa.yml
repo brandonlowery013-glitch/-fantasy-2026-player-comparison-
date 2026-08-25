@@ -31,6 +31,8 @@ jobs:
         run: node scripts/enrich-high-value-usage.mjs
       - name: Audit high-value usage against PFR
         run: node scripts/audit-high-value-usage.mjs
+      - name: Inspect ESPN gamelog response
+        run: node scripts/diagnose-espn-gamelog.mjs
       - name: Build and validate football probability distributions
         run: node scripts/build-probability-distributions.mjs --validate
       - name: Verify EV shadow layer synchronization
