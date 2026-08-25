@@ -1,0 +1,135 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_1_FREE_SOURCE_AUDIT_IN_PROGRESS",
+  "paid_source_required": false,
+  "decision_rule": "Exhaust free, reproducible sources before buying data. Paid data is allowed only for a field that remains materially unavailable or too stale for weekly use.",
+  "sources": [
+    {
+      "name": "nflverse / nflreadr",
+      "role": "PRIMARY_FREE_BACKBONE",
+      "cost": 0,
+      "reproducible": true,
+      "machine_readable": true,
+      "weekly_usable": true,
+      "covers": [
+        "play_by_play",
+        "weekly_player_stats",
+        "team_stats",
+        "schedules",
+        "rosters",
+        "weekly_rosters",
+        "depth_charts",
+        "snap_counts",
+        "next_gen_stats",
+        "pfr_advanced_stats"
+      ],
+      "limitations": [
+        "Participation/route data from 2023 onward is not updated during the season; it is supplied after the postseason.",
+        "The nflverse injury source died after 2024; current 2025+ injury data is not presently available from this feed."
+      ],
+      "weekly_priority": "HIGH"
+    },
+    {
+      "name": "Fantasy Life Utilization Report",
+      "role": "PRIMARY_FREE_WEEKLY_UTILIZATION_AND_ROUTE_SOURCE",
+      "cost": 0,
+      "reproducible": "TO_VALIDATE",
+      "machine_readable": "TO_VALIDATE",
+      "weekly_usable": true,
+      "covers": [
+        "snap_share",
+        "route_percentage",
+        "routes_run",
+        "targets_per_route_run",
+        "target_share",
+        "catchable_targets",
+        "aDOT",
+        "air_yards_share",
+        "end_zone_targets",
+        "third_fourth_down_targets",
+        "play_action_targets",
+        "rb_rush_share",
+        "rb_inside_five_rush_share",
+        "rb_short_down_distance_snaps",
+        "rb_long_down_distance_snaps",
+        "rb_two_minute_snaps"
+      ],
+      "limitations": [
+        "Need to validate stable machine-readable extraction/export method and terms before automating ingestion."
+      ],
+      "weekly_priority": "HIGH"
+    },
+    {
+      "name": "StatRankings",
+      "role": "FREE_ROUTE_PARTICIPATION_VERIFICATION",
+      "cost": 0,
+      "reproducible": "TO_VALIDATE",
+      "machine_readable": "TO_VALIDATE",
+      "weekly_usable": true,
+      "stated_update_latency": "24-36 hours post-game",
+      "covers": [
+        "route_participation_season",
+        "route_participation_last_1",
+        "route_participation_last_3",
+        "route_participation_last_5",
+        "route_participation_last_10",
+        "route_participation_home",
+        "route_participation_away"
+      ],
+      "limitations": [
+        "Best treated as a cross-check unless stable automated extraction is confirmed."
+      ],
+      "weekly_priority": "MEDIUM"
+    },
+    {
+      "name": "NFL Savant",
+      "role": "FREE_ADVANCED_VERIFICATION_CANDIDATE",
+      "cost": 0,
+      "reproducible": "TO_VALIDATE",
+      "machine_readable": "TO_VALIDATE",
+      "weekly_usable": "TO_VALIDATE",
+      "covers": [
+        "advanced_player_profiles",
+        "route_breakdowns",
+        "target_share",
+        "air_yards",
+        "EPA",
+        "CPOE"
+      ],
+      "limitations": [
+        "Coverage and extraction method still require direct validation before model use."
+      ],
+      "weekly_priority": "MEDIUM"
+    },
+    {
+      "name": "PFF public weekly usage reports",
+      "role": "FREE_MANUAL_VERIFICATION_ONLY",
+      "cost": 0,
+      "reproducible": false,
+      "machine_readable": false,
+      "weekly_usable": true,
+      "covers": [
+        "routes_run_examples",
+        "TPRR_examples",
+        "carry_share_examples",
+        "red_zone_usage_examples",
+        "alignment_examples",
+        "aDOT_examples",
+        "snap_examples"
+      ],
+      "limitations": [
+        "Not suitable as the primary automated feed; use for spot checks and manual verification."
+      ],
+      "weekly_priority": "LOW"
+    }
+  ],
+  "remaining_step_1_gaps": [
+    "Find and validate a free current injury/practice-status source for 2026.",
+    "Validate reproducible extraction for Fantasy Life weekly utilization data.",
+    "Validate reproducible extraction for StatRankings route participation.",
+    "Validate NFL Savant coverage and update cadence.",
+    "Define fallback hierarchy when a free source is stale or unavailable.",
+    "Only price paid alternatives if one of these gaps remains material after validation."
+  ]
+}
