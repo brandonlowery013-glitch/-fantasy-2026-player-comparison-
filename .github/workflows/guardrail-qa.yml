@@ -3,20 +3,16 @@ name: Guardrail QA
 on:
   workflow_dispatch:
   push:
-    paths:
-      - 'players*.json'
-      - 'MODEL_SOURCE_OF_TRUTH.json'
-      - 'vegasOdds2026.json'
-      - 'evLayer2026.json'
-      - 'guardrails/**'
-      - 'scripts/run-guardrail-qa.mjs'
+  pull_request:
 
 jobs:
   guardrail-qa:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout full history for drift comparison
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - name: Use Node
         uses: actions/setup-node@v4
         with:
