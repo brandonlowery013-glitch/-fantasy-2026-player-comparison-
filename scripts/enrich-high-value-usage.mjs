@@ -59,8 +59,8 @@ for(const season of seasons){
   for(const p of pbp){
     if(String(val(p,'season_type')||'REG').toUpperCase()!=='REG') continue;
     const week=Number(val(p,'week')); if(!Number.isFinite(week)||week<1||week>18) continue;
-    const y=num(val(p,'yardline_100')); if(y==null||y>20) continue;
-    const rz=y<=20,i10=y<=10,i5=y<=5;
+    const y=num(val(p,'yardline_100')); if(y==null||y>=20) continue;
+    const rz=y<20,i10=y<10,i5=y<5;
     const noPlay=truth(val(p,'no_play'))||String(val(p,'play_type')).toLowerCase()==='no_play';
     if(noPlay) continue;
 
@@ -82,19 +82,30 @@ for(const season of seasons){
   }
 }
 
-let rowsWithHighValueActivity=0,playedRows=0;
+let rowsWithHighValueActivity=0,playedRows=0,participationOverrides=0;
 for(const r of rows){
   const a=agg.get(`${r.player}|${r.season}|${r.week}`)||zero();
+  const hasPbpActivity=Object.values(a).some(v=>v>0);
+  if(hasPbpActivity&&r.played===false){
+    r.played=true;
+    r.inactive=false;
+    r.active_status='PARTICIPATION_CONFIRMED_PBP';
+    r.data_quality_flags=Array.isArray(r.data_quality_flags)?r.data_quality_flags:[];
+    if(!r.data_quality_flags.includes('SOURCE_CONFLICT'))r.data_quality_flags.push('SOURCE_CONFLICT');
+    if(!r.data_quality_flags.includes('MANUAL_REVIEW'))r.data_quality_flags.push('MANUAL_REVIEW');
+    r.inactive_reason=r.inactive_reason?`${r.inactive_reason}; overridden by nflverse PBP participation`:'Overridden by nflverse PBP participation';
+    participationOverrides++;
+  }
   Object.assign(r,a);
   r.red_zone_carries=a.red_zone_rush_attempts;
   r.goal_line_carries=a.inside_5_rush_attempts;
   if(r.played) playedRows++;
-  if(Object.values(a).some(v=>v>0)) rowsWithHighValueActivity++;
+  if(hasPbpActivity) rowsWithHighValueActivity++;
   r.high_value_usage_source='nflverse play-by-play + nflverse GSIS player identity';
   r.high_value_usage_source_date=new Date().toISOString().slice(0,10);
 }
 
-data.schema_version='1.2.1';
+data.schema_version='1.2.2';
 data.generated_at=new Date().toISOString();
 data.high_value_usage_source_files=sourceFiles;
 data.rows=rows;
@@ -106,17 +117,19 @@ const report={
   rows:rows.length,
   played_rows:playedRows,
   rows_with_high_value_activity:rowsWithHighValueActivity,
+  participation_overrides_from_pbp:participationOverrides,
   identified_passer_events:identifiedPassers,
   identified_rusher_events:identifiedRushers,
   identified_receiver_events:identifiedReceivers,
   source_files:sourceFiles,
+  zone_definitions:{red_zone:'yardline_100 < 20',inside_10:'yardline_100 < 10',inside_5:'yardline_100 < 5'},
   position_policy:{
     QB:['red_zone_pass_attempts','inside_10_pass_attempts','inside_5_pass_attempts','red_zone_rush_attempts','inside_10_rush_attempts','inside_5_rush_attempts','pass/rush TD splits'],
     RB:['red_zone_rush_attempts','inside_10_rush_attempts','inside_5_rush_attempts','red_zone_targets','receiving TD context'],
     WR:['red_zone_targets','inside_10_targets','inside_5_targets','end_zone_targets','red_zone_receptions','receiving TD splits'],
     TE:['red_zone_targets','inside_10_targets','inside_5_targets','end_zone_targets','red_zone_receptions','receiving TD splits']
   },
-  safeguards:['No sportsbook inputs used.','Identity matching prefers GSIS IDs from nflverse players master.','Pass attempts use official-stat play outcomes (complete/incomplete/interception), not sacks.','No-play/penalty-nullified plays are excluded.','End-zone target requires air_yards >= yardline_100; it is not inferred when air_yards is missing.','Inactive rows remain zero rather than being treated as played opportunities.']
+  safeguards:['No sportsbook inputs used.','Identity matching prefers GSIS IDs from nflverse players master.','Pass attempts use official-stat play outcomes (complete/incomplete/interception), not sacks.','No-play/penalty-nullified plays are excluded.','PFR-style zone labels use strict inside boundaries, excluding snaps exactly at the 20, 10, or 5.','Direct PBP participation overrides an injury-derived inactive row and is flagged SOURCE_CONFLICT + MANUAL_REVIEW.','End-zone target requires air_yards >= yardline_100; it is not inferred when air_yards is missing.']
 };
 fs.writeFileSync(path.join(root,'guardrails/high-value-usage-report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));
