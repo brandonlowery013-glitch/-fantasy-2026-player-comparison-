@@ -1,0 +1,51 @@
+{
+  "version": "0.1.0-shadow",
+  "season": 2026,
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "calibration_status": "UNVALIDATED",
+  "description": "First-generation season-total probability model. The center comes only from our football projection ranges; uncertainty comes from position/stat base variance plus role, availability, reliability, sustainability, environment and ceiling inputs. Sportsbook odds are never an input to the model probability.",
+  "distribution": "normal_approximation_nonnegative_floor",
+  "ceiling_reference_percentile": 0.90,
+  "base_coefficient_of_variation": {
+    "passing_yards": 0.12,
+    "rushing_yards": 0.22,
+    "receiving_yards": 0.24,
+    "passing_tds": 0.22,
+    "receiving_tds": 0.34,
+    "receptions": 0.18
+  },
+  "uncertainty_weights": {
+    "role": 0.30,
+    "availability": 0.25,
+    "reliability": 0.20,
+    "sustainability": 0.15,
+    "environment": 0.10
+  },
+  "uncertainty_multiplier": {
+    "base": 0.85,
+    "risk_slope": 1.50,
+    "minimum": 0.80,
+    "maximum": 1.55
+  },
+  "ceiling_score_multiplier": {
+    "reference_score": 8.0,
+    "slope_per_point": 0.08,
+    "minimum": 0.90,
+    "maximum": 1.16
+  },
+  "percentiles": {
+    "p10_z": -1.2815515655,
+    "p25_z": -0.6744897502,
+    "p50_z": 0,
+    "p75_z": 0.6744897502,
+    "p90_z": 1.2815515655
+  },
+  "guardrails": {
+    "never_backsolve_from_market": true,
+    "market_price_not_model_input": true,
+    "uncalibrated_probabilities_non_actionable": true,
+    "extreme_probability_edge_requires_review": true,
+    "missing_projection_parse_action": "INSUFFICIENT_DATA"
+  }
+}
