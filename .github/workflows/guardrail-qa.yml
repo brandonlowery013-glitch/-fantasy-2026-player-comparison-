@@ -29,6 +29,8 @@ jobs:
         run: node scripts/enrich-historical-context.mjs
       - name: Enrich position-specific high-value usage
         run: node scripts/enrich-high-value-usage.mjs
+      - name: Diagnose Jonathan Taylor red-zone rush discrepancy
+        run: node scripts/diagnose-jt-2024-rz.mjs
       - name: Audit high-value usage against PFR
         run: node scripts/audit-high-value-usage.mjs
       - name: Build and validate football probability distributions
