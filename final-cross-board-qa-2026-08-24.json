@@ -1,0 +1,54 @@
+{
+  "as_of": "2026-08-24T19:27:00-05:00",
+  "passed": true,
+  "active_model": "162-player board",
+  "legacy_153_status": "historical checkpoint only; not an active model or runtime source",
+  "population": {
+    "active_players": 162,
+    "unique_players": 162,
+    "player_shards": 13,
+    "missing_required_fields": [],
+    "alias_duplicates": []
+  },
+  "cross_board_checks": {
+    "overall_board": "162-player source retained",
+    "player_quality_board": "canonical locked ranks retained",
+    "projection_layer": "162-player injury-adjusted projection model retained",
+    "market_value_layer": "current ADP/consensus price logic retained",
+    "vegas_context": "retained as independent calibration/context layer",
+    "current_injury_recovery_layer": "2026-08-24 patch applied after base injury overrides and before UI render",
+    "duplicate_injury_penalty": false,
+    "rank_reorder_required_by_aug24_patch": false
+  },
+  "aug24_material_updates": [
+    "Ashton Jeanty — ankle sprain / short-term availability watch; no major knee-injury assumption",
+    "TreVeyon Henderson — right foot/ankle practice-exit watch; small temporary availability discount",
+    "Makai Lemon — full-practice return; partial availability restoration",
+    "DeVonta Smith — full-practice return; temporary camp penalty removed",
+    "Christian McCaffrey — 11-on-11 return; camp-only penalty removed while base durability discount remains",
+    "George Kittle — off PUP / individual work; Week 1 availability improved while Achilles performance discount remains",
+    "Mike Washington Jr. — contingency thesis changed from Jeanty knee watch to short-term ankle-spain role watch"
+  ],
+  "runtime_ui_checks": {
+    "production_bootstrap_uses_absolute_github_paths": true,
+    "relative_vercel_index_backup_404_removed": true,
+    "pre_render_player_gate": "requires exactly 162 active and 162 unique players",
+    "pre_render_patch_gate": "requires every Aug. 24 update target to exist in active pool",
+    "player_loader_shards": 13,
+    "ui_categories_retained": [
+      "Model vs Market",
+      "Expected Production",
+      "Ceiling / Bust",
+      "Scoring Profile",
+      "Offensive Environment",
+      "Track Record / Reliability",
+      "Pivotal News",
+      "Vegas Context",
+      "Draft Value",
+      "Final Decision"
+    ],
+    "player_sorting": "last-name sort retained by application runtime",
+    "production_url": "https://fantasy-2026-player-comparison.vercel.app"
+  },
+  "result": "PASS — one active 162-player model; GitHub and Vercel production are pointed at the 162-player runtime with an exact-population gate."
+}
