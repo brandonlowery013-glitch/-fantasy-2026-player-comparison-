@@ -21,6 +21,8 @@ jobs:
         run: node scripts/run-baseline-drift-check.mjs
       - name: Test EV and de-vig math
         run: node scripts/test-ev-math.mjs
+      - name: Build and validate football probability distributions
+        run: node scripts/build-probability-distributions.mjs --validate
       - name: Verify EV shadow layer synchronization
         run: node scripts/build-ev-shadow-layer.mjs --check
       - name: Run hard guardrail QA
@@ -33,4 +35,6 @@ jobs:
           path: |
             guardrails/baseline-drift-report.json
             guardrails/guardrail-report.json
+            guardrails/probability-distribution-report.json
+            guardrails/generated-ev-probability-inputs.json
           if-no-files-found: error
