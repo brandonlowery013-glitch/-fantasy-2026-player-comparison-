@@ -1,0 +1,99 @@
+{
+  "schema_version": "1.1.0",
+  "season": 2026,
+  "status": "STEP_1_FREE_SOURCE_AUDIT_COMPLETE",
+  "paid_source_required": false,
+  "decision_rule": "Use free football-side sources first. Introduce paid data only if a required weekly field becomes unavailable, stale, or operationally unreliable enough to degrade projections.",
+  "source_hierarchy": {
+    "primary_backbone": "nflverse / nflreadr",
+    "primary_weekly_utilization": "Fantasy Life Utilization Report",
+    "route_verification": "StatRankings",
+    "official_injury_status": "NFL.com official injury reports",
+    "injury_news_fallback": "FantasyPros injury/news feed",
+    "historical_advanced_verification": "NFL Savant",
+    "manual_spot_check": "PFF public weekly usage reports"
+  },
+  "sources": [
+    {
+      "name": "nflverse / nflreadr",
+      "role": "PRIMARY_FREE_BACKBONE",
+      "cost": 0,
+      "reproducible": true,
+      "machine_readable": true,
+      "weekly_usable": true,
+      "covers": ["play_by_play","weekly_player_stats","team_stats","schedules","rosters","weekly_rosters","depth_charts","snap_counts","next_gen_stats","pfr_advanced_stats"],
+      "limitations": [
+        "Participation/route data from 2023 onward is not updated during the season.",
+        "Current injury data cannot be treated as covered by nflverse for 2025+."
+      ]
+    },
+    {
+      "name": "Fantasy Life Utilization Report",
+      "role": "PRIMARY_FREE_WEEKLY_UTILIZATION_AND_ROUTE_SOURCE",
+      "cost": 0,
+      "publicly_reproducible": true,
+      "machine_readable_contract": false,
+      "weekly_usable": true,
+      "covers": ["snap_share","route_percentage","routes_run","targets_per_route_run","target_share","catchable_targets","aDOT","air_yards_share","end_zone_targets","third_fourth_down_targets","play_action_targets","rb_rush_share","rb_inside_five_rush_share","rb_short_down_distance_snaps","rb_long_down_distance_snaps","rb_two_minute_snaps"],
+      "usage_rule": "Use as the primary free weekly utilization reference. Automation is optional; preserve source date/week and do not fabricate missing fields."
+    },
+    {
+      "name": "StatRankings",
+      "role": "FREE_ROUTE_AND_TPRR_VERIFICATION",
+      "cost": 0,
+      "publicly_reproducible": true,
+      "machine_readable_contract": false,
+      "weekly_usable": true,
+      "stated_update_latency": "24-36 hours post-game",
+      "covers": ["routes_run","route_participation","targets_per_route_run","season_splits","last_1","last_3","last_5","last_10","home","away"],
+      "usage_rule": "Use as secondary verification and as fallback when Fantasy Life utilization is missing or ambiguous."
+    },
+    {
+      "name": "NFL.com official injury reports",
+      "role": "PRIMARY_FREE_OFFICIAL_INJURY_SOURCE",
+      "cost": 0,
+      "publicly_reproducible": true,
+      "weekly_usable": true,
+      "covers": ["practice_status","game_status","injury_designation","official_weekly_updates"],
+      "usage_rule": "Official practice and game-status designations are authoritative once the regular-season reporting window begins. Preserve report date/time."
+    },
+    {
+      "name": "FantasyPros injury/news feed",
+      "role": "FREE_INJURY_AND_ROLE_NEWS_FALLBACK",
+      "cost": 0,
+      "publicly_reproducible": true,
+      "weekly_usable": true,
+      "covers": ["training_camp_injury_updates","practice_returns","practice_absences","role_news","beat_reporter_sourced_updates"],
+      "usage_rule": "Use for camp, between official reports, and contextual updates; do not override an official NFL game-status designation without newer direct evidence."
+    },
+    {
+      "name": "NFL Savant",
+      "role": "FREE_HISTORICAL_ADVANCED_VERIFICATION",
+      "cost": 0,
+      "publicly_reproducible": true,
+      "weekly_usable": false,
+      "covers": ["historical_route_breakdowns","target_share","air_yards","EPA","CPOE","expected_fantasy_points"],
+      "limitations": ["Current site data is labeled through 2025; route/charting data ultimately relies on nflverse/FTN sources."],
+      "usage_rule": "Historical verification only; not a required live 2026 route feed."
+    },
+    {
+      "name": "PFF public weekly usage reports",
+      "role": "FREE_MANUAL_VERIFICATION_ONLY",
+      "cost": 0,
+      "publicly_reproducible": false,
+      "machine_readable_contract": false,
+      "weekly_usable": true,
+      "usage_rule": "Manual spot-check only; never a required automated dependency."
+    }
+  ],
+  "fallback_rules": [
+    "If Fantasy Life is available, use it as the primary weekly utilization source.",
+    "If Fantasy Life is missing or ambiguous, cross-check StatRankings and nflverse snap/usage data.",
+    "For injuries, use NFL.com official practice/game-status reports once available; use FantasyPros/news only as current context or fallback.",
+    "If a route field is unavailable for an established full-time WR1/WR2, do not block projection generation solely for that reason; use target share, TPRR, air-yard share, red-zone role, and stable snap/usage evidence.",
+    "For TEs, receiving RBs, fringe WRs, injury returns, and depth-chart changes, missing route participation lowers confidence and may trigger REVIEW_REQUIRED.",
+    "Never substitute sportsbook data for a missing football-side input."
+  ],
+  "paid_source_trigger": "Revisit paid feeds only if the free hierarchy repeatedly fails to provide a materially important pregame field with sufficient freshness or reliability.",
+  "remaining_step_1_gaps": []
+}
