@@ -19,6 +19,10 @@ jobs:
           node-version: '20'
       - name: Run frozen baseline drift comparator
         run: node scripts/run-baseline-drift-check.mjs
+      - name: Test EV and de-vig math
+        run: node scripts/test-ev-math.mjs
+      - name: Verify EV shadow layer synchronization
+        run: node scripts/build-ev-shadow-layer.mjs --check
       - name: Run hard guardrail QA
         run: node scripts/run-guardrail-qa.mjs
       - name: Upload guardrail reports
