@@ -12,10 +12,16 @@ const requiredSchemaFields=[
   'rush_attempts','rush_yards','rush_tds','targets','receptions','receiving_yards',
   'receiving_tds','offensive_snaps','snap_share','routes_run','route_share','team_dropbacks',
   'target_share','air_yards','air_yards_share','carry_share','red_zone_targets',
-  'red_zone_carries','goal_line_carries','team_offensive_plays','team_pass_rate',
+  'inside_10_targets','inside_5_targets','end_zone_targets','red_zone_receptions',
+  'inside_10_receptions','inside_5_receptions','red_zone_receiving_tds','inside_10_receiving_tds',
+  'inside_5_receiving_tds','red_zone_carries','goal_line_carries','red_zone_rush_attempts',
+  'inside_10_rush_attempts','inside_5_rush_attempts','red_zone_rush_tds','inside_10_rush_tds',
+  'inside_5_rush_tds','red_zone_pass_attempts','inside_10_pass_attempts','inside_5_pass_attempts',
+  'red_zone_pass_tds','inside_10_pass_tds','inside_5_pass_tds','team_offensive_plays','team_pass_rate',
   'neutral_pass_rate','seconds_per_play','final_point_differential','roof','surface',
   'temperature_f','wind_mph','precipitation','opponent_defense_bucket','data_quality_flags',
-  'source','source_url','usage_source','usage_source_url','context_source','context_source_url'
+  'source','source_url','usage_source','usage_source_url','context_source','context_source_url',
+  'high_value_usage_source','high_value_usage_source_date'
 ];
 
 const missing=requiredSchemaFields.filter(k=>!Object.hasOwn(schema.properties||{},k));
@@ -51,6 +57,7 @@ console.log(JSON.stringify({
   history_window:manifest.history_window,
   schema_fields:Object.keys(schema.properties||{}).length,
   role_regime_required:true,
+  high_value_usage_fields:24,
   stat_families:Object.keys(policy.stat_families||{}).length,
   market_contamination:'BLOCKED_BY_POLICY'
 },null,2));
