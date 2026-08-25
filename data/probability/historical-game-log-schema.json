@@ -2,16 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Fantasy 2026 Historical Game Log Row",
   "type": "object",
-  "required": [
-    "player",
-    "season",
-    "week",
-    "team",
-    "opponent",
-    "played",
-    "role_regime_id",
-    "source"
-  ],
+  "required": ["player","season","week","team","opponent","played","role_regime_id","source"],
   "properties": {
     "player": {"type":"string"},
     "position": {"type":["string","null"],"enum":["QB","RB","WR","TE",null]},
@@ -57,8 +48,29 @@
     "air_yards_share": {"type":["number","null"],"minimum":0,"maximum":1},
     "carry_share": {"type":["number","null"],"minimum":0,"maximum":1},
     "red_zone_targets": {"type":["number","null"],"minimum":0},
+    "inside_10_targets": {"type":["number","null"],"minimum":0},
+    "inside_5_targets": {"type":["number","null"],"minimum":0},
+    "end_zone_targets": {"type":["number","null"],"minimum":0},
+    "red_zone_receptions": {"type":["number","null"],"minimum":0},
+    "inside_10_receptions": {"type":["number","null"],"minimum":0},
+    "inside_5_receptions": {"type":["number","null"],"minimum":0},
+    "red_zone_receiving_tds": {"type":["number","null"],"minimum":0},
+    "inside_10_receiving_tds": {"type":["number","null"],"minimum":0},
+    "inside_5_receiving_tds": {"type":["number","null"],"minimum":0},
     "red_zone_carries": {"type":["number","null"],"minimum":0},
     "goal_line_carries": {"type":["number","null"],"minimum":0},
+    "red_zone_rush_attempts": {"type":["number","null"],"minimum":0},
+    "inside_10_rush_attempts": {"type":["number","null"],"minimum":0},
+    "inside_5_rush_attempts": {"type":["number","null"],"minimum":0},
+    "red_zone_rush_tds": {"type":["number","null"],"minimum":0},
+    "inside_10_rush_tds": {"type":["number","null"],"minimum":0},
+    "inside_5_rush_tds": {"type":["number","null"],"minimum":0},
+    "red_zone_pass_attempts": {"type":["number","null"],"minimum":0},
+    "inside_10_pass_attempts": {"type":["number","null"],"minimum":0},
+    "inside_5_pass_attempts": {"type":["number","null"],"minimum":0},
+    "red_zone_pass_tds": {"type":["number","null"],"minimum":0},
+    "inside_10_pass_tds": {"type":["number","null"],"minimum":0},
+    "inside_5_pass_tds": {"type":["number","null"],"minimum":0},
     "team_offensive_plays": {"type":["number","null"],"minimum":0},
     "team_pass_rate": {"type":["number","null"],"minimum":0,"maximum":1},
     "neutral_pass_rate": {"type":["number","null"],"minimum":0,"maximum":1},
@@ -72,39 +84,20 @@
     "wind_mph": {"type":["number","null"],"minimum":0},
     "precipitation": {"type":["string","null"]},
     "opponent_defense_bucket": {"type":["string","null"]},
-    "data_quality_flags": {
-      "type":"array",
-      "items":{"type":"string","enum":[
-        "PARTIAL_GAME",
-        "INJURY_LIMITED",
-        "ROLE_CHANGE",
-        "TEAM_CHANGE",
-        "QB_CHANGE",
-        "COACH_OR_PLAYCALLER_CHANGE",
-        "MISSING_USAGE_DATA",
-        "MISSING_CONTEXT_DATA",
-        "SOURCE_CONFLICT",
-        "MANUAL_REVIEW"
-      ]},
-      "uniqueItems": true
-    },
+    "data_quality_flags": {"type":"array","items":{"type":"string","enum":["PARTIAL_GAME","INJURY_LIMITED","ROLE_CHANGE","TEAM_CHANGE","QB_CHANGE","COACH_OR_PLAYCALLER_CHANGE","MISSING_USAGE_DATA","MISSING_CONTEXT_DATA","SOURCE_CONFLICT","MANUAL_REVIEW"]},"uniqueItems":true},
     "source": {"type":"string"},
     "source_url": {"type":["string","null"]},
     "usage_source": {"type":["string","null"]},
     "usage_source_url": {"type":["string","null"]},
     "context_source": {"type":["string","null"]},
     "context_source_url": {"type":["string","null"]},
+    "high_value_usage_source": {"type":["string","null"]},
+    "high_value_usage_source_date": {"type":["string","null"]},
     "source_date": {"type":["string","null"]}
   },
   "allOf": [
-    {
-      "if": {"properties":{"played":{"const":false}},"required":["played"]},
-      "then": {"properties":{"inactive":{"const":true}}}
-    },
-    {
-      "if": {"properties":{"partial_game":{"const":true}},"required":["partial_game"]},
-      "then": {"required":["partial_game_reason"]}
-    }
+    {"if":{"properties":{"played":{"const":false}},"required":["played"]},"then":{"properties":{"inactive":{"const":true}}}},
+    {"if":{"properties":{"partial_game":{"const":true}},"required":["partial_game"]},"then":{"required":["partial_game_reason"]}}
   ],
   "additionalProperties": false
 }
