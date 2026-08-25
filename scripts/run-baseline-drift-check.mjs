@@ -25,6 +25,12 @@ const removed=[...oldMap.keys()].filter(n=>!newMap.has(n));
 const coreChanges=[];
 const unauthorized=[];
 
+const declarationCovers=(name,fields)=>{
+  const d=declared.get(name);
+  const declaredFields=new Set(Array.isArray(d?.changed_fields)?d.changed_fields:[]);
+  return !!(d&&d.reason&&d.source&&fields.every(f=>declaredFields.has(f)));
+};
+
 for(const [name,p] of newMap){
   const old=oldMap.get(name); if(!old) continue;
   const changed=[];
@@ -35,10 +41,38 @@ for(const [name,p] of newMap){
   if(changed.length){
     const item={player:name,changed_fields:changed};
     coreChanges.push(item);
-    const d=declared.get(name);
-    const declaredFields=new Set(Array.isArray(d?.changed_fields)?d.changed_fields:[]);
-    const missingDeclaration=!d||!d.reason||!d.source||changed.some(x=>!declaredFields.has(x.field));
-    if(missingDeclaration) unauthorized.push(item);
+    if(!declarationCovers(name,changed.map(x=>x.field))) unauthorized.push(item);
+  }
+}
+
+// The active current-update patch can alter protected player inputs before they are
+// propagated into players*.json. Compare it directly with the frozen baseline too.
+const patchFile='current162patch-2026-08-24.json';
+const patchChanges=[];
+const unauthorizedPatchChanges=[];
+const patchMetadataDrift=[];
+if(fs.existsSync(path.join(root,patchFile))&&baseline.authoritative_files?.[patchFile]){
+  const oldPatch=JSON.parse(execFileSync('git',['show',`${baseline.baseline_commit}:${patchFile}`],{encoding:'utf8'}));
+  const newPatch=read(patchFile);
+  for(const key of ['updated','model']){
+    if(JSON.stringify(oldPatch[key]??null)!==JSON.stringify(newPatch[key]??null)) patchMetadataDrift.push({field:key,before:oldPatch[key]??null,after:newPatch[key]??null});
+  }
+  const oldPlayers=oldPatch.players||{};
+  const newPlayers=newPatch.players||{};
+  const names=new Set([...Object.keys(oldPlayers),...Object.keys(newPlayers)]);
+  for(const name of names){
+    const before=oldPlayers[name]||{};
+    const after=newPlayers[name]||{};
+    const fields=new Set([...Object.keys(before),...Object.keys(after)]);
+    const changed=[];
+    for(const field of fields){
+      if(JSON.stringify(before[field]??null)!==JSON.stringify(after[field]??null)) changed.push({field,before:before[field]??null,after:after[field]??null});
+    }
+    if(changed.length){
+      const item={player:name,changed_fields:changed};
+      patchChanges.push(item);
+      if(!declarationCovers(name,changed.map(x=>x.field))) unauthorizedPatchChanges.push(item);
+    }
   }
 }
 
@@ -63,6 +97,8 @@ for(const f of marketFiles){
 const blocked=[];
 if(added.length||removed.length) blocked.push({type:'PLAYER_POPULATION_DRIFT',added,removed});
 if(unauthorized.length) blocked.push({type:'UNDECLARED_CORE_DRIFT',players:unauthorized});
+if(unauthorizedPatchChanges.length) blocked.push({type:'UNDECLARED_ACTIVE_PATCH_DRIFT',file:patchFile,players:unauthorizedPatchChanges});
+if(patchMetadataDrift.length) blocked.push({type:'ACTIVE_PATCH_METADATA_DRIFT',file:patchFile,changes:patchMetadataDrift});
 if(structural.length) blocked.push({type:'PROTECTED_STRUCTURAL_DRIFT',files:structural});
 
 const report={
@@ -77,6 +113,9 @@ const report={
   declared_core_changes:coreChanges.length-unauthorized.length,
   undeclared_core_changes:unauthorized.length,
   core_changes:coreChanges,
+  active_patch_changes:patchChanges,
+  undeclared_active_patch_changes:unauthorizedPatchChanges.length,
+  active_patch_metadata_drift:patchMetadataDrift,
   structural_drift:structural,
   market_overlay_changes:marketChanges,
   blocked
