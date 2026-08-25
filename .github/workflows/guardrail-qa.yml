@@ -41,8 +41,10 @@ jobs:
         run: node scripts/build-historical-uncertainty-calibration.mjs
       - name: Calibrate stat distribution families
         run: node scripts/calibrate-distribution-families.mjs
+      - name: Validate weekly football projection generator
+        run: node scripts/build-weekly-projection-generator.mjs --self-test
       - name: Validate weekly calibrated probability engine
-        run: node scripts/build-weekly-probability-engine.mjs --self-test
+        run: node scripts/build-weekly-probability-engine.mjs
       - name: Build and validate football probability distributions
         run: node scripts/build-probability-distributions.mjs --validate
       - name: Verify EV shadow layer synchronization
@@ -68,11 +70,13 @@ jobs:
             guardrails/historical-reference-population-report.json
             guardrails/historical-uncertainty-calibration-report.json
             guardrails/distribution-family-calibration-report.json
+            guardrails/weekly-projection-generator-report.json
             guardrails/weekly-probability-engine-report.json
             data/probability/generated/historical-core-2021-2025.json
             data/probability/generated/historical-enriched-2021-2025.json
             data/probability/generated/historical-reference-population-2021-2025.json
             data/probability/generated/historical-uncertainty-priors-2021-2025.json
             data/probability/generated/distribution-family-calibration-2021-2025.json
+            data/probability/weekly-projection-inputs-2026.json
             data/probability/generated/weekly-probability-distributions-2026.json
           if-no-files-found: error
