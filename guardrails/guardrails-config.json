@@ -1,0 +1,68 @@
+{
+  "version": "1.0.0",
+  "season": 2026,
+  "authoritative_player_count": 162,
+  "authoritative_player_shards": 13,
+  "core_model": {
+    "frozen": true,
+    "market_layers_may_rewrite_core_rank": false,
+    "market_layers_may_rewrite_core_projection": false,
+    "allowed_market_output": [
+      "context",
+      "probability_edge",
+      "expected_value",
+      "review_flag",
+      "draft_value_overlay"
+    ]
+  },
+  "required_player_numeric_fields": ["o","tr","s","pd","ce","r","e","a","rl","su","mp"],
+  "numeric_bounds": {
+    "s": [0, 10],
+    "pd": [0, 10],
+    "ce": [0, 10],
+    "r": [0, 10],
+    "e": [0, 10],
+    "a": [0, 10],
+    "rl": [0, 10],
+    "su": [0, 10]
+  },
+  "probability": {
+    "minimum": 0,
+    "maximum": 1,
+    "extreme_edge_review_threshold": 0.12,
+    "very_extreme_edge_review_threshold": 0.18,
+    "strong_bet_requires_model_review_clearance_above": 0.12,
+    "missing_probability_input_action": "INSUFFICIENT_DATA"
+  },
+  "betting": {
+    "raw_edge_only_never_auto_bet": true,
+    "two_sided_odds_required_for_market_lean": true,
+    "missing_one_side_action": "THRESHOLD_CONTEXT_ONLY",
+    "minimum_independent_signals_for_strong_bet": 2,
+    "prohibited_fields_in_market_layer": ["o","tr","tp","pr","core_rank_override","projection_override"],
+    "vig_tolerance_after_devig": 0.000001
+  },
+  "drift": {
+    "player_count_change": "BLOCK",
+    "duplicate_player": "BLOCK",
+    "unknown_market_player": "BLOCK",
+    "core_rank_change_from_market_layer": "BLOCK",
+    "core_projection_change_from_market_layer": "BLOCK",
+    "unexplained_material_change": "BLOCK",
+    "material_projection_change_pct": 0.08,
+    "material_rank_change_places": 8
+  },
+  "freshness": {
+    "odds_hours_for_weekly_model": 6,
+    "injury_hours_for_weekly_model": 12,
+    "season_long_odds_days": 7,
+    "stale_data_action": "REVIEW_REQUIRED"
+  },
+  "calibration": {
+    "required_before_actionable_weekly_betting": true,
+    "minimum_holdout_bets_before_trust": 100,
+    "track": ["brier_score","log_loss","roi","closing_line_value","hit_rate_by_probability_bucket","hit_rate_by_market_type"],
+    "probability_buckets": [0.50,0.55,0.60,0.65,0.70,0.75]
+  },
+  "status_labels": ["PASS","REVIEW_REQUIRED","INSUFFICIENT_DATA","BLOCKED"]
+}
