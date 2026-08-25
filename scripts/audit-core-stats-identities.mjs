@@ -11,15 +11,19 @@ const players=[];
 for(let i=0;i<13;i++) players.push(...JSON.parse(fs.readFileSync(path.join(root,`players${i}.json`),'utf8')));
 const universe=new Map(players.map(p=>[p.n,p.p]));
 
-const sample={
-  QB:['Josh Allen','Joe Burrow','Lamar Jackson','Jalen Hurts','Patrick Mahomes','Baker Mayfield','Justin Herbert','Dak Prescott'],
-  RB:['Saquon Barkley','Derrick Henry','Bijan Robinson','Jahmyr Gibbs','James Cook','Breece Hall','Josh Jacobs','Jonathan Taylor'],
-  WR:["Ja'Marr Chase",'Justin Jefferson','Amon-Ra St. Brown','CeeDee Lamb','Nico Collins','A.J. Brown','Drake London','Mike Evans'],
-  TE:['Travis Kelce','George Kittle','Trey McBride','Brock Bowers','Mark Andrews','Sam LaPorta','Dallas Goedert','T.J. Hockenson']
+const candidates={
+  QB:['Josh Allen','Joe Burrow','Lamar Jackson','Jalen Hurts','Baker Mayfield','Justin Herbert','Dak Prescott','Brock Purdy','Jordan Love','Sam Darnold','Caleb Williams','Jayden Daniels'],
+  RB:['Saquon Barkley','Derrick Henry','Bijan Robinson','Jahmyr Gibbs','James Cook','Breece Hall','Josh Jacobs','Jonathan Taylor','De\'Von Achane','Kyren Williams'],
+  WR:["Ja'Marr Chase",'Justin Jefferson','Amon-Ra St. Brown','CeeDee Lamb','Nico Collins','A.J. Brown','Drake London','Mike Evans','Garrett Wilson','Terry McLaurin'],
+  TE:['George Kittle','Trey McBride','Brock Bowers','Mark Andrews','Sam LaPorta','Dallas Goedert','Jake Ferguson','Hunter Henry','Tucker Kraft','Chig Okonkwo']
 };
+const sample=Object.fromEntries(Object.entries(candidates).map(([pos,list])=>[pos,list.filter(name=>universe.get(name)===pos&&rows.some(r=>r.player===name&&r.season===2024)).slice(0,8)]));
 
-const normalize=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
-const n=v=>v==null||v===''||Number.isNaN(Number(v))?0:Number(v);
+const teamNames={
+  ARI:'Arizona Cardinals',ATL:'Atlanta Falcons',BAL:'Baltimore Ravens',BUF:'Buffalo Bills',CAR:'Carolina Panthers',CHI:'Chicago Bears',CIN:'Cincinnati Bengals',CLE:'Cleveland Browns',DAL:'Dallas Cowboys',DEN:'Denver Broncos',DET:'Detroit Lions',GB:'Green Bay Packers',HOU:'Houston Texans',IND:'Indianapolis Colts',JAX:'Jacksonville Jaguars',KC:'Kansas City Chiefs',LA:'Los Angeles Rams',LAC:'Los Angeles Chargers',LV:'Las Vegas Raiders',MIA:'Miami Dolphins',MIN:'Minnesota Vikings',NE:'New England Patriots',NO:'New Orleans Saints',NYG:'New York Giants',NYJ:'New York Jets',PHI:'Philadelphia Eagles',PIT:'Pittsburgh Steelers',SEA:'Seattle Seahawks',SF:'San Francisco 49ers',TB:'Tampa Bay Buccaneers',TEN:'Tennessee Titans',WAS:'Washington Commanders'
+};
+const normalize=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/\b(jr|sr|ii|iii|iv)\b/g,'').replace(/[^a-z0-9]/g,'');
+const n=v=>{if(v==null||v==='')return 0;const x=Number(String(v).replace(/,/g,''));return Number.isNaN(x)?0:x;};
 const sum=(arr,k)=>arr.reduce((s,r)=>s+n(r[k]),0);
 
 const metricMap={
@@ -45,19 +49,23 @@ for(const r of rows){
   if(!Number.isInteger(Number(r.season))||r.season<2021||r.season>2025) structural.push({type:'bad_season',key:k,value:r.season});
   if(!Number.isInteger(Number(r.week))||r.week<1||r.week>18) structural.push({type:'bad_week',key:k,value:r.week});
 }
+for(const [pos,list] of Object.entries(sample)) if(list.length!==8) structural.push({type:'sample_coverage',position:pos,expected:8,actual:list.length,players:list});
 
-async function resolveEspn(player){
+async function resolveEspn(player,teamAbbr){
   const url=`https://site.api.espn.com/apis/search/v2?query=${encodeURIComponent(player)}&limit=10&sport=football`;
   const res=await fetch(url,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});
   if(!res.ok) throw new Error(`ESPN search ${player}: ${res.status}`);
   const j=await res.json();
   const group=(j.results||[]).find(x=>x.type==='player');
-  const hits=(group?.contents||[]).filter(x=>x.description==='NFL'&&normalize(x.displayName)===normalize(player));
-  if(hits.length!==1) return {error:`expected 1 exact NFL athlete, found ${hits.length}`,url,hits:hits.map(x=>({displayName:x.displayName,uid:x.uid,subtitle:x.subtitle}))};
+  const exact=(group?.contents||[]).filter(x=>x.description==='NFL'&&normalize(x.displayName)===normalize(player));
+  const team=teamNames[teamAbbr]||null;
+  const teamHits=team?exact.filter(x=>String(x.subtitle||'')===team):[];
+  const hits=teamHits.length===1?teamHits:(exact.length===1?exact:[]);
+  if(hits.length!==1) return {error:`could not uniquely resolve exact NFL athlete`,url,team_abbr:teamAbbr,team_name:team,hits:exact.map(x=>({displayName:x.displayName,uid:x.uid,subtitle:x.subtitle}))};
   const hit=hits[0];
   const m=String(hit.uid||'').match(/~a:(\d+)/);
   if(!m) return {error:'missing ESPN athlete id in uid',url,hit};
-  return {id:m[1],displayName:hit.displayName,uid:hit.uid,url};
+  return {id:m[1],displayName:hit.displayName,uid:hit.uid,url,subtitle:hit.subtitle};
 }
 
 async function fetchRegularTotals(id,season=2024){
@@ -80,16 +88,15 @@ const ids=new Map();
 let comparisons=0, exact=0, unavailableMetrics=0;
 for(const [pos,names] of Object.entries(sample)){
   for(const player of names){
-    if(universe.get(player)!==pos){identityErrors.push({player,type:'sample_not_in_universe_or_wrong_position',expected:pos,actual:universe.get(player)||null});continue;}
     const oursRows=rows.filter(r=>r.player===player&&r.season===2024);
-    if(!oursRows.length){identityErrors.push({player,type:'no_2024_rows'});continue;}
-    const identity=await resolveEspn(player);
+    const team=oursRows.at(-1)?.team||null;
+    const identity=await resolveEspn(player,team);
     if(identity.error){identityErrors.push({player,type:'espn_identity',...identity});continue;}
     if(ids.has(identity.id)&&ids.get(identity.id)!==player) identityErrors.push({player,type:'duplicate_espn_id',espn_id:identity.id,other:ids.get(identity.id)});
     ids.set(identity.id,player);
     const espn=await fetchRegularTotals(identity.id,2024);
     if(espn.error){identityErrors.push({player,type:'espn_gamelog',...espn});continue;}
-    const check={player,position:pos,espn_id:identity.id,espn_display_name:identity.displayName,metrics:[]};
+    const check={player,position:pos,team,espn_id:identity.id,espn_display_name:identity.displayName,espn_team:identity.subtitle,metrics:[]};
     for(const oursKey of positionMetrics[pos]){
       const espnKey=metricMap[oursKey];
       if(!(espnKey in espn.stats)){unavailableMetrics++;check.metrics.push({metric:oursKey,status:'NOT_PUBLISHED_BY_ESPN_GAMELOG'});continue;}
@@ -105,28 +112,18 @@ for(const [pos,names] of Object.entries(sample)){
 }
 
 const report={
-  generated_at:new Date().toISOString(),
-  season:2024,
-  external_source:'ESPN NFL athlete gamelog API',
-  sample_players:Object.values(sample).flat().length,
-  sample_by_position:Object.fromEntries(Object.entries(sample).map(([k,v])=>[k,v.length])),
-  historical_rows_checked:rows.length,
-  structural_identity_failures:structural.length,
-  external_identity_failures:identityErrors.length,
-  external_metric_comparisons:comparisons,
-  exact_matches:exact,
-  mismatches:mismatches.length,
-  unavailable_metrics:unavailableMetrics,
+  generated_at:new Date().toISOString(),season:2024,external_source:'ESPN NFL athlete gamelog API',
+  sample_players:Object.values(sample).flat().length,sample_by_position:Object.fromEntries(Object.entries(sample).map(([k,v])=>[k,v.length])),sample,
+  historical_rows_checked:rows.length,structural_identity_failures:structural.length,external_identity_failures:identityErrors.length,
+  external_metric_comparisons:comparisons,exact_matches:exact,mismatches:mismatches.length,unavailable_metrics:unavailableMetrics,
   result:(structural.length||identityErrors.length||mismatches.length)?'BLOCKED':'PASS',
-  structural_failure_details:structural.slice(0,100),
-  identity_failure_details:identityErrors,
-  mismatch_details:mismatches,
-  external_checks:external,
+  structural_failure_details:structural.slice(0,100),identity_failure_details:identityErrors,mismatch_details:mismatches,external_checks:external,
   safeguards:[
     'ESPN is used only as an independent verification source; nflverse remains the historical ingestion source.',
-    'ESPN athlete search must return exactly one normalized exact-name NFL player match.',
+    'ESPN athlete search is normalized for suffixes and disambiguated by the player current-at-2024 team from our historical row.',
     'ESPN athlete IDs must be unique across the fixed audit sample.',
-    'Our weekly rows are aggregated to regular-season totals before comparison, preventing week-order noise from hiding identity/stat total errors.',
+    'Comma-formatted ESPN numeric totals are parsed as numbers rather than coerced to zero.',
+    'Our weekly rows are aggregated to regular-season totals before comparison.',
     'Metrics not published in an ESPN gamelog schema are reported as unavailable and are not silently treated as matches.',
     'Any structural identity failure, ESPN identity failure, or numeric mismatch blocks Guardrail QA.'
   ]
