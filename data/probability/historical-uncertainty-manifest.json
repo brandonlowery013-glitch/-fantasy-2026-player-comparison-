@@ -1,0 +1,52 @@
+{
+  "season_target": 2026,
+  "history_window": [2021, 2022, 2023, 2024, 2025],
+  "window_policy": "Use at most the five most recent completed NFL regular seasons for player-specific uncertainty estimation. Do not extend farther back for veterans unless a separate research reason is documented.",
+  "recency_policy": "Recent seasons receive greater weight during calibration. Exact decay weights are calibration parameters and are not hard-coded as truth before backtesting.",
+  "sample_reliability": {
+    "30_plus_games": "PLAYER_SPECIFIC_WITH_POSITION_SHRINKAGE",
+    "15_to_29_games": "BLENDED_PLAYER_AND_POSITION_PRIOR",
+    "under_15_games": "POSITION_AGE_ROLE_PRIOR_DOMINANT",
+    "rookie_no_nfl_games": "POSITION_ROOKIE_ROLE_PRIOR"
+  },
+  "primary_sources": {
+    "game_logs": "Pro Football Reference / Stathead",
+    "advanced_usage": "Fantasy Points Data Suite",
+    "verification": "NFL Next Gen Stats"
+  },
+  "required_regular_season_fields": [
+    "player",
+    "season",
+    "week",
+    "team",
+    "opponent",
+    "played",
+    "started",
+    "pass_attempts",
+    "pass_yards",
+    "pass_tds",
+    "rush_attempts",
+    "rush_yards",
+    "rush_tds",
+    "targets",
+    "receptions",
+    "receiving_yards",
+    "receiving_tds"
+  ],
+  "advanced_usage_fields": [
+    "snap_share",
+    "route_share",
+    "target_share",
+    "air_yards_share",
+    "red_zone_targets",
+    "red_zone_carries",
+    "goal_line_carries"
+  ],
+  "exclusions": {
+    "postseason": true,
+    "sportsbook_odds_as_probability_input": true,
+    "2020_covid_season_from_default_window": true
+  },
+  "status": "BUILDING",
+  "actionable": false
+}
