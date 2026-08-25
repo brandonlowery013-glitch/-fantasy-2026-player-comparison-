@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "season": 2026,
   "authoritative_player_count": 162,
   "authoritative_player_shards": 13,
@@ -7,28 +7,16 @@
     "frozen": true,
     "market_layers_may_rewrite_core_rank": false,
     "market_layers_may_rewrite_core_projection": false,
-    "allowed_market_output": [
-      "context",
-      "probability_edge",
-      "expected_value",
-      "review_flag",
-      "draft_value_overlay"
-    ]
+    "allowed_market_output": ["context","probability_edge","expected_value","review_flag","draft_value_overlay"]
   },
   "required_player_numeric_fields": ["o","tr","s","pd","ce","r","e","a","rl","su","mp"],
   "numeric_bounds": {
-    "s": [0, 10],
-    "pd": [0, 10],
-    "ce": [0, 10],
-    "r": [0, 10],
-    "e": [0, 10],
-    "a": [0, 10],
-    "rl": [0, 10],
-    "su": [0, 10]
+    "s": [0,10], "pd": [0,10], "ce": [0,10], "r": [0,10], "e": [0,10], "a": [0,10], "rl": [0,10], "su": [0,10]
   },
   "probability": {
     "minimum": 0,
     "maximum": 1,
+    "sum_tolerance": 0.000001,
     "extreme_edge_review_threshold": 0.12,
     "very_extreme_edge_review_threshold": 0.18,
     "strong_bet_requires_model_review_clearance_above": 0.12,
@@ -40,7 +28,13 @@
     "missing_one_side_action": "THRESHOLD_CONTEXT_ONLY",
     "minimum_independent_signals_for_strong_bet": 2,
     "prohibited_fields_in_market_layer": ["o","tr","tp","pr","core_rank_override","projection_override"],
-    "vig_tolerance_after_devig": 0.000001
+    "vig_tolerance_after_devig": 0.000001,
+    "minimum_valid_american_odds_abs": 100,
+    "require_book": true,
+    "require_source_date": true,
+    "duplicate_same_book_market_action": "BLOCK",
+    "ev_formula_tolerance": 0.0001,
+    "strong_labels": ["STRONG BET","STRONG EDGE","MAX BET"]
   },
   "drift": {
     "player_count_change": "BLOCK",
@@ -50,7 +44,9 @@
     "core_projection_change_from_market_layer": "BLOCK",
     "unexplained_material_change": "BLOCK",
     "material_projection_change_pct": 0.08,
-    "material_rank_change_places": 8
+    "material_rank_change_places": 8,
+    "require_change_manifest_for_material_core_change": true,
+    "change_manifest_file": "guardrails/change-manifest.json"
   },
   "freshness": {
     "odds_hours_for_weekly_model": 6,
@@ -62,7 +58,14 @@
     "required_before_actionable_weekly_betting": true,
     "minimum_holdout_bets_before_trust": 100,
     "track": ["brier_score","log_loss","roi","closing_line_value","hit_rate_by_probability_bucket","hit_rate_by_market_type"],
-    "probability_buckets": [0.50,0.55,0.60,0.65,0.70,0.75]
+    "probability_buckets": [0.50,0.55,0.60,0.65,0.70,0.75],
+    "prohibit_same_sample_tuning_and_evaluation": true,
+    "require_timestamped_predictions_before_outcomes": true
+  },
+  "portfolio": {
+    "correlated_bets_require_flag": true,
+    "parlays_not_treated_as_independent": true,
+    "same_player_multi_prop_requires_correlation_review": true
   },
   "status_labels": ["PASS","REVIEW_REQUIRED","INSUFFICIENT_DATA","BLOCKED"]
 }
