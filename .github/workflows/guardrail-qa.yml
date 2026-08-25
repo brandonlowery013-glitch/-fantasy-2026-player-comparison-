@@ -25,14 +25,14 @@ jobs:
         run: node scripts/validate-historical-uncertainty-schema.mjs
       - name: Ingest 2021-2025 historical core game logs
         run: node scripts/ingest-historical-core.mjs
+      - name: Audit core historical stats and player identities
+        run: node scripts/audit-core-stats-identities.mjs
       - name: Enrich historical context and usage
         run: node scripts/enrich-historical-context.mjs
       - name: Enrich position-specific high-value usage
         run: node scripts/enrich-high-value-usage.mjs
       - name: Audit high-value usage against PFR
         run: node scripts/audit-high-value-usage.mjs
-      - name: Inspect ESPN gamelog response
-        run: node scripts/diagnose-espn-gamelog.mjs
       - name: Build and validate football probability distributions
         run: node scripts/build-probability-distributions.mjs --validate
       - name: Verify EV shadow layer synchronization
@@ -50,6 +50,7 @@ jobs:
             guardrails/probability-distribution-report.json
             guardrails/generated-ev-probability-inputs.json
             guardrails/historical-core-ingestion-report.json
+            guardrails/core-stats-identity-accuracy-report.json
             guardrails/historical-context-enrichment-report.json
             guardrails/high-value-usage-report.json
             guardrails/high-value-usage-accuracy-report.json
