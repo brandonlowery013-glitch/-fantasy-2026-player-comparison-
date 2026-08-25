@@ -12,17 +12,21 @@ jobs:
       - name: Checkout full history for drift comparison
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
       - name: Use Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Run frozen baseline drift comparator
+        run: node scripts/run-baseline-drift-check.mjs
       - name: Run hard guardrail QA
         run: node scripts/run-guardrail-qa.mjs
-      - name: Upload guardrail report
+      - name: Upload guardrail reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: guardrail-report
-          path: guardrails/guardrail-report.json
+          name: guardrail-reports
+          path: |
+            guardrails/baseline-drift-report.json
+            guardrails/guardrail-report.json
           if-no-files-found: error
