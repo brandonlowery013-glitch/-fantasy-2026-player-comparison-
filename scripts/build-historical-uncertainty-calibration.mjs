@@ -1,0 +1,165 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root=process.cwd();
+const input=path.join(root,'data/probability/generated/historical-reference-population-2021-2025.json');
+if(!fs.existsSync(input)) throw new Error('Run build-historical-reference-population.mjs first');
+const data=JSON.parse(fs.readFileSync(input,'utf8'));
+const rows=data.rows.filter(r=>r.played!==false);
+const outDir=path.join(root,'data/probability/generated');
+fs.mkdirSync(outDir,{recursive:true});
+fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});
+
+const statsByPos={
+  QB:['pass_yards','pass_tds','rush_yards'],
+  RB:['rush_yards','receiving_yards','receptions'],
+  WR:['receiving_yards','receptions'],
+  TE:['receiving_yards','receptions']
+};
+const field={pass_yards:'pass_yards',pass_tds:'pass_tds',rush_yards:'rush_yards',receiving_yards:'receiving_yards',receptions:'receptions'};
+const tuneSeasons=new Set([2023,2024]);
+const evalSeason=2025;
+const kGrid=[5,10,20,40,80];
+const eps=1e-9;
+const z={q10:-1.281551566,q25:-0.67448975,q50:0,q75:0.67448975,q90:1.281551566};
+const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+const variance=a=>{if(a.length<2)return null;const m=avg(a);return a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1)};
+const sd=a=>{const v=variance(a);return v==null?null:Math.sqrt(v)};
+const quantile=(a,q)=>{if(!a.length)return null;const b=[...a].sort((x,y)=>x-y),p=(b.length-1)*q,lo=Math.floor(p),hi=Math.ceil(p);return lo===hi?b[lo]:b[lo]+(b[hi]-b[lo])*(p-lo)};
+const erf=x=>{const sign=x<0?-1:1,ax=Math.abs(x),t=1/(1+0.3275911*ax);const y=1-(((((1.061405429*t-1.453152027)*t+1.421413741)*t-0.284496736)*t+0.254829592)*t)*Math.exp(-ax*ax);return sign*y};
+const cdf=x=>0.5*(1+erf(x/Math.SQRT2));
+const logloss=(p,y)=>-(y*Math.log(Math.max(eps,Math.min(1-eps,p)))+(1-y)*Math.log(Math.max(eps,Math.min(1-eps,1-p))));
+const brier=(p,y)=>(p-y)**2;
+const gaussianNll=(y,mu,sigma)=>0.5*Math.log(2*Math.PI*sigma*sigma)+((y-mu)**2)/(2*sigma*sigma);
+const keyTime=r=>r.season*100+r.week;
+
+rows.sort((a,b)=>keyTime(a)-keyTime(b)||String(a.player_id).localeCompare(String(b.player_id)));
+
+function validValue(r,stat){const v=Number(r[field[stat]]);return Number.isFinite(v)?v:null}
+function buildPrediction(historyRows,target,k,stat){
+  const prior=historyRows.filter(r=>r.position===target.position).map(r=>validValue(r,stat)).filter(v=>v!=null);
+  if(prior.length<50)return null;
+  const player=historyRows.filter(r=>r.player_id===target.player_id).map(r=>validValue(r,stat)).filter(v=>v!=null);
+  const pm=avg(prior),ps=sd(prior)||0;
+  const n=player.length,w=n/(n+k),xm=n?avg(player):pm,xs=n>=2?(sd(player)||ps):ps;
+  const mu=w*xm+(1-w)*pm;
+  const varBlend=w*(xs*xs)+(1-w)*(ps*ps);
+  const sigma=Math.max(Math.sqrt(Math.max(varBlend,eps)),Math.max(1e-6,ps*0.35));
+  return {mu,sigma,n,position_mean:pm,position_sd:ps,weight:w};
+}
+
+function walk(seasonSet,k,stat,pos){
+  const out=[];
+  for(const target of rows){
+    if(target.position!==pos||!seasonSet.has(target.season))continue;
+    const y=validValue(target,stat);if(y==null)continue;
+    const t=keyTime(target);
+    const hist=rows.filter(r=>keyTime(r)<t);
+    const p=buildPrediction(hist,target,k,stat);if(!p)continue;
+    out.push({...p,y,season:target.season,week:target.week,player_id:target.player_id});
+  }
+  return out;
+}
+
+const tuning={};
+for(const [pos,stats] of Object.entries(statsByPos)){
+  tuning[pos]={};
+  for(const stat of stats){
+    const candidates=[];
+    for(const k of kGrid){
+      const preds=walk(tuneSeasons,k,stat,pos);
+      const score=preds.length?avg(preds.map(p=>gaussianNll(p.y,p.mu,p.sigma))):Infinity;
+      candidates.push({k,sample:preds.length,gaussian_nll:score});
+    }
+    candidates.sort((a,b)=>a.gaussian_nll-b.gaussian_nll);
+    tuning[pos][stat]={selected_k:candidates[0].k,candidates};
+  }
+}
+
+const calibration={};
+let totalEval=0;
+for(const [pos,stats] of Object.entries(statsByPos)){
+  calibration[pos]={};
+  for(const stat of stats){
+    const k=tuning[pos][stat].selected_k;
+    const preds=walk(new Set([evalSeason]),k,stat,pos);totalEval+=preds.length;
+    const cover={q10:0,q25:0,q50:0,q75:0,q90:0};
+    const briers={q10:[],q25:[],q50:[],q75:[],q90:[]};
+    const logs={q10:[],q25:[],q50:[],q75:[],q90:[]};
+    const pitBins=Array(10).fill(0);
+    for(const p of preds){
+      const pit=Math.max(0,Math.min(.999999,cdf((p.y-p.mu)/p.sigma)));pitBins[Math.floor(pit*10)]++;
+      for(const [q,zz] of Object.entries(z)){
+        const prob=Number(q.slice(1))/100,threshold=p.mu+zz*p.sigma,obs=p.y<=threshold?1:0;
+        if(obs)cover[q]++;
+        briers[q].push(brier(prob,obs));logs[q].push(logloss(prob,obs));
+      }
+    }
+    const n=preds.length;
+    calibration[pos][stat]={
+      selected_k:k,sample:n,
+      mae:n?avg(preds.map(p=>Math.abs(p.y-p.mu))):null,
+      rmse:n?Math.sqrt(avg(preds.map(p=>(p.y-p.mu)**2))):null,
+      gaussian_nll:n?avg(preds.map(p=>gaussianNll(p.y,p.mu,p.sigma))):null,
+      quantile_coverage:Object.fromEntries(Object.entries(cover).map(([q,c])=>[q,n?c/n:null])),
+      quantile_brier:Object.fromEntries(Object.entries(briers).map(([q,a])=>[q,a.length?avg(a):null])),
+      quantile_log_loss:Object.fromEntries(Object.entries(logs).map(([q,a])=>[q,a.length?avg(a):null])),
+      pit_deciles:pitBins,
+      note:'2025 holdout only; all prediction inputs use games completed before each target game.'
+    };
+  }
+}
+
+const priorSummary={};
+for(const [pos,stats] of Object.entries(statsByPos)){
+  priorSummary[pos]={};
+  const pr=rows.filter(r=>r.position===pos);
+  for(const stat of stats){
+    const a=pr.map(r=>validValue(r,stat)).filter(v=>v!=null);
+    priorSummary[pos][stat]={sample:a.length,mean:avg(a),sd:sd(a),q10:quantile(a,.10),q25:quantile(a,.25),median:quantile(a,.50),q75:quantile(a,.75),q90:quantile(a,.90)};
+  }
+}
+
+const playerPriors=[];
+for(const [pos,stats] of Object.entries(statsByPos)){
+  const ids=[...new Set(rows.filter(r=>r.position===pos).map(r=>r.player_id))];
+  for(const id of ids){
+    const pr=rows.filter(r=>r.player_id===id),name=pr[0]?.player||id;
+    const rec={player_id:id,player:name,position:pos,stats:{}};
+    for(const stat of stats){
+      const a=pr.map(r=>validValue(r,stat)).filter(v=>v!=null),k=tuning[pos][stat].selected_k,pp=priorSummary[pos][stat];
+      const n=a.length,w=n/(n+k),m=n?avg(a):pp.mean,s=n>=2?(sd(a)||pp.sd):pp.sd;
+      rec.stats[stat]={games:n,shrinkage_k:k,player_weight:w,raw_mean:m,raw_sd:s,shrunk_mean:w*m+(1-w)*pp.mean,shrunk_sd:Math.sqrt(w*s*s+(1-w)*pp.sd*pp.sd)};
+    }
+    playerPriors.push(rec);
+  }
+}
+
+const generatedAt=new Date().toISOString();
+const output={
+  schema_version:'1.0.0',generated_at:generatedAt,mode:'SHADOW_ONLY',actionable:false,
+  purpose:'Football-only historical uncertainty priors and first walk-forward distribution calibration baseline.',
+  history_window:[2021,2022,2023,2024,2025],tuning_window:[2023,2024],evaluation_window:[2025],
+  sportsbook_inputs_used:false,reference_players:data.reference_unique_players,reference_player_games:data.row_count,
+  stat_policy:statsByPos,tuning,position_priors:priorSummary,player_priors:playerPriors,holdout_calibration:calibration,
+  limitations:[
+    'This is a distribution-calibration baseline, not a historical sportsbook backtest.',
+    'No archived sportsbook line or price is used here.',
+    'Historical projection snapshots are not yet available, so this tests a walk-forward football-history forecast rather than reconstruction of our exact historical projection model.',
+    'Gaussian likelihood is a baseline scoring family for tuning shrinkage; count-stat distribution families still require dedicated comparison.',
+    'Routes, broad-population injury detail, and broad-population red-zone context are not yet fully enriched.'
+  ]
+};
+const blocked=[];
+if(data.live_player_universe_count!==162)blocked.push('live player universe changed');
+if(data.reference_unique_players<500)blocked.push('reference population too small');
+if(totalEval<1000)blocked.push(`holdout sample too small: ${totalEval}`);
+for(const [pos,stats] of Object.entries(calibration))for(const [stat,r] of Object.entries(stats)){
+  if(r.sample<100)blocked.push(`${pos} ${stat} holdout sample <100`);
+  for(const q of ['q10','q25','q50','q75','q90'])if(r.quantile_coverage[q]==null)blocked.push(`${pos} ${stat} ${q} missing`);
+}
+const report={generated_at:generatedAt,result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,total_2025_holdout_predictions:totalEval,blocked,sportsbook_inputs_used:false,tuning_summary:Object.fromEntries(Object.entries(tuning).map(([pos,s])=>[pos,Object.fromEntries(Object.entries(s).map(([st,x])=>[st,x.selected_k]))])),calibration,limitations:output.limitations};
+fs.writeFileSync(path.join(outDir,'historical-uncertainty-priors-2021-2025.json'),JSON.stringify(output,null,2)+'\n');
+fs.writeFileSync(path.join(root,'guardrails/historical-uncertainty-calibration-report.json'),JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify({result:report.result,total_2025_holdout_predictions:totalEval,selected_k:report.tuning_summary,blocked},null,2));
+if(blocked.length)process.exit(1);
