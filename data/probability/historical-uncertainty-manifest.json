@@ -9,6 +9,48 @@
     "under_15_games": "POSITION_AGE_ROLE_PRIOR_DOMINANT",
     "rookie_no_nfl_games": "POSITION_ROOKIE_ROLE_PRIOR"
   },
+  "regime_policy": {
+    "required_role_regime_id": true,
+    "split_triggers": [
+      "material_depth_chart_role_change",
+      "team_change",
+      "starting_qb_change_when_material_to_role",
+      "offensive_coordinator_or_primary_playcaller_change",
+      "major_injury_return_with_documented_role_change"
+    ],
+    "same_player_history_not_automatically_exchangeable": true,
+    "old_regimes_may_inform_prior_but_must_not_be_blindly_pooled": true
+  },
+  "game_state_policy": {
+    "inactive_game": "TRACK_SEPARATELY_FROM_ACTIVE_ZERO",
+    "partial_game": "TAG_AND_EXCLUDE_FROM_BASELINE_FULL_GAME_VARIANCE_UNLESS_CALIBRATION_TESTS A SEPARATE TREATMENT",
+    "injury_limited_game": "TAG_AND_TEST SEPARATE WEIGHTING OR EXCLUSION",
+    "started_vs_played": "RETAIN_BOTH",
+    "final_score_context": "ALLOWED_AS_HISTORICAL_EXPLANATORY_CONTEXT_ONLY",
+    "pregame_sportsbook_spread_or_total": "PROHIBITED_AS_MODEL_PROBABILITY_INPUT"
+  },
+  "context_policy": {
+    "retain": [
+      "home_away",
+      "starting_qb",
+      "head_coach",
+      "offensive_coordinator",
+      "primary_play_caller",
+      "team_offensive_plays",
+      "team_pass_rate",
+      "neutral_pass_rate",
+      "seconds_per_play",
+      "final_point_differential",
+      "roof",
+      "surface",
+      "temperature_f",
+      "wind_mph",
+      "precipitation",
+      "opponent_defense_bucket"
+    ],
+    "opponent_strength_rule": "Opponent-strength features used in calibration must be built without leaking the target game outcome into the feature. Prefer prior-to-game or leave-one-out season measures.",
+    "future_week_rule": "Weekly models may use only information available before kickoff for that prediction timestamp."
+  },
   "primary_sources": {
     "game_logs": "Pro Football Reference / Stathead",
     "advanced_usage": "Fantasy Points Data Suite",
@@ -16,12 +58,14 @@
   },
   "required_regular_season_fields": [
     "player",
+    "position",
     "season",
     "week",
     "team",
     "opponent",
     "played",
     "started",
+    "role_regime_id",
     "pass_attempts",
     "pass_yards",
     "pass_tds",
@@ -34,19 +78,50 @@
     "receiving_tds"
   ],
   "advanced_usage_fields": [
+    "offensive_snaps",
     "snap_share",
+    "routes_run",
     "route_share",
+    "team_dropbacks",
     "target_share",
+    "air_yards",
     "air_yards_share",
+    "carry_share",
     "red_zone_targets",
     "red_zone_carries",
     "goal_line_carries"
   ],
+  "quality_tags": [
+    "partial_game",
+    "injury_limited",
+    "inactive_reason",
+    "role_regime_reason",
+    "data_quality_flags"
+  ],
+  "uncertainty_decomposition": {
+    "performance_variance": "Observed game-to-game variation conditional on a comparable role regime.",
+    "availability_variance": "Probability distribution of games active/played and injury-limited participation.",
+    "role_variance": "Uncertainty from workload, depth chart, team, QB, coach and play-caller changes.",
+    "projection_error": "Historical error of model forecasts versus realized outcomes; estimated separately from player performance variance.",
+    "tail_risk": "Extreme upside/downside behavior tested separately rather than assumed normal."
+  },
+  "correlation_policy": {
+    "retain_joint_stat_rows": true,
+    "examples": [
+      "targets_receptions_receiving_yards",
+      "rush_attempts_rush_yards",
+      "pass_attempts_pass_yards_pass_tds"
+    ],
+    "parlay_independence_assumption_prohibited": true
+  },
+  "distribution_policy_file": "data/probability/stat-distribution-policy.json",
   "exclusions": {
     "postseason": true,
     "sportsbook_odds_as_probability_input": true,
+    "pregame_spread_as_probability_input": true,
+    "pregame_total_as_probability_input": true,
     "2020_covid_season_from_default_window": true
   },
-  "status": "BUILDING",
+  "status": "SCHEMA_LOCKED_BEFORE_INGESTION",
   "actionable": false
 }

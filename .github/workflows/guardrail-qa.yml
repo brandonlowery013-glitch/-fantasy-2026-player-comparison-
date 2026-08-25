@@ -21,6 +21,8 @@ jobs:
         run: node scripts/run-baseline-drift-check.mjs
       - name: Test EV and de-vig math
         run: node scripts/test-ev-math.mjs
+      - name: Validate historical uncertainty schema
+        run: node scripts/validate-historical-uncertainty-schema.mjs
       - name: Build and validate football probability distributions
         run: node scripts/build-probability-distributions.mjs --validate
       - name: Verify EV shadow layer synchronization

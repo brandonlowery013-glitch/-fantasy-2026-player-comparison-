@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0",
+  "season_target": 2026,
+  "status": "SHADOW_ONLY",
+  "actionable": false,
+  "purpose": "Candidate distribution-family policy for historical uncertainty modeling. These are model classes to test during calibration, not assumed truths.",
+  "stat_families": {
+    "pass_attempts": {"candidate_families":["normal","student_t"],"notes":"Volume stat; test heavy-tail behavior and role-regime splits."},
+    "pass_yards": {"candidate_families":["normal","student_t","lognormal_shifted"],"notes":"Continuous-ish aggregate with game-script and efficiency tails."},
+    "pass_tds": {"candidate_families":["poisson","negative_binomial","zero_inflated_negative_binomial"],"notes":"Discrete count; over-dispersion must be tested."},
+    "rush_attempts": {"candidate_families":["negative_binomial","normal","student_t"],"notes":"Count-like volume with role and game-script regime dependence."},
+    "rush_yards": {"candidate_families":["normal","student_t","lognormal_shifted"],"notes":"Can include negative values; do not force plain lognormal."},
+    "rush_tds": {"candidate_families":["poisson","negative_binomial","zero_inflated_negative_binomial"],"notes":"Discrete and zero-heavy."},
+    "targets": {"candidate_families":["negative_binomial","normal","student_t"],"notes":"Volume count with role-regime dependence."},
+    "receptions": {"candidate_families":["binomial_conditional_on_targets","beta_binomial","negative_binomial"],"notes":"Prefer conditional modeling on targets when data supports it."},
+    "receiving_yards": {"candidate_families":["normal","student_t","lognormal_shifted"],"notes":"Heavy tails and role changes are common."},
+    "receiving_tds": {"candidate_families":["poisson","negative_binomial","zero_inflated_negative_binomial"],"notes":"Discrete and zero-heavy."}
+  },
+  "selection_rule": "Choose distribution family by holdout calibration and predictive scoring, not visual fit alone. Prefer simpler families when performance is materially equivalent.",
+  "market_price_prohibited_as_fit_input": true
+}
