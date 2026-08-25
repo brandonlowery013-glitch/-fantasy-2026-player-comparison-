@@ -1,0 +1,24 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root=process.cwd();
+const sourcePath=path.join(root,'data/sources/historical-route-participation-2021-2025.json');
+const reportPath=path.join(root,'guardrails/historical-route-source-contract-report.json');
+const source=JSON.parse(fs.readFileSync(sourcePath,'utf8'));
+const blocked=[];
+const requiredYears=[2021,2022,2023,2024,2025];
+const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+if(!same(source.history_window,requiredYears)) blocked.push('history window must remain 2021-2025');
+if(!same(source.positions,['WR','TE'])) blocked.push('route backfill scope must remain WR/TE for this step');
+if(source.primary_source?.name!=='Fantasy Life Utilization Report Game Log') blocked.push('unexpected primary historical route source');
+if(!requiredYears.every(y=>source.primary_source?.coverage?.includes(y))) blocked.push('primary route source does not declare complete 2021-2025 coverage');
+for(const f of ['route_percentage','routes_run','targets_per_route_run','target_share']) if(!source.primary_source?.fields?.includes(f)) blocked.push(`primary source missing field declaration: ${f}`);
+for(const f of ['player','position','season','week','route_percentage','source','source_url','captured_at']) if(!source.normalization_contract?.required_fields?.includes(f)) blocked.push(`normalization contract missing required field: ${f}`);
+if(source.normalization_contract?.missing_is_zero!==false) blocked.push('missing route data must never be coerced to zero');
+if(source.normalization_contract?.sportsbook_inputs_allowed!==false) blocked.push('sportsbook inputs must remain forbidden');
+if(source.step_2d_b_status!=='BACKFILL_PENDING') blocked.push('Step 2D-B must remain explicitly pending until actual broad route history is populated');
+if(!String(source.promotion_rule||'').includes('may not be relabeled')) blocked.push('proxy-to-observed promotion guard is missing');
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',status:source.status,history_window:source.history_window,positions:source.positions,primary_source:source.primary_source?.name,verification_source:source.verification_source?.name,step_2d_b_status:source.step_2d_b_status,blocked,safeguards:['Workload proxies remain explicitly separate from observed route data.','Missing route data is null/unknown, never zero.','No sportsbook data may enter route backfill.','Every normalized route row must preserve provenance and capture time.']};
+fs.writeFileSync(reportPath,JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report,null,2));
+if(blocked.length) process.exit(1);
