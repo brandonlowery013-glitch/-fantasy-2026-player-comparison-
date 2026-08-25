@@ -41,10 +41,12 @@ jobs:
         run: node scripts/build-historical-uncertainty-calibration.mjs
       - name: Calibrate stat distribution families
         run: node scripts/calibrate-distribution-families.mjs
+      - name: Build leakage-safe catch-rate priors
+        run: node scripts/build-catch-rate-priors.mjs
       - name: Validate weekly football projection generator
         run: node scripts/build-weekly-projection-generator.mjs --self-test
       - name: Validate weekly calibrated probability engine
-        run: node scripts/build-weekly-probability-engine.mjs
+        run: node scripts/build-weekly-probability-engine.mjs --self-test
       - name: Validate weekly matchup market snapshot layer
         run: node scripts/validate-weekly-matchup-market-snapshots.mjs --self-test
       - name: Build and validate football probability distributions
@@ -72,6 +74,7 @@ jobs:
             guardrails/historical-reference-population-report.json
             guardrails/historical-uncertainty-calibration-report.json
             guardrails/distribution-family-calibration-report.json
+            guardrails/catch-rate-priors-report.json
             guardrails/weekly-projection-generator-report.json
             guardrails/weekly-probability-engine-report.json
             guardrails/weekly-matchup-market-snapshot-report.json
@@ -80,6 +83,7 @@ jobs:
             data/probability/generated/historical-reference-population-2021-2025.json
             data/probability/generated/historical-uncertainty-priors-2021-2025.json
             data/probability/generated/distribution-family-calibration-2021-2025.json
+            data/probability/generated/catch-rate-priors-2021-2025.json
             data/probability/weekly-projection-inputs-2026.json
             data/probability/generated/weekly-probability-distributions-2026.json
             data/market/weekly-matchup-market-snapshots-2026.json
