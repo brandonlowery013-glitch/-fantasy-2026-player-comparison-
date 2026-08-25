@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0.0",
+  "status": "STEP_2E_SOURCE_CONTRACT_LOCKED",
+  "season": 2026,
+  "scope": ["role", "injury", "team_environment", "opponent", "qb_context"],
+  "sportsbook_inputs_allowed": false,
+  "sources": {
+    "role": {
+      "primary": "Fantasy Life Utilization Report / Game Log",
+      "backbone": "nflverse weekly player stats + snap counts",
+      "secondary_validation": "StatRankings",
+      "fields": ["snap_share", "route_or_pass_play_participation", "target_share", "targets_per_route_or_pass_play", "air_yard_share", "rush_share", "third_down_role", "two_minute_role", "red_zone_usage"],
+      "notes": [
+        "True route metrics and pass-play participation must remain separately labeled.",
+        "Missing utilization is unknown, never zero.",
+        "Established WR role evidence should emphasize target rate/share, air-yard share and high-value usage more than route participation alone."
+      ]
+    },
+    "injury": {
+      "primary": "NFL.com official injury/practice/game-status reporting",
+      "fallback": "FantasyPros injury/news",
+      "fields": ["practice_status", "game_status", "body_part", "expected_active", "restriction_note"],
+      "max_capture_age_hours": 12
+    },
+    "team_environment": {
+      "primary": "nflverse play-by-play + schedules",
+      "fields": ["pace", "neutral_pass_rate", "team_pass_rate", "team_rush_rate", "scoring_environment"],
+      "pregame_only": true
+    },
+    "opponent": {
+      "primary": "nflverse prior-game defensive context",
+      "fields": ["position_allowed_context", "pressure_or_efficiency_context", "prior_only_bucket"],
+      "pregame_only": true
+    },
+    "qb_context": {
+      "primary": "documented current team QB/depth-chart evidence",
+      "historical_backbone": "nflverse primary game passer context",
+      "fields": ["expected_qb", "certainty", "change_from_prior_week"],
+      "notes": ["Historical primary_game_qb is not claimed to be an official starter.", "Do not infer an official current starter solely from prior-game pass attempts."]
+    }
+  },
+  "normalization_contract": {
+    "required_player_fields": ["player", "position", "expected_active", "signals"],
+    "required_signal_fields": ["source", "captured_at", "stat_adjustments"],
+    "allowed_positions": ["QB", "RB", "WR", "TE"],
+    "allowed_signal_types": ["role", "injury", "team_environment", "opponent", "qb_context"],
+    "missing_is_zero": false,
+    "max_abs_mean_adjustment_pct_per_signal": 0.35,
+    "max_sd_increase_pct_per_signal": 0.50,
+    "max_sd_decrease_pct_per_signal": -0.35,
+    "capture_freshness_hours": {
+      "role": 48,
+      "injury": 12,
+      "team_environment": 48,
+      "opponent": 48,
+      "qb_context": 24
+    }
+  },
+  "promotion_rule": "Normalized weekly football context may adjust SHADOW_ONLY projections only after provenance, chronology, freshness and no-market-contamination validation. Missing or stale evidence must be surfaced, not invented or silently treated as current.",
+  "step_2e_status": "IMPLEMENTATION_IN_QA"
+}
