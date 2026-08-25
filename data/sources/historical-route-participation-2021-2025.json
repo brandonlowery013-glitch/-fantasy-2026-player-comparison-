@@ -1,36 +1,50 @@
 {
-  "schema_version": "1.0.0",
-  "status": "STEP_2D_A_SOURCE_CONTRACT_LOCKED",
+  "schema_version": "2.0.0",
+  "status": "STEP_2D_B_SOURCE_CONTRACT_REVISED_FOR_REPRODUCIBILITY",
   "history_window": [2021, 2022, 2023, 2024, 2025],
   "positions": ["WR", "TE"],
-  "primary_source": {
+  "bulk_role_backbone": {
+    "name": "nflverse play-by-play participation",
+    "release": "pbp_participation",
+    "coverage": [2021, 2022, 2023, 2024, 2025],
+    "fields": ["nflverse_game_id", "play_id", "possession_team", "offense_players", "offense_positions"],
+    "machine_readable_contract": true,
+    "identity": "GSIS player IDs",
+    "attribution": {
+      "2021-2022": "NFL NextGenStats via nflverse",
+      "2023-2025": "FTN Data via nflverse (CC-BY-SA 4.0)"
+    },
+    "derived_metric": "pass_play_participation",
+    "metric_warning": "Observed pass-play participation is not routes run and must never be labeled route participation."
+  },
+  "true_route_primary_validation": {
     "name": "Fantasy Life Utilization Report Game Log",
     "url": "https://www.fantasylife.com/nfl/utilization-report/game-log",
-    "role": "PRIMARY_HISTORICAL_ROUTE_BACKFILL",
+    "role": "PRIMARY_TRUE_ROUTE_VALIDATION_WHEN_AVAILABLE",
     "coverage": [2021, 2022, 2023, 2024, 2025],
     "fields": ["route_percentage", "routes_run", "targets_per_route_run", "target_share"],
     "machine_readable_contract": false,
     "notes": [
-      "Game Log explicitly supports historical season filtering back through 2021.",
-      "Route percentage and TPRR are available at weekly player-game granularity.",
-      "Preserve season, week, team, player identity, source URL, and capture timestamp for every normalized row."
+      "Use for true route validation and weekly enrichment where reproducibly accessible.",
+      "Do not make mandatory CI depend on a non-machine-readable page.",
+      "Preserve source URL, season/week and capture time for any manually or programmatically normalized route observations."
     ]
   },
-  "verification_source": {
+  "secondary_route_validation": {
     "name": "StatRankings",
-    "url": "https://statrankings.com/nfl/advanced/players/usage/targets-per-route-run",
-    "role": "SECONDARY_ROUTE_TPRR_VERIFICATION",
-    "fields": ["targets_per_route_run", "full_season_usage"],
-    "notes": ["Use as independent verification/fallback; do not silently overwrite Fantasy Life values without a recorded source conflict."]
+    "role": "SECONDARY_TRUE_ROUTE_VERIFICATION_ONLY",
+    "notes": [
+      "Public pages are throttled/limited and are not a reliable bulk CI ingestion dependency.",
+      "Never bypass access controls, rate limits or premium restrictions."
+    ]
   },
   "normalization_contract": {
-    "required_fields": ["player", "position", "season", "week", "route_percentage", "source", "source_url", "captured_at"],
-    "optional_fields": ["player_id", "team", "routes_run", "targets_per_route_run", "target_share"],
-    "route_percentage_domain": [0, 1],
-    "duplicate_key": ["player", "season", "week"],
+    "bulk_required_fields": ["player_id", "player", "position", "season", "pass_play_snaps", "eligible_team_dropbacks", "pass_play_participation", "source"],
+    "pass_play_participation_domain": [0, 1.02],
     "missing_is_zero": false,
-    "sportsbook_inputs_allowed": false
+    "sportsbook_inputs_allowed": false,
+    "true_route_fields_optional": ["route_percentage", "routes_run", "targets_per_route_run"]
   },
-  "promotion_rule": "Step 2C WR/TE workload proxies may not be relabeled or used as observed route cohorts until Step 2D-B has populated and validated broad 2021-2025 route history with documented coverage.",
-  "step_2d_b_status": "BACKFILL_PENDING"
+  "promotion_rule": "WR/TE target-only workload proxies may be replaced by observed pass-play role cohorts after Step 2D-B coverage and downstream QA pass. Pass-play participation may never be relabeled as true route participation; true route metrics remain separately validated evidence.",
+  "step_2d_b_status": "IMPLEMENTATION_IN_QA"
 }
