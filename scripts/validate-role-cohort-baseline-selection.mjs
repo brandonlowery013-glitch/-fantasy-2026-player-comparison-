@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd();
+const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+const contract=read('data/sources/role-cohort-baseline-selection-2026.json');
+const cohorts=read('data/probability/generated/role-cohort-priors-2021-2025.json');
+const blocked=[];
+const expectedPriority=['player_shrunk_prior','current_role_cohort_prior','position_prior'];
+if(JSON.stringify(contract.baseline_priority)!==JSON.stringify(expectedPriority))blocked.push(`baseline priority changed: ${JSON.stringify(contract.baseline_priority)}`);
+if(contract.sportsbook_inputs_allowed!==false)blocked.push('sportsbook inputs must remain forbidden');
+if(contract.rules?.player_history_precedence!==true)blocked.push('player history precedence must remain enabled');
+if(contract.rules?.role_cohort_requires_current_role_signal!==true)blocked.push('role cohort must require current role evidence');
+if(contract.rules?.stale_role_cohort_allowed_to_modify_baseline!==false)blocked.push('stale role cohort must not modify baseline');
+if(contract.rules?.blend_weights_calibrated!==false)blocked.push('blend weights must remain disabled until separately calibrated');
+if(cohorts.sportsbook_inputs_used!==false)blocked.push('historical role cohorts unexpectedly use sportsbook inputs');
+for(const [pos,names] of Object.entries(contract.allowed_cohorts||{}))for(const name of names||[]){const c=cohorts.cohorts?.[name];if(!c)blocked.push(`${pos} allowed cohort missing from generated priors: ${name}`);else if(String(c.position||'').toUpperCase()!==pos)blocked.push(`${name} position mismatch: ${c.position} vs ${pos}`);}
+const allowedFlat=new Set(Object.values(contract.allowed_cohorts||{}).flat());
+for(const [name,c] of Object.entries(cohorts.cohorts||{}))if(!allowedFlat.has(name))blocked.push(`generated cohort not represented in contract: ${name}`);
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,baseline_priority:contract.baseline_priority,allowed_cohort_counts:Object.fromEntries(Object.entries(contract.allowed_cohorts||{}).map(([k,v])=>[k,v.length])),blocked,sportsbook_inputs_used:false,safeguards:['Player-specific history stays ahead of role-cohort fallback.','Role cohorts require current weekly role evidence and position match.','Stale role evidence cannot modify the baseline.','All generated role cohorts must be represented in the selection contract.','No blending is allowed before calibration.']};
+fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});
+fs.writeFileSync(path.join(root,'guardrails/role-cohort-baseline-selection-report.json'),JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report,null,2));
+if(blocked.length)process.exit(1);
