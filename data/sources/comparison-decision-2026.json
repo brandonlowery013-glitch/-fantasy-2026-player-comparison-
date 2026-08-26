@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_5_COMPARISON_DECISION_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "purpose": "Convert locked football projection, ceiling, role, environment and Step 4 risk outputs into a head-to-head comparison verdict without mixing in draft price or sportsbook information.",
+  "head_to_head_weights": {
+    "expected_production": 0.35,
+    "ceiling": 0.20,
+    "role_volume": 0.15,
+    "offensive_environment": 0.10,
+    "risk_safety": 0.20
+  },
+  "risk_transform": "risk_safety = 1 - normalized_risk_score",
+  "edge_bands": [
+    {"label": "TOSS_UP", "min_abs_gap": 0.0, "max_abs_gap_exclusive": 0.035},
+    {"label": "SLIGHT_EDGE", "min_abs_gap": 0.035, "max_abs_gap_exclusive": 0.09},
+    {"label": "EDGE", "min_abs_gap": 0.09, "max_abs_gap_exclusive": 0.18},
+    {"label": "CLEAR_EDGE", "min_abs_gap": 0.18, "max_abs_gap_exclusive": 1.0000001}
+  ],
+  "price_separation": {
+    "head_to_head_may_use_adp": false,
+    "head_to_head_may_use_market_value_label": false,
+    "head_to_head_may_use_sportsbook_data": false,
+    "standalone_price_labels": ["BUY", "FAIR", "REACH", "FADE"],
+    "rule": "BUY/FAIR/REACH/FADE are standalone valuation labels versus market cost and never determine which player wins a head-to-head comparison."
+  },
+  "public_language": {
+    "forbidden_terms": ["True Value", "TV score", "model secret sauce"],
+    "head_to_head_title": "Better Player",
+    "price_title": "At Current Price",
+    "winner_explanation_order": ["production", "ceiling", "risk", "role", "environment"],
+    "max_sentences": 3,
+    "avoid_repetitive_boilerplate": true
+  },
+  "hard_block_rules": [
+    "draft price changes the head-to-head winner",
+    "sportsbook or implied probability changes the head-to-head winner",
+    "risk is counted twice by both Step 4 risk and duplicate injury penalties",
+    "a TOSS_UP verdict names a winner as if the gap were meaningful",
+    "non-finite comparison inputs or scores",
+    "comparison score outside [0,1]"
+  ],
+  "step_5a_status": "COMPLETE",
+  "step_5b_status": "COMPLETE"
+}
