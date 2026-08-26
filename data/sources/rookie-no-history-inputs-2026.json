@@ -2,9 +2,16 @@
   "schema_version": "1.0.0",
   "season": 2026,
   "status": "STEP_2G_SOURCE_INPUTS_LOCKED",
+  "step_2g_status": "COMPLETE",
   "mode": "SHADOW_ONLY",
   "actionable": false,
   "sportsbook_inputs_used": false,
+  "baseline_priority_after_step_2g": [
+    "player_shrunk_prior",
+    "rookie_no_history_prior",
+    "current_role_cohort_prior",
+    "position_prior"
+  ],
   "numeric_prior_policy": {
     "core_driver": "historical NFL rookie outcomes by position and draft-capital tier",
     "age_modifier_active": false,
@@ -12,6 +19,12 @@
     "prospect_grade_modifier_active": false,
     "current_role_modifier_location": "weekly football context layer (Steps 2E/2F)",
     "reason": "Do not introduce uncalibrated player-specific multipliers. Preserve prospect metadata separately and let current role evidence act downstream."
+  },
+  "sample_confidence_policy": {
+    "small_first_round_rb_cohorts_remain_visible": true,
+    "small_sample_does_not_become_high_confidence": true,
+    "all_outputs_remain_shadow_only": true,
+    "fallback_if_minimum_sample_floor_fails": "broader rookie position prior"
   },
   "draft_tiers": {
     "TOP_10": {"min_pick": 1, "max_pick": 10},
@@ -36,6 +49,7 @@
     "These 10 players are the expected no-NFL-history set from the existing historical ingestion QA.",
     "No NFL stat is fabricated for any rookie.",
     "Draft capital is observed information, not a sportsbook input.",
-    "Age/college/prospect information may be preserved for later calibration but does not receive an arbitrary numeric weight in this step."
+    "Age/college/prospect information may be preserved for later calibration but does not receive an arbitrary numeric weight in this step.",
+    "First-round RB tier samples are intentionally exposed as limited samples rather than treated as high-confidence estimates."
   ]
 }
