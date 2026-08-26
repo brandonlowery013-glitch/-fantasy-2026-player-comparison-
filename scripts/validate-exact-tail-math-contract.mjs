@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd();
+const c=JSON.parse(fs.readFileSync(path.join(root,'data/sources/exact-tail-math-2026.json'),'utf8'));
+const blocked=[];
+if(c.season!==2026)blocked.push(`season ${c.season}`);
+if(c.sportsbook_inputs_allowed_as_probability_inputs!==false)blocked.push('sportsbook inputs must remain prohibited as football probability inputs');
+if(c.compound_reception_contract?.same_game_targets_allowed!==false)blocked.push('same-game targets must remain prohibited');
+if(Number(c.compound_reception_contract?.pmf_truncation_tail_tolerance)>1e-8)blocked.push('compound PMF tail tolerance weakened');
+if(Number(c.compound_reception_contract?.maximum_target_support)<80)blocked.push('compound target support cap too small');
+if(c.line_probability_contract?.over!=='P(X > line)'||c.line_probability_contract?.under!=='P(X < line)')blocked.push('line semantics changed');
+if(!String(c.line_probability_contract?.sum_rule||'').includes('over + under + push = 1'))blocked.push('probability sum contract missing');
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',step_3b_status:c.step_3b_status,blocked,safeguards:['Exact weekly tail math is football-side only.','Push mass is explicit for discrete integer lines.','Compound receptions must use forecast targets, never same-game observed targets.','PMF truncation tolerance cannot be silently weakened.']};
+fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});fs.writeFileSync(path.join(root,'guardrails/exact-tail-math-contract-report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
