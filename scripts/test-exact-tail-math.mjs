@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import {normalCdf,studentTCdfValue,poissonPmf,poissonCdf,negativeBinomialPmf,discreteSupport,compoundReceptionPmf,lineProbabilities} from './lib/distribution-tail-math.mjs';
 
 const fail=[];
@@ -35,5 +37,7 @@ const recInt=lineProbabilities(recSpec,3);check(recInt.push>0,'compound integer 
 const continuous={family:'normal',parameters:{mu:50,sigma:10},mean:50,sd:10};
 const c=lineProbabilities(continuous,50);check(near(c.over,.5,2e-7)&&near(c.under,.5,2e-7)&&c.push===0,'continuous line probability symmetry failed');
 
-const report={result:fail.length?'BLOCKED':'PASS',tests:17,failed:fail.length,fail,safeguards:['Selected-family CDF/PMF line probabilities are tested directly.','Discrete half-point lines have zero push.','Discrete integer lines explicitly preserve push mass.','Compound receptions conserve PMF mass and satisfy E[R]=E[N]p.']};
+const report={generated_at:new Date().toISOString(),result:fail.length?'BLOCKED':'PASS',tests:17,failed:fail.length,fail,safeguards:['Selected-family CDF/PMF line probabilities are tested directly.','Discrete half-point lines have zero push.','Discrete integer lines explicitly preserve push mass.','Compound receptions conserve PMF mass and satisfy E[R]=E[N]p.']};
+fs.mkdirSync(path.join(process.cwd(),'guardrails'),{recursive:true});
+fs.writeFileSync(path.join(process.cwd(),'guardrails/exact-tail-math-test-report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));if(fail.length)process.exit(1);
