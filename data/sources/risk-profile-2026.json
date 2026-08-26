@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_4_RISK_PROFILE_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "sportsbook_inputs_allowed": false,
+  "feedback_into_projection_math_allowed": false,
+  "feedback_into_probability_math_allowed": false,
+  "feedback_into_ev_math_allowed": false,
+  "purpose": "Describe football-side downside and fragility already implied by the pregame projection/distribution stack without changing that stack.",
+  "components": {
+    "distribution_downside": {
+      "weight": 0.35,
+      "definition": "Exact football-only probability of finishing below a stat-specific downside threshold derived from that same pregame distribution.",
+      "threshold_fraction_of_mean": 0.6
+    },
+    "relative_uncertainty": {
+      "weight": 0.25,
+      "definition": "Coefficient of variation from the combined weekly football uncertainty, capped for scoring stability."
+    },
+    "projection_error_share": {
+      "weight": 0.15,
+      "definition": "Share of total modeled variance attributable to historical projection error rather than performance variance."
+    },
+    "role_baseline_fragility": {
+      "weight": 0.15,
+      "definition": "Penalty for dependence on weaker baseline sources rather than player-specific historical evidence.",
+      "source_scores": {
+        "player_shrunk_prior": 0.1,
+        "rookie_draft_tier_prior": 0.45,
+        "rookie_position_prior": 0.6,
+        "role_cohort_prior": 0.5,
+        "position_prior": 0.85
+      }
+    },
+    "context_fragility": {
+      "weight": 0.1,
+      "definition": "Missing/non-current core football context plus current injury uncertainty flags; descriptive only because mean/SD adjustments are already applied upstream."
+    }
+  },
+  "risk_bands": [
+    {"label": "LOW", "min": 0.0, "max_exclusive": 0.25},
+    {"label": "MODERATE", "min": 0.25, "max_exclusive": 0.45},
+    {"label": "HIGH", "min": 0.45, "max_exclusive": 0.65},
+    {"label": "VERY_HIGH", "min": 0.65, "max_exclusive": 1.0000001}
+  ],
+  "hard_block_rules": [
+    "sportsbook price, implied probability, spread, total, or player prop enters the risk score",
+    "risk score changes a player projection mean or uncertainty",
+    "risk score changes a football probability",
+    "risk score changes EV or betting actionability",
+    "non-finite component or final score",
+    "final score outside [0,1]",
+    "a missing/non-current context item is treated as observed zero risk"
+  ],
+  "notes": [
+    "Step 4 is downstream of Step 3B and consumes exact football-side distribution tails.",
+    "Injury and role effects already applied upstream are not re-applied to mean or SD; Step 4 only exposes fragility for interpretation.",
+    "The layer remains SHADOW_ONLY until live weekly inputs exist and downstream validation is intentionally enabled."
+  ],
+  "step_4_status": "COMPLETE"
+}
