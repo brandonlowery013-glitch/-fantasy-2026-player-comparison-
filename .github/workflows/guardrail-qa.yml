@@ -45,6 +45,10 @@ jobs:
         run: node scripts/audit-frozen-2025-calibration.mjs
       - name: Validate frozen 2025 calibration audit contract
         run: node scripts/validate-frozen-2025-calibration-audit.mjs
+      - name: Validate exact tail math contract
+        run: node scripts/validate-exact-tail-math-contract.mjs
+      - name: Test exact tail and compound reception math
+        run: node scripts/test-exact-tail-math.mjs
       - name: Validate historical route source contract
         run: node scripts/validate-historical-route-source-contract.mjs
       - name: Backfill observed historical WR/TE pass-play participation
@@ -100,6 +104,8 @@ jobs:
             guardrails/distribution-family-calibration-report.json
             guardrails/frozen-2025-calibration-audit-report.json
             guardrails/frozen-2025-calibration-audit-validation-report.json
+            guardrails/exact-tail-math-contract-report.json
+            guardrails/exact-tail-math-test-report.json
             guardrails/catch-rate-priors-report.json
             guardrails/historical-route-source-contract-report.json
             guardrails/historical-route-participation-backfill-report.json
@@ -131,6 +137,7 @@ jobs:
             data/sources/rookie-no-history-inputs-2026.json
             data/sources/projection-error-model-2026.json
             data/sources/frozen-2025-calibration-audit-2026.json
+            data/sources/exact-tail-math-2026.json
             data/probability/weekly-football-context-raw-2026.json
             data/probability/weekly-football-context-inputs-2026.json
             data/probability/weekly-projection-inputs-2026.json
