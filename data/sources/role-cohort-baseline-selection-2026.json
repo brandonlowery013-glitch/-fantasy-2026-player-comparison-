@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_2F_BASELINE_SELECTION_CONTRACT_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "sportsbook_inputs_allowed": false,
+  "baseline_priority": [
+    "player_shrunk_prior",
+    "current_role_cohort_prior",
+    "position_prior"
+  ],
+  "rules": {
+    "player_history_precedence": true,
+    "role_cohort_requires_current_role_signal": true,
+    "role_cohort_must_match_position": true,
+    "stale_role_cohort_allowed_to_modify_baseline": false,
+    "automatic_role_inference_from_market_data": false,
+    "automatic_role_inference_from_single_game_box_score": false,
+    "blend_weights_calibrated": false,
+    "missing_role_cohort_fallback": "position_prior"
+  },
+  "allowed_cohorts": {
+    "QB": ["QB_STARTER", "QB_MOBILE_STARTER", "QB_LOW_RUSH_STARTER"],
+    "RB": ["RB_LEAD", "RB_COMMITTEE", "RB_RECEIVING"],
+    "WR": ["WR_FULL_TIME", "WR_NEAR_FULL_TIME"],
+    "TE": ["TE_RECEIVING", "TE_SECONDARY_RECEIVING"]
+  },
+  "audit_contract": {
+    "preserve_selected_baseline": true,
+    "preserve_player_candidate": true,
+    "preserve_role_cohort_candidate": true,
+    "preserve_position_candidate": true,
+    "preserve_role_signal_source_and_timestamp": true
+  },
+  "notes": [
+    "This step replaces generic position fallback only when a current, position-valid role cohort is available and no player-specific historical prior exists.",
+    "It does not allow role cohorts to override a valid player-specific historical prior.",
+    "No blend weights are introduced before calibration.",
+    "Rookie/no-NFL-history translation is a later step built on top of this hierarchy."
+  ],
+  "step_2f_status": "IMPLEMENTATION_IN_QA"
+}
