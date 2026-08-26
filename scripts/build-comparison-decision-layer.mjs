@@ -56,8 +56,8 @@ function compare(pa,pb){
   const A={name:pa.name,...scorePlayer(pa)},B={name:pb.name,...scorePlayer(pb)};
   const gap=A.score-B.score,band=edgeBand(gap);
   const winner=band==='TOSS_UP'?null:(gap>0?'A':'B');
-  const result={
-    status:'SHADOW_ONLY',actionable:false,
+  return {
+    status:contract.mode,actionable:contract.actionable,
     players:{A:pa.name,B:pb.name},
     scores:{A:round(A.score),B:round(B.score),gap:round(gap)},
     verdict:band,
@@ -70,7 +70,6 @@ function compare(pa,pb){
     sportsbook_used_in_head_to_head:false,
     duplicate_injury_penalty_applied:false
   };
-  return result;
 }
 
 function selfTest(){
@@ -84,7 +83,8 @@ function selfTest(){
 
 const blocked=[];let comparisons=[];
 try{
-  if(contract.mode!=='SHADOW_ONLY'||contract.actionable!==false)blocked.push('Step 5 contract must be SHADOW_ONLY/non-actionable');
+  if(contract.mode!=='PRODUCTION_COMPARISON_RUNTIME'||contract.actionable!==true)blocked.push('Step 5 contract must be production comparison runtime/actionable');
+  if(contract.production_gate?.step_6a_calibration_complete!==true||contract.production_gate?.step_6b_preseason_risk_bridge_complete!==true)blocked.push('Step 5 production prerequisites are not complete');
   if(process.argv.includes('--self-test')){
     const s=selfTest();
     const risk=compare(s.stable,s.fragile);comparisons.push(risk);
@@ -114,8 +114,8 @@ try{
 }catch(e){blocked.push(e.message)}
 
 const generated_at=new Date().toISOString();
-const output={schema_version:'1.0.0',season:2026,generated_at,status:process.argv.includes('--self-test')?'SELF_TEST':'SHADOW_ONLY',mode:'SHADOW_ONLY',actionable:false,comparisons};
-const report={generated_at,result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,comparisons_tested:comparisons.length,price_separation_verified:!blocked.some(x=>x.includes('ADP/price/sportsbook')),toss_up_handling_verified:!blocked.some(x=>x.includes('TOSS_UP')),public_language_verified:!blocked.some(x=>x.includes('Forbidden public term')||x.includes('sentence cap')),blocked};
+const output={schema_version:'1.1.0',season:2026,generated_at,status:process.argv.includes('--self-test')?'SELF_TEST':contract.mode,mode:contract.mode,actionable:contract.actionable,comparisons};
+const report={generated_at,result:blocked.length?'BLOCKED':'PASS',mode:contract.mode,actionable:contract.actionable,comparisons_tested:comparisons.length,price_separation_verified:!blocked.some(x=>x.includes('ADP/price/sportsbook')),toss_up_handling_verified:!blocked.some(x=>x.includes('TOSS_UP')),public_language_verified:!blocked.some(x=>x.includes('Forbidden public term')||x.includes('sentence cap')),blocked};
 fs.writeFileSync(path.join(root,'data/probability/generated/comparison-decisions-2026.json'),JSON.stringify(output,null,2)+'\n');
 fs.writeFileSync(path.join(root,'guardrails/comparison-decision-report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));
