@@ -51,6 +51,8 @@ jobs:
         run: node scripts/test-exact-tail-math.mjs
       - name: Validate Step 4 risk profile contract
         run: node scripts/validate-risk-profile-contract.mjs
+      - name: Validate Step 5 comparison decision contract
+        run: node scripts/validate-comparison-decision-contract.mjs
       - name: Validate historical route source contract
         run: node scripts/validate-historical-route-source-contract.mjs
       - name: Backfill observed historical WR/TE pass-play participation
@@ -79,6 +81,8 @@ jobs:
         run: node scripts/build-weekly-probability-engine.mjs --self-test
       - name: Validate Step 4 weekly risk profile
         run: node scripts/build-weekly-risk-profile.mjs --self-test
+      - name: Validate Step 5 comparison decision layer
+        run: node scripts/build-comparison-decision-layer.mjs --self-test
       - name: Validate weekly matchup market snapshot layer
         run: node scripts/validate-weekly-matchup-market-snapshots.mjs --self-test
       - name: Build and validate football probability distributions
@@ -112,6 +116,8 @@ jobs:
             guardrails/exact-tail-math-test-report.json
             guardrails/risk-profile-contract-report.json
             guardrails/weekly-risk-profile-report.json
+            guardrails/comparison-decision-contract-report.json
+            guardrails/comparison-decision-report.json
             guardrails/catch-rate-priors-report.json
             guardrails/historical-route-source-contract-report.json
             guardrails/historical-route-participation-backfill-report.json
@@ -138,6 +144,7 @@ jobs:
             data/probability/generated/rookie-no-history-priors-2016-2025.json
             data/probability/generated/historical-projection-error-model-2021-2025.json
             data/probability/generated/weekly-risk-profiles-2026.json
+            data/probability/generated/comparison-decisions-2026.json
             data/sources/historical-route-participation-2021-2025.json
             data/sources/weekly-football-context-2026.json
             data/sources/role-cohort-baseline-selection-2026.json
@@ -146,6 +153,7 @@ jobs:
             data/sources/frozen-2025-calibration-audit-2026.json
             data/sources/exact-tail-math-2026.json
             data/sources/risk-profile-2026.json
+            data/sources/comparison-decision-2026.json
             data/probability/weekly-football-context-raw-2026.json
             data/probability/weekly-football-context-inputs-2026.json
             data/probability/weekly-projection-inputs-2026.json
