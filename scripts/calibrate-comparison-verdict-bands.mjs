@@ -73,12 +73,11 @@ for(let i=0;i<shards.length;i++)for(let j=i+1;j<shards.length;j++){
   if(finite(trA)&&finite(trB)&&Math.abs(trA-trB)>=largeGap && band!=='TOSS_UP'){
     largeRankGapPairs++;
     const expectedBetter=trA<trB?a:b;
-    if(winner.n!==expectedBetter && ['EDGE','CLEAR_EDGE'].includes(band)){
+    if(winner.n!==expectedBetter.n && ['EDGE','CLEAR_EDGE'].includes(band)){
       largeRankGapConflicts++;
       if(conflictExamples.length<20)conflictExamples.push({winner:winner.n,winner_player_quality_rank:Number(winner.tr),loser:loser.n,loser_player_quality_rank:Number(loser.tr),verdict:band,gap:round(Math.abs(gap))});
     }
   }
-  // Full-pool mutation guard: market fields may change, football score must not.
   const ma={...a,ad:999,px:'FADE',s7:'AVOID',vl:'MUTATED',vo:{markets:[{line:999,over:-999,under:999}]}},mb={...b,ad:1,px:'BUY',s7:'TARGET',vl:'MUTATED',vo:{markets:[{line:1,over:999,under:-999}]}};
   const mA=score(ma),mB=score(mb),mGap=mA.score-mB.score,mBand=bandFor(mGap);
   if(Math.abs(mGap-gap)>1e-12||mBand!==band)priceMutationChanges++;
@@ -99,32 +98,7 @@ if(conflictRate>lim.large_rank_gap_conflict_rate_max)blocked.push(`large-rank-ga
 const overstatedRate=share(overstatedClearEdges,clearEdges);
 if(overstatedRate>lim.overstated_clear_edge_rate_max)blocked.push(`overstated CLEAR_EDGE rate ${round(overstatedRate)} exceeds ${lim.overstated_clear_edge_rate_max}`);
 
-const report={
-  generated_at:new Date().toISOString(),
-  result:blocked.length?'BLOCKED':'PASS',
-  mode:'SHADOW_ONLY',
-  actionable:false,
-  player_count:shards.length,
-  unique_player_count:unique.size,
-  unordered_pairs_tested:pairCount,
-  same_position_pairs:sameCount,
-  cross_position_pairs:crossCount,
-  verdict_counts:counts,
-  verdict_shares:{all:allShares,same_position:sameShares,cross_position:crossShares},
-  large_rank_gap_pairs:largeRankGapPairs,
-  large_rank_gap_conflicts:largeRankGapConflicts,
-  large_rank_gap_conflict_rate:round(conflictRate),
-  clear_edges:clearEdges,
-  overstated_clear_edges:overstatedClearEdges,
-  overstated_clear_edge_rate:round(overstatedRate),
-  price_sportsbook_mutation_changes:priceMutationChanges,
-  calibration_risk_adapter_used:true,
-  calibration_risk_adapter_production_allowed:false,
-  threshold_recommendation:blocked.length?'REVIEW_BEFORE_LOCK':'KEEP_STEP_5_BANDS',
-  conflict_examples:conflictExamples,
-  overstated_clear_edge_examples:overstatedExamples,
-  blocked
-};
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,player_count:shards.length,unique_player_count:unique.size,unordered_pairs_tested:pairCount,same_position_pairs:sameCount,cross_position_pairs:crossCount,verdict_counts:counts,verdict_shares:{all:allShares,same_position:sameShares,cross_position:crossShares},large_rank_gap_pairs:largeRankGapPairs,large_rank_gap_conflicts:largeRankGapConflicts,large_rank_gap_conflict_rate:round(conflictRate),clear_edges:clearEdges,overstated_clear_edges:overstatedClearEdges,overstated_clear_edge_rate:round(overstatedRate),price_sportsbook_mutation_changes:priceMutationChanges,calibration_risk_adapter_used:true,calibration_risk_adapter_production_allowed:false,threshold_recommendation:blocked.length?'REVIEW_BEFORE_LOCK':'KEEP_STEP_5_BANDS',conflict_examples:conflictExamples,overstated_clear_edge_examples:overstatedExamples,blocked};
 fs.writeFileSync(path.join(root,'guardrails/comparison-verdict-calibration-report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));
 if(blocked.length)process.exit(1);
