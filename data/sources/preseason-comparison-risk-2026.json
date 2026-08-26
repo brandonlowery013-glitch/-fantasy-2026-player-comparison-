@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_6B_PRESEASON_COMPARISON_RISK_LOCKED",
+  "mode": "PRODUCTION_READY_PRESEASON",
+  "actionable_for_comparison_runtime": true,
+  "replaces_step_4_weekly_risk": false,
+  "purpose": "Provide one production-safe season/preseason football risk score for every player in the authoritative 162-player comparison universe when weekly Step 4 distribution risk is not populated.",
+  "allowed_runtime_context": "PRESEASON_OR_SEASON_LEVEL_PLAYER_COMPARISON",
+  "inputs": {
+    "availability": {"field": "a", "weight": 0.45, "scale": "0_TO_10_HIGHER_IS_SAFER"},
+    "reliability": {"field": "rl", "weight": 0.35, "scale": "0_TO_10_HIGHER_IS_SAFER"},
+    "sustainability": {"field": "su", "weight": 0.20, "scale": "0_TO_10_HIGHER_IS_SAFER"}
+  },
+  "formula": "risk_score = 1 - ((availability*0.45 + reliability*0.35 + sustainability*0.20) / 10)",
+  "step_5_transform": "risk_safety = 1 - risk_score",
+  "risk_bands_source": "data/sources/risk-profile-2026.json",
+  "provenance_rules": {
+    "football_only": true,
+    "adp_allowed": false,
+    "market_value_label_allowed": false,
+    "sportsbook_allowed": false,
+    "raw_injury_status_text_allowed_as_extra_penalty": false,
+    "projection_mutation_allowed": false,
+    "ceiling_mutation_allowed": false,
+    "role_mutation_allowed": false,
+    "environment_mutation_allowed": false
+  },
+  "relationship_to_step_4": {
+    "weekly_step_4_remains_authoritative_when_populated": true,
+    "this_profile_is_not_a_weekly_distribution_risk_estimate": true,
+    "this_profile_does_not_modify_step_4": true,
+    "production_resolution_rule": "Use populated locked Step 4 normalized risk for weekly/in-season weekly comparisons; otherwise use this production preseason/season-level profile. Never combine both risk scores."
+  },
+  "hard_block_rules": [
+    "authoritative player universe is not exactly 162 unique players",
+    "any availability, reliability, or sustainability input is missing, non-finite, or outside [0,10]",
+    "final risk score is non-finite or outside [0,1]",
+    "ADP, draft price, market-value labels, sportsbook data, or implied probability changes the risk score",
+    "raw injury/status text adds a second injury penalty beyond the audited availability input",
+    "preseason risk and Step 4 weekly risk are combined or double counted",
+    "risk profile changes projection, ceiling, role, environment, probability, EV, or sportsbook calculations"
+  ],
+  "step_6b_prerequisite_status": "COMPLETE"
+}
