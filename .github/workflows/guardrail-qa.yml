@@ -41,6 +41,10 @@ jobs:
         run: node scripts/build-historical-uncertainty-calibration.mjs
       - name: Calibrate stat distribution families
         run: node scripts/calibrate-distribution-families.mjs
+      - name: Audit frozen 2025 family calibration
+        run: node scripts/audit-frozen-2025-calibration.mjs
+      - name: Validate frozen 2025 calibration audit contract
+        run: node scripts/validate-frozen-2025-calibration-audit.mjs
       - name: Validate historical route source contract
         run: node scripts/validate-historical-route-source-contract.mjs
       - name: Backfill observed historical WR/TE pass-play participation
@@ -94,6 +98,8 @@ jobs:
             guardrails/historical-reference-population-report.json
             guardrails/historical-uncertainty-calibration-report.json
             guardrails/distribution-family-calibration-report.json
+            guardrails/frozen-2025-calibration-audit-report.json
+            guardrails/frozen-2025-calibration-audit-validation-report.json
             guardrails/catch-rate-priors-report.json
             guardrails/historical-route-source-contract-report.json
             guardrails/historical-route-participation-backfill-report.json
@@ -113,6 +119,7 @@ jobs:
             data/probability/generated/historical-reference-population-2021-2025.json
             data/probability/generated/historical-uncertainty-priors-2021-2025.json
             data/probability/generated/distribution-family-calibration-2021-2025.json
+            data/probability/generated/frozen-2025-calibration-audit.json
             data/probability/generated/catch-rate-priors-2021-2025.json
             data/probability/generated/historical-pass-play-participation-2021-2025.json
             data/probability/generated/role-cohort-priors-2021-2025.json
@@ -123,6 +130,7 @@ jobs:
             data/sources/role-cohort-baseline-selection-2026.json
             data/sources/rookie-no-history-inputs-2026.json
             data/sources/projection-error-model-2026.json
+            data/sources/frozen-2025-calibration-audit-2026.json
             data/probability/weekly-football-context-raw-2026.json
             data/probability/weekly-football-context-inputs-2026.json
             data/probability/weekly-projection-inputs-2026.json
