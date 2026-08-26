@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_3B_EXACT_TAIL_MATH_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "sportsbook_inputs_allowed_as_probability_inputs": false,
+  "scope": [
+    "normal",
+    "student_t",
+    "lognormal_shifted",
+    "poisson",
+    "negative_binomial",
+    "compound_receptions"
+  ],
+  "line_probability_contract": {
+    "over": "P(X > line)",
+    "under": "P(X < line)",
+    "push": "P(X = line) for discrete integer-valued stats when line is an integer; otherwise 0",
+    "sum_rule": "over + under + push = 1 within numerical tolerance"
+  },
+  "compound_reception_contract": {
+    "target_distribution": "pregame football-side target distribution",
+    "conditional_reception_distribution": "beta-binomial or binomial conditional on target count",
+    "marginalization": "P(R=r)=sum_n P(N=n) P(R=r|N=n)",
+    "same_game_targets_allowed": false,
+    "pmf_truncation_tail_tolerance": 1e-10,
+    "maximum_target_support": 120
+  },
+  "hard_block_rules": [
+    "market price or implied probability enters football probability math",
+    "probability is non-finite or outside [0,1]",
+    "over + under + push differs from 1 by more than 1e-8",
+    "compound reception PMF mass differs from 1 by more than 1e-8 after normalization",
+    "same-game observed targets are used in a weekly reception probability"
+  ],
+  "notes": [
+    "This step converts player projections and football-side uncertainty into exact distribution-tail probabilities; it does not create or replace player projections.",
+    "The existing season-long shadow calibration layer is separate and is not silently rewritten by this weekly exact-tail step.",
+    "Receptions are a special compound case; other modeled stats use their selected family directly."
+  ],
+  "step_3b_status": "IMPLEMENTATION_IN_QA"
+}
