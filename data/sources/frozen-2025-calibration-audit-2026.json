@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_3A_CALIBRATION_AUDIT_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "sportsbook_inputs_allowed": false,
+  "family_selection_window": [2023, 2024],
+  "frozen_evaluation_window": [2025],
+  "retuning_on_2025_allowed": false,
+  "audit_metrics": [
+    "mid_pit_deciles",
+    "pit_uniformity_rmse",
+    "central_50_coverage",
+    "central_80_coverage",
+    "central_90_coverage",
+    "lower_10_tail_rate",
+    "upper_10_tail_rate",
+    "holdout_mean_log_score"
+  ],
+  "review_thresholds": {
+    "pit_uniformity_rmse": 0.04,
+    "central_50_abs_error": 0.08,
+    "central_80_abs_error": 0.07,
+    "central_90_abs_error": 0.05,
+    "tail_10_abs_error": 0.04
+  },
+  "hard_block_rules": [
+    "selected family differs from frozen 2023-2024 family calibration artifact",
+    "2025 is used to select or tune a family parameter",
+    "sportsbook data is used",
+    "holdout sample is below 100 for a modeled position/stat",
+    "CDF/PMF is non-finite or outside probability bounds"
+  ],
+  "notes": [
+    "REVIEW_REQUIRED is a diagnostic outcome, not permission to retune on the 2025 holdout.",
+    "Discrete distributions use midpoint PIT F(y-) + 0.5*P(y) to reduce deterministic discreteness artifacts.",
+    "Reception family diagnostics remain conditional on observed same-game targets where the frozen family calibration used them; they are diagnostic-only and are not a deployable pregame reception probability model.",
+    "No calibration weakness found here may rewrite a football projection mean or core fantasy ranking automatically."
+  ],
+  "step_3a_status": "IMPLEMENTATION_IN_QA"
+}
