@@ -1,0 +1,19 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd();const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+const source=read('data/sources/rookie-no-history-inputs-2026.json');const generated=read('data/probability/generated/rookie-no-history-priors-2016-2025.json');
+const norm=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/\b(jr|sr|ii|iii|iv)\b/g,'').replace(/[^a-z0-9]/g,'');
+const live=[];for(let i=0;i<13;i++)live.push(...read(`players${i}.json`));const liveMap=new Map(live.map(p=>[norm(p.n),String(p.p||'').toUpperCase()]));
+const blocked=[];
+if(live.length!==162)blocked.push(`authoritative live universe changed: ${live.length}`);
+if(source.sportsbook_inputs_used!==false||generated.sportsbook_inputs_used!==false)blocked.push('sportsbook inputs must remain false');
+if((source.players||[]).length!==10)blocked.push(`source no-history count must be 10: ${(source.players||[]).length}`);
+if((generated.current_player_priors||[]).length!==10)blocked.push(`generated current rookie prior count must be 10: ${(generated.current_player_priors||[]).length}`);
+if(source.numeric_prior_policy?.age_modifier_active!==false)blocked.push('age modifier must remain inactive until calibrated');
+if(source.numeric_prior_policy?.college_production_modifier_active!==false)blocked.push('college production modifier must remain inactive until calibrated');
+if(source.numeric_prior_policy?.prospect_grade_modifier_active!==false)blocked.push('prospect grade modifier must remain inactive until calibrated');
+const validTiers=new Set(['TOP_10','ROUND1_LATE','DAY2','DAY3']);
+for(const p of source.players||[]){const lp=liveMap.get(norm(p.player));if(!lp)blocked.push(`${p.player} missing from authoritative 162`);else if(lp!==p.position)blocked.push(`${p.player} position mismatch source=${p.position} live=${lp}`);if(!validTiers.has(p.draft_tier))blocked.push(`${p.player} invalid draft tier ${p.draft_tier}`);if(!(Number(p.draft_pick)>=1&&Number(p.draft_pick)<=257))blocked.push(`${p.player} invalid draft pick ${p.draft_pick}`);}
+for(const p of generated.current_player_priors||[]){if(!p.numeric_prior||!['historical_rookie_draft_tier','historical_rookie_position_fallback'].includes(p.numeric_prior.source))blocked.push(`${p.player} invalid rookie prior source`);if(p.age_modifier_applied!==false||p.college_modifier_applied!==false)blocked.push(`${p.player} uncalibrated modifier applied`);for(const [stat,x] of Object.entries(p.numeric_prior?.stats||{}))if(!(Number.isFinite(Number(x.mean))&&Number.isFinite(Number(x.sd))&&Number(x.sd)>0))blocked.push(`${p.player} ${stat} invalid rookie prior`);}
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,live_player_universe_count:live.length,source_rookies:(source.players||[]).length,generated_rookies:(generated.current_player_priors||[]).length,history_window:generated.history_window,excluded_history_seasons:generated.excluded_history_seasons,blocked,sportsbook_inputs_used:false,safeguards:['Exactly 10 explicit no-history players are allowed in the 2026 rookie source set.','All 10 must resolve to the authoritative 162-player universe with matching positions.','No age, college-production or prospect-grade multiplier may activate before calibration.','Generated priors must come from a historical rookie draft tier or explicit rookie-position fallback.','Every deployed rookie stat prior requires a finite mean and positive standard deviation.','No sportsbook data is allowed.']};
+fs.writeFileSync(path.join(root,'guardrails/rookie-no-history-priors-validation-report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
