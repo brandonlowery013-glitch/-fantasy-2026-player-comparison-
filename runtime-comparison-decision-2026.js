@@ -16,9 +16,10 @@
     return {ordered,gap,band,winner:ordered[0],label:ordered[0].n,read:`${pretty[band]} — ${ordered[0].n} has the stronger overall football profile across expected production, ceiling, risk, role and environment.`};
   };
   window.FANTASY2026_COMPARISON_RUNTIME={version:'STEP_6B_RUNTIME_1.0.0',score,verdict,decision,usesDraftPrice:false,usesSportsbook:false};
+  function ready(){try{return typeof window.run==='function'&&typeof selected==='function'&&typeof vals==='function'}catch{return false}}
   function attach(){
     if(window.__STEP6B_RUNTIME_ATTACHED)return true;
-    if(typeof window.run!=='function'||typeof window.selected!=='function'||typeof window.vals!=='function')return false;
+    if(!ready())return false;
     const legacyRun=window.run;
     window.run=function(){
       legacyRun();
