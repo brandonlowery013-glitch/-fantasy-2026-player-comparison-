@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "season": 2026,
   "status": "STEP_3A_CALIBRATION_AUDIT_LOCKED",
   "mode": "SHADOW_ONLY",
@@ -9,7 +9,7 @@
   "frozen_evaluation_window": [2025],
   "retuning_on_2025_allowed": false,
   "audit_metrics": [
-    "mid_pit_deciles",
+    "randomized_pit_deciles",
     "pit_uniformity_rmse",
     "central_50_coverage",
     "central_80_coverage",
@@ -34,7 +34,7 @@
   ],
   "notes": [
     "REVIEW_REQUIRED is a diagnostic outcome, not permission to retune on the 2025 holdout.",
-    "Discrete distributions use midpoint PIT F(y-) + 0.5*P(y) to reduce deterministic discreteness artifacts.",
+    "Discrete distributions use deterministic randomized PIT F(y-) + u*P(y), where u is reproducibly derived from player/season/week/stat. This preserves repeatability while avoiding midpoint-PIT non-uniformity for discrete outcomes.",
     "Reception family diagnostics remain conditional on observed same-game targets where the frozen family calibration used them; they are diagnostic-only and are not a deployable pregame reception probability model.",
     "No calibration weakness found here may rewrite a football projection mean or core fantasy ranking automatically."
   ],
