@@ -16,26 +16,35 @@
     return {ordered,gap,band,winner:ordered[0],label:ordered[0].n,read:`${pretty[band]} — ${ordered[0].n} has the stronger overall football profile across expected production, ceiling, risk, role and environment.`};
   };
   window.FANTASY2026_COMPARISON_RUNTIME={version:'STEP_6B_RUNTIME_1.0.0',score,verdict,decision,usesDraftPrice:false,usesSportsbook:false};
-  const legacyRun=window.run;
-  if(typeof legacyRun!=='function')throw new Error('Legacy comparison renderer unavailable');
-  window.run=function(){
-    legacyRun();
-    const ps=selected();
-    if(ps.length<2)return;
-    const d=decision(ps);
-    const valueOrdered=[...ps].sort((a,b)=>vals(b)-vals(a));
-    document.getElementById('eq').textContent=d.label;
-    document.getElementById('eqr').textContent=d.read;
-    document.getElementById('straightEdge').textContent=d.label;
-    document.getElementById('priceEdge').textContent=valueOrdered[0].n;
-    const checked=[...document.querySelectorAll('.cb:checked')].map(x=>x.value);
-    if(checked.includes('final')){
-      const box=document.querySelector('#details .finalbox');
-      if(box){
-        const valueWinner=valueOrdered[0].n;
-        const text=d.winner?(d.winner.n===valueWinner?`${d.winner.n} is the better player head to head and the better buy at current ADP.`:`${d.winner.n} is the better player head to head, but ${valueWinner} is the better buy at current ADP.`):`Better Player is a toss-up, while ${valueWinner} is the better buy at current ADP.`;
-        box.innerHTML=`<b>Final Decision</b><div style="margin-top:6px">${text}</div>`;
+  function attach(){
+    if(window.__STEP6B_RUNTIME_ATTACHED)return true;
+    if(typeof window.run!=='function'||typeof window.selected!=='function'||typeof window.vals!=='function')return false;
+    const legacyRun=window.run;
+    window.run=function(){
+      legacyRun();
+      const ps=selected();
+      if(ps.length<2)return;
+      const d=decision(ps);
+      const valueOrdered=[...ps].sort((a,b)=>vals(b)-vals(a));
+      document.getElementById('eq').textContent=d.label;
+      document.getElementById('eqr').textContent=d.read;
+      document.getElementById('straightEdge').textContent=d.label;
+      document.getElementById('priceEdge').textContent=valueOrdered[0].n;
+      const checked=[...document.querySelectorAll('.cb:checked')].map(x=>x.value);
+      if(checked.includes('final')){
+        const box=document.querySelector('#details .finalbox');
+        if(box){
+          const valueWinner=valueOrdered[0].n;
+          const text=d.winner?(d.winner.n===valueWinner?`${d.winner.n} is the better player head to head and the better buy at current ADP.`:`${d.winner.n} is the better player head to head, but ${valueWinner} is the better buy at current ADP.`):`Better Player is a toss-up, while ${valueWinner} is the better buy at current ADP.`;
+          box.innerHTML=`<b>Final Decision</b><div style="margin-top:6px">${text}</div>`;
+        }
       }
-    }
-  };
+    };
+    window.__STEP6B_RUNTIME_ATTACHED=true;
+    return true;
+  }
+  if(!attach()){
+    let attempts=0;
+    const timer=setInterval(()=>{attempts++;if(attach()||attempts>=200)clearInterval(timer)},25);
+  }
 })();
