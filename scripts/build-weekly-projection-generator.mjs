@@ -4,6 +4,8 @@ import path from 'node:path';
 const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const priors=read('data/probability/generated/historical-uncertainty-priors-2021-2025.json');
+const cohortPriors=read('data/probability/generated/role-cohort-priors-2021-2025.json');
+const cohortContract=read('data/sources/role-cohort-baseline-selection-2026.json');
 const inputPath='data/probability/weekly-football-context-inputs-2026.json';
 const outputPath='data/probability/weekly-projection-inputs-2026.json';
 const input=read(inputPath);
@@ -23,15 +25,16 @@ const signalCurrent=s=>!s?.status||s.status==='CURRENT'||s.status==='SELF_TEST';
 
 const playerPriorByName=new Map((priors.player_priors||[]).map(p=>[normalize(p.player),p]));
 const positionPriors=priors.position_priors||{};
+const cohorts=cohortPriors.cohorts||{};
 
 function syntheticInput(){
   return {
     schema_version:'self-test',season:2026,week:1,status:'SELF_TEST',generated_at:new Date().toISOString(),sportsbook_inputs_used:false,
     players:{
-      'SELF_TEST_QB':{position:'QB',prior_player:null,expected_active:true,signals:{role:{status:'CURRENT',stat_adjustments:{pass_yards:{mean_pct:.04,sd_pct:.02},pass_tds:{mean_pct:.03},rush_yards:{mean_pct:.01}},source:'self-test role'},qb_context:{status:'CURRENT',stat_adjustments:{pass_yards:{mean_pct:.02}},source:'self-test qb'},opponent:{status:'CURRENT',stat_adjustments:{pass_yards:{mean_pct:-.03},rush_yards:{mean_pct:.02}},source:'self-test opponent'}}},
-      'SELF_TEST_RB':{position:'RB',prior_player:null,expected_active:true,signals:{role:{status:'CURRENT',stat_adjustments:{rush_yards:{mean_pct:.08,sd_pct:.05},targets:{mean_pct:.06,sd_pct:.04},receiving_yards:{mean_pct:.02},receptions:{mean_pct:.02}},source:'self-test role'},injury:{status:'CURRENT',stat_adjustments:{rush_yards:{mean_pct:-.04,sd_pct:.08},targets:{mean_pct:-.02,sd_pct:.05}},source:'self-test injury'}}},
-      'SELF_TEST_WR':{position:'WR',prior_player:null,expected_active:true,signals:{role:{status:'CURRENT',stat_adjustments:{targets:{mean_pct:.08,sd_pct:.03},receiving_yards:{mean_pct:.07},receptions:{mean_pct:.05}},source:'self-test role'},team_environment:{status:'CURRENT',stat_adjustments:{targets:{mean_pct:.02},receiving_yards:{mean_pct:.03}},source:'self-test environment'}}},
-      'SELF_TEST_TE':{position:'TE',prior_player:null,expected_active:true,signals:{role:{status:'CURRENT',stat_adjustments:{targets:{mean_pct:.07},receiving_yards:{mean_pct:.05},receptions:{mean_pct:.06}},source:'self-test role'},opponent:{status:'STALE_REVIEW_REQUIRED',stat_adjustments:{targets:{mean_pct:-.01},receiving_yards:{mean_pct:-.02}},source:'self-test stale opponent'}}}
+      'SELF_TEST_QB':{position:'QB',prior_player:null,expected_active:true,signals:{role:{status:'CURRENT',cohort:'QB_STARTER',stat_adjustments:{pass_yards:{mean_pct:.04,sd_pct:.02},pass_tds:{mean_pct:.03},rush_yards:{mean_pct:.01}},source:'self-test role'},qb_context:{status:'CURRENT',stat_adjustments:{pass_yards:{mean_pct:.02}},source:'self-test qb'},opponent:{status:'CURRENT',stat_adjustments:{pass_yards:{mean_pct:-.03},rush_yards:{mean_pct:.02}},source:'self-test opponent'}}},
+      'SELF_TEST_RB':{position:'RB',prior_player:null,expected_active:true,signals:{role:{status:'CURRENT',cohort:'RB_LEAD',stat_adjustments:{rush_yards:{mean_pct:.08,sd_pct:.05},targets:{mean_pct:.06,sd_pct:.04},receiving_yards:{mean_pct:.02},receptions:{mean_pct:.02}},source:'self-test role'},injury:{status:'CURRENT',stat_adjustments:{rush_yards:{mean_pct:-.04,sd_pct:.08},targets:{mean_pct:-.02,sd_pct:.05}},source:'self-test injury'}}},
+      'SELF_TEST_WR':{position:'WR',prior_player:null,expected_active:true,signals:{role:{status:'CURRENT',cohort:'WR_FULL_TIME',stat_adjustments:{targets:{mean_pct:.08,sd_pct:.03},receiving_yards:{mean_pct:.07},receptions:{mean_pct:.05}},source:'self-test role'},team_environment:{status:'CURRENT',stat_adjustments:{targets:{mean_pct:.02},receiving_yards:{mean_pct:.03}},source:'self-test environment'}}},
+      'SELF_TEST_TE':{position:'TE',prior_player:null,expected_active:true,signals:{role:{status:'CURRENT',cohort:'TE_RECEIVING',stat_adjustments:{targets:{mean_pct:.07},receiving_yards:{mean_pct:.05},receptions:{mean_pct:.06}},source:'self-test role'},opponent:{status:'STALE_REVIEW_REQUIRED',stat_adjustments:{targets:{mean_pct:-.01},receiving_yards:{mean_pct:-.02}},source:'self-test stale opponent'}}}
     }
   };
 }
@@ -39,19 +42,34 @@ function syntheticInput(){
 const src=process.argv.includes('--self-test')?syntheticInput():input;
 const blocked=[];
 if(src.sportsbook_inputs_used!==false) blocked.push('sportsbook_inputs_used must be false');
+if(cohortPriors.sportsbook_inputs_used!==false) blocked.push('role cohort priors unexpectedly use sportsbook inputs');
+if(cohortContract.sportsbook_inputs_allowed!==false) blocked.push('role cohort baseline contract unexpectedly permits sportsbook inputs');
 
-function baselineFor(name,p,pos,stat){
+function validCandidate(mean,sd){return finite(mean)&&finite(sd)&&Number(sd)>0;}
+function candidateBaselines(name,p,pos,stat){
   const requested=p.prior_player||name;
   const pp=playerPriorByName.get(normalize(requested));
   const ps=pp?.position===pos?pp.stats?.[stat]:null;
-  if(ps&&finite(ps.shrunk_mean)&&finite(ps.shrunk_sd)&&Number(ps.shrunk_sd)>0){
-    return {mean:Number(ps.shrunk_mean),sd:Number(ps.shrunk_sd),source:'player_shrunk_prior',prior_player:pp.player,games:Number(ps.games||0)};
+  const player=ps&&validCandidate(ps.shrunk_mean,ps.shrunk_sd)?{mean:Number(ps.shrunk_mean),sd:Number(ps.shrunk_sd),source:'player_shrunk_prior',prior_player:pp.player,games:Number(ps.games||0)}:null;
+
+  const roleSignal=p.signals?.role;
+  let role=null;
+  if(signalCurrent(roleSignal)&&roleSignal?.cohort){
+    const cohortName=String(roleSignal.cohort);
+    const c=cohorts[cohortName];
+    const allowed=(cohortContract.allowed_cohorts?.[pos]||[]).includes(cohortName);
+    const x=c?.stats?.[stat];
+    if(!c||String(c.position||'').toUpperCase()!==pos||!allowed){
+      blocked.push(`${name} invalid current role cohort for ${pos}: ${cohortName}`);
+    }else if(x&&validCandidate(x.mean,x.sd)){
+      role={mean:Number(x.mean),sd:Number(x.sd),source:'role_cohort_prior',cohort:cohortName,player_seasons:Number(c.player_seasons||0),player_games:Number(c.player_games||0),role_source:roleSignal.source||null,role_captured_at:roleSignal.captured_at||null};
+    }
   }
+
   const q=positionPriors?.[pos]?.[stat];
-  if(q&&finite(q.mean)&&finite(q.sd)&&Number(q.sd)>0){
-    return {mean:Number(q.mean),sd:Number(q.sd),source:'position_prior',prior_player:null,games:Number(q.sample||0)};
-  }
-  return null;
+  const position=q&&validCandidate(q.mean,q.sd)?{mean:Number(q.mean),sd:Number(q.sd),source:'position_prior',sample:Number(q.sample||0)}:null;
+  const selected=player||role||position||null;
+  return {selected,candidates:{player,role_cohort:role,position}};
 }
 
 function applySignals(base,p,stat){
@@ -79,6 +97,7 @@ function applySignals(base,p,stat){
 
 const players={};
 let projected=0,review=0,insufficient=0,adjustmentCount=0,targetProjected=0,excludedStaleAdjustments=0;
+const baselineSourceCounts={player_shrunk_prior:0,role_cohort_prior:0,position_prior:0};
 for(const [name,p] of Object.entries(src.players||{})){
   const pos=String(p.position||'').toUpperCase();
   const stats=statsByPos[pos];
@@ -88,13 +107,20 @@ for(const [name,p] of Object.entries(src.players||{})){
   let playerStatus=p.context_status==='REVIEW_REQUIRED'?'REVIEW_REQUIRED':'SHADOW_ONLY';
   if(playerStatus==='REVIEW_REQUIRED')review++;
   for(const stat of stats){
-    const base=baselineFor(name,p,pos,stat);
-    if(!base){projections[stat]={status:'INSUFFICIENT_DATA',reason:'No valid player or position historical prior'};insufficient++;playerStatus='REVIEW_REQUIRED';continue;}
+    const baseline=candidateBaselines(name,p,pos,stat);
+    const base=baseline.selected;
+    if(!base){projections[stat]={status:'INSUFFICIENT_DATA',reason:'No valid player, role-cohort, or position historical prior',baseline_candidates:baseline.candidates};insufficient++;playerStatus='REVIEW_REQUIRED';continue;}
+    baselineSourceCounts[base.source]=(baselineSourceCounts[base.source]||0)+1;
     const adj=applySignals(base,p,stat); adjustmentCount+=adj.applied.length;excludedStaleAdjustments+=adj.excluded.length;
     const missingCoreSignals=['role','injury','team_environment','opponent'].filter(k=>!p.signals?.[k]||!signalCurrent(p.signals[k]));
     projections[stat]={
       status:'SHADOW_ONLY',actionable:false,mean:round(adj.mean),sd:round(adj.sd),
-      baseline:{mean:round(base.mean),sd:round(base.sd),source:base.source,prior_player:base.prior_player,games:base.games},
+      baseline:{mean:round(base.mean),sd:round(base.sd),source:base.source,prior_player:base.prior_player||null,cohort:base.cohort||null,games:base.games??null,player_seasons:base.player_seasons??null,player_games:base.player_games??null,role_source:base.role_source||null,role_captured_at:base.role_captured_at||null},
+      baseline_candidates:{
+        player:baseline.candidates.player?{...baseline.candidates.player,mean:round(baseline.candidates.player.mean),sd:round(baseline.candidates.player.sd)}:null,
+        role_cohort:baseline.candidates.role_cohort?{...baseline.candidates.role_cohort,mean:round(baseline.candidates.role_cohort.mean),sd:round(baseline.candidates.role_cohort.sd)}:null,
+        position:baseline.candidates.position?{...baseline.candidates.position,mean:round(baseline.candidates.position.mean),sd:round(baseline.candidates.position.sd)}:null
+      },
       adjustments:{mean_multiplier:round(adj.mean_multiplier),sd_multiplier:round(adj.sd_multiplier),applied:adj.applied,excluded_noncurrent:adj.excluded},
       missing_core_signals:missingCoreSignals,
       sportsbook_inputs_used:false
@@ -110,6 +136,8 @@ if(process.argv.includes('--self-test')){
   if(targetProjected<3) blocked.push(`self-test projected too few target distributions: ${targetProjected}`);
   if(adjustmentCount<9) blocked.push(`self-test applied too few current context adjustments: ${adjustmentCount}`);
   if(excludedStaleAdjustments<2) blocked.push(`self-test did not exclude stale adjustments: ${excludedStaleAdjustments}`);
+  if((baselineSourceCounts.role_cohort_prior||0)<11) blocked.push(`self-test role cohort baselines unexpectedly low: ${baselineSourceCounts.role_cohort_prior||0}`);
+  if((baselineSourceCounts.position_prior||0)!==0) blocked.push(`self-test unexpectedly used generic position fallback: ${baselineSourceCounts.position_prior||0}`);
 }
 for(const [name,p] of Object.entries(players)) for(const [stat,x] of Object.entries(p.projections||{})){
   if(x.status==='SHADOW_ONLY'&&(!finite(x.mean)||!finite(x.sd)||Number(x.sd)<=0)) blocked.push(`${name} ${stat} invalid projection`);
@@ -118,19 +146,20 @@ for(const [name,p] of Object.entries(players)) for(const [stat,x] of Object.entr
 
 const generatedAt=new Date().toISOString();
 const output={
-  schema_version:'1.2.0',season:2026,week:src.week,generated_at:generatedAt,
-  status:src.status==='SELF_TEST'?'SELF_TEST':'SHADOW_ONLY',sportsbook_inputs_used:false,players
+  schema_version:'1.3.0',season:2026,week:src.week,generated_at:generatedAt,
+  status:src.status==='SELF_TEST'?'SELF_TEST':'SHADOW_ONLY',sportsbook_inputs_used:false,baseline_priority:cohortContract.baseline_priority,players
 };
 const report={
   generated_at:generatedAt,result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,
   input_status:src.status,projected_stats:projected,target_projections:targetProjected,review_required:review,insufficient_data:insufficient,
-  context_adjustments_applied:adjustmentCount,excluded_noncurrent_adjustments:excludedStaleAdjustments,sportsbook_inputs_used:false,blocked,
+  context_adjustments_applied:adjustmentCount,excluded_noncurrent_adjustments:excludedStaleAdjustments,baseline_source_counts:baselineSourceCounts,sportsbook_inputs_used:false,blocked,
   safeguards:[
-    'Historical player/position priors are the baseline; no sportsbook line or price is used.',
-    'Pregame targets are projected for RB/WR/TE from historical football-side priors before any reception probability is constructed.',
+    'Baseline priority is player-specific shrunk history, then a current position-valid role cohort, then generic position fallback.',
+    'A role cohort never overrides a valid player-specific historical prior in this step.',
+    'Role-cohort and position candidates are preserved beside the selected baseline for auditability.',
+    'No blend weights are introduced before calibration.',
     'Only CURRENT weekly signals may modify a projection; stale/review-required signals remain in the audit trail but are excluded from multipliers.',
-    'Stale core signals count as missing current context rather than current evidence.',
-    'Individual signal adjustments and total multipliers are capped to prevent a single bad input from creating an extreme projection.',
+    'Pregame targets are projected for RB/WR/TE from football-side priors before any reception probability is constructed.',
     'Missing context is reported rather than silently invented.',
     'This generator remains SHADOW_ONLY until real 2026 weekly context feeds and holdout calibration are active.'
   ]

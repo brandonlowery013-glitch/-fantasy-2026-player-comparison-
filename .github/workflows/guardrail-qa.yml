@@ -51,6 +51,8 @@ jobs:
         run: node scripts/build-catch-rate-priors.mjs
       - name: Validate weekly football context source contract
         run: node scripts/validate-weekly-football-context-source-contract.mjs
+      - name: Validate role cohort baseline selection contract
+        run: node scripts/validate-role-cohort-baseline-selection.mjs
       - name: Validate weekly football context normalization and freshness
         run: node scripts/normalize-weekly-football-context.mjs --self-test
       - name: Validate weekly football projection generator
@@ -88,6 +90,7 @@ jobs:
             guardrails/historical-route-source-contract-report.json
             guardrails/historical-route-participation-backfill-report.json
             guardrails/role-cohort-priors-report.json
+            guardrails/role-cohort-baseline-selection-report.json
             guardrails/weekly-football-context-source-contract-report.json
             guardrails/weekly-football-context-normalization-report.json
             guardrails/weekly-projection-generator-report.json
@@ -103,6 +106,7 @@ jobs:
             data/probability/generated/role-cohort-priors-2021-2025.json
             data/sources/historical-route-participation-2021-2025.json
             data/sources/weekly-football-context-2026.json
+            data/sources/role-cohort-baseline-selection-2026.json
             data/probability/weekly-football-context-raw-2026.json
             data/probability/weekly-football-context-inputs-2026.json
             data/probability/weekly-projection-inputs-2026.json
