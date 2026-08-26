@@ -1,10 +1,15 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "season": 2026,
   "status": "STEP_5_COMPARISON_DECISION_LOCKED",
-  "mode": "SHADOW_ONLY",
-  "actionable": false,
-  "purpose": "Convert locked football projection, ceiling, role, environment and Step 4 risk outputs into a head-to-head comparison verdict without mixing in draft price or sportsbook information.",
+  "mode": "PRODUCTION_COMPARISON_RUNTIME",
+  "actionable": true,
+  "purpose": "Convert locked football projection, ceiling, role, environment and production-safe risk outputs into a head-to-head comparison verdict without mixing in draft price or sportsbook information.",
+  "production_gate": {
+    "step_6a_calibration_complete": true,
+    "step_6b_preseason_risk_bridge_complete": true,
+    "runtime_file": "runtime-comparison-decision-2026.js"
+  },
   "head_to_head_weights": {
     "expected_production": 0.35,
     "ceiling": 0.20,
@@ -43,5 +48,6 @@
     "comparison score outside [0,1]"
   ],
   "step_5a_status": "COMPLETE",
-  "step_5b_status": "COMPLETE"
+  "step_5b_status": "COMPLETE",
+  "step_6b_runtime_status": "ACTIVE"
 }
