@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_6A_VERDICT_CALIBRATION",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "purpose": "Backtest the locked Step 5 comparison score and verdict bands across every pair in the authoritative 162-player universe before production integration.",
+  "authoritative_player_count": 162,
+  "pair_scope": "ALL_UNORDERED_PAIRS",
+  "expected_pair_count": 13041,
+  "same_position_and_cross_position_reported_separately": true,
+  "calibration_risk_adapter": {
+    "purpose": "Provide season-level cross-sectional risk variation only where the weekly Step 4 profile is not populated for the 162-player preseason universe.",
+    "formula": "risk_score = 1 - ((availability*0.45 + reliability*0.35 + sustainability*0.20) / 10)",
+    "inputs": ["availability", "reliability", "sustainability"],
+    "may_modify_step_4": false,
+    "may_modify_step_5": false,
+    "production_runtime_allowed": false
+  },
+  "diagnostic_limits": {
+    "toss_up_share_min": 0.03,
+    "toss_up_share_max": 0.45,
+    "clear_edge_share_max": 0.65,
+    "same_position_clear_edge_share_max": 0.55,
+    "large_rank_gap_conflict_rate_max": 0.05,
+    "large_rank_gap_threshold": 25,
+    "overstated_clear_edge_rate_max": 0.08
+  },
+  "overstated_clear_edge_definition": "CLEAR_EDGE where the named winner trails in both expected production and ceiling, meaning risk/role/environment alone created a public clear-edge verdict.",
+  "hard_block_rules": [
+    "authoritative player universe is not exactly 162 unique players",
+    "not all 13 runtime player shards are included",
+    "unordered pair count is not exactly 13041",
+    "non-finite comparison component or score",
+    "price or sportsbook fields alter a head-to-head score or verdict",
+    "verdict bands fail basic distribution sanity limits",
+    "large player-quality-rank conflicts exceed the calibration limit",
+    "overstated CLEAR_EDGE rate exceeds the calibration limit"
+  ],
+  "step_6a_status": "IN_PROGRESS"
+}
