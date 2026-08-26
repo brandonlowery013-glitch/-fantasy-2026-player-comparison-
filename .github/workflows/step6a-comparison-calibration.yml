@@ -1,0 +1,26 @@
+name: Step 6A Comparison Calibration
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+jobs:
+  step6a-comparison-calibration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Calibrate all 162-player comparison verdict bands
+        run: node scripts/calibrate-comparison-verdict-bands.mjs
+      - name: Upload calibration report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6a-comparison-calibration-report
+          path: guardrails/comparison-verdict-calibration-report.json
+          if-no-files-found: error
