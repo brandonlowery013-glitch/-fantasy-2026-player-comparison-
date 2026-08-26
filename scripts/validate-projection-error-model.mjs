@@ -1,0 +1,33 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd();
+const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+const c=read('data/sources/projection-error-model-2026.json');
+const m=read('data/probability/generated/historical-projection-error-model-2021-2025.json');
+const blocked=[];
+const finite=x=>Number.isFinite(Number(x));
+const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+if(c.sportsbook_inputs_allowed!==false)blocked.push('contract must forbid sportsbook inputs');
+if(c.snapshot_policy?.archived_exact_model_snapshots_available!==false)blocked.push('contract must acknowledge exact archived snapshots are unavailable');
+if(c.snapshot_policy?.historical_snapshot_type!=='WALK_FORWARD_RECONSTRUCTION')blocked.push('snapshot type changed unexpectedly');
+if(!same(c.windows?.projection_error_tuning,[2023,2024]))blocked.push(`tuning window changed: ${JSON.stringify(c.windows?.projection_error_tuning)}`);
+if(!same(c.windows?.final_holdout,[2025]))blocked.push(`final holdout changed: ${JSON.stringify(c.windows?.final_holdout)}`);
+if(c.deployment_rules?.apply_projection_error_to_weekly_mean!==false)blocked.push('projection error/bias must not automatically change weekly mean');
+if(c.deployment_rules?.apply_projection_error_to_weekly_sd!==true)blocked.push('projection error SD deployment must remain enabled in shadow mode');
+if(c.deployment_rules?.combine_by_quadrature!==true)blocked.push('uncertainty combination must remain quadrature');
+if(c.deployment_rules?.holdout_tuning_allowed!==false)blocked.push('holdout tuning must remain forbidden');
+if(m.snapshot_type!=='WALK_FORWARD_RECONSTRUCTION'||m.archived_exact_model_snapshots_available!==false)blocked.push('generated model mislabels reconstructed snapshots');
+if(!same(m.tuning_window,[2023,2024])||!same(m.evaluation_window,[2025]))blocked.push('generated tuning/evaluation windows changed');
+if(m.sportsbook_inputs_used!==false)blocked.push('generated model uses sportsbook inputs');
+if(!(Number(m.snapshot_count)>8000))blocked.push(`snapshot count unexpectedly small: ${m.snapshot_count}`);
+for(const [pos,stats] of Object.entries(m.models||{}))for(const [stat,x] of Object.entries(stats||{})){
+  if(!finite(x.projection_error_sd)||Number(x.projection_error_sd)<0)blocked.push(`${pos} ${stat} invalid projection_error_sd`);
+  if(x.bias_application!=='DIAGNOSTIC_ONLY_NOT_APPLIED_TO_WEEKLY_MEAN')blocked.push(`${pos} ${stat} bias application changed`);
+  const h=m.holdout_2025?.[pos]?.[stat];
+  if(!h||Number(h.sample)<100)blocked.push(`${pos} ${stat} insufficient 2025 holdout`);
+  if(h&&(!finite(h.raw_gaussian_nll)||!finite(h.combined_gaussian_nll)))blocked.push(`${pos} ${stat} invalid holdout scoring`);
+}
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,snapshot_type:m.snapshot_type,snapshot_count:m.snapshot_count,tuning_window:m.tuning_window,evaluation_window:m.evaluation_window,blocked,sportsbook_inputs_used:false,safeguards:['Exact archived historical model projections are not claimed.','2023-2024 are the only projection-error tuning seasons.','2025 remains final holdout and cannot tune the projection-error term.','Projection bias remains diagnostic and does not alter weekly means.','Projection-error SD must be nonnegative and combines with performance SD by quadrature.','Sportsbook information is forbidden.']};
+fs.writeFileSync(path.join(root,'guardrails/projection-error-model-validation-report.json'),JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report,null,2));
+if(blocked.length)process.exit(1);

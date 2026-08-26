@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_2H_PROJECTION_ERROR_CONTRACT_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "sportsbook_inputs_allowed": false,
+  "snapshot_policy": {
+    "archived_exact_model_snapshots_available": false,
+    "historical_snapshot_type": "WALK_FORWARD_RECONSTRUCTION",
+    "chronology_rule": "Each reconstructed projection may use only games completed before the target week; same-week and future rows are forbidden.",
+    "do_not_label_as_exact_historical_model_projection": true
+  },
+  "windows": {
+    "history": [2021, 2022, 2023, 2024, 2025],
+    "projection_error_tuning": [2023, 2024],
+    "final_holdout": [2025]
+  },
+  "decomposition": {
+    "performance_variance": "Pregame football-side variance from the walk-forward player/position historical prior.",
+    "forecast_residual": "actual - reconstructed_pregame_mean",
+    "projection_bias": "Mean forecast residual on the tuning window; diagnostic only in Step 2H and not automatically applied to future means.",
+    "projection_error_variance": "max(0, residual_variance - mean(performance_variance)) on the tuning window.",
+    "combined_predictive_variance": "performance_variance + projection_error_variance",
+    "independence_assumption": "The quadrature decomposition is an approximation; aleatoric and epistemic uncertainty are not perfectly identifiable from outcomes alone."
+  },
+  "deployment_rules": {
+    "apply_projection_error_to_weekly_mean": false,
+    "apply_projection_error_to_weekly_sd": true,
+    "combine_by_quadrature": true,
+    "preserve_raw_performance_sd": true,
+    "preserve_projection_error_sd": true,
+    "preserve_combined_sd": true,
+    "holdout_tuning_allowed": false,
+    "market_price_or_line_as_input": false
+  },
+  "step_2h_status": "COMPLETE"
+}
