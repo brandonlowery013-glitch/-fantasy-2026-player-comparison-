@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd(),c=JSON.parse(fs.readFileSync(path.join(root,'data/sources/correlation-modeling-2026.json'),'utf8')),blocked=[];
+const required=['QB_PASS_YARDS__RECEIVER_YARDS','QB_PASS_TDS__RECEIVER_TDS','TARGETS__RECEPTIONS','TARGETS__RECEIVING_YARDS','RECEPTIONS__RECEIVING_YARDS','CARRIES__RUSHING_YARDS','TEAM_POINTS__PLAYER_TDS'];
+if(c.status!=='STEP_3C_CORRELATION_MODELING_LOCKED')blocked.push('status must lock Step 3C');
+if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('Step 3C must remain SHADOW_ONLY and non-actionable');
+if(c.sportsbook_inputs_allowed_as_correlation_inputs!==false)blocked.push('sportsbook inputs must be forbidden from correlation estimation');
+for(const x of required)if(!(c.relationships||[]).includes(x))blocked.push(`missing required relationship ${x}`);
+if(Number(c.estimator?.minimum_pair_observations)<25)blocked.push('minimum pair observations must be at least 25');
+if(!(Number(c.estimator?.shrinkage_strength)>0))blocked.push('correlation shrinkage strength must be positive');
+if(!(Number(c.estimator?.maximum_absolute_correlation)>0&&Number(c.estimator?.maximum_absolute_correlation)<1))blocked.push('maximum absolute correlation must be in (0,1)');
+if(c.joint_probability_contract?.method!=='gaussian_copula_on_step_3b_marginal_event_probabilities')blocked.push('joint probability must preserve Step 3B marginals through the locked copula contract');
+if(Number(c.joint_probability_contract?.minimum_samples)<4096)blocked.push('joint probability minimum samples must be at least 4096');
+if(c.team_scoring_environment_contract?.sportsbook_team_totals_allowed!==false)blocked.push('sportsbook team totals must be forbidden from TD conditioning');
+if(c.step_3c_status!=='COMPLETE')blocked.push('step_3c_status must be COMPLETE');
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',blocked,relationships:c.relationships,mode:c.mode,actionable:c.actionable,sportsbook_inputs_allowed_as_correlation_inputs:c.sportsbook_inputs_allowed_as_correlation_inputs,step_3c_status:c.step_3c_status};
+fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});fs.writeFileSync(path.join(root,'guardrails/correlation-modeling-contract-report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
