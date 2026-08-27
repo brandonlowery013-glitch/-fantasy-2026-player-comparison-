@@ -49,6 +49,12 @@ jobs:
         run: node scripts/validate-exact-tail-math-contract.mjs
       - name: Test exact tail and compound reception math
         run: node scripts/test-exact-tail-math.mjs
+      - name: Validate Step 3C correlation modeling contract
+        run: node scripts/validate-correlation-modeling-contract.mjs
+      - name: Test Step 3C correlation and copula math
+        run: node scripts/test-correlation-modeling.mjs
+      - name: Build Step 3C historical correlation model
+        run: node scripts/build-correlation-model.mjs
       - name: Validate Step 4 risk profile contract
         run: node scripts/validate-risk-profile-contract.mjs
       - name: Validate Step 5 comparison decision contract
@@ -118,6 +124,9 @@ jobs:
             guardrails/frozen-2025-calibration-audit-validation-report.json
             guardrails/exact-tail-math-contract-report.json
             guardrails/exact-tail-math-test-report.json
+            guardrails/correlation-modeling-contract-report.json
+            guardrails/correlation-modeling-test-report.json
+            guardrails/correlation-model-report.json
             guardrails/risk-profile-contract-report.json
             guardrails/weekly-risk-profile-report.json
             guardrails/comparison-decision-contract-report.json
@@ -144,6 +153,7 @@ jobs:
             data/probability/generated/historical-uncertainty-priors-2021-2025.json
             data/probability/generated/distribution-family-calibration-2021-2025.json
             data/probability/generated/frozen-2025-calibration-audit.json
+            data/probability/generated/correlation-model-2021-2025.json
             data/probability/generated/catch-rate-priors-2021-2025.json
             data/probability/generated/historical-pass-play-participation-2021-2025.json
             data/probability/generated/role-cohort-priors-2021-2025.json
@@ -159,6 +169,7 @@ jobs:
             data/sources/projection-error-model-2026.json
             data/sources/frozen-2025-calibration-audit-2026.json
             data/sources/exact-tail-math-2026.json
+            data/sources/correlation-modeling-2026.json
             data/sources/risk-profile-2026.json
             data/sources/comparison-decision-2026.json
             data/sources/preseason-comparison-risk-2026.json
