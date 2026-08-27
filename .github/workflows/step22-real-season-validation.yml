@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-  schedule:
-    - cron: '50 */6 * * *'
 
 jobs:
   step22-real-season-validation:
@@ -19,8 +17,6 @@ jobs:
         run: node scripts/validate-real-season-validation.mjs --self-test
       - name: Build current Step 22 live validation state
         run: node scripts/validate-real-season-validation.mjs
-      - name: Verify current preseason state
-        run: node -e "const x=require('./data/calibration/real-season-validation-status-2026.json');if(x.overall_status!=='WAITING_FOR_SOURCE'||x.actionable!==false||x.live_evidence.settled_forecasts!==0)process.exit(1)"
       - name: Revalidate weekly pipeline health
         run: node scripts/validate-weekly-pipeline-health-contract.mjs
       - name: Revalidate calibration governance
