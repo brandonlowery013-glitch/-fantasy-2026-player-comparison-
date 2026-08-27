@@ -1,12 +1,14 @@
 {
-  "schema_version":"1.0.0",
+  "schema_version":"1.1.0",
   "season":2026,
   "status":"STEP_9_WEEKLY_FOOTBALL_INGESTION_LOCKED",
   "sportsbook_inputs_allowed":false,
   "schedule_source":{
-    "name":"nflverse nfldata games.csv",
-    "url":"https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv",
-    "required_fields":["season","game_type","week","away_team","home_team","gameday","gametime"],
+    "authoritative_cross_check":"NFL.com 2026 schedule",
+    "authoritative_url":"https://www.nfl.com/schedules/2026/by-week/week-1",
+    "automated_feed_name":"ESPN public NFL scoreboard schedule feed",
+    "automated_feed_url_template":"https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week={week}",
+    "secondary_validation":"nflverse nfldata games.csv when 2026 rows become available",
     "regular_season_only":true
   },
   "context_source_types":["role","injury","team_environment","opponent","qb_context"],
@@ -32,7 +34,7 @@
     "Never convert a missing context signal to a zero adjustment.",
     "Every context signal must retain source and capture timestamp.",
     "Sportsbook, odds and implied-probability content is prohibited from football ingestion.",
-    "Schedule rows must come from the configured football schedule source and map to the authoritative player universe by team."
+    "Automated schedule rows must be 2026 regular-season events and are labeled with their source; NFL.com remains the authoritative schedule cross-check."
   ],
   "step_9_status":"FRAMEWORK_COMPLETE_AWAITING_LIVE_CONTEXT_SNAPSHOTS"
 }
