@@ -10,20 +10,11 @@ const marketWords=/\b(odds?|sportsbook|bookmaker|moneyline|vig|juice|implied_pro
 const teamMap={
   'Arizona Cardinals':'ARI','Atlanta Falcons':'ATL','Baltimore Ravens':'BAL','Buffalo Bills':'BUF','Carolina Panthers':'CAR','Chicago Bears':'CHI','Cincinnati Bengals':'CIN','Cleveland Browns':'CLE','Dallas Cowboys':'DAL','Denver Broncos':'DEN','Detroit Lions':'DET','Green Bay Packers':'GB','Houston Texans':'HOU','Indianapolis Colts':'IND','Jacksonville Jaguars':'JAX','Kansas City Chiefs':'KC','Las Vegas Raiders':'LV','Los Angeles Chargers':'LAC','Los Angeles Rams':'LA','Miami Dolphins':'MIA','Minnesota Vikings':'MIN','New England Patriots':'NE','New Orleans Saints':'NO','New York Giants':'NYG','New York Jets':'NYJ','Philadelphia Eagles':'PHI','Pittsburgh Steelers':'PIT','San Francisco 49ers':'SF','Seattle Seahawks':'SEA','Tampa Bay Buccaneers':'TB','Tennessee Titans':'TEN','Washington Commanders':'WAS'
 };
+const espnAlias={LAR:'LA',WSH:'WAS',JAC:'JAX'};
 const validSignals=new Set(contract.context_source_types||[]);
 const norm=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/\b(jr|sr|ii|iii|iv)\b/g,'').replace(/[^a-z0-9]/g,'');
 const parseTime=x=>{const t=Date.parse(String(x||''));return Number.isFinite(t)?t:null;};
-
-function parseCsv(text){
-  const rows=[];let row=[],cell='',q=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i];
-    if(q){if(c==='"'&&text[i+1]==='"'){cell+='"';i++;}else if(c==='"')q=false;else cell+=c;}
-    else if(c==='"')q=true;else if(c===','){row.push(cell);cell='';}else if(c==='\n'){row.push(cell.replace(/\r$/,''));rows.push(row);row=[];cell='';}else cell+=c;
-  }
-  if(cell.length||row.length){row.push(cell);rows.push(row);}
-  const head=rows.shift()||[];return rows.filter(r=>r.some(Boolean)).map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]??''])));
-}
+const canonicalTeam=x=>espnAlias[String(x||'').toUpperCase()]||String(x||'').toUpperCase();
 
 function loadPlayers(){
   const out=[];
@@ -34,19 +25,43 @@ function loadPlayers(){
   return out;
 }
 
-function kickoffIso(g){
-  if(!g.gameday||!g.gametime)return null;
-  const raw=`${g.gameday}T${g.gametime}`;
-  const t=Date.parse(raw.endsWith('Z')||/[+-]\d\d:?\d\d$/.test(raw)?raw:`${raw}-04:00`);
-  return Number.isFinite(t)?new Date(t).toISOString():null;
+function espnEventsToGames(payload,forcedWeek=null){
+  const out=[];
+  for(const e of payload.events||[]){
+    const comp=e.competitions?.[0];if(!comp)continue;
+    const teams={};
+    for(const c of comp.competitors||[])teams[c.homeAway]=canonicalTeam(c.team?.abbreviation);
+    const week=Number(e.week?.number??payload.week?.number??forcedWeek);
+    const season=Number(e.season?.year??payload.season?.year??2026);
+    const type=Number(e.season?.type??payload.season?.type??2);
+    const start=e.date||comp.date||null;
+    if(season!==2026||type!==2||!Number.isInteger(week)||!teams.away||!teams.home||parseTime(start)==null)continue;
+    out.push({season,week,away_team:teams.away,home_team:teams.home,event_start:new Date(parseTime(start)).toISOString(),event_id:String(e.id||'')});
+  }
+  return out;
+}
+
+async function fetchSchedule(now,forcedWeek){
+  if(forcedWeek!=null){
+    const url=contract.schedule_source.automated_feed_url_template.replace('{week}',String(forcedWeek));
+    const r=await fetch(url,{headers:{'user-agent':'fantasy-2026-ingestion'}});if(!r.ok)throw new Error(`schedule fetch failed ${r.status}`);
+    return espnEventsToGames(await r.json(),Number(forcedWeek));
+  }
+  const base=contract.schedule_source.automated_feed_url_template.replace('&week={week}','').replace('?week={week}&','?').replace('week={week}&','');
+  const r=await fetch(base,{headers:{'user-agent':'fantasy-2026-ingestion'}});if(r.ok){const all=espnEventsToGames(await r.json());if(all.length)return all;}
+  const payloads=await Promise.all(Array.from({length:18},(_,i)=>i+1).map(async week=>{
+    const url=contract.schedule_source.automated_feed_url_template.replace('{week}',String(week));
+    const x=await fetch(url,{headers:{'user-agent':'fantasy-2026-ingestion'}});return x.ok?espnEventsToGames(await x.json(),week):[];
+  }));
+  return payloads.flat();
 }
 
 function chooseWeek(games,now,forced){
   if(forced!=null){const w=Number(forced);if(Number.isInteger(w)&&w>=1&&w<=18)return w;throw new Error(`Invalid NFL_WEEK ${forced}`);}
-  const future=games.map(g=>({g,t:parseTime(kickoffIso(g))})).filter(x=>x.t!=null&&x.t>=now).sort((a,b)=>a.t-b.t);
-  if(future.length)return Number(future[0].g.week);
-  const past=games.map(g=>({g,t:parseTime(kickoffIso(g))})).filter(x=>x.t!=null&&x.t<now).sort((a,b)=>b.t-a.t);
-  return past.length?Number(past[0].g.week):null;
+  const future=games.filter(g=>parseTime(g.event_start)>=now).sort((a,b)=>parseTime(a.event_start)-parseTime(b.event_start));
+  if(future.length)return Number(future[0].week);
+  const past=games.filter(g=>parseTime(g.event_start)<now).sort((a,b)=>parseTime(b.event_start)-parseTime(a.event_start));
+  return past.length?Number(past[0].week):null;
 }
 
 function buildContext(players,week,nowIso){
@@ -58,6 +73,7 @@ function buildContext(players,week,nowIso){
     if(marketWords.test(String(s.source||''))||marketWords.test(JSON.stringify(s.evidence||{}))){blocked.push(`${s.player} ${type} market contamination`);continue;}
     const p=byPlayer.get(norm(s.player));if(!p){blocked.push(`unknown player ${s.player}`);continue;}
     const t=parseTime(s.captured_at);if(t==null){blocked.push(`${p.name} ${type} invalid captured_at`);continue;}
+    if(t>parseTime(nowIso)+5*60000){blocked.push(`${p.name} ${type} captured_at is in future`);continue;}
     const k=`${p.name}|${type}`,old=latest.get(k);if(!old||t>old.t)latest.set(k,{t,s,p});
   }
   const grouped=new Map();
@@ -80,18 +96,21 @@ async function main(){
   const selfTest=process.argv.includes('--self-test'),nowIso=process.env.INGEST_NOW||new Date().toISOString(),now=parseTime(nowIso);
   if(now==null)throw new Error('INGEST_NOW invalid');
   const players=loadPlayers();
-  let rows;
-  if(selfTest){rows=[{season:'2026',game_type:'REG',week:'1',away_team:'ATL',home_team:'CHI',gameday:'2026-09-10',gametime:'20:20'}];}
-  else{const res=await fetch(contract.schedule_source.url,{headers:{'user-agent':'fantasy-2026-ingestion'}});if(!res.ok)throw new Error(`schedule fetch failed ${res.status}`);rows=parseCsv(await res.text());}
-  const games=rows.filter(g=>Number(g.season)===2026&&String(g.game_type).toUpperCase()==='REG');
+  const games=selfTest?[{season:2026,week:1,away_team:'ATL',home_team:'CHI',event_start:'2026-09-10T00:20:00Z',event_id:'SELF'}]:await fetchSchedule(now,process.env.NFL_WEEK);
   const week=chooseWeek(games,now,process.env.NFL_WEEK);if(week==null)throw new Error('Unable to resolve 2026 NFL week');
   const weekGames=games.filter(g=>Number(g.week)===week),gameOut={};
-  for(const g of weekGames){const event_start=kickoffIso(g);if(!event_start)continue;const id=`2026-W${week}-${g.away_team}-${g.home_team}`;gameOut[id]={week,away_team:g.away_team,home_team:g.home_team,event_start,verified:true,source:contract.schedule_source.name,players:players.filter(p=>p.team===g.away_team||p.team===g.home_team).map(p=>p.name)};}
-  const schedule={schema_version:'1.1.0',season:2026,week,status:Object.keys(gameOut).length?'LIVE_SCHEDULE_INGESTED':'AWAITING_VERIFIED_EVENTS',generated_at:nowIso,sportsbook_inputs_used:false,games:gameOut};
+  for(const g of weekGames){
+    const start=parseTime(g.event_start);if(start==null)continue;
+    const id=`2026-W${week}-${g.away_team}-${g.home_team}`;
+    gameOut[id]={week,away_team:g.away_team,home_team:g.home_team,event_start:new Date(start).toISOString(),verified:true,source:contract.schedule_source.automated_feed_name,authoritative_cross_check:contract.schedule_source.authoritative_cross_check,event_id:g.event_id||null,players:players.filter(p=>p.team===g.away_team||p.team===g.home_team).map(p=>p.name)};
+  }
+  const schedule={schema_version:'1.2.0',season:2026,week,status:Object.keys(gameOut).length?'LIVE_SCHEDULE_INGESTED':'AWAITING_VERIFIED_EVENTS',generated_at:nowIso,sportsbook_inputs_used:false,games:gameOut};
   const context=buildContext(players,week,nowIso),blocked=[...context.blocked];
   if(selfTest){if(Object.keys(schedule.games).length!==1)blocked.push('self-test schedule game count');if(!schedule.games['2026-W1-ATL-CHI'])blocked.push('self-test game id');}
+  if(!Object.keys(schedule.games).length)blocked.push(`no 2026 regular-season games found for week ${week}`);
   write('data/calibration/weekly-event-schedule-2026.json',schedule);write('data/probability/weekly-football-context-raw-2026.json',context.raw);
-  const report={generated_at:nowIso,result:blocked.length?'BLOCKED':'PASS',season:2026,week,schedule_games:Object.keys(schedule.games).length,mapped_players:[...new Set(Object.values(schedule.games).flatMap(g=>g.players))].length,context_players:Object.keys(context.raw.players).length,sportsbook_inputs_used:false,blocked,notes:['Schedule is fetched from the locked nflverse football source.','Only explicit current-source availability can set expected_active; absence of an injury row never implies active.','Missing context remains missing; no neutral/zero signal is invented.']};write('guardrails/weekly-football-ingestion-report.json',report);console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
+  const report={generated_at:nowIso,result:blocked.length?'BLOCKED':'PASS',season:2026,week,schedule_games:Object.keys(schedule.games).length,mapped_players:[...new Set(Object.values(schedule.games).flatMap(g=>g.players))].length,context_players:Object.keys(context.raw.players).length,schedule_source:contract.schedule_source.automated_feed_name,authoritative_cross_check:contract.schedule_source.authoritative_cross_check,sportsbook_inputs_used:false,blocked,notes:['2026 schedule is ingested from the configured live schedule adapter and labeled with source provenance.','NFL.com remains the authoritative schedule cross-check.','Only explicit current-source availability can set expected_active; absence of an injury row never implies active.','Missing context remains missing; no neutral/zero signal is invented.']};
+  write('guardrails/weekly-football-ingestion-report.json',report);console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
 }
 
 main().catch(e=>{console.error(e);process.exit(1);});
