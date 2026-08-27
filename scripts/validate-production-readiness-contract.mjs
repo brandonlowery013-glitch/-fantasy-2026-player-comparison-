@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+const c=JSON.parse(fs.readFileSync('data/sources/production-readiness-dry-run-2026.json','utf8'));
+const dash=fs.readFileSync('operations-dashboard.html','utf8');
+const step24=fs.readFileSync('.github/workflows/step24-weekly-production-orchestration.yml','utf8');
+const blocked=[];
+if(c.status!=='STEP_25_PRODUCTION_READINESS_LOCKED')blocked.push('Step 25 contract not locked');
+if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('Step 25 must remain SHADOW_ONLY and non-actionable');
+for(const s of ['PRESEASON_WAITING_FOR_SOURCE','SOURCE_READY_PROVIDER_CREDENTIAL_MISSING','PREGAME_FULLY_READY','FINAL_WAITING_FOR_SETTLEMENT','POSTGAME_SETTLED','ILLEGAL_CHRONOLOGY_BLOCKED'])if(!c.required_scenarios.includes(s))blocked.push(`missing dry-run scenario ${s}`);
+for(const p of c.required_dashboard_sources||[])if(!dash.includes(p))blocked.push(`Operations dashboard missing readiness source ${p}`);
+if(!dash.includes('Production Readiness'))blocked.push('Operations dashboard missing Production Readiness section');
+if(!step24.includes('node scripts/build-production-readiness-status.mjs'))blocked.push('Step 24 does not refresh Step 25 readiness status');
+if(!step24.includes('data/calibration/production-readiness-status-2026.json'))blocked.push('Step 24 atomic persistence omits Step 25 status');
+for(const forbidden of ['automatic wagering','stake sizing'])if(c.production_invariants?.[forbidden]===true)blocked.push(`forbidden production behavior enabled: ${forbidden}`);
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',status:c.status,mode:c.mode,actionable:c.actionable,blocked};
+fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/production-readiness-contract-report.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
