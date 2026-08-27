@@ -49,7 +49,7 @@ jobs:
           if-no-files-found: error
 
   weekly-production-cycle:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && (needs.step24-contract-qa.result == 'success' || needs.step24-contract-qa.result == 'skipped')
     needs: step24-contract-qa
     runs-on: ubuntu-latest
     steps:
@@ -166,29 +166,35 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            data/calibration/weekly-event-schedule-2026.json \
-            data/ingestion/weekly-football-source-snapshots-2026.json \
-            data/probability/weekly-football-context-raw-2026.json \
-            data/probability/weekly-football-context-2026.json \
-            data/probability/generated/weekly-projections-2026.json \
-            data/probability/generated/weekly-probability-distributions-2026.json \
-            data/calibration/weekly-forecast-capture-2026.json \
-            data/probability/generated/game-team-scoring-priors-2023-2025.json \
-            data/probability/generated/weekly-game-projections-2026.json \
-            data/market/weekly-matchup-market-snapshots-2026.json \
-            data/market/player-prop-market-snapshots-2026.json \
-            data/market/live-market-ingestion-status-2026.json \
-            data/market/weekly-game-market-recommendations-2026.json \
-            data/market/player-prop-recommendations-2026.json \
-            data/market/unified-opportunities-2026.json \
-            data/calibration/weekly-forecast-results-2026.json \
-            data/calibration/weekly-forecast-calibration-2026.json \
-            weeklyCalibration2026.json \
-            data/calibration/calibration-governance-status-2026.json \
-            data/calibration/weekly-pipeline-status-2026.json \
-            data/calibration/real-season-validation-status-2026.json \
-            data/calibration/weekly-production-orchestration-status-2026.json 2>/dev/null || true
+          paths=(
+            data/calibration/weekly-event-schedule-2026.json
+            data/ingestion/weekly-football-source-snapshots-2026.json
+            data/probability/weekly-football-context-raw-2026.json
+            data/probability/weekly-football-context-inputs-2026.json
+            data/probability/weekly-projection-inputs-2026.json
+            data/probability/generated/weekly-probability-distributions-2026.json
+            data/calibration/weekly-forecast-capture-2026.json
+            data/probability/generated/game-team-scoring-priors-2023-2025.json
+            data/probability/generated/weekly-game-projections-2026.json
+            data/market/weekly-matchup-market-snapshots-2026.json
+            data/market/player-prop-market-snapshots-2026.json
+            data/market/live-market-ingestion-status-2026.json
+            data/market/weekly-game-market-recommendations-2026.json
+            data/market/player-prop-recommendations-2026.json
+            data/market/unified-opportunities-2026.json
+            data/calibration/weekly-forecast-results-2026.json
+            data/calibration/weekly-forecast-calibration-2026.json
+            data/calibration/weekly-predictions-2026.json
+            data/calibration/weekly-outcomes-2026.json
+            weeklyCalibration2026.json
+            data/calibration/calibration-governance-status-2026.json
+            data/calibration/weekly-pipeline-status-2026.json
+            data/calibration/real-season-validation-status-2026.json
+            data/calibration/weekly-production-orchestration-status-2026.json
+          )
+          for p in "${paths[@]}"; do
+            if [ -e "$p" ]; then git add "$p"; fi
+          done
           if git diff --cached --quiet; then
             echo "No weekly production state changes."
             exit 0
