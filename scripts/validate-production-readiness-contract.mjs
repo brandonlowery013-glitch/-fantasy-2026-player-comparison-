@@ -5,7 +5,9 @@ const step24=fs.readFileSync('.github/workflows/step24-weekly-production-orchest
 const blocked=[];
 if(c.status!=='STEP_25_PRODUCTION_READINESS_LOCKED')blocked.push('Step 25 contract not locked');
 if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('Step 25 must remain SHADOW_ONLY and non-actionable');
-for(const s of ['PRESEASON_WAITING_FOR_SOURCE','SOURCE_READY_PROVIDER_CREDENTIAL_MISSING','PREGAME_FULLY_READY','FINAL_WAITING_FOR_SETTLEMENT','POSTGAME_SETTLED','ILLEGAL_CHRONOLOGY_BLOCKED'])if(!c.required_scenarios.includes(s))blocked.push(`missing dry-run scenario ${s}`);
+for(const s of ['PRESEASON_WAITING_FOR_SOURCE','SOURCE_READY_CONTEXT_MISSING','SOURCE_READY_PROVIDER_CREDENTIAL_MISSING','PREGAME_FULLY_READY','FINAL_WAITING_FOR_SETTLEMENT','POSTGAME_SETTLED','ILLEGAL_CHRONOLOGY_BLOCKED'])if(!c.required_scenarios.includes(s))blocked.push(`missing dry-run scenario ${s}`);
+if(!c.readiness_states?.includes('WAITING_FOR_CONTEXT'))blocked.push('Step 25 readiness states missing WAITING_FOR_CONTEXT');
+if(c.production_invariants?.schedule_and_context_are_separate_readiness_gates!==true)blocked.push('schedule/context readiness gates are not separated');
 for(const p of c.required_dashboard_sources||[])if(!dash.includes(p))blocked.push(`Operations dashboard missing readiness source ${p}`);
 if(!dash.includes('Production Readiness'))blocked.push('Operations dashboard missing Production Readiness section');
 if(!step24.includes('node scripts/build-production-readiness-status.mjs'))blocked.push('Step 24 does not refresh Step 25 readiness status');
