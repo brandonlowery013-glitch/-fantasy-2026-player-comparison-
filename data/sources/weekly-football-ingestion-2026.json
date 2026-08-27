@@ -1,0 +1,38 @@
+{
+  "schema_version":"1.0.0",
+  "season":2026,
+  "status":"STEP_9_WEEKLY_FOOTBALL_INGESTION_LOCKED",
+  "sportsbook_inputs_allowed":false,
+  "schedule_source":{
+    "name":"nflverse nfldata games.csv",
+    "url":"https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv",
+    "required_fields":["season","game_type","week","away_team","home_team","gameday","gametime"],
+    "regular_season_only":true
+  },
+  "context_source_types":["role","injury","team_environment","opponent","qb_context"],
+  "context_snapshot_contract":{
+    "source_file":"data/ingestion/weekly-football-source-snapshots-2026.json",
+    "append_only_evidence":true,
+    "required_fields":["signal_type","player","source","captured_at","stat_adjustments"],
+    "missing_is_unknown":true,
+    "market_contamination_prohibited":true
+  },
+  "player_mapping":{
+    "authoritative_universe":"players0.json..players12.json",
+    "team_field":"t",
+    "position_field":"p",
+    "name_field":"n"
+  },
+  "outputs":[
+    "data/calibration/weekly-event-schedule-2026.json",
+    "data/probability/weekly-football-context-raw-2026.json"
+  ],
+  "safeguards":[
+    "Never infer expected_active=true solely because no injury row exists.",
+    "Never convert a missing context signal to a zero adjustment.",
+    "Every context signal must retain source and capture timestamp.",
+    "Sportsbook, odds and implied-probability content is prohibited from football ingestion.",
+    "Schedule rows must come from the configured football schedule source and map to the authoritative player universe by team."
+  ],
+  "step_9_status":"FRAMEWORK_COMPLETE_AWAITING_LIVE_CONTEXT_SNAPSHOTS"
+}
