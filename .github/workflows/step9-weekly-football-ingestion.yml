@@ -27,13 +27,7 @@ jobs:
           INGEST_NOW: '2026-08-27T12:00:00Z'
           NFL_WEEK: '1'
         run: node scripts/ingest-weekly-football-data.mjs --self-test
-      - name: Revalidate downstream weekly context normalization
-        run: node scripts/normalize-weekly-football-context.mjs --self-test
-      - name: Revalidate weekly projection generator
-        run: node scripts/build-weekly-projection-generator.mjs --self-test
-      - name: Revalidate weekly probability engine
-        run: node scripts/build-weekly-probability-engine.mjs --self-test
-      - name: Revalidate immutable Step 8 capture
+      - name: Revalidate immutable Step 8 capture contract
         run: node scripts/capture-weekly-forecast-snapshots.mjs --self-test
       - name: Upload Step 9 QA reports
         if: always()
@@ -43,9 +37,6 @@ jobs:
           path: |
             guardrails/weekly-football-ingestion-contract-report.json
             guardrails/weekly-football-ingestion-report.json
-            guardrails/weekly-football-context-normalization-report.json
-            guardrails/weekly-projection-generator-report.json
-            guardrails/weekly-probability-engine-report.json
             guardrails/weekly-forecast-capture-test-report.json
           if-no-files-found: error
 
@@ -66,22 +57,24 @@ jobs:
           node-version: '20'
       - name: Ingest live 2026 schedule and football-source snapshots
         run: node scripts/ingest-weekly-football-data.mjs
-      - name: Normalize current football context
-        run: node scripts/normalize-weekly-football-context.mjs
-      - name: Build weekly football projections
-        run: node scripts/build-weekly-projection-generator.mjs
-      - name: Build exact weekly probability distributions
-        run: node scripts/build-weekly-probability-engine.mjs
-      - name: Freeze first valid pregame forecasts
-        run: node scripts/capture-weekly-forecast-snapshots.mjs
-      - name: Commit changed weekly ingestion state
+      - name: Commit changed weekly source state
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/calibration/weekly-event-schedule-2026.json data/probability/weekly-football-context-raw-2026.json data/probability/weekly-football-context-inputs-2026.json data/probability/weekly-projection-inputs-2026.json data/probability/generated/weekly-probability-distributions-2026.json data/calibration/weekly-forecast-capture-2026.json
+          git add data/calibration/weekly-event-schedule-2026.json data/probability/weekly-football-context-raw-2026.json
           if git diff --cached --quiet; then
             echo "No weekly ingestion changes."
           else
             git commit -m "Update live weekly football ingestion"
             git push origin main
           fi
+      - name: Upload live ingestion report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step9-live-weekly-ingestion
+          path: |
+            data/calibration/weekly-event-schedule-2026.json
+            data/probability/weekly-football-context-raw-2026.json
+            guardrails/weekly-football-ingestion-report.json
+          if-no-files-found: error
