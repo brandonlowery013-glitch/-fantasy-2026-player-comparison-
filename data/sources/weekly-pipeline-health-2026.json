@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "mode": "OBSERVATIONAL_ONLY",
+  "actionable": false,
+  "allowed_statuses": [
+    "READY",
+    "WAITING_FOR_SOURCE",
+    "WAITING_FOR_FORECAST",
+    "WAITING_FOR_FINAL",
+    "WAITING_FOR_SETTLEMENT",
+    "STALE",
+    "BLOCKED"
+  ],
+  "stage_order": ["source", "forecast", "final", "settlement", "calibration"],
+  "inputs": {
+    "schedule": "data/calibration/weekly-event-schedule-2026.json",
+    "football_context": "data/probability/weekly-football-context-raw-2026.json",
+    "forecasts": "data/calibration/weekly-forecast-capture-2026.json",
+    "settlements": "data/calibration/weekly-forecast-results-2026.json",
+    "calibration": "data/calibration/weekly-forecast-calibration-2026.json",
+    "governance": "data/calibration/calibration-governance-status-2026.json"
+  },
+  "rules": {
+    "missing_is_zero": false,
+    "market_inputs_allowed": false,
+    "health_layer_may_mutate_model": false,
+    "health_layer_may_promote_challenger": false,
+    "health_layer_may_rewrite_frozen_forecasts": false,
+    "health_layer_may_rewrite_settlements": false,
+    "status_precedence": ["BLOCKED", "STALE", "WAITING_FOR_SOURCE", "WAITING_FOR_FORECAST", "WAITING_FOR_FINAL", "WAITING_FOR_SETTLEMENT", "READY"],
+    "stale_after_hours": {
+      "football_context": 72,
+      "forecast_before_event": 168,
+      "final_after_event": 12,
+      "settlement_after_final": 12
+    }
+  },
+  "promotion_rule": "Pipeline health is diagnostic only. It may report readiness or blockage but cannot modify football projections, probabilities, market recommendations, frozen forecasts, settlements, calibration parameters, True Value, or comparison winners."
+}
