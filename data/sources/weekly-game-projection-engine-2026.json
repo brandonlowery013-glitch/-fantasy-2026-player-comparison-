@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_14_WEEKLY_GAME_PROJECTION_ENGINE_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "sportsbook_inputs_allowed": false,
+  "history_window": [2023, 2024, 2025],
+  "schedule_source": "data/calibration/weekly-event-schedule-2026.json",
+  "team_prior_output": "data/probability/generated/game-team-scoring-priors-2023-2025.json",
+  "weekly_output": "data/probability/generated/weekly-game-projections-2026.json",
+  "historical_score_source": {
+    "name": "ESPN public NFL scoreboard",
+    "url_template": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates={season}&seasontype=2&week={week}",
+    "final_games_only": true
+  },
+  "team_prior_method": {
+    "offense": "team points-for mean shrunk toward league team-points mean",
+    "defense": "team points-allowed mean shrunk toward league team-points mean",
+    "shrinkage_equivalent_games": 8,
+    "home_field": "empirical mean home-minus-away score over the locked history window",
+    "score_sd": "empirical standard deviation of team scores over the locked history window",
+    "home_away_score_correlation": "empirical Pearson correlation of paired home and away final scores"
+  },
+  "pregame_mean_method": {
+    "home_points": "average(home shrunk offense, away shrunk defense) + home_field_advantage/2",
+    "away_points": "average(away shrunk offense, home shrunk defense) - home_field_advantage/2"
+  },
+  "distribution_method": {
+    "family": "correlated Gaussian score simulation with nonnegative integer score realization",
+    "simulations": 32768,
+    "deterministic_seed": "game_id",
+    "outputs": [
+      "home_score_mean",
+      "away_score_mean",
+      "home_win_probability",
+      "away_win_probability",
+      "tie_probability",
+      "home_minus_away_margin",
+      "model_home_spread",
+      "model_total",
+      "score_percentiles",
+      "margin_percentiles",
+      "total_percentiles"
+    ]
+  },
+  "locked_rules": [
+    "Sportsbook lines, odds, implied probabilities, consensus prices and vig are prohibited from game forecast generation.",
+    "Only final historical games may enter team scoring priors.",
+    "The 2026 game schedule must come from the verified football schedule ledger.",
+    "Game forecasts are generated before any market comparison.",
+    "Player projections may not be translated into team points with arbitrary weights; a future calibrated bridge is required before they can alter game-score means.",
+    "Missing team priors block that game instead of silently substituting a market line.",
+    "All outputs remain SHADOW_ONLY and non-actionable until prospective calibration governance promotes them."
+  ]
+}
