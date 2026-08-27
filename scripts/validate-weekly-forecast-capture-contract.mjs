@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd();
+const c=JSON.parse(fs.readFileSync(path.join(root,'data/sources/weekly-forecast-capture-2026.json'),'utf8'));
+const blocked=[];
+if(c.status!=='STEP_8_WEEKLY_FORECAST_CAPTURE_LOCKED')blocked.push('Step 8 status must be locked');
+if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('Step 8 must remain SHADOW_ONLY and non-actionable');
+if(c.capture_contract?.pregame_only!==true)blocked.push('pregame_only must be true');
+if(c.capture_contract?.first_valid_forecast_wins!==true)blocked.push('first_valid_forecast_wins must be true');
+if(c.capture_contract?.append_only!==true)blocked.push('append_only must be true');
+if(c.capture_contract?.rewrite_existing_forecast_id!=='BLOCK')blocked.push('forecast rewrites must BLOCK');
+if(c.capture_contract?.missing_verified_event_start!=='SKIP_WITH_REPORT')blocked.push('missing event start behavior drift');
+if(c.source_distribution!=='data/probability/generated/weekly-probability-distributions-2026.json')blocked.push('source distribution must remain weekly football probability output');
+if(c.step_8_status!=='FRAMEWORK_COMPLETE_AWAITING_WEEKLY_INPUTS')blocked.push('step_8_status mismatch');
+const required=['forecast_id','season','week','player','position','stat','event_start','distribution_family','mean','sd','parameters','probability_source_generated_at','captured_at'];
+for(const f of required)if(!(c.frozen_fields||[]).includes(f))blocked.push(`missing frozen field ${f}`);
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',blocked,status:c.status,mode:c.mode,actionable:c.actionable,step_8_status:c.step_8_status};
+fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});fs.writeFileSync(path.join(root,'guardrails/weekly-forecast-capture-contract-report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);

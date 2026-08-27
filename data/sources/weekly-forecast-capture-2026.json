@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_8_WEEKLY_FORECAST_CAPTURE_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "source_distribution": "data/probability/generated/weekly-probability-distributions-2026.json",
+  "event_schedule": "data/calibration/weekly-event-schedule-2026.json",
+  "capture_contract": {
+    "pregame_only": true,
+    "first_valid_forecast_wins": true,
+    "stable_forecast_id_required": true,
+    "append_only": true,
+    "rewrite_existing_forecast_id": "BLOCK",
+    "missing_verified_event_start": "SKIP_WITH_REPORT",
+    "non_shadow_distribution": "SKIP_WITH_REPORT"
+  },
+  "frozen_fields": [
+    "forecast_id",
+    "season",
+    "week",
+    "player",
+    "position",
+    "stat",
+    "event_start",
+    "distribution_family",
+    "mean",
+    "sd",
+    "parameters",
+    "probability_source_generated_at",
+    "captured_at"
+  ],
+  "hard_block_rules": [
+    "captured_at is at or after event_start",
+    "duplicate forecast_id appears with different frozen model content",
+    "forecast has non-finite mean or sd",
+    "forecast source is not the weekly football-only probability distribution layer"
+  ],
+  "step_8_status": "FRAMEWORK_COMPLETE_AWAITING_WEEKLY_INPUTS"
+}
