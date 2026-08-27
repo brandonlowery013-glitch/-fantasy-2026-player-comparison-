@@ -1,0 +1,78 @@
+name: Step 11 Postgame Forecast Settlement
+
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '45 */6 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  step11-contract-qa:
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 11 settlement contract
+        run: node scripts/validate-postgame-forecast-settlement-contract.mjs
+      - name: Test final-game settlement, idempotency and corrections
+        run: node scripts/settle-weekly-forecast-results.mjs --self-test
+      - name: Revalidate immutable Step 8 forecast capture
+        run: node scripts/capture-weekly-forecast-snapshots.mjs --self-test
+      - name: Upload Step 11 QA reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step11-postgame-forecast-settlement-qa
+          path: |
+            guardrails/postgame-forecast-settlement-contract-report.json
+            guardrails/postgame-forecast-settlement-test-report.json
+            guardrails/weekly-forecast-capture-test-report.json
+          if-no-files-found: error
+
+  scheduled-settlement:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: postgame-forecast-settlement
+      cancel-in-progress: false
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Settle final games and rebuild forecast calibration
+        run: node scripts/settle-weekly-forecast-results.mjs
+      - name: Persist new result revisions and calibration
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/calibration/weekly-forecast-results-2026.json data/calibration/weekly-forecast-calibration-2026.json
+          if git diff --cached --quiet; then
+            echo 'No postgame settlement changes.'
+          else
+            git commit -m 'Settle weekly frozen forecast results'
+            git push origin main
+          fi
+      - name: Upload postgame settlement report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step11-postgame-forecast-settlement
+          path: |
+            data/calibration/weekly-forecast-results-2026.json
+            data/calibration/weekly-forecast-calibration-2026.json
+            guardrails/postgame-forecast-settlement-report.json
+          if-no-files-found: error
