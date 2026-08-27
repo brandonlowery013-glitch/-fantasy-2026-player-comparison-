@@ -1,0 +1,27 @@
+name: Step 12 Platform Interface
+
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'compare.html'
+      - 'scripts/validate-step12-platform-interface.mjs'
+      - '.github/workflows/step12-platform-interface.yml'
+  workflow_dispatch:
+
+jobs:
+  step12-ui-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 12 platform architecture
+        run: node scripts/validate-step12-platform-interface.mjs
+      - name: Revalidate comparison decision contract
+        run: node scripts/validate-comparison-decision-contract.mjs
+      - name: Revalidate weekly forecast capture contract
+        run: node scripts/validate-weekly-forecast-capture-contract.mjs
+      - name: Revalidate postgame settlement contract
+        run: node scripts/validate-postgame-forecast-settlement-contract.mjs
