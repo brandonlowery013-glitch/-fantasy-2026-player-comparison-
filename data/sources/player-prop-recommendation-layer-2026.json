@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_16_PLAYER_PROP_RECOMMENDATIONS_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "player_universe": 162,
+  "horizons": ["SEASON", "WEEKLY"],
+  "fair_market_method": "PROPORTIONAL_TWO_WAY",
+  "supported_stats": ["passing_yards", "passing_tds", "rushing_yards", "rushing_tds", "receiving_yards", "receiving_tds", "receptions"],
+  "weekly_distribution_source": "data/probability/generated/weekly-probability-distributions-2026.json",
+  "season_distribution_source": "guardrails/probability-distribution-report.json",
+  "market_snapshot_source": "data/market/player-prop-market-snapshots-2026.json",
+  "legacy_season_market_seed": "vegasOdds2026.json",
+  "recommendation_policy": {
+    "minimum_probability_edge": 0.03,
+    "minimum_expected_value": 0.02,
+    "minimum_model_conditional_win_probability": 0.52,
+    "labels": ["PICK", "PASS"],
+    "confidence": {
+      "HIGH": {"minimum_probability_edge": 0.08, "minimum_expected_value": 0.08},
+      "MODERATE": {"minimum_probability_edge": 0.05, "minimum_expected_value": 0.04},
+      "LEAN": {"minimum_probability_edge": 0.03, "minimum_expected_value": 0.02}
+    }
+  },
+  "locked_rules": [
+    "All 162 players remain addressable even when no sportsbook market is available.",
+    "Football projection distributions are generated before and independently of sportsbook prices.",
+    "Every two-sided price is de-vigged with the shared Step 13 proportional method before probability edge is measured.",
+    "Weekly prop probabilities use the exact selected-family CDF/PMF, including discrete pushes and compound reception PMFs.",
+    "Season prop probabilities reuse the existing season football projection center and uncertainty distribution; price never determines the projection center or sigma.",
+    "Market snapshots are evaluated independently so line movement can create, strengthen, weaken, flip, or eliminate a recommendation without rewriting the football projection.",
+    "Push probability is explicit; fair-market comparison uses conditional win probability and EV treats a push as zero return.",
+    "A PICK requires probability edge, EV, and model conditional win probability to all clear the locked minimums; otherwise PASS.",
+    "CLOSE snapshots are evaluation/CLV context only and never replace the price available at recommendation time.",
+    "No recommendation may place a wager, size a stake, or mutate fantasy, player, or game projections."
+  ]
+}
