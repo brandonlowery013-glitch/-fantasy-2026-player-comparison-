@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd(),read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+const c=read('data/sources/postgame-forecast-settlement-2026.json'),fail=[];
+if(c.status!=='STEP_11_POSTGAME_FORECAST_SETTLEMENT_LOCKED')fail.push('Step 11 status not locked');
+if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)fail.push('Step 11 must remain non-actionable SHADOW_ONLY');
+if(c.sportsbook_inputs_allowed!==false)fail.push('sportsbook inputs must be prohibited');
+if(c.rules?.frozen_forecast_never_rewritten!==true)fail.push('frozen forecasts must never be rewritten');
+if(c.rules?.only_final_games_settle!==true)fail.push('only final games may settle');
+if(c.rules?.result_revisions_append_only!==true||c.rules?.latest_verified_revision_scores!==true)fail.push('result corrections must be append-only revisions');
+if(c.rules?.missing_player_stat_is_not_assumed_zero!==true)fail.push('missing stat must not be assumed zero');
+if(c.rules?.same_sample_tuning_prohibited!==true)fail.push('same-sample tuning must be prohibited');
+for(const k of ['mae','rmse','bias','coverage_1sd','coverage_2sd','mean_abs_z'])if(!(c.required_metrics||[]).includes(k))fail.push(`missing required metric ${k}`);
+for(const p of [c.forecast_source,c.schedule_source,c.result_ledger,c.calibration_output])if(!p||!fs.existsSync(path.join(root,p)))fail.push(`missing contract path ${p}`);
+const report={generated_at:new Date().toISOString(),result:fail.length?'BLOCKED':'PASS',failed:fail.length,failures:fail};fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});fs.writeFileSync(path.join(root,'guardrails/postgame-forecast-settlement-contract-report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(fail.length)process.exit(1);
