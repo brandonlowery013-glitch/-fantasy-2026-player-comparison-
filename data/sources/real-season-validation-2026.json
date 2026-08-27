@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "mode": "OBSERVATIONAL_ONLY",
+  "actionable": false,
+  "status": "STEP_22_CONTRACT_LOCKED",
+  "purpose": "Validate the live weekly chain end to end without inventing missing regular-season evidence or mutating model outputs.",
+  "required_stages": [
+    "verified_event_schedule",
+    "weekly_football_context",
+    "frozen_player_forecasts",
+    "weekly_game_projections",
+    "market_snapshots",
+    "recommendations",
+    "final_results",
+    "forecast_settlement",
+    "football_calibration",
+    "market_holdout_calibration",
+    "pipeline_health",
+    "calibration_governance"
+  ],
+  "allowed_statuses": [
+    "WAITING_FOR_SOURCE",
+    "WAITING_FOR_FORECAST",
+    "WAITING_FOR_MARKET",
+    "WAITING_FOR_FINAL",
+    "WAITING_FOR_SETTLEMENT",
+    "WAITING_FOR_CALIBRATION",
+    "READY_FOR_REVIEW",
+    "STALE",
+    "BLOCKED"
+  ],
+  "chronology_rules": {
+    "forecast_must_precede_event_start": true,
+    "market_snapshot_must_preserve_capture_time": true,
+    "closing_snapshot_must_not_modify_forecast": true,
+    "settlement_requires_final_result": true,
+    "calibration_requires_settled_observation": true,
+    "same_observation_tune_and_score_prohibited": true
+  },
+  "tracking": {
+    "football_error_metrics": ["mae", "rmse", "bias", "one_sd_coverage", "two_sd_coverage", "mean_abs_z"],
+    "market_holdout_metrics": ["brier_score", "log_loss", "roi", "closing_line_value", "hit_rate_by_probability_bucket", "hit_rate_by_market_type"],
+    "clv_requires_closing_snapshot": true,
+    "missing_closing_snapshot_is_null_not_zero": true
+  },
+  "guardrails": {
+    "sportsbook_inputs_may_mutate_football_projection": false,
+    "missing_data_is_zero": false,
+    "frozen_forecasts_mutable": false,
+    "settlements_mutable": false,
+    "automatic_challenger_promotion": false,
+    "automatic_wagering_or_staking": false
+  },
+  "preseason_rule": "Before verified regular-season event starts and live weekly football context exist, WAITING_FOR_SOURCE is the correct state and zero live observations is not a failure."
+}
