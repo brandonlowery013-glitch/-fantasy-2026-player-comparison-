@@ -1,0 +1,23 @@
+name: Step 24 Production Schedule Ownership
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  step24-schedule-ownership:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify Step 24 exclusively owns autonomous production cadence
+        run: node scripts/validate-production-schedule-ownership.mjs
+      - name: Upload schedule ownership report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step24-production-schedule-ownership
+          path: guardrails/production-schedule-ownership-report.json
+          if-no-files-found: error
