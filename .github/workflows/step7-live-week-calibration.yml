@@ -1,0 +1,40 @@
+name: Step 7 Live Week Calibration
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+jobs:
+  step7-live-week-calibration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 7 live calibration contract
+        run: node scripts/validate-live-week-calibration-contract.mjs
+      - name: Test Step 7 live calibration math and leakage blocks
+        run: node scripts/build-live-week-calibration.mjs --self-test
+      - name: Build current live calibration state
+        run: node scripts/build-live-week-calibration.mjs
+      - name: Run hard Guardrail QA against live calibration state
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload Step 7 reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step7-live-calibration-reports
+          path: |
+            weeklyCalibration2026.json
+            guardrails/live-week-calibration-contract-report.json
+            guardrails/live-week-calibration-test-report.json
+            guardrails/live-week-calibration-report.json
+            guardrails/guardrail-report.json
+            data/sources/live-week-calibration-2026.json
+            data/calibration/weekly-predictions-2026.json
+            data/calibration/weekly-outcomes-2026.json
+          if-no-files-found: error
