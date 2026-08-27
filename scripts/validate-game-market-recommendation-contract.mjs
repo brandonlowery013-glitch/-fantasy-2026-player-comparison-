@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const root=process.cwd();
+const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+const c=read('data/sources/game-market-recommendation-layer-2026.json');
+const blocked=[];
+if(c.status!=='STEP_15_GAME_MARKET_RECOMMENDATIONS_LOCKED')blocked.push('status not locked');
+if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('must remain SHADOW_ONLY/non-actionable');
+if(c.fair_market_method!=='PROPORTIONAL_TWO_WAY')blocked.push('Step 13 fair-market method drift');
+for(const m of ['moneyline','spread','total'])if(!c.supported_markets.includes(m))blocked.push(`missing market ${m}`);
+const p=c.recommendation_policy||{};
+if(Number(p.minimum_probability_edge)!==0.03)blocked.push('probability-edge threshold drift');
+if(Number(p.minimum_expected_value)!==0.02)blocked.push('EV threshold drift');
+if(Number(p.minimum_model_conditional_win_probability)!==0.52)blocked.push('model probability threshold drift');
+const rules=(c.locked_rules||[]).join(' ');
+for(const phrase of ['Market movement never rewrites','push probability is modeled explicitly','A PICK requires','Closing prices are reserved'])if(!rules.includes(phrase))blocked.push(`missing locked rule: ${phrase}`);
+for(const pth of [c.football_projection_source,c.market_snapshot_source,'lib/game-market-probability.mjs','scripts/build-game-market-recommendations.mjs'])if(!fs.existsSync(path.join(root,pth)))blocked.push(`missing path ${pth}`);
+fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',mode:c.mode,actionable:c.actionable,fair_market_method:c.fair_market_method,recommendation_policy:c.recommendation_policy,blocked};
+fs.writeFileSync(path.join(root,'guardrails/game-market-recommendation-contract-report.json'),JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report,null,2));
+if(blocked.length)process.exit(1);
