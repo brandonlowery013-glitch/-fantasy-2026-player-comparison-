@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {fairTwoWayAmerican,expectedValueAmerican} from '../lib/fair-market-probability.mjs';
 
 const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
@@ -7,8 +8,6 @@ const odds=read('vegasOdds2026.json');
 const inputs=read('evProbabilityInputs2026.json');
 const cfg=read('guardrails/guardrails-config.json');
 
-const implied=o=>{o=Number(o);if(!Number.isFinite(o)||o===0)return null;return o<0?(-o)/((-o)+100):100/(o+100)};
-const profit=o=>{o=Number(o);if(!Number.isFinite(o)||o===0)return null;return o<0?100/(-o):o/100};
 const r6=n=>Number(Number(n).toFixed(6));
 const marketKey=m=>`${m.book}|${m.stat}|${m.line}`;
 
@@ -33,12 +32,10 @@ for(const [name,pInput] of Object.entries(inputs.players||{})){
     const modelOver=Number(probInput.model_over_probability);
     if(!Number.isFinite(modelOver)||modelOver<0||modelOver>1) throw new Error(`Invalid model_over_probability: ${name} ${key}`);
     const modelUnder=1-modelOver;
-    const rawOver=implied(m.over),rawUnder=implied(m.under);
-    if(rawOver==null||rawUnder==null) throw new Error(`Two-sided odds required: ${name} ${key}`);
-    const sum=rawOver+rawUnder;
-    const marketOver=rawOver/sum,marketUnder=rawUnder/sum;
-    const overEv=modelOver*profit(m.over)-(1-modelOver);
-    const underEv=modelUnder*profit(m.under)-(1-modelUnder);
+    const fair=fairTwoWayAmerican(m.over,m.under);
+    const marketOver=fair.fair_side_a_probability,marketUnder=fair.fair_side_b_probability;
+    const overEv=expectedValueAmerican(modelOver,m.over);
+    const underEv=expectedValueAmerican(modelUnder,m.under);
     const side=overEv>=underEv?'OVER':'UNDER';
     const modelP=side==='OVER'?modelOver:modelUnder;
     const marketP=side==='OVER'?marketOver:marketUnder;

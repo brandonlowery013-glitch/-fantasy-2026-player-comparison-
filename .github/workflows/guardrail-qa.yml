@@ -21,6 +21,10 @@ jobs:
         run: node scripts/run-baseline-drift-check.mjs
       - name: Test EV and de-vig math
         run: node scripts/test-ev-math.mjs
+      - name: Validate Step 13 fair-market probability contract
+        run: node scripts/validate-fair-market-probability-contract.mjs
+      - name: Build Step 13 fair-market probability layer
+        run: node scripts/build-fair-market-probability-layer.mjs
       - name: Validate historical uncertainty schema
         run: node scripts/validate-historical-uncertainty-schema.mjs
       - name: Ingest 2021-2025 historical core game logs
@@ -113,6 +117,8 @@ jobs:
             guardrails/guardrail-report.json
             guardrails/probability-distribution-report.json
             guardrails/generated-ev-probability-inputs.json
+            guardrails/fair-market-probability-contract-report.json
+            guardrails/fair-market-probability-layer-report.json
             guardrails/historical-core-ingestion-report.json
             guardrails/core-stats-identity-accuracy-report.json
             guardrails/historical-context-enrichment-report.json
@@ -176,9 +182,11 @@ jobs:
             data/sources/risk-profile-2026.json
             data/sources/comparison-decision-2026.json
             data/sources/preseason-comparison-risk-2026.json
+            data/sources/fair-market-probability-2026.json
             data/probability/weekly-football-context-raw-2026.json
             data/probability/weekly-football-context-inputs-2026.json
             data/probability/weekly-projection-inputs-2026.json
             data/probability/generated/weekly-probability-distributions-2026.json
             data/market/weekly-matchup-market-snapshots-2026.json
+            data/market/fair-market-probabilities-2026.json
           if-no-files-found: error
