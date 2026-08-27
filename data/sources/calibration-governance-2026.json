@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "purpose": "Govern leakage-safe live calibration and champion/challenger promotion without automatic production mutation.",
+  "sources": {
+    "settlements": "data/calibration/weekly-forecast-results-2026.json",
+    "calibration": "data/calibration/weekly-forecast-calibration-2026.json"
+  },
+  "minimum_samples": {
+    "global_settled_observations": 100,
+    "stat_subgroup": 40,
+    "position_subgroup": 40,
+    "prospective_challenger_observations": 50
+  },
+  "walk_forward": {
+    "enabled": true,
+    "same_observation_tune_and_score_prohibited": true,
+    "training_observations_must_predate_evaluation": true,
+    "prospective_holdout_required_for_promotion": true
+  },
+  "metrics": ["mae", "rmse", "bias", "one_sd_coverage", "two_sd_coverage", "mean_abs_z"],
+  "promotion_policy": {
+    "automatic_promotion": false,
+    "automatic_live_model_mutation": false,
+    "challenger_must_beat_champion_on_prospective_holdout": true,
+    "must_not_materially_worsen_any_core_metric": true,
+    "promotion_requires_append_only_decision_record": true,
+    "allowed_decisions": ["HOLD", "REJECT_CHALLENGER", "ELIGIBLE_FOR_REVIEW", "PROMOTE_MANUALLY"]
+  },
+  "subgroup_policy": {
+    "below_floor_is_diagnostic_only": true,
+    "no_subgroup_override_without_sample_floor": true
+  },
+  "locked_rules": [
+    "Sportsbook and market data are prohibited from calibration tuning inputs.",
+    "Frozen forecasts are immutable and must never be rewritten by calibration.",
+    "Settled outcomes may evaluate prior forecasts but may only tune future model versions.",
+    "The observation used to fit a challenger cannot also score that challenger.",
+    "No challenger may become the production champion automatically.",
+    "No calibration adjustment may mutate True Value, comparison winners, prior forecasts, or historical settlements in place.",
+    "All governance decisions are append-only and retain evidence counts and metric snapshots."
+  ]
+}
