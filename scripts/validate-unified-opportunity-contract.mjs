@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+const c=JSON.parse(fs.readFileSync('data/sources/unified-opportunity-engine-2026.json','utf8'));
+const blocked=[];
+if(c.status!=='STEP_17_UNIFIED_OPPORTUNITY_ENGINE_LOCKED')blocked.push('status not locked');
+if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('must remain SHADOW_ONLY and non-actionable');
+if(c.ranking_policy?.composite_score_allowed!==false)blocked.push('composite opportunity score must be prohibited');
+if(c.ranking_policy?.pick_thresholds_may_be_overridden!==false)blocked.push('Step 17 cannot override pick thresholds');
+if(JSON.stringify(c.included_horizons)!==JSON.stringify(['WEEKLY']))blocked.push('weekly slate must not mix season-long horizon');
+for(const x of ['PLAYER_PROP','SPREAD','TOTAL','MONEYLINE'])if(!c.included_market_types?.includes(x))blocked.push(`missing market type ${x}`);
+const rules=(c.locked_rules||[]).join(' ');
+for(const needle of ['cannot create a PICK','PASS findings stay PASS','Sportsbook information remains downstream','cannot place wagers'])if(!rules.includes(needle))blocked.push(`missing safeguard: ${needle}`);
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',status:c.status,mode:c.mode,actionable:c.actionable,ranking_policy:c.ranking_policy,blocked};
+fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/unified-opportunity-contract-report.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
