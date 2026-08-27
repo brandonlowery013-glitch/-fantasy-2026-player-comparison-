@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd();
+const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+const c=read('data/sources/weekly-game-projection-engine-2026.json');
+const blocked=[];
+if(c.status!=='STEP_14_WEEKLY_GAME_PROJECTION_ENGINE_LOCKED')blocked.push('contract not locked');
+if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('must remain SHADOW_ONLY/non-actionable');
+if(c.sportsbook_inputs_allowed!==false)blocked.push('sportsbook inputs must be prohibited');
+if(JSON.stringify(c.history_window)!==JSON.stringify([2023,2024,2025]))blocked.push('history window drift');
+if(c.historical_score_source?.final_games_only!==true)blocked.push('historical prior must use final games only');
+if(c.team_prior_method?.shrinkage_equivalent_games!==8)blocked.push('team prior shrinkage drift');
+if(c.distribution_method?.simulations<32768)blocked.push('simulation floor below 32768');
+for(const phrase of ['Game forecasts are generated before any market comparison.','Player projections may not be translated into team points with arbitrary weights; a future calibrated bridge is required before they can alter game-score means.'])if(!(c.locked_rules||[]).includes(phrase))blocked.push(`missing locked rule: ${phrase}`);
+for(const p of [c.team_prior_output,c.weekly_output,c.schedule_source])if(!p||!fs.existsSync(path.join(root,p)))blocked.push(`missing required path ${p}`);
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',mode:c.mode,actionable:c.actionable,sportsbook_inputs_allowed:c.sportsbook_inputs_allowed,blocked};
+fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});fs.writeFileSync(path.join(root,'guardrails/weekly-game-projection-contract-report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
