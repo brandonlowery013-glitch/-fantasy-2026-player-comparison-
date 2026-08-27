@@ -3,15 +3,12 @@ name: Step 11 Postgame Forecast Settlement
 on:
   workflow_dispatch:
   pull_request:
-  schedule:
-    - cron: '45 */6 * * *'
 
 permissions:
   contents: write
 
 jobs:
   step11-contract-qa:
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,22 +23,13 @@ jobs:
         run: node scripts/settle-weekly-forecast-results.mjs --self-test
       - name: Revalidate immutable Step 8 forecast capture
         run: node scripts/capture-weekly-forecast-snapshots.mjs --self-test
-      - name: Upload Step 11 QA reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: step11-postgame-forecast-settlement-qa
-          path: |
-            guardrails/postgame-forecast-settlement-contract-report.json
-            guardrails/postgame-forecast-settlement-test-report.json
-            guardrails/weekly-forecast-capture-test-report.json
-          if-no-files-found: error
 
-  scheduled-settlement:
-    if: github.event_name == 'schedule'
+  manual-settlement:
+    if: github.event_name == 'workflow_dispatch'
+    needs: step11-contract-qa
     runs-on: ubuntu-latest
     concurrency:
-      group: postgame-forecast-settlement
+      group: weekly-production-orchestration
       cancel-in-progress: false
     steps:
       - name: Checkout main
@@ -64,15 +52,5 @@ jobs:
             echo 'No postgame settlement changes.'
           else
             git commit -m 'Settle weekly frozen forecast results'
-            git push origin main
+            git push origin HEAD:main
           fi
-      - name: Upload postgame settlement report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: step11-postgame-forecast-settlement
-          path: |
-            data/calibration/weekly-forecast-results-2026.json
-            data/calibration/weekly-forecast-calibration-2026.json
-            guardrails/postgame-forecast-settlement-report.json
-          if-no-files-found: error
