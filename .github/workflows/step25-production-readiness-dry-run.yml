@@ -1,0 +1,45 @@
+name: Step 25 Production Readiness Dry Run
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  step25-production-readiness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 25 contract and dashboard integration
+        run: node scripts/validate-production-readiness-contract.mjs
+      - name: Exercise six production lifecycle scenarios
+        run: node scripts/build-production-readiness-status.mjs --self-test
+      - name: Build current non-mutating readiness state
+        run: node scripts/build-production-readiness-status.mjs
+      - name: Revalidate Step 24 orchestration contract
+        run: node scripts/validate-weekly-production-orchestration-contract.mjs
+      - name: Revalidate Step 24 exclusive schedule ownership
+        run: node scripts/validate-production-schedule-ownership.mjs
+      - name: Revalidate Step 21 Operations dashboard
+        run: node scripts/validate-step21-operations-dashboard.mjs
+      - name: Revalidate Step 23 provider contract
+        run: node scripts/validate-live-market-ingestion-contract.mjs
+      - name: Revalidate Step 20 pipeline health
+        run: node scripts/check-weekly-pipeline-health.mjs --self-test
+      - name: Revalidate Step 22 chronology
+        run: node scripts/validate-real-season-validation.mjs --self-test
+      - name: Upload Step 25 QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step25-production-readiness
+          path: |
+            guardrails/production-readiness-contract-report.json
+            guardrails/production-readiness-dry-run-report.json
+            data/calibration/production-readiness-status-2026.json
+          if-no-files-found: error
