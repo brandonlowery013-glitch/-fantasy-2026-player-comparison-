@@ -1,18 +1,19 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "season": 2026,
   "mode": "OBSERVATIONAL_ONLY",
   "actionable": false,
   "allowed_statuses": [
     "READY",
     "WAITING_FOR_SOURCE",
+    "WAITING_FOR_CONTEXT",
     "WAITING_FOR_FORECAST",
     "WAITING_FOR_FINAL",
     "WAITING_FOR_SETTLEMENT",
     "STALE",
     "BLOCKED"
   ],
-  "stage_order": ["source", "forecast", "final", "settlement", "calibration"],
+  "stage_order": ["schedule", "football_context", "forecast", "final", "settlement", "calibration"],
   "inputs": {
     "schedule": "data/calibration/weekly-event-schedule-2026.json",
     "football_context": "data/probability/weekly-football-context-raw-2026.json",
@@ -28,7 +29,8 @@
     "health_layer_may_promote_challenger": false,
     "health_layer_may_rewrite_frozen_forecasts": false,
     "health_layer_may_rewrite_settlements": false,
-    "status_precedence": ["BLOCKED", "STALE", "WAITING_FOR_SOURCE", "WAITING_FOR_FORECAST", "WAITING_FOR_FINAL", "WAITING_FOR_SETTLEMENT", "READY"],
+    "schedule_and_context_are_separate_readiness_gates": true,
+    "status_precedence": ["BLOCKED", "STALE", "WAITING_FOR_SOURCE", "WAITING_FOR_CONTEXT", "WAITING_FOR_FORECAST", "WAITING_FOR_FINAL", "WAITING_FOR_SETTLEMENT", "READY"],
     "stale_after_hours": {
       "football_context": 72,
       "forecast_before_event": 168,

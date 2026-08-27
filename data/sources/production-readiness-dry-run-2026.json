@@ -1,13 +1,14 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "season": 2026,
   "step": 25,
   "status": "STEP_25_PRODUCTION_READINESS_LOCKED",
   "mode": "SHADOW_ONLY",
   "actionable": false,
-  "purpose": "Exercise the ordered weekly production lifecycle before live regular-season evidence arrives without fabricating real games, markets, results, or credentials.",
+  "purpose": "Exercise the ordered weekly production lifecycle before and during live regular-season activation without fabricating real games, markets, results, context, or credentials.",
   "required_scenarios": [
     "PRESEASON_WAITING_FOR_SOURCE",
+    "SOURCE_READY_CONTEXT_MISSING",
     "SOURCE_READY_PROVIDER_CREDENTIAL_MISSING",
     "PREGAME_FULLY_READY",
     "FINAL_WAITING_FOR_SETTLEMENT",
@@ -17,6 +18,7 @@
   "readiness_states": [
     "READY",
     "WAITING_FOR_SOURCE",
+    "WAITING_FOR_CONTEXT",
     "WAITING_FOR_PROVIDER_CREDENTIALS",
     "WAITING_FOR_FORECAST",
     "WAITING_FOR_MARKETS",
@@ -33,6 +35,7 @@
     "production_push_count_per_cycle": 1,
     "provider_secret_name": "ODDS_API_KEY",
     "missing_provider_secret_is_waiting_not_zero": true,
+    "schedule_and_context_are_separate_readiness_gates": true,
     "dry_run_may_call_external_provider": false,
     "dry_run_may_write_real_market_ledgers": false,
     "dry_run_may_write_real_forecast_or_settlement_ledgers": false,

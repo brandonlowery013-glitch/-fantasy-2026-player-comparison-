@@ -1,0 +1,37 @@
+name: Step 27 Week 1 State Transition Audit
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  step27-state-transition-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Week 1 live state transitions
+        run: node scripts/validate-step27-week1-state-transition.mjs
+      - name: Revalidate pipeline health states
+        run: node scripts/check-weekly-pipeline-health.mjs --self-test
+      - name: Revalidate production readiness states
+        run: node scripts/build-production-readiness-status.mjs --self-test
+      - name: Revalidate Week 1 authoritative activation
+        run: node scripts/validate-step26-week1-activation.mjs
+      - name: Revalidate production orchestration contract
+        run: node scripts/validate-weekly-production-orchestration-contract.mjs
+      - name: Upload Step 27 QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step27-week1-state-transition-audit
+          path: |
+            guardrails/step27-week1-state-transition-report.json
+            guardrails/weekly-pipeline-health-report.json
+            guardrails/production-readiness-dry-run-report.json
+          if-no-files-found: warn
