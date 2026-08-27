@@ -1,0 +1,73 @@
+name: Step 14 Weekly Game Projections
+
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '25 */6 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  step14-game-projection-qa:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 14 contract
+        run: node scripts/validate-weekly-game-projection-contract.mjs
+      - name: Test historical team scoring priors
+        run: node scripts/build-game-team-scoring-priors.mjs --self-test
+      - name: Test deterministic weekly game projection engine
+        run: node scripts/build-weekly-game-projections.mjs --self-test
+      - name: Revalidate fair-market independence
+        run: node scripts/validate-fair-market-probability-contract.mjs
+      - name: Upload Step 14 QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step14-weekly-game-projections
+          path: |
+            guardrails/weekly-game-projection-contract-report.json
+            guardrails/game-team-scoring-priors-report.json
+            guardrails/weekly-game-projection-report.json
+
+  scheduled-game-projections:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build or reuse historical team scoring priors
+        run: node scripts/build-game-team-scoring-priors.mjs
+      - name: Build weekly NFL game projections
+        run: node scripts/build-weekly-game-projections.mjs
+      - name: Commit updated football-only game projections
+        run: |
+          if git diff --quiet -- data/probability/generated/game-team-scoring-priors-2023-2025.json data/probability/generated/weekly-game-projections-2026.json; then
+            echo "No game projection changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/probability/generated/game-team-scoring-priors-2023-2025.json data/probability/generated/weekly-game-projections-2026.json
+          git commit -m "Update weekly football-only game projections"
+          git push origin HEAD:main
+      - name: Upload game projection artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-game-projections
+          path: |
+            data/probability/generated/game-team-scoring-priors-2023-2025.json
+            data/probability/generated/weekly-game-projections-2026.json
+            guardrails/game-team-scoring-priors-report.json
+            guardrails/weekly-game-projection-report.json
