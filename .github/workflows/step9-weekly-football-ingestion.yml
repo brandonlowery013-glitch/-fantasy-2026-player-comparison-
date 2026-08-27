@@ -1,0 +1,80 @@
+name: Step 9 Weekly Football Ingestion
+
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '15 */6 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  step9-contract-qa:
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 9 ingestion contract
+        run: node scripts/validate-weekly-football-ingestion-contract.mjs
+      - name: Test Step 9 schedule and ingestion mapping
+        env:
+          INGEST_NOW: '2026-08-27T12:00:00Z'
+          NFL_WEEK: '1'
+        run: node scripts/ingest-weekly-football-data.mjs --self-test
+      - name: Revalidate immutable Step 8 capture contract
+        run: node scripts/capture-weekly-forecast-snapshots.mjs --self-test
+      - name: Upload Step 9 QA reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step9-weekly-football-ingestion-reports
+          path: |
+            guardrails/weekly-football-ingestion-contract-report.json
+            guardrails/weekly-football-ingestion-report.json
+            guardrails/weekly-forecast-capture-test-report.json
+          if-no-files-found: error
+
+  live-weekly-ingestion:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: live-weekly-football-ingestion
+      cancel-in-progress: false
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Ingest live 2026 schedule and football-source snapshots
+        run: node scripts/ingest-weekly-football-data.mjs
+      - name: Commit changed weekly source state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/calibration/weekly-event-schedule-2026.json data/probability/weekly-football-context-raw-2026.json
+          if git diff --cached --quiet; then
+            echo "No weekly ingestion changes."
+          else
+            git commit -m "Update live weekly football ingestion"
+            git push origin main
+          fi
+      - name: Upload live ingestion report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step9-live-weekly-ingestion
+          path: |
+            data/calibration/weekly-event-schedule-2026.json
+            data/probability/weekly-football-context-raw-2026.json
+            guardrails/weekly-football-ingestion-report.json
+          if-no-files-found: error
