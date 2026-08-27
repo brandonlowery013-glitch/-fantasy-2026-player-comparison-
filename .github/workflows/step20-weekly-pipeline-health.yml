@@ -1,0 +1,35 @@
+name: Step 20 Weekly Pipeline Health
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+  schedule:
+    - cron: '35 */6 * * *'
+
+jobs:
+  step20-weekly-pipeline-health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate pipeline health contract
+        run: node scripts/validate-weekly-pipeline-health-contract.mjs
+      - name: Test pipeline state transitions
+        run: node scripts/check-weekly-pipeline-health.mjs --self-test
+      - name: Build current pipeline status
+        run: node scripts/check-weekly-pipeline-health.mjs
+      - name: Verify current pre-season state
+        run: node -e "const x=require('./data/calibration/weekly-pipeline-status-2026.json');if(x.overall_status!=='WAITING_FOR_SOURCE'||x.actionable!==false)process.exit(1)"
+      - name: Revalidate calibration governance
+        run: node scripts/validate-calibration-governance-contract.mjs
+      - name: Upload Step 20 QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step20-weekly-pipeline-health
+          path: |
+            guardrails/weekly-pipeline-health-contract-report.json
+            data/calibration/weekly-pipeline-status-2026.json
