@@ -1,0 +1,50 @@
+name: Step 13 Fair Market Probability
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'lib/fair-market-probability.mjs'
+      - 'scripts/build-fair-market-probability-layer.mjs'
+      - 'scripts/validate-fair-market-probability-contract.mjs'
+      - 'scripts/build-ev-shadow-layer.mjs'
+      - 'scripts/test-ev-math.mjs'
+      - 'data/sources/fair-market-probability-2026.json'
+      - 'vegasOdds2026.json'
+      - '.github/workflows/step13-fair-market-probability.yml'
+      - '.github/workflows/guardrail-qa.yml'
+
+jobs:
+  step13-fair-market-probability:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 13 contract
+        run: node scripts/validate-fair-market-probability-contract.mjs
+      - name: Test shared EV and de-vig math
+        run: node scripts/test-ev-math.mjs
+      - name: Self-test fair-market layer
+        run: node scripts/build-fair-market-probability-layer.mjs --self-test
+      - name: Build fair-market layer from stored 2026 prices
+        run: node scripts/build-fair-market-probability-layer.mjs
+      - name: Verify deterministic fair-market output
+        run: node scripts/build-fair-market-probability-layer.mjs --check
+      - name: Verify existing EV shadow output stays synchronized
+        run: node scripts/build-ev-shadow-layer.mjs --check
+      - name: Revalidate comparison independence
+        run: node scripts/validate-comparison-decision-contract.mjs
+      - name: Upload Step 13 QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step13-fair-market-probability
+          path: |
+            guardrails/fair-market-probability-contract-report.json
+            guardrails/fair-market-probability-layer-report.json
+            data/market/fair-market-probabilities-2026.json
+          if-no-files-found: error

@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_13_FAIR_MARKET_PROBABILITY_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "purpose": "Canonical two-way vig/no-vig market math shared by season props, weekly props, moneylines, spreads, and totals without allowing market data to overwrite football projections.",
+  "input_source": "vegasOdds2026.json",
+  "generated_output": "data/market/fair-market-probabilities-2026.json",
+  "library": "lib/fair-market-probability.mjs",
+  "method": {
+    "id": "PROPORTIONAL_TWO_WAY",
+    "raw_implied_probability": "American odds converted side-by-side to raw implied probability",
+    "book_margin": "sum(raw implied probabilities) - 1",
+    "fair_probability": "raw side probability / sum(raw side probabilities)",
+    "fair_probability_sum": 1,
+    "supported_market_shape": "TWO_WAY"
+  },
+  "supported_price_formats": ["AMERICAN"],
+  "supported_two_way_uses": ["PLAYER_PROP_OVER_UNDER", "GAME_TOTAL_OVER_UNDER", "SPREAD_SIDE_A_SIDE_B", "MONEYLINE_TEAM_A_TEAM_B"],
+  "locked_rules": {
+    "two_sided_prices_required": true,
+    "zero_or_nonfinite_odds_blocked": true,
+    "fair_probabilities_must_sum_to_one": true,
+    "book_margin_must_be_recorded": true,
+    "raw_implied_probabilities_must_be_preserved": true,
+    "fair_american_prices_must_be_derived": true,
+    "sportsbook_inputs_are_downstream_context_only": true,
+    "market_data_may_create_or_overwrite_football_projection": false,
+    "market_data_may_mutate_comparison_winner": false,
+    "market_data_may_mutate_true_value": false,
+    "market_data_may_mutate_frozen_forecast": false,
+    "no_automatic_wager_action": true,
+    "three_way_markets_supported": false
+  },
+  "consensus_rules": {
+    "combine_only_identical_player_stat_and_line": true,
+    "different_lines_are_not_averaged": true,
+    "per_book_fair_probabilities_are_calculated_before_consensus": true,
+    "consensus_method": "EQUAL_WEIGHT_MEAN_OF_BOOK_FAIR_PROBABILITIES"
+  }
+}
