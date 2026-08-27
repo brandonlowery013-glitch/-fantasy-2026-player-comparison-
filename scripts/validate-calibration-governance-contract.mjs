@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+const c=JSON.parse(fs.readFileSync('data/sources/calibration-governance-2026.json','utf8'));
+const errors=[];
+if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)errors.push('governance must remain SHADOW_ONLY/non-actionable');
+if(c.minimum_samples.global_settled_observations<100)errors.push('global settled sample floor must be at least 100');
+if(c.minimum_samples.prospective_challenger_observations<50)errors.push('prospective challenger floor must be at least 50');
+if(!c.walk_forward?.same_observation_tune_and_score_prohibited)errors.push('same-observation tune-and-score must be prohibited');
+if(!c.walk_forward?.prospective_holdout_required_for_promotion)errors.push('prospective holdout must be required');
+if(c.promotion_policy?.automatic_promotion!==false)errors.push('automatic promotion must be false');
+if(c.promotion_policy?.automatic_live_model_mutation!==false)errors.push('automatic live mutation must be false');
+const text=JSON.stringify(c).toLowerCase();
+for(const banned of ['sportsbook_line','market_odds','no_vig_market_probability'])if(text.includes(banned))errors.push(`market tuning field prohibited: ${banned}`);
+const report={result:errors.length?'BLOCKED':'PASS',errors,mode:c.mode,actionable:c.actionable,global_floor:c.minimum_samples.global_settled_observations,prospective_floor:c.minimum_samples.prospective_challenger_observations};
+fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/calibration-governance-contract-report.json',JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report,null,2));if(errors.length)process.exit(1);
