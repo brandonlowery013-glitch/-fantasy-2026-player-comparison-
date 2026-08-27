@@ -3,15 +3,12 @@ name: Step 9 Weekly Football Ingestion
 on:
   workflow_dispatch:
   pull_request:
-  schedule:
-    - cron: '15 */6 * * *'
 
 permissions:
   contents: write
 
 jobs:
   step9-contract-qa:
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,24 +33,13 @@ jobs:
         run: node scripts/ingest-weekly-football-data.mjs --self-test
       - name: Revalidate immutable Step 8 capture contract
         run: node scripts/capture-weekly-forecast-snapshots.mjs --self-test
-      - name: Upload Step 9/10 QA reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: step9-10-weekly-football-ingestion-reports
-          path: |
-            guardrails/weekly-football-ingestion-contract-report.json
-            guardrails/weekly-football-ingestion-report.json
-            guardrails/automatic-football-context-adapters-contract-report.json
-            guardrails/automatic-football-context-adapters-report.json
-            guardrails/weekly-forecast-capture-test-report.json
-          if-no-files-found: error
 
-  live-weekly-ingestion:
-    if: github.event_name == 'schedule'
+  manual-weekly-ingestion:
+    if: github.event_name == 'workflow_dispatch'
+    needs: step9-contract-qa
     runs-on: ubuntu-latest
     concurrency:
-      group: live-weekly-football-ingestion
+      group: weekly-production-orchestration
       cancel-in-progress: false
     steps:
       - name: Checkout main
@@ -79,17 +65,5 @@ jobs:
             echo "No weekly ingestion changes."
           else
             git commit -m "Update live weekly football source evidence"
-            git push origin main
+            git push origin HEAD:main
           fi
-      - name: Upload live ingestion report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: step9-10-live-weekly-ingestion
-          path: |
-            data/calibration/weekly-event-schedule-2026.json
-            data/ingestion/weekly-football-source-snapshots-2026.json
-            data/probability/weekly-football-context-raw-2026.json
-            guardrails/weekly-football-ingestion-report.json
-            guardrails/automatic-football-context-adapters-report.json
-          if-no-files-found: error
