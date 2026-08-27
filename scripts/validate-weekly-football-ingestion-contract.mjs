@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd();
+const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+const c=read('data/sources/weekly-football-ingestion-2026.json');
+const s=read('data/ingestion/weekly-football-source-snapshots-2026.json');
+const blocked=[];
+if(c.status!=='STEP_9_WEEKLY_FOOTBALL_INGESTION_LOCKED')blocked.push('Step 9 contract not locked');
+if(c.sportsbook_inputs_allowed!==false)blocked.push('sportsbook inputs must be prohibited');
+if(!String(c.schedule_source?.automated_feed_url_template||'').includes('{week}'))blocked.push('schedule feed must support explicit week');
+if(!String(c.schedule_source?.authoritative_cross_check||'').includes('NFL.com'))blocked.push('NFL.com authoritative cross-check missing');
+for(const x of ['role','injury','team_environment','opponent','qb_context'])if(!(c.context_source_types||[]).includes(x))blocked.push(`missing context source type ${x}`);
+if(c.context_snapshot_contract?.missing_is_unknown!==true)blocked.push('missing context must remain unknown');
+if(c.context_snapshot_contract?.market_contamination_prohibited!==true)blocked.push('market contamination must be prohibited');
+if(s.season!==2026||s.sportsbook_inputs_used!==false||!Array.isArray(s.snapshots))blocked.push('source snapshot ledger invalid');
+if(c.step_9_status!=='FRAMEWORK_COMPLETE_AWAITING_LIVE_CONTEXT_SNAPSHOTS')blocked.push('Step 9 status mismatch');
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',blocked,status:c.status,step_9_status:c.step_9_status,schedule_feed:c.schedule_source?.automated_feed_name,authoritative_cross_check:c.schedule_source?.authoritative_cross_check,sportsbook_inputs_allowed:c.sportsbook_inputs_allowed};
+fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});fs.writeFileSync(path.join(root,'guardrails/weekly-football-ingestion-contract-report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
