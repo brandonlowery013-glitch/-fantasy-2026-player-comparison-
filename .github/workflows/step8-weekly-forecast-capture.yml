@@ -1,0 +1,101 @@
+name: Step 8 Weekly Forecast Capture
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+  schedule:
+    - cron: '17 */6 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  step8-contract-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 8 capture contract
+        run: node scripts/validate-weekly-forecast-capture-contract.mjs
+      - name: Test immutable pregame capture
+        run: node scripts/capture-weekly-forecast-snapshots.mjs --self-test
+      - name: Upload Step 8 QA reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step8-forecast-capture-qa
+          path: |
+            guardrails/weekly-forecast-capture-contract-report.json
+            guardrails/weekly-forecast-capture-test-report.json
+          if-no-files-found: error
+
+  scheduled-capture:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: step8-contract-qa
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Ingest historical core
+        run: node scripts/ingest-historical-core.mjs
+      - name: Enrich historical context
+        run: node scripts/enrich-historical-context.mjs
+      - name: Enrich high-value usage
+        run: node scripts/enrich-high-value-usage.mjs
+      - name: Enrich deeper football context
+        run: node scripts/enrich-deeper-football-context.mjs
+      - name: Build historical reference population
+        run: node scripts/build-historical-reference-population.mjs
+      - name: Build uncertainty priors
+        run: node scripts/build-historical-uncertainty-calibration.mjs
+      - name: Calibrate distribution families
+        run: node scripts/calibrate-distribution-families.mjs
+      - name: Backfill historical route participation
+        run: node scripts/backfill-historical-route-participation.mjs
+      - name: Build role cohort priors
+        run: node scripts/build-role-cohort-priors.mjs
+      - name: Build catch-rate priors
+        run: node scripts/build-catch-rate-priors.mjs
+      - name: Build rookie no-history priors
+        run: node scripts/build-rookie-no-history-priors.mjs
+      - name: Build historical projection error model
+        run: node scripts/build-historical-projection-error-model.mjs
+      - name: Normalize current weekly football context
+        run: node scripts/normalize-weekly-football-context.mjs
+      - name: Build current weekly projections
+        run: node scripts/build-weekly-projection-generator.mjs
+      - name: Build current weekly probability distributions
+        run: node scripts/build-weekly-probability-engine.mjs
+      - name: Freeze first valid pregame forecasts
+        run: node scripts/capture-weekly-forecast-snapshots.mjs
+      - name: Commit new frozen forecasts when present
+        run: |
+          if git diff --quiet -- data/calibration/weekly-forecast-capture-2026.json; then
+            echo 'No new pregame forecasts to persist.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/calibration/weekly-forecast-capture-2026.json
+          git commit -m 'Capture immutable weekly pregame forecasts'
+          git push
+      - name: Upload capture report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step8-weekly-forecast-capture
+          path: |
+            data/calibration/weekly-forecast-capture-2026.json
+            guardrails/weekly-forecast-capture-report.json
+          if-no-files-found: error
