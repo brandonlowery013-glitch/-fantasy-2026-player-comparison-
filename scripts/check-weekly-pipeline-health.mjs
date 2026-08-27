@@ -11,10 +11,11 @@ function isFinal(g) {
   const s = String(g?.status || g?.state || g?.game_status || '').toUpperCase();
   return g?.final === true || g?.completed === true || ['FINAL','FINAL_OVERTIME','POST'].includes(s);
 }
-function statusFor({sourceReady, forecastReady, finalReady, settlementReady, stale=false, blocked=false}) {
+function statusFor({scheduleReady, contextReady, forecastReady, finalReady, settlementReady, stale=false, blocked=false}) {
   if (blocked) return 'BLOCKED';
   if (stale) return 'STALE';
-  if (!sourceReady) return 'WAITING_FOR_SOURCE';
+  if (!scheduleReady) return 'WAITING_FOR_SOURCE';
+  if (!contextReady) return 'WAITING_FOR_CONTEXT';
   if (!forecastReady) return 'WAITING_FOR_FORECAST';
   if (!finalReady) return 'WAITING_FOR_FINAL';
   if (!settlementReady) return 'WAITING_FOR_SETTLEMENT';
@@ -37,11 +38,11 @@ export function evaluate({schedule, context, forecasts, results, calibration, go
 
   if (!weeks.size) {
     return {
-      schema_version:'1.0.0', season:2026, mode:'OBSERVATIONAL_ONLY', actionable:false,
+      schema_version:'1.1.0', season:2026, mode:'OBSERVATIONAL_ONLY', actionable:false,
       overall_status: blockedReasons.length ? 'BLOCKED' : 'WAITING_FOR_SOURCE', current_week:null, weeks:[],
       blocked_reasons:blockedReasons, stale_reasons:[],
       summary:{ready_weeks:0,waiting_weeks:0,stale_weeks:0,blocked_weeks:blockedReasons.length?1:0},
-      reason: blockedReasons[0] || 'Verified 2026 regular-season event starts and live weekly football context are not available yet.', generated_at:null
+      reason: blockedReasons[0] || 'Verified 2026 regular-season event starts are not available yet.', generated_at:null
     };
   }
 
@@ -49,25 +50,27 @@ export function evaluate({schedule, context, forecasts, results, calibration, go
     const wg = games.filter(g => wk(g) === week);
     const wf = fc.filter(f => wk(f) === week);
     const ws = settlements.filter(s => wk(s) === week);
-    const sourceReady = wg.length > 0 && Number(context?.week) === week && Object.keys(context?.players || {}).length > 0;
+    const scheduleReady = wg.length > 0;
+    const contextReady = Number(context?.week) === week && Object.keys(context?.players || {}).length > 0;
+    const sourceReady = scheduleReady && contextReady;
     const forecastReady = wf.length > 0;
     const finalReady = wg.length > 0 && wg.every(isFinal);
     const settlementReady = finalReady && ws.length > 0;
     let stale = false;
     const staleReasons = [];
-    if (sourceReady && context?.captured_at && !forecastReady) {
+    if (contextReady && context?.captured_at && !forecastReady) {
       const age = (now - new Date(context.captured_at)) / 36e5;
       if (Number.isFinite(age) && age > 72) { stale = true; staleReasons.push(`Football context is ${age.toFixed(1)}h old without a frozen forecast.`); }
     }
     const blocked = blockedReasons.length > 0;
-    const status = statusFor({sourceReady, forecastReady, finalReady, settlementReady, stale, blocked});
-    return {week,status,source_ready:sourceReady,forecast_ready:forecastReady,final_ready:finalReady,settlement_ready:settlementReady,calibration_status:calibration?.status || null,governance_decision:governance?.decision || null,stale_reasons:staleReasons,blocked_reasons:blocked ? [...blockedReasons] : []};
+    const status = statusFor({scheduleReady, contextReady, forecastReady, finalReady, settlementReady, stale, blocked});
+    return {week,status,schedule_ready:scheduleReady,context_ready:contextReady,source_ready:sourceReady,forecast_ready:forecastReady,final_ready:finalReady,settlement_ready:settlementReady,calibration_status:calibration?.status || null,governance_decision:governance?.decision || null,stale_reasons:staleReasons,blocked_reasons:blocked ? [...blockedReasons] : []};
   });
 
-  const rank = {BLOCKED:0,STALE:1,WAITING_FOR_SOURCE:2,WAITING_FOR_FORECAST:3,WAITING_FOR_FINAL:4,WAITING_FOR_SETTLEMENT:5,READY:6};
+  const rank = {BLOCKED:0,STALE:1,WAITING_FOR_SOURCE:2,WAITING_FOR_CONTEXT:3,WAITING_FOR_FORECAST:4,WAITING_FOR_FINAL:5,WAITING_FOR_SETTLEMENT:6,READY:7};
   const overall = [...rows].sort((a,b)=>rank[a.status]-rank[b.status])[0]?.status || 'WAITING_FOR_SOURCE';
   return {
-    schema_version:'1.0.0', season:2026, mode:'OBSERVATIONAL_ONLY', actionable:false,
+    schema_version:'1.1.0', season:2026, mode:'OBSERVATIONAL_ONLY', actionable:false,
     overall_status:overall, current_week:rows.find(r=>r.status!=='READY')?.week ?? rows.at(-1)?.week ?? null, weeks:rows,
     blocked_reasons:blockedReasons, stale_reasons:rows.flatMap(r=>r.stale_reasons.map(x=>`Week ${r.week}: ${x}`)),
     summary:{ready_weeks:rows.filter(r=>r.status==='READY').length,waiting_weeks:rows.filter(r=>r.status.startsWith('WAITING_')).length,stale_weeks:rows.filter(r=>r.status==='STALE').length,blocked_weeks:rows.filter(r=>r.status==='BLOCKED').length},
@@ -76,7 +79,9 @@ export function evaluate({schedule, context, forecasts, results, calibration, go
 }
 
 function selfTest() {
-  const base={schedule:{games:[{week:1,status:'SCHEDULED'}]},context:{week:1,players:{A:{}},captured_at:new Date().toISOString(),sportsbook_inputs_used:false},forecasts:{forecasts:[]},results:{settlements:[]},calibration:{status:'AWAITING_SETTLED_FORECASTS',actionable:false},governance:{decision:'HOLD',actionable:false}};
+  const scheduleOnly={schedule:{games:[{week:1,status:'SCHEDULED'}]},context:{week:1,players:{},captured_at:new Date().toISOString(),sportsbook_inputs_used:false},forecasts:{forecasts:[]},results:{settlements:[]},calibration:{status:'AWAITING_SETTLED_FORECASTS',actionable:false},governance:{decision:'HOLD',actionable:false}};
+  const z=evaluate(scheduleOnly); if(z.overall_status!=='WAITING_FOR_CONTEXT') throw Error('context wait test failed');
+  const base={...scheduleOnly,context:{...scheduleOnly.context,players:{A:{}}}};
   const a=evaluate(base); if(a.overall_status!=='WAITING_FOR_FORECAST') throw Error('forecast wait test failed');
   const b=evaluate({...base,forecasts:{forecasts:[{week:1}]}}); if(b.overall_status!=='WAITING_FOR_FINAL') throw Error('final wait test failed');
   const c=evaluate({...base,schedule:{games:[{week:1,status:'FINAL'}]},forecasts:{forecasts:[{week:1}]}}); if(c.overall_status!=='WAITING_FOR_SETTLEMENT') throw Error('settlement wait test failed');
