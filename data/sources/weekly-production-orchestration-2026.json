@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "step": 24,
+  "status": "STEP_24_WEEKLY_PRODUCTION_ORCHESTRATION_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "schedule": {
+    "cron": "10 */2 * * *",
+    "single_owner": "step24-weekly-production-orchestration.yml",
+    "concurrency_group": "weekly-production-orchestration",
+    "cancel_in_progress": false
+  },
+  "ordered_stages": [
+    "SOURCE_INGESTION",
+    "WEEKLY_PLAYER_MODEL",
+    "FORECAST_FREEZE",
+    "GAME_PROJECTIONS",
+    "MARKET_CAPTURE",
+    "MARKET_RECOMMENDATIONS",
+    "OPPORTUNITY_RANKING",
+    "POSTGAME_SETTLEMENT",
+    "LIVE_MARKET_CALIBRATION",
+    "CALIBRATION_GOVERNANCE",
+    "PIPELINE_HEALTH",
+    "REAL_SEASON_VALIDATION",
+    "ATOMIC_PERSIST"
+  ],
+  "failure_policy": {
+    "dependency_failure_blocks_downstream": true,
+    "missing_market_credentials_is_waiting_not_zero": true,
+    "missing_source_data_is_waiting_not_zero": true,
+    "settlement_requires_final_results": true,
+    "calibration_requires_settlement": true,
+    "one_atomic_repository_commit_per_orchestrator_run": true
+  },
+  "locked_rules": [
+    "Step 24 is the only autonomous production scheduler for the weekly football/market lifecycle.",
+    "Legacy Step 8, 9, 11, 14, 15, 16, 17 and 23 cron writers must be disabled after Step 24 is merged.",
+    "Manual production worker runs may exist only behind the same weekly-production-orchestration concurrency group.",
+    "A downstream stage cannot execute after an upstream hard failure.",
+    "Missing data remains missing and cannot be converted to zero or neutral evidence.",
+    "Sportsbook data remains downstream and cannot mutate football projections, True Value, or comparison winners.",
+    "Frozen forecasts and settlement revisions remain immutable under their existing contracts.",
+    "Calibration cannot tune and score the same observation and cannot auto-promote a challenger.",
+    "No automatic wagering, staking, or bet execution is permitted.",
+    "Repository writes from the orchestrator are persisted in one atomic commit after all non-writing stages complete."
+  ]
+}
