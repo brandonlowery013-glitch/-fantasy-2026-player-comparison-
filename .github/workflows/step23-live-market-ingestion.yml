@@ -1,0 +1,112 @@
+name: Step 23 Live Market Ingestion
+
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '30 */2 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  step23-live-market-qa:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 23 provider and snapshot contract
+        run: node scripts/validate-live-market-ingestion-contract.mjs
+      - name: Test append-only ingestion, pairing and closing snapshots
+        run: node scripts/ingest-live-market-snapshots.mjs --self-test
+      - name: Revalidate game snapshot schema
+        run: node scripts/validate-weekly-matchup-market-snapshots.mjs --self-test
+      - name: Revalidate player prop snapshot schema
+        run: node scripts/validate-player-prop-market-snapshots.mjs --self-test
+      - name: Test freshness and best-price unified selection
+        run: node scripts/build-unified-opportunity-engine.mjs --self-test
+      - name: Revalidate shared no-vig and EV math
+        run: node scripts/test-ev-math.mjs
+      - name: Revalidate Step 22 real-season chronology
+        run: node scripts/validate-real-season-validation.mjs --self-test
+      - name: Upload Step 23 QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step23-live-market-ingestion
+          path: |
+            guardrails/live-market-ingestion-contract-report.json
+            guardrails/live-market-ingestion-test-report.json
+            guardrails/unified-opportunity-engine-report.json
+            guardrails/weekly-matchup-market-snapshot-report.json
+            guardrails/player-prop-market-snapshot-report.json
+          if-no-files-found: error
+
+  scheduled-live-market-refresh:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: step23-live-market-qa
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 23 contract
+        run: node scripts/validate-live-market-ingestion-contract.mjs
+      - name: Capture live game and weekly player-prop snapshots
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          MARKET_MAX_PROP_EVENTS: ${{ vars.MARKET_MAX_PROP_EVENTS }}
+        run: node scripts/ingest-live-market-snapshots.mjs
+      - name: Validate stored game snapshots
+        run: node scripts/validate-weekly-matchup-market-snapshots.mjs
+      - name: Validate stored player prop snapshots
+        run: node scripts/validate-player-prop-market-snapshots.mjs
+      - name: Build game market recommendations
+        run: node scripts/build-game-market-recommendations.mjs
+      - name: Build player prop recommendations
+        run: node scripts/build-player-prop-recommendations.mjs
+      - name: Build freshness-filtered best-price opportunity board
+        run: node scripts/build-unified-opportunity-engine.mjs
+      - name: Refresh real-season validation status
+        run: node scripts/validate-real-season-validation.mjs
+      - name: Commit market refresh
+        run: |
+          paths=(
+            data/market/weekly-matchup-market-snapshots-2026.json
+            data/market/player-prop-market-snapshots-2026.json
+            data/market/live-market-ingestion-status-2026.json
+            data/market/weekly-game-market-recommendations-2026.json
+            data/market/player-prop-recommendations-2026.json
+            data/market/unified-opportunities-2026.json
+            data/calibration/real-season-validation-status-2026.json
+          )
+          if git diff --quiet -- "${paths[@]}"; then
+            echo "No market state changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${paths[@]}"
+          git commit -m "Refresh live NFL market snapshots and opportunities"
+          git push origin HEAD:main
+      - name: Upload live market state
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-market-state
+          path: |
+            data/market/live-market-ingestion-status-2026.json
+            data/market/weekly-matchup-market-snapshots-2026.json
+            data/market/player-prop-market-snapshots-2026.json
+            data/market/weekly-game-market-recommendations-2026.json
+            data/market/player-prop-recommendations-2026.json
+            data/market/unified-opportunities-2026.json
+            guardrails/live-market-ingestion-report.json
+          if-no-files-found: warn
