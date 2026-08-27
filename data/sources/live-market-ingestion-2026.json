@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "step": 23,
+  "mode": "MARKET_CONTEXT_ONLY",
+  "actionable": false,
+  "provider": {
+    "name": "The Odds API",
+    "api_version": "v4",
+    "host": "https://api.the-odds-api.com",
+    "sport_key": "americanfootball_nfl",
+    "api_key_env": "ODDS_API_KEY",
+    "regions": "us",
+    "odds_format": "american",
+    "date_format": "iso",
+    "featured_markets": ["h2h", "spreads", "totals"],
+    "weekly_player_prop_markets": {
+      "player_pass_yds": "passing_yards",
+      "player_pass_tds": "passing_tds",
+      "player_rush_yds": "rushing_yards",
+      "player_rush_tds": "rushing_tds",
+      "player_reception_yds": "receiving_yards",
+      "player_reception_tds": "receiving_tds",
+      "player_receptions": "receptions"
+    },
+    "season_long_player_props_supported": false
+  },
+  "cadence": {
+    "workflow_cron": "25 * * * *",
+    "featured_refresh_minutes_near_kickoff": 120,
+    "featured_refresh_minutes_far_from_kickoff": 360,
+    "near_kickoff_window_hours": 24,
+    "player_prop_refresh_minutes": 180,
+    "player_prop_window_hours": 48,
+    "max_prop_events_per_run": 4,
+    "max_provider_market_credits_per_run": 32
+  },
+  "freshness": {
+    "weekly_market_stale_after_minutes": 150,
+    "season_market_stale_after_minutes": 1440,
+    "closed_after_kickoff": true
+  },
+  "snapshot_rules": {
+    "append_only": true,
+    "first_current_feed_observation_kind": "EARLY",
+    "open_kind_requires_explicit_opening_source": true,
+    "current_kind_requires_pre_kickoff_observation": true,
+    "close_kind_is_latest_pre_kickoff_observation": true,
+    "post_kickoff_live_prices_are_not_current_recommendation_inputs": true,
+    "different_lines_are_never_averaged": true,
+    "same_book_two_sided_prices_are_kept_together": true
+  },
+  "best_price_rules": {
+    "select_across_latest_fresh_book_snapshots": true,
+    "ranking": ["PICK_FIRST", "EXPECTED_VALUE", "PROBABILITY_EDGE", "MODEL_WIN_PROBABILITY", "FRESHNESS"],
+    "never_merge_prices_from_different_books_into_one_two_sided_market": true
+  },
+  "guardrails": {
+    "market_context_only": true,
+    "probability_fit_input": false,
+    "sportsbook_inputs_may_mutate_football_projection": false,
+    "sportsbook_inputs_may_mutate_true_value": false,
+    "sportsbook_inputs_may_mutate_comparison_winner": false,
+    "missing_provider_credentials_are_not_zero_market_data": true,
+    "missing_market_is_not_zero": true,
+    "automatic_wagering": false,
+    "stake_sizing": false
+  }
+}
