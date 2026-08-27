@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_11_POSTGAME_FORECAST_SETTLEMENT_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "sportsbook_inputs_allowed": false,
+  "forecast_source": "data/calibration/weekly-forecast-capture-2026.json",
+  "schedule_source": "data/calibration/weekly-event-schedule-2026.json",
+  "result_source": {
+    "name": "ESPN public NFL game summary feed",
+    "url_template": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={event_id}",
+    "final_status_required": true
+  },
+  "result_ledger": "data/calibration/weekly-forecast-results-2026.json",
+  "calibration_output": "data/calibration/weekly-forecast-calibration-2026.json",
+  "supported_stats": ["pass_yards", "pass_tds", "rush_yards", "rush_tds", "targets", "receiving_yards", "receptions", "receiving_tds"],
+  "rules": {
+    "frozen_forecast_never_rewritten": true,
+    "only_final_games_settle": true,
+    "result_revisions_append_only": true,
+    "latest_verified_revision_scores": true,
+    "missing_player_stat_is_not_assumed_zero": true,
+    "market_data_prohibited": true,
+    "holdout_scoring_descriptive_only": true,
+    "same_sample_tuning_prohibited": true
+  },
+  "required_metrics": ["mae", "rmse", "bias", "coverage_1sd", "coverage_2sd", "mean_abs_z"],
+  "step_11_status": "FRAMEWORK_COMPLETE_AWAITING_FINAL_GAMES"
+}
