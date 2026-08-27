@@ -1,0 +1,32 @@
+name: Step 21 Operations Dashboard
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+  step21-operations-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 21 operations dashboard
+        run: node scripts/validate-step21-operations-dashboard.mjs
+      - name: Revalidate Step 20 pipeline health
+        run: node scripts/validate-weekly-pipeline-health-contract.mjs
+      - name: Revalidate Step 19 calibration governance
+        run: node scripts/validate-calibration-governance-contract.mjs
+      - name: Revalidate Step 18 opportunities UI
+        run: node scripts/validate-weekly-opportunities-ui.mjs
+      - name: Revalidate Step 12 platform interface
+        run: node scripts/validate-step12-platform-interface.mjs
+      - name: Upload Step 21 QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step21-operations-dashboard
+          path: guardrails/step21-operations-dashboard-report.json
+          if-no-files-found: error
