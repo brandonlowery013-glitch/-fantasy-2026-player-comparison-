@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_17_UNIFIED_OPPORTUNITY_ENGINE_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "game_recommendation_source": "data/market/weekly-game-market-recommendations-2026.json",
+  "player_prop_recommendation_source": "data/market/player-prop-recommendations-2026.json",
+  "weekly_player_distribution_source": "data/probability/generated/weekly-probability-distributions-2026.json",
+  "season_player_distribution_source": "guardrails/probability-distribution-report.json",
+  "included_horizons": ["WEEKLY"],
+  "included_market_types": ["PLAYER_PROP", "SPREAD", "TOTAL", "MONEYLINE"],
+  "ranking_policy": {
+    "rule": "Only existing PICK decisions are ranked. Order by confidence tier HIGH > MODERATE > LEAN, then probability edge descending, expected value descending, model conditional win probability descending, then stable opportunity id.",
+    "confidence_order": ["HIGH", "MODERATE", "LEAN"],
+    "composite_score_allowed": false,
+    "pick_thresholds_may_be_overridden": false
+  },
+  "near_miss_policy": {
+    "enabled": true,
+    "rule": "PASS findings may appear on a watchlist only when model conditional win probability is at least 0.52 and either probability edge is at least 0.02 or expected value is at least 0.01. A watchlist item remains PASS and can never be promoted by Step 17."
+  },
+  "explanation_policy": {
+    "plain_english": true,
+    "deterministic": true,
+    "required_evidence": ["model_probability", "no_vig_market_probability", "probability_edge", "expected_value"],
+    "rule": "Explain the model-market disagreement using already-generated football projections, distributions, market lines, and prices. Do not invent causal football claims that are not present in model inputs."
+  },
+  "locked_rules": [
+    "Step 17 cannot create a PICK. It can only rank PICK decisions already emitted by Steps 15 and 16.",
+    "Step 17 cannot modify model projections, probability distributions, fair-market probabilities, EV, recommendation thresholds, or confidence labels.",
+    "Weekly game markets and weekly player props may share one slate ranking because their probability edge and EV use the same locked downstream market framework.",
+    "Season-long player props are not mixed into the weekly slate ranking.",
+    "No weighted composite opportunity score is permitted; ranking is lexicographic and transparent.",
+    "PASS findings stay PASS. Near-miss watchlist status is descriptive only.",
+    "Market movement may change a downstream PICK or PASS only in Steps 15 or 16; Step 17 merely reflects the latest eligible recommendation.",
+    "Sportsbook information remains downstream and cannot mutate football projections or distributions.",
+    "Missing markets or missing distributions are represented as unavailable rather than synthesized.",
+    "The engine cannot place wagers, size stakes, or make bankroll decisions."
+  ]
+}
