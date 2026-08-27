@@ -1,0 +1,75 @@
+name: Step 15 Game Market Recommendations
+
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '35 */6 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  step15-game-market-qa:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate market snapshot schema including optional moneylines
+        run: node scripts/validate-weekly-matchup-market-snapshots.mjs --self-test
+      - name: Validate Step 15 contract
+        run: node scripts/validate-game-market-recommendation-contract.mjs
+      - name: Test market movement, no-vig, push-aware EV and PICK/PASS logic
+        run: node scripts/build-game-market-recommendations.mjs --self-test
+      - name: Revalidate Step 13 fair-market math
+        run: node scripts/test-ev-math.mjs
+      - name: Revalidate Step 14 game projection independence
+        run: node scripts/build-weekly-game-projections.mjs --self-test
+      - name: Upload Step 15 QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step15-game-market-recommendations
+          path: |
+            guardrails/game-market-recommendation-contract-report.json
+            guardrails/game-market-recommendation-report.json
+            guardrails/weekly-matchup-market-snapshot-report.json
+          if-no-files-found: error
+
+  scheduled-game-market-recommendations:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate stored market snapshots
+        run: node scripts/validate-weekly-matchup-market-snapshots.mjs
+      - name: Build current game market recommendations
+        run: node scripts/build-game-market-recommendations.mjs
+      - name: Commit recommendation refresh
+        run: |
+          if git diff --quiet -- data/market/weekly-game-market-recommendations-2026.json; then
+            echo "No recommendation changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market/weekly-game-market-recommendations-2026.json
+          git commit -m "Refresh weekly game market recommendations"
+          git push origin HEAD:main
+      - name: Upload recommendation output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-game-market-recommendations
+          path: |
+            data/market/weekly-game-market-recommendations-2026.json
+            guardrails/game-market-recommendation-report.json
+          if-no-files-found: error

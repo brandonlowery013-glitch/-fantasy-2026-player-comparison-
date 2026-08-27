@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_15_GAME_MARKET_RECOMMENDATIONS_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "football_projection_source": "data/probability/generated/weekly-game-projections-2026.json",
+  "market_snapshot_source": "data/market/weekly-matchup-market-snapshots-2026.json",
+  "fair_market_method": "PROPORTIONAL_TWO_WAY",
+  "supported_markets": ["moneyline", "spread", "total"],
+  "recommendation_policy": {
+    "minimum_probability_edge": 0.03,
+    "minimum_expected_value": 0.02,
+    "minimum_model_conditional_win_probability": 0.52,
+    "labels": ["PICK", "PASS"],
+    "confidence": {
+      "HIGH": {"minimum_probability_edge": 0.08, "minimum_expected_value": 0.08},
+      "MODERATE": {"minimum_probability_edge": 0.05, "minimum_expected_value": 0.04},
+      "LEAN": {"minimum_probability_edge": 0.03, "minimum_expected_value": 0.02}
+    }
+  },
+  "snapshot_selection": {
+    "recommendation_kinds": ["EARLY", "OPEN", "CURRENT", "PREDICTION_TIME"],
+    "closing_kind": "CLOSE",
+    "rule": "Evaluate every snapshot independently; current recommendation uses the latest non-CLOSE pre-kickoff snapshot. CLOSE is evaluation/CLV context only."
+  },
+  "locked_rules": [
+    "The Step 14 football forecast is generated before and independently of sportsbook market data.",
+    "Market movement never rewrites the Step 14 projected score, margin, total, win probability, or football distribution.",
+    "Each market snapshot is evaluated at its own line and price so recommendations may change as price changes without changing the football forecast.",
+    "Two-way sportsbook prices are de-vigged with the Step 13 proportional method before model-vs-market probability edge is measured.",
+    "Spread and total push probability is modeled explicitly; model conditional win probability excludes pushes for fair-market comparison and push-aware EV treats pushes as zero return.",
+    "Moneyline tie probability is treated as a push/refund for two-way NFL moneyline evaluation.",
+    "A PICK requires probability edge, EV, and model conditional win probability to all clear the locked minimums; otherwise the output is PASS.",
+    "A recommendation is descriptive SHADOW_ONLY output and cannot place a wager, size a stake, or mutate football projections.",
+    "Closing prices are reserved for CLV/backtest evaluation and cannot be retroactively substituted for the price available at recommendation time.",
+    "Missing or incomplete two-sided prices produce no recommendation rather than an inferred market price."
+  ]
+}
