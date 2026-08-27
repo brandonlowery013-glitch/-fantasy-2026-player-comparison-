@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_7_LIVE_WEEK_CALIBRATION_GATE_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "minimum_holdout_bets_before_trust": 100,
+  "required_metrics": [
+    "brier_score",
+    "log_loss",
+    "roi",
+    "closing_line_value",
+    "hit_rate_by_probability_bucket",
+    "hit_rate_by_market_type"
+  ],
+  "prediction_contract": {
+    "prediction_id_required": true,
+    "timestamp_required": true,
+    "event_start_required": true,
+    "prediction_must_precede_event_start": true,
+    "model_probability_required": true,
+    "offered_odds_required": true,
+    "market_probability_required": true,
+    "market_type_required": true,
+    "evaluation_split_must_equal": "HOLDOUT",
+    "frozen_prediction_required": true
+  },
+  "outcome_contract": {
+    "prediction_id_required": true,
+    "settled_result_allowed": [0, 1],
+    "closing_market_probability_required": true,
+    "settled_at_required": true,
+    "settled_at_must_not_precede_event_start": true
+  },
+  "activation_contract": {
+    "minimum_sample_met_required": true,
+    "all_required_metrics_present_required": true,
+    "no_timestamp_leakage_required": true,
+    "same_sample_tuning_and_evaluation_prohibited": true,
+    "automatic_production_activation": false,
+    "production_trust_requires_manual_review_after_quantitative_gate": true
+  },
+  "hard_block_rules": [
+    "prediction timestamp is missing or is not before event start",
+    "prediction is not frozen before outcome",
+    "evaluation row is not HOLDOUT",
+    "outcome exists without a matching prediction",
+    "settled outcome timestamp precedes event start",
+    "model probability is outside [0,1]",
+    "market probability or closing market probability is outside [0,1]",
+    "duplicate prediction_id exists",
+    "same sample is used for tuning and evaluation"
+  ],
+  "notes": [
+    "This gate measures real 2026 out-of-sample weekly betting performance; it does not fabricate preseason holdout results.",
+    "Reaching 100 settled holdout bets makes the system eligible for production-trust review but does not automatically activate betting recommendations.",
+    "Step 7 cannot rewrite football projections, Step 3B marginal probabilities, Step 3C dependence estimates, or historical calibration artifacts."
+  ],
+  "step_7_status": "FRAMEWORK_COMPLETE_AWAITING_LIVE_HOLDOUT"
+}
