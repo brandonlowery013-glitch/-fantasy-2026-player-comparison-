@@ -1,0 +1,20 @@
+import fs from 'node:fs';
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
+const seed=read('data/sources/nfl-authoritative-week1-2026.json');
+const ingest=fs.readFileSync('scripts/ingest-weekly-football-data.mjs','utf8');
+const workflow=fs.readFileSync('.github/workflows/step24-weekly-production-orchestration.yml','utf8');
+const must=(ok,msg)=>{if(!ok)throw new Error(msg)};
+must(seed.season===2026&&seed.week===1,'seed season/week mismatch');
+must(seed.status==='NFL_COM_PUBLISHED_VERIFIED','authoritative seed must be explicitly verified');
+must(seed.sportsbook_inputs_used===false,'schedule seed cannot use sportsbook data');
+must(Array.isArray(seed.games)&&seed.games.length===16,'Week 1 must contain 16 games');
+const teams=seed.games.flatMap(g=>[g.away_team,g.home_team]);
+must(new Set(teams).size===32&&teams.length===32,'Week 1 must contain every NFL team exactly once');
+for(const g of seed.games){must(g.away_team!==g.home_team,'self matchup');must(Number.isFinite(Date.parse(g.event_start)),'invalid kickoff');must(String(g.event_start).endsWith('Z'),'kickoff must be UTC');}
+must(ingest.includes('authoritativeFallback'),'ingestion missing authoritative fallback');
+must(ingest.includes('NFL_COM_PUBLISHED_VERIFIED'),'fallback must require verified seed state');
+must(ingest.includes('if(all.length)return all;')&&ingest.includes('return authoritativeFallback();'),'ESPN must remain preferred over fallback');
+must(workflow.includes('node scripts/ingest-weekly-football-data.mjs'),'production orchestrator must invoke weekly ingestion');
+for(const forbidden of ['odds','sportsbook','moneyline'])must(!JSON.stringify(seed.games).toLowerCase().includes(forbidden),'market contamination in schedule seed');
+const report={step:26,status:'PASS',season:2026,week:1,games:seed.games.length,teams:new Set(teams).size,espn_preferred:true,nfl_authoritative_fallback:true,actionable:false};
+fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/step26-week1-activation-report.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report));

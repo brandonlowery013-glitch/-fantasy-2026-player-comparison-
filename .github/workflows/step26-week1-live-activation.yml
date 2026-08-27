@@ -1,0 +1,37 @@
+name: Step 26 Week 1 Live Activation
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  step26-week1-activation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate authoritative Week 1 activation fallback
+        run: node scripts/validate-step26-week1-activation.mjs
+      - name: Revalidate weekly ingestion self-test
+        run: node scripts/ingest-weekly-football-data.mjs --self-test
+      - name: Revalidate Step 24 orchestration
+        run: node scripts/validate-weekly-production-orchestration-contract.mjs
+      - name: Revalidate Step 25 readiness
+        run: |
+          node scripts/validate-production-readiness-contract.mjs
+          node scripts/build-production-readiness-status.mjs --self-test
+      - name: Upload Step 26 QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step26-week1-live-activation
+          path: |
+            guardrails/step26-week1-activation-report.json
+            guardrails/weekly-football-ingestion-report.json
+            guardrails/production-readiness-dry-run-report.json
+          if-no-files-found: warn
