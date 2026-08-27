@@ -55,6 +55,8 @@ jobs:
         run: node scripts/test-correlation-modeling.mjs
       - name: Build Step 3C historical correlation model
         run: node scripts/build-correlation-model.mjs
+      - name: Build weekly Step 3C correlation layer
+        run: node scripts/build-weekly-correlation-layer.mjs
       - name: Validate Step 4 risk profile contract
         run: node scripts/validate-risk-profile-contract.mjs
       - name: Validate Step 5 comparison decision contract
@@ -162,6 +164,7 @@ jobs:
             data/probability/generated/weekly-risk-profiles-2026.json
             data/probability/generated/comparison-decisions-2026.json
             data/probability/generated/preseason-comparison-risk-profiles-2026.json
+            data/probability/generated/weekly-correlation-layer-2026.json
             data/sources/historical-route-participation-2021-2025.json
             data/sources/weekly-football-context-2026.json
             data/sources/role-cohort-baseline-selection-2026.json
