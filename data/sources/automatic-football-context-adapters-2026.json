@@ -1,0 +1,37 @@
+{
+  "schema_version":"1.0.0",
+  "season":2026,
+  "status":"STEP_10_AUTOMATIC_CONTEXT_ADAPTERS_LOCKED",
+  "mode":"SHADOW_ONLY",
+  "actionable":false,
+  "sportsbook_inputs_allowed":false,
+  "adapters":{
+    "role":{"automated_source":"ESPN public NFL team depth-chart endpoint","authoritative_context":"Current documented team depth chart","max_capture_age_hours":48,"numeric_adjustments_calibrated":false},
+    "injury":{"automated_source":"ESPN public NFL team injury endpoint","authoritative_cross_check":"NFL.com official injury/practice/game-status reporting","max_capture_age_hours":12,"numeric_adjustments_calibrated":false},
+    "team_environment":{"automated_source":"ESPN public NFL scoreboard/summary endpoints","evidence_window":"prior completed 2026 regular-season games only","max_capture_age_hours":48,"numeric_adjustments_calibrated":false},
+    "opponent":{"automated_source":"ESPN public NFL scoreboard/summary endpoints","evidence_window":"opponent prior completed 2026 regular-season games only","max_capture_age_hours":48,"numeric_adjustments_calibrated":false},
+    "qb_context":{"automated_source":"ESPN public NFL team depth-chart endpoint","authoritative_context":"Current documented QB depth chart","max_capture_age_hours":24,"numeric_adjustments_calibrated":false}
+  },
+  "write_contract":{
+    "target":"data/ingestion/weekly-football-source-snapshots-2026.json",
+    "append_only":true,
+    "dedupe_by_evidence_fingerprint":true,
+    "required_snapshot_fields":["snapshot_id","week","signal_type","player","source","captured_at","stat_adjustments","evidence"],
+    "allowed_signal_types":["role","injury","team_environment","opponent","qb_context"],
+    "empty_stat_adjustments_allowed":true
+  },
+  "availability_contract":{
+    "depth_chart_presence_may_support_expected_active_true":true,
+    "injury_out_ir_pup_suspended_overrides_active":true,
+    "questionable_doubtful_limited_status_does_not_force_expected_active":true,
+    "absence_from_injury_feed_never_by_itself_implies_active":true
+  },
+  "safeguards":[
+    "No sportsbook, odds, implied probability, spread, total or betting price may enter an adapter snapshot.",
+    "No arbitrary weekly mean or SD adjustment is generated before translation weights are separately calibrated.",
+    "Week 1 team-environment and opponent evidence may remain absent when no completed 2026 regular-season game exists.",
+    "Current injury status outranks depth-chart availability when the injury source explicitly indicates OUT, IR, PUP or suspension.",
+    "Every snapshot preserves source, capture time and raw evidence used for the classification."
+  ],
+  "step_10_status":"FRAMEWORK_COMPLETE"
+}
