@@ -3,8 +3,6 @@ name: Step 16 Player Prop Recommendations
 on:
   workflow_dispatch:
   pull_request:
-  schedule:
-    - cron: '40 */6 * * *'
 
 permissions:
   contents: write
@@ -27,21 +25,14 @@ jobs:
         run: node scripts/test-ev-math.mjs
       - name: Revalidate game recommendation thresholds
         run: node scripts/validate-game-market-recommendation-contract.mjs
-      - name: Upload Step 16 QA
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: step16-player-prop-recommendations
-          path: |
-            guardrails/player-prop-market-snapshot-report.json
-            guardrails/player-prop-recommendation-contract-report.json
-            guardrails/player-prop-recommendation-report.json
-          if-no-files-found: error
 
-  scheduled-player-prop-recommendations:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+  manual-player-prop-recommendations:
+    if: github.event_name == 'workflow_dispatch'
     needs: step16-player-prop-qa
     runs-on: ubuntu-latest
+    concurrency:
+      group: weekly-production-orchestration
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,32 +41,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Build season-long probability distributions
-        run: node scripts/build-probability-distributions.mjs --validate
-      - name: Ingest historical core
-        run: node scripts/ingest-historical-core.mjs
-      - name: Enrich historical context
-        run: node scripts/enrich-historical-context.mjs
-      - name: Enrich high-value usage
-        run: node scripts/enrich-high-value-usage.mjs
-      - name: Enrich deeper football context
-        run: node scripts/enrich-deeper-football-context.mjs
-      - name: Build historical reference population
-        run: node scripts/build-historical-reference-population.mjs
-      - name: Build uncertainty priors
-        run: node scripts/build-historical-uncertainty-calibration.mjs
-      - name: Calibrate distribution families
-        run: node scripts/calibrate-distribution-families.mjs
-      - name: Backfill route participation
-        run: node scripts/backfill-historical-route-participation.mjs
-      - name: Build role cohort priors
-        run: node scripts/build-role-cohort-priors.mjs
-      - name: Build catch-rate priors
-        run: node scripts/build-catch-rate-priors.mjs
-      - name: Build rookie priors
-        run: node scripts/build-rookie-no-history-priors.mjs
-      - name: Build projection error model
-        run: node scripts/build-historical-projection-error-model.mjs
       - name: Normalize weekly football context
         run: node scripts/normalize-weekly-football-context.mjs
       - name: Build weekly player projections
@@ -97,12 +62,3 @@ jobs:
           git add data/market/player-prop-recommendations-2026.json
           git commit -m "Refresh player prop recommendations"
           git push origin HEAD:main
-      - name: Upload player prop output
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: player-prop-recommendations
-          path: |
-            data/market/player-prop-recommendations-2026.json
-            guardrails/player-prop-recommendation-report.json
-          if-no-files-found: error

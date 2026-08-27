@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+const c=JSON.parse(fs.readFileSync('data/sources/weekly-production-orchestration-2026.json','utf8'));
+const blocked=[];
+const expected=['SOURCE_INGESTION','WEEKLY_PLAYER_MODEL','FORECAST_FREEZE','GAME_PROJECTIONS','MARKET_CAPTURE','MARKET_RECOMMENDATIONS','OPPORTUNITY_RANKING','POSTGAME_SETTLEMENT','LIVE_MARKET_CALIBRATION','CALIBRATION_GOVERNANCE','PIPELINE_HEALTH','REAL_SEASON_VALIDATION','ATOMIC_PERSIST'];
+if(c.season!==2026)blocked.push('season must be 2026');
+if(c.status!=='STEP_24_WEEKLY_PRODUCTION_ORCHESTRATION_LOCKED')blocked.push('Step 24 status not locked');
+if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('Step 24 must remain SHADOW_ONLY/non-actionable');
+if(JSON.stringify(c.ordered_stages)!==JSON.stringify(expected))blocked.push('ordered stage contract drift');
+if(c.schedule?.concurrency_group!=='weekly-production-orchestration'||c.schedule?.cancel_in_progress!==false)blocked.push('global anti-race concurrency contract missing');
+if(c.failure_policy?.dependency_failure_blocks_downstream!==true)blocked.push('dependency hard-fail policy missing');
+if(c.failure_policy?.one_atomic_repository_commit_per_orchestrator_run!==true)blocked.push('atomic persist policy missing');
+const rules=(c.locked_rules||[]).join(' ');
+for(const needle of ['only autonomous production scheduler','Missing data remains missing','Sportsbook data remains downstream','cannot auto-promote','No automatic wagering'])if(!rules.includes(needle))blocked.push(`missing safeguard: ${needle}`);
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',status:c.status,ordered_stages:c.ordered_stages,concurrency_group:c.schedule?.concurrency_group,blocked};
+fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/weekly-production-orchestration-contract-report.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);

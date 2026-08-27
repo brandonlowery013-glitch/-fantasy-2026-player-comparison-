@@ -3,8 +3,6 @@ name: Step 17 Unified Opportunity Engine
 on:
   workflow_dispatch:
   pull_request:
-  schedule:
-    - cron: '50 */6 * * *'
 
 permissions:
   contents: write
@@ -27,20 +25,14 @@ jobs:
         run: node scripts/validate-player-prop-recommendation-contract.mjs
       - name: Revalidate shared fair-market formula
         run: node scripts/test-ev-math.mjs
-      - name: Upload Step 17 QA
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: step17-unified-opportunity-engine
-          path: |
-            guardrails/unified-opportunity-contract-report.json
-            guardrails/unified-opportunity-engine-report.json
-          if-no-files-found: error
 
-  scheduled-unified-opportunity-refresh:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+  manual-unified-opportunity-refresh:
+    if: github.event_name == 'workflow_dispatch'
     needs: step17-unified-opportunity-qa
     runs-on: ubuntu-latest
+    concurrency:
+      group: weekly-production-orchestration
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,12 +56,3 @@ jobs:
           git add data/market/unified-opportunities-2026.json
           git commit -m "Refresh unified weekly opportunities"
           git push origin HEAD:main
-      - name: Upload unified opportunity output
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: unified-weekly-opportunities
-          path: |
-            data/market/unified-opportunities-2026.json
-            guardrails/unified-opportunity-engine-report.json
-          if-no-files-found: error

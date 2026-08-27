@@ -1,0 +1,216 @@
+name: Step 24 Weekly Production Orchestration
+
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '10 */2 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-production-orchestration
+  cancel-in-progress: false
+
+jobs:
+  step24-contract-qa:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 24 orchestration contract
+        run: node scripts/validate-weekly-production-orchestration-contract.mjs
+      - name: Test ordered lifecycle status builder
+        run: node scripts/build-weekly-production-orchestration-status.mjs --self-test
+      - name: Revalidate immutable forecast capture
+        run: node scripts/capture-weekly-forecast-snapshots.mjs --self-test
+      - name: Revalidate game projection independence
+        run: node scripts/build-weekly-game-projections.mjs --self-test
+      - name: Revalidate live market ingestion
+        run: node scripts/ingest-live-market-snapshots.mjs --self-test
+      - name: Revalidate postgame settlement
+        run: node scripts/settle-weekly-forecast-results.mjs --self-test
+      - name: Revalidate pipeline health
+        run: node scripts/check-weekly-pipeline-health.mjs --self-test
+      - name: Revalidate real-season chronology
+        run: node scripts/validate-real-season-validation.mjs --self-test
+      - name: Upload Step 24 QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step24-weekly-production-orchestration
+          path: |
+            guardrails/weekly-production-orchestration-contract-report.json
+            guardrails/weekly-production-orchestration-report.json
+          if-no-files-found: error
+
+  weekly-production-cycle:
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && (needs.step24-contract-qa.result == 'success' || needs.step24-contract-qa.result == 'skipped')
+    needs: step24-contract-qa
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate orchestration contract
+        run: node scripts/validate-weekly-production-orchestration-contract.mjs
+
+      - name: Stage 1 - resolve source schedule
+        id: source
+        shell: bash
+        run: |
+          set +e
+          node scripts/ingest-weekly-football-data.mjs
+          rc=$?
+          set -e
+          games=$(node -e "const fs=require('fs');const p='data/calibration/weekly-event-schedule-2026.json';const x=fs.existsSync(p)?require('./'+p):{games:{}};process.stdout.write(String(Object.keys(x.games||{}).length))")
+          if [ "$games" -eq 0 ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "No verified 2026 weekly source events yet; lifecycle remains waiting."
+            exit 0
+          fi
+          if [ "$rc" -ne 0 ]; then
+            echo "Verified games exist but source ingestion failed hard."
+            exit "$rc"
+          fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: Stage 1 - collect football context
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/collect-automatic-football-context.mjs
+
+      - name: Stage 1 - rebuild source/context after collection
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/ingest-weekly-football-data.mjs
+
+      - name: Stage 2 - normalize weekly football context
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/normalize-weekly-football-context.mjs
+
+      - name: Stage 2 - build weekly player projections
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/build-weekly-projection-generator.mjs
+
+      - name: Stage 2 - build weekly probability distributions
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/build-weekly-probability-engine.mjs
+
+      - name: Stage 3 - freeze first valid pregame forecasts
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/capture-weekly-forecast-snapshots.mjs
+
+      - name: Stage 4 - build football-only team scoring priors
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/build-game-team-scoring-priors.mjs
+
+      - name: Stage 4 - build weekly NFL game projections
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/build-weekly-game-projections.mjs
+
+      - name: Stage 5 - capture live market snapshots
+        if: steps.source.outputs.ready == 'true'
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          MARKET_MAX_PROP_EVENTS: ${{ vars.MARKET_MAX_PROP_EVENTS }}
+        run: node scripts/ingest-live-market-snapshots.mjs
+
+      - name: Stage 5 - validate captured game markets
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/validate-weekly-matchup-market-snapshots.mjs
+
+      - name: Stage 5 - validate captured player props
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/validate-player-prop-market-snapshots.mjs
+
+      - name: Stage 6 - build game recommendations
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/build-game-market-recommendations.mjs
+
+      - name: Stage 6 - build player prop recommendations
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/build-player-prop-recommendations.mjs
+
+      - name: Stage 7 - build freshness-filtered opportunity board
+        if: steps.source.outputs.ready == 'true'
+        run: node scripts/build-unified-opportunity-engine.mjs
+
+      - name: Stage 8 - settle any newly final frozen forecasts
+        run: node scripts/settle-weekly-forecast-results.mjs
+
+      - name: Stage 9 - rebuild live market holdout calibration
+        run: node scripts/build-live-week-calibration.mjs
+
+      - name: Stage 10 - rebuild calibration governance status
+        run: node scripts/build-calibration-governance-status.mjs
+
+      - name: Stage 11 - rebuild weekly pipeline health
+        run: node scripts/check-weekly-pipeline-health.mjs
+
+      - name: Stage 12 - rebuild real-season validation status
+        run: node scripts/validate-real-season-validation.mjs
+
+      - name: Stage 13 - build orchestration status
+        run: node scripts/build-weekly-production-orchestration-status.mjs
+
+      - name: Stage 13 - atomically persist weekly lifecycle state
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          paths=(
+            data/calibration/weekly-event-schedule-2026.json
+            data/ingestion/weekly-football-source-snapshots-2026.json
+            data/probability/weekly-football-context-raw-2026.json
+            data/probability/weekly-football-context-inputs-2026.json
+            data/probability/weekly-projection-inputs-2026.json
+            data/probability/generated/weekly-probability-distributions-2026.json
+            data/calibration/weekly-forecast-capture-2026.json
+            data/probability/generated/game-team-scoring-priors-2023-2025.json
+            data/probability/generated/weekly-game-projections-2026.json
+            data/market/weekly-matchup-market-snapshots-2026.json
+            data/market/player-prop-market-snapshots-2026.json
+            data/market/live-market-ingestion-status-2026.json
+            data/market/weekly-game-market-recommendations-2026.json
+            data/market/player-prop-recommendations-2026.json
+            data/market/unified-opportunities-2026.json
+            data/calibration/weekly-forecast-results-2026.json
+            data/calibration/weekly-forecast-calibration-2026.json
+            data/calibration/weekly-predictions-2026.json
+            data/calibration/weekly-outcomes-2026.json
+            weeklyCalibration2026.json
+            data/calibration/calibration-governance-status-2026.json
+            data/calibration/weekly-pipeline-status-2026.json
+            data/calibration/real-season-validation-status-2026.json
+            data/calibration/weekly-production-orchestration-status-2026.json
+          )
+          for p in "${paths[@]}"; do
+            if [ -e "$p" ]; then git add "$p"; fi
+          done
+          if git diff --cached --quiet; then
+            echo "No weekly production state changes."
+            exit 0
+          fi
+          git commit -m "Run ordered weekly production lifecycle"
+          git push origin HEAD:main
+
+      - name: Upload weekly production lifecycle state
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-production-lifecycle
+          path: |
+            data/calibration/weekly-production-orchestration-status-2026.json
+            guardrails/weekly-production-orchestration-report.json
+            data/calibration/weekly-pipeline-status-2026.json
+            data/calibration/real-season-validation-status-2026.json
+            data/market/live-market-ingestion-status-2026.json
+          if-no-files-found: warn
