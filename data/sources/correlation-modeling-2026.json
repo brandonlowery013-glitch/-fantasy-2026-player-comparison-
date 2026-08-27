@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_3C_CORRELATION_MODELING_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "sportsbook_inputs_allowed_as_correlation_inputs": false,
+  "historical_window": [2021, 2022, 2023, 2024, 2025],
+  "estimator": {
+    "base": "pearson_correlation",
+    "shrinkage": "rho_shrunk = rho_raw * n / (n + shrinkage_strength)",
+    "shrinkage_strength": 40,
+    "minimum_pair_observations": 25,
+    "maximum_absolute_correlation": 0.9
+  },
+  "relationships": [
+    "QB_PASS_YARDS__RECEIVER_YARDS",
+    "QB_PASS_TDS__RECEIVER_TDS",
+    "TARGETS__RECEPTIONS",
+    "TARGETS__RECEIVING_YARDS",
+    "RECEPTIONS__RECEIVING_YARDS",
+    "CARRIES__RUSHING_YARDS",
+    "TEAM_POINTS__PLAYER_TDS"
+  ],
+  "joint_probability_contract": {
+    "method": "gaussian_copula_on_step_3b_marginal_event_probabilities",
+    "default_samples": 32768,
+    "minimum_samples": 4096,
+    "matrix_requirement": "symmetric positive semidefinite correlation matrix with diagonal 1",
+    "psd_repair": "uniformly shrink off-diagonal correlations toward zero until Cholesky succeeds",
+    "independence_fallback": "only when no modeled relationship is available; never silently replace a known relationship with independence"
+  },
+  "team_scoring_environment_contract": {
+    "relationship": "historical team points to player offensive TDs",
+    "conditioning_method": "probit latent-variable conditional probability",
+    "sportsbook_team_totals_allowed": false,
+    "pregame_football_side_team_scoring_projection_allowed": true
+  },
+  "hard_block_rules": [
+    "sportsbook price, implied probability, line movement, or same-game market data enters correlation estimation",
+    "correlation is non-finite or outside [-1,1]",
+    "a reported empirical relationship has fewer observations than minimum_pair_observations",
+    "joint correlation matrix is asymmetric, has a diagonal other than 1, or cannot be repaired to positive semidefinite",
+    "a known modeled relationship is silently treated as independent",
+    "Step 3C mutates Step 3B marginal distribution parameters or exact line probabilities"
+  ],
+  "notes": [
+    "Step 3C models dependence between football outcomes; Step 3B remains authoritative for each individual marginal probability.",
+    "Historical correlations are estimated only from football-side game data and shrunk toward zero to reduce small-sample overfitting.",
+    "The Gaussian copula combines Step 3B marginal event probabilities with Step 3C dependence without feeding sportsbook prices back into football probability construction.",
+    "Team scoring environment may condition player TD probability only from a football-side pregame team scoring projection, never a sportsbook team total."
+  ],
+  "step_3c_status": "COMPLETE"
+}
