@@ -1,0 +1,35 @@
+name: Step 18 Weekly Opportunities UI
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+jobs:
+  step18-weekly-opportunities-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Weekly Opportunities interface
+        run: node scripts/validate-weekly-opportunities-ui.mjs
+      - name: Revalidate Step 17 opportunity contract
+        run: node scripts/validate-unified-opportunity-contract.mjs
+      - name: Revalidate Step 17 ranking logic
+        run: node scripts/build-unified-opportunity-engine.mjs --self-test
+      - name: Revalidate Step 15 recommendation contract
+        run: node scripts/validate-game-market-recommendation-contract.mjs
+      - name: Revalidate Step 16 recommendation contract
+        run: node scripts/validate-player-prop-recommendation-contract.mjs
+      - name: Upload Step 18 QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step18-weekly-opportunities-ui
+          path: |
+            guardrails/weekly-opportunities-ui-report.json
+            guardrails/unified-opportunity-contract-report.json
+            guardrails/unified-opportunity-engine-report.json
+          if-no-files-found: error
