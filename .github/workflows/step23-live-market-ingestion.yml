@@ -3,15 +3,12 @@ name: Step 23 Live Market Ingestion
 on:
   workflow_dispatch:
   pull_request:
-  schedule:
-    - cron: '30 */2 * * *'
 
 permissions:
   contents: write
 
 jobs:
   step23-live-market-qa:
-    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,23 +29,14 @@ jobs:
         run: node scripts/test-ev-math.mjs
       - name: Revalidate Step 22 real-season chronology
         run: node scripts/validate-real-season-validation.mjs --self-test
-      - name: Upload Step 23 QA
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: step23-live-market-ingestion
-          path: |
-            guardrails/live-market-ingestion-contract-report.json
-            guardrails/live-market-ingestion-test-report.json
-            guardrails/unified-opportunity-engine-report.json
-            guardrails/weekly-matchup-market-snapshot-report.json
-            guardrails/player-prop-market-snapshot-report.json
-          if-no-files-found: error
 
-  scheduled-live-market-refresh:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+  manual-live-market-refresh:
+    if: github.event_name == 'workflow_dispatch'
     needs: step23-live-market-qa
     runs-on: ubuntu-latest
+    concurrency:
+      group: weekly-production-orchestration
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -96,17 +84,3 @@ jobs:
           git add "${paths[@]}"
           git commit -m "Refresh live NFL market snapshots and opportunities"
           git push origin HEAD:main
-      - name: Upload live market state
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: live-market-state
-          path: |
-            data/market/live-market-ingestion-status-2026.json
-            data/market/weekly-matchup-market-snapshots-2026.json
-            data/market/player-prop-market-snapshots-2026.json
-            data/market/weekly-game-market-recommendations-2026.json
-            data/market/player-prop-recommendations-2026.json
-            data/market/unified-opportunities-2026.json
-            guardrails/live-market-ingestion-report.json
-          if-no-files-found: warn
