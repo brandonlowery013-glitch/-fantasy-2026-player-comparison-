@@ -1,0 +1,31 @@
+name: Step 29 First Valid Week 1 Forecast Freeze
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  step29-freeze-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 29 freeze state machine
+        run: node scripts/validate-step29-first-valid-week1-forecast-freeze.mjs --self-test
+      - name: Revalidate immutable forecast capture
+        run: node scripts/capture-weekly-forecast-snapshots.mjs --self-test
+      - name: Revalidate Week 1 context activation
+        run: node scripts/validate-step28-week1-context-activation.mjs
+      - name: Revalidate Week 1 state transitions
+        run: node scripts/validate-step27-week1-state-transition.mjs
+      - name: Revalidate production orchestration
+        run: node scripts/validate-weekly-production-orchestration-contract.mjs
+      - name: Upload Step 29 QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step29-first-valid-week1-forecast-freeze
+          path: guardrails/step29-first-valid-week1-forecast-freeze-report.json
+          if-no-files-found: error

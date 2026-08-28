@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "step": 29,
+  "status": "FIRST_VALID_WEEK1_FORECAST_FREEZE_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "allowed_states": ["WAITING_FOR_SOURCE","WAITING_FOR_CONTEXT","WAITING_FOR_DISTRIBUTIONS","WAITING_FOR_FREEZE","FROZEN","BLOCKED"],
+  "inputs": {
+    "schedule": "data/calibration/weekly-event-schedule-2026.json",
+    "context": "data/probability/weekly-football-context-inputs-2026.json",
+    "distributions": "data/probability/generated/weekly-probability-distributions-2026.json",
+    "ledger": "data/calibration/weekly-forecast-capture-2026.json"
+  },
+  "rules": {
+    "week": 1,
+    "verified_event_required": true,
+    "context_week_must_match_schedule": true,
+    "distribution_week_must_match_context": true,
+    "sportsbook_inputs_allowed": false,
+    "missing_is_zero": false,
+    "expected_active_must_be_explicit": true,
+    "freeze_must_be_pregame": true,
+    "frozen_flag_required": true,
+    "split_must_equal": "HOLDOUT",
+    "frozen_forecasts_are_immutable": true,
+    "automatic_wagering": false
+  }
+}
