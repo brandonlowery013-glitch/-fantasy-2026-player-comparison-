@@ -1,0 +1,48 @@
+name: Step 28 Week 1 Context Activation
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  step28-context-activation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 28 contract
+        run: node scripts/validate-step28-week1-context-activation.mjs
+      - name: Resolve verified Week 1 schedule
+        env:
+          NFL_WEEK: '1'
+        run: node scripts/ingest-weekly-football-data.mjs
+      - name: Collect current Week 1 football context
+        env:
+          NFL_WEEK: '1'
+        run: node scripts/collect-automatic-football-context.mjs
+      - name: Rebuild raw context
+        env:
+          NFL_WEEK: '1'
+        run: node scripts/ingest-weekly-football-data.mjs
+      - name: Build Week 1 context activation status
+        run: node scripts/build-week1-context-activation-status.mjs
+      - name: Normalize current Week 1 context
+        run: node scripts/normalize-weekly-football-context.mjs
+      - name: Revalidate Step 27 transition semantics
+        run: node scripts/validate-step27-week1-state-transitions.mjs
+      - name: Upload Step 28 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step28-week1-context-activation
+          path: |
+            data/calibration/week1-context-activation-status-2026.json
+            guardrails/automatic-football-context-adapters-report.json
+            guardrails/weekly-football-ingestion-report.json
+            guardrails/weekly-football-context-normalization-report.json
+          if-no-files-found: warn
