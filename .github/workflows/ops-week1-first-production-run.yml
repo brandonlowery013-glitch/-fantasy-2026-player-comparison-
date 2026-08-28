@@ -1,0 +1,85 @@
+name: Ops Week 1 First Production Run
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weekly-production-orchestration
+  cancel-in-progress: false
+
+jobs:
+  week1-production-observation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Resolve verified Week 1 schedule
+        run: node scripts/ingest-weekly-football-data.mjs
+      - name: Collect current football context
+        run: node scripts/collect-automatic-football-context.mjs
+      - name: Rebuild source/context
+        run: node scripts/ingest-weekly-football-data.mjs
+      - name: Report source/context readiness
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=require('./data/calibration/weekly-event-schedule-2026.json');
+          const c=require('./data/probability/weekly-football-context-raw-2026.json');
+          console.log(JSON.stringify({week:s.week??null,games:Object.keys(s.games||{}).length,context_week:c.week??null,context_players:Object.keys(c.players||{}).length},null,2));
+          NODE
+      - name: Normalize context
+        run: node scripts/normalize-weekly-football-context.mjs
+      - name: Build weekly player projections
+        run: node scripts/build-weekly-projection-generator.mjs
+      - name: Build weekly probability distributions
+        run: node scripts/build-weekly-probability-engine.mjs
+      - name: Freeze first valid pregame forecasts
+        run: node scripts/capture-weekly-forecast-snapshots.mjs
+      - name: Build weekly game projections
+        run: |
+          node scripts/build-game-team-scoring-priors.mjs
+          node scripts/build-weekly-game-projections.mjs
+      - name: Capture live markets
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          MARKET_MAX_PROP_EVENTS: ${{ vars.MARKET_MAX_PROP_EVENTS }}
+        run: node scripts/ingest-live-market-snapshots.mjs
+      - name: Build recommendations and opportunities
+        run: |
+          node scripts/build-game-market-recommendations.mjs
+          node scripts/build-player-prop-recommendations.mjs
+          node scripts/build-unified-opportunity-engine.mjs
+      - name: Rebuild operational status
+        run: |
+          node scripts/check-weekly-pipeline-health.mjs
+          node scripts/validate-real-season-validation.mjs
+          node scripts/build-production-readiness-status.mjs
+          node scripts/build-weekly-production-orchestration-status.mjs
+      - name: Upload first production observation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: week1-first-production-observation
+          path: |
+            data/calibration/weekly-event-schedule-2026.json
+            data/probability/weekly-football-context-raw-2026.json
+            data/probability/weekly-football-context-inputs-2026.json
+            data/probability/weekly-projection-inputs-2026.json
+            data/probability/generated/weekly-probability-distributions-2026.json
+            data/calibration/weekly-forecast-capture-2026.json
+            data/probability/generated/weekly-game-projections-2026.json
+            data/market/live-market-ingestion-status-2026.json
+            data/market/weekly-game-market-recommendations-2026.json
+            data/market/player-prop-recommendations-2026.json
+            data/market/unified-opportunities-2026.json
+            data/calibration/weekly-pipeline-status-2026.json
+            data/calibration/real-season-validation-status-2026.json
+            data/calibration/production-readiness-status-2026.json
+            data/calibration/weekly-production-orchestration-status-2026.json
+          if-no-files-found: warn
