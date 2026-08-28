@@ -24,7 +24,7 @@ const requiredFiles={
   pipeline_health:'scripts/check-weekly-pipeline-health.mjs',
   real_season_validation:'scripts/validate-real-season-validation.mjs',
   production_readiness:'scripts/build-production-readiness-status.mjs',
-  operations_dashboard:'operations.html'
+  operations_dashboard:'operations-dashboard.html'
 };
 for(const c of contract.required_components||[]) if(!requiredFiles[c]||!exists(requiredFiles[c])) blocked.push(`missing required component ${c}`);
 
@@ -33,7 +33,7 @@ const freeze=fs.readFileSync(path.join(root,'scripts/capture-weekly-forecast-sna
 const context=fs.readFileSync(path.join(root,'scripts/normalize-weekly-football-context.mjs'),'utf8');
 const gameRec=fs.readFileSync(path.join(root,'scripts/build-game-market-recommendations.mjs'),'utf8');
 const propRec=fs.readFileSync(path.join(root,'scripts/build-player-prop-recommendations.mjs'),'utf8');
-const ops=fs.readFileSync(path.join(root,'operations.html'),'utf8');
+const ops=fs.readFileSync(path.join(root,'operations-dashboard.html'),'utf8');
 
 const checks=[
   [/schedule:\s*\n\s*- cron:/,orchestrator,'Step 24 must retain the sole autonomous production schedule'],
