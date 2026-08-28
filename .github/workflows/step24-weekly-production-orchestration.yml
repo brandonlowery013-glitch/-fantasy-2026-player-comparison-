@@ -90,44 +90,56 @@ jobs:
       - name: Stage 1 - rebuild source/context after collection
         if: steps.source.outputs.ready == 'true'
         run: node scripts/ingest-weekly-football-data.mjs
-      - name: Stage 2 - normalize weekly football context
+      - name: Stage 1 - verify football context readiness
+        id: context
         if: steps.source.outputs.ready == 'true'
+        shell: bash
+        run: |
+          read -r schedule_week context_week context_players <<< "$(node -e "const fs=require('fs');const s=require('./data/calibration/weekly-event-schedule-2026.json');const c=require('./data/probability/weekly-football-context-raw-2026.json');process.stdout.write([s.week??'',c.week??'',Object.keys(c.players||{}).length].join(' '))")"
+          if [ -z "$schedule_week" ] || [ "$schedule_week" != "$context_week" ] || [ "$context_players" -eq 0 ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Verified schedule exists, but explicit current player availability context is not ready."
+            exit 0
+          fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+      - name: Stage 2 - normalize weekly football context
+        if: steps.context.outputs.ready == 'true'
         run: node scripts/normalize-weekly-football-context.mjs
       - name: Stage 2 - build weekly player projections
-        if: steps.source.outputs.ready == 'true'
+        if: steps.context.outputs.ready == 'true'
         run: node scripts/build-weekly-projection-generator.mjs
       - name: Stage 2 - build weekly probability distributions
-        if: steps.source.outputs.ready == 'true'
+        if: steps.context.outputs.ready == 'true'
         run: node scripts/build-weekly-probability-engine.mjs
       - name: Stage 3 - freeze first valid pregame forecasts
-        if: steps.source.outputs.ready == 'true'
+        if: steps.context.outputs.ready == 'true'
         run: node scripts/capture-weekly-forecast-snapshots.mjs
       - name: Stage 4 - build football-only team scoring priors
-        if: steps.source.outputs.ready == 'true'
+        if: steps.context.outputs.ready == 'true'
         run: node scripts/build-game-team-scoring-priors.mjs
       - name: Stage 4 - build weekly NFL game projections
-        if: steps.source.outputs.ready == 'true'
+        if: steps.context.outputs.ready == 'true'
         run: node scripts/build-weekly-game-projections.mjs
       - name: Stage 5 - capture live market snapshots
-        if: steps.source.outputs.ready == 'true'
+        if: steps.context.outputs.ready == 'true'
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           MARKET_MAX_PROP_EVENTS: ${{ vars.MARKET_MAX_PROP_EVENTS }}
         run: node scripts/ingest-live-market-snapshots.mjs
       - name: Stage 5 - validate captured game markets
-        if: steps.source.outputs.ready == 'true'
+        if: steps.context.outputs.ready == 'true'
         run: node scripts/validate-weekly-matchup-market-snapshots.mjs
       - name: Stage 5 - validate captured player props
-        if: steps.source.outputs.ready == 'true'
+        if: steps.context.outputs.ready == 'true'
         run: node scripts/validate-player-prop-market-snapshots.mjs
       - name: Stage 6 - build game recommendations
-        if: steps.source.outputs.ready == 'true'
+        if: steps.context.outputs.ready == 'true'
         run: node scripts/build-game-market-recommendations.mjs
       - name: Stage 6 - build player prop recommendations
-        if: steps.source.outputs.ready == 'true'
+        if: steps.context.outputs.ready == 'true'
         run: node scripts/build-player-prop-recommendations.mjs
       - name: Stage 7 - build freshness-filtered opportunity board
-        if: steps.source.outputs.ready == 'true'
+        if: steps.context.outputs.ready == 'true'
         run: node scripts/build-unified-opportunity-engine.mjs
       - name: Stage 8 - settle any newly final frozen forecasts
         run: node scripts/settle-weekly-forecast-results.mjs

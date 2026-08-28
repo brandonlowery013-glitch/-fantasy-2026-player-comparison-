@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 const c=JSON.parse(fs.readFileSync('data/sources/weekly-production-orchestration-2026.json','utf8'));
+const workflow=fs.readFileSync('.github/workflows/step24-weekly-production-orchestration.yml','utf8');
 const blocked=[];
 const expected=['SOURCE_INGESTION','WEEKLY_PLAYER_MODEL','FORECAST_FREEZE','GAME_PROJECTIONS','MARKET_CAPTURE','MARKET_RECOMMENDATIONS','OPPORTUNITY_RANKING','POSTGAME_SETTLEMENT','LIVE_MARKET_CALIBRATION','CALIBRATION_GOVERNANCE','PIPELINE_HEALTH','REAL_SEASON_VALIDATION','ATOMIC_PERSIST'];
 if(c.season!==2026)blocked.push('season must be 2026');
@@ -11,5 +12,9 @@ if(c.failure_policy?.dependency_failure_blocks_downstream!==true)blocked.push('d
 if(c.failure_policy?.one_atomic_repository_commit_per_orchestrator_run!==true)blocked.push('atomic persist policy missing');
 const rules=(c.locked_rules||[]).join(' ');
 for(const needle of ['only autonomous production scheduler','Missing data remains missing','Sportsbook data remains downstream','cannot auto-promote','No automatic wagering'])if(!rules.includes(needle))blocked.push(`missing safeguard: ${needle}`);
-const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',status:c.status,ordered_stages:c.ordered_stages,concurrency_group:c.schedule?.concurrency_group,blocked};
+if(!workflow.includes('Stage 1 - verify football context readiness')||!workflow.includes('id: context'))blocked.push('explicit football context readiness gate missing');
+if(!workflow.includes("if: steps.context.outputs.ready == 'true'"))blocked.push('downstream projection/market stages are not gated by football context');
+if(!workflow.includes('Verified schedule exists, but explicit current player availability context is not ready.'))blocked.push('context waiting path is not explicit');
+if((workflow.match(/git commit -m/g)||[]).length!==1||(workflow.match(/git push origin HEAD:main/g)||[]).length!==1)blocked.push('atomic single commit/push invariant drift');
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',status:c.status,ordered_stages:c.ordered_stages,concurrency_group:c.schedule?.concurrency_group,context_gate:true,blocked};
 fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/weekly-production-orchestration-contract-report.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
