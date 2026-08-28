@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "step": 30,
+  "status": "PENDING_QA",
+  "platform_state_on_pass": "BUILT",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "required_components": [
+    "verified_weekly_schedule",
+    "football_context_gate",
+    "weekly_player_projections",
+    "weekly_probability_distributions",
+    "immutable_forecast_freeze",
+    "weekly_game_projections",
+    "live_market_snapshots",
+    "game_recommendations",
+    "player_prop_recommendations",
+    "unified_opportunities",
+    "postgame_settlement",
+    "live_calibration",
+    "calibration_governance",
+    "pipeline_health",
+    "real_season_validation",
+    "production_readiness",
+    "operations_dashboard"
+  ],
+  "locked_invariants": [
+    "Football forecasts cannot consume sportsbook inputs.",
+    "Market movement cannot rewrite football forecasts.",
+    "Missing football evidence is never converted to zero or healthy.",
+    "Forecast capture is pre-kickoff, immutable, frozen HOLDOUT only.",
+    "Recommendations use model probability -> no-vig market probability -> edge -> EV -> PICK/PASS.",
+    "No forced pick is allowed when thresholds are not met or markets are incomplete.",
+    "Settlement evaluates previously frozen forecasts only.",
+    "Calibration can affect future versions only and cannot rewrite historical forecasts or settlements.",
+    "Production lifecycle has one autonomous scheduler and one atomic repository commit per cycle.",
+    "Operations UI is read-only and cannot reproduce or mutate model math.",
+    "No automatic wagering or stake sizing exists."
+  ],
+  "post_build_policy": {
+    "core_architecture_changes": "CHANGE_CONTROL_ONLY",
+    "weekly_operation": "ALLOWED",
+    "bug_fixes": "ALLOWED_WITH_QA",
+    "calibration_updates": "GOVERNED_BY_STEP19",
+    "new_features": "SEPARATE_VERSIONED_WORK"
+  }
+}
