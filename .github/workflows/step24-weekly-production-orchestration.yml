@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
   schedule:
-    - cron: '10 */2 * * *'
+    - cron: '10 * * * *'
 
 permissions:
   contents: write
@@ -24,6 +24,8 @@ jobs:
           node-version: '20'
       - name: Validate Step 24 orchestration contract
         run: node scripts/validate-weekly-production-orchestration-contract.mjs
+      - name: Validate game-aware cadence policy
+        run: node scripts/production-cadence-gate.mjs --self-test
       - name: Test ordered lifecycle status builder
         run: node scripts/build-weekly-production-orchestration-status.mjs --self-test
       - name: Revalidate immutable forecast capture
@@ -49,6 +51,7 @@ jobs:
           name: step24-weekly-production-orchestration
           path: |
             guardrails/weekly-production-orchestration-contract-report.json
+            guardrails/production-cadence-gate-report.json
             guardrails/weekly-production-orchestration-report.json
             guardrails/production-readiness-contract-report.json
             guardrails/production-readiness-dry-run-report.json
@@ -66,10 +69,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Determine Chicago-time production cadence
+        id: cadence
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: node scripts/production-cadence-gate.mjs
       - name: Validate orchestration contract
+        if: steps.cadence.outputs.run == 'true'
         run: node scripts/validate-weekly-production-orchestration-contract.mjs
       - name: Stage 1 - resolve source schedule
         id: source
+        if: steps.cadence.outputs.run == 'true'
         shell: bash
         run: |
           set +e
@@ -142,20 +152,28 @@ jobs:
         if: steps.context.outputs.ready == 'true'
         run: node scripts/build-unified-opportunity-engine.mjs
       - name: Stage 8 - settle any newly final frozen forecasts
+        if: steps.cadence.outputs.run == 'true'
         run: node scripts/settle-weekly-forecast-results.mjs
       - name: Stage 9 - rebuild live market holdout calibration
+        if: steps.cadence.outputs.run == 'true'
         run: node scripts/build-live-week-calibration.mjs
       - name: Stage 10 - rebuild calibration governance status
+        if: steps.cadence.outputs.run == 'true'
         run: node scripts/build-calibration-governance-status.mjs
       - name: Stage 11 - rebuild weekly pipeline health
+        if: steps.cadence.outputs.run == 'true'
         run: node scripts/check-weekly-pipeline-health.mjs
       - name: Stage 12 - rebuild real-season validation status
+        if: steps.cadence.outputs.run == 'true'
         run: node scripts/validate-real-season-validation.mjs
       - name: Stage 13 - build production readiness status
+        if: steps.cadence.outputs.run == 'true'
         run: node scripts/build-production-readiness-status.mjs
       - name: Stage 13 - build orchestration status
+        if: steps.cadence.outputs.run == 'true'
         run: node scripts/build-weekly-production-orchestration-status.mjs
       - name: Stage 13 - atomically persist weekly lifecycle state
+        if: steps.cadence.outputs.run == 'true'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
@@ -171,6 +189,7 @@ jobs:
         with:
           name: weekly-production-lifecycle
           path: |
+            guardrails/production-cadence-gate-report.json
             data/calibration/production-readiness-status-2026.json
             data/calibration/weekly-production-orchestration-status-2026.json
             guardrails/production-readiness-dry-run-report.json
