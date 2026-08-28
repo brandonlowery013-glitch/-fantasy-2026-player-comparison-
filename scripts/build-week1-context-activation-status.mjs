@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
+const write=(p,x)=>{fs.mkdirSync('data/calibration',{recursive:true});fs.writeFileSync(p,JSON.stringify(x,null,2)+'\n');};
+const c=read('data/sources/week1-context-activation-2026.json');
+const schedule=read('data/calibration/weekly-event-schedule-2026.json');
+const ledger=read('data/ingestion/weekly-football-source-snapshots-2026.json');
+const raw=read('data/probability/weekly-football-context-raw-2026.json');
+const snapshots=(ledger.snapshots||[]).filter(x=>Number(x.week)===1);
+const games=Object.values(schedule.games||{}).filter(g=>Number(g.week)===1);
+const teams=new Set(games.flatMap(g=>[g.home_team,g.away_team]).filter(Boolean));
+const market=/\b(odds?|sportsbook|bookmaker|moneyline|spread|vig|juice|market_price|betting_price)\b/i;
+const blocked=[];
+if(schedule.sportsbook_inputs_used===true||ledger.sportsbook_inputs_used===true||raw.sportsbook_inputs_used===true)blocked.push('sportsbook contamination flag detected');
+for(const s of snapshots)if(market.test(String(s.source||''))||market.test(JSON.stringify(s.evidence||{})))blocked.push(`market contamination in ${s.signal_type||'unknown'} snapshot`);
+const byType=Object.fromEntries(c.required_signal_families.map(t=>[t,snapshots.filter(x=>x.signal_type===t).length]));
+const qbTeams=new Set(snapshots.filter(x=>x.signal_type==='qb_context').map(x=>x.evidence?.team).filter(Boolean));
+const roleTeams=new Set(snapshots.filter(x=>x.signal_type==='role').map(x=>x.evidence?.team).filter(Boolean));
+const explicitAvailability=snapshots.filter(x=>typeof x.expected_active==='boolean').length;
+const rawPlayers=Object.keys(raw.players||{}).length;
+let state='READY_FOR_FORECAST',reason='Verified Week 1 schedule and current football context are available for forecast generation.';
+if(blocked.length){state='BLOCKED';reason=blocked.join('; ');} else if(games.length!==c.required_schedule_games||teams.size!==c.required_scheduled_teams){state='WAITING_FOR_SOURCE';reason=`Week 1 schedule incomplete: ${games.length}/16 games, ${teams.size}/32 teams.`;} else if(!rawPlayers||!byType.role||!byType.qb_context){state='WAITING_FOR_CONTEXT';reason='Week 1 schedule is verified, but current role/QB/availability context is not yet sufficient to build normalized player context.';}
+const out={schema_version:'1.0.0',season:2026,week:1,step:28,mode:'SHADOW_ONLY',actionable:false,state,reason,generated_at:new Date().toISOString(),evidence:{schedule_games:games.length,scheduled_teams:teams.size,raw_context_players:rawPlayers,explicit_availability_snapshots:explicitAvailability,signal_counts:byType,role_teams:roleTeams.size,qb_context_teams:qbTeams.size},sportsbook_inputs_used:false,blocked};
+write('data/calibration/week1-context-activation-status-2026.json',out);console.log(JSON.stringify(out,null,2));if(state==='BLOCKED')process.exit(1);
