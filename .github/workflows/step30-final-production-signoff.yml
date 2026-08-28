@@ -1,0 +1,43 @@
+name: Step 30 Final Production Sign-Off
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  step30-final-signoff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate final production sign-off contract
+        run: node scripts/validate-final-production-signoff.mjs
+      - name: Revalidate Step 29 immutable forecast freeze
+        run: node scripts/validate-step29-first-valid-week1-forecast-freeze.mjs --self-test
+      - name: Revalidate Step 28 context activation
+        run: node scripts/validate-step28-week1-context-activation.mjs
+      - name: Revalidate Step 24 production orchestration
+        run: node scripts/validate-weekly-production-orchestration-contract.mjs
+      - name: Revalidate Step 25 production readiness
+        run: |
+          node scripts/validate-production-readiness-contract.mjs
+          node scripts/build-production-readiness-status.mjs --self-test
+      - name: Revalidate real-season chronology
+        run: node scripts/validate-real-season-validation.mjs --self-test
+      - name: Revalidate pipeline health
+        run: node scripts/check-weekly-pipeline-health.mjs --self-test
+      - name: Revalidate calibration governance
+        run: node scripts/validate-calibration-governance-contract.mjs
+      - name: Revalidate unified opportunities
+        run: node scripts/validate-unified-opportunity-contract.mjs
+      - name: Revalidate Operations dashboard
+        run: node scripts/validate-operations-dashboard.mjs
+      - name: Upload Step 30 sign-off
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step30-final-production-signoff
+          path: guardrails/final-production-signoff-report.json
+          if-no-files-found: error
