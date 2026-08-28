@@ -1,0 +1,12 @@
+import fs from 'node:fs';
+const c=JSON.parse(fs.readFileSync('data/sources/week1-context-activation-2026.json','utf8'));
+const s=fs.readFileSync('scripts/build-week1-context-activation-status.mjs','utf8');
+const blocked=[];
+if(c.status!=='STEP_28_WEEK1_CONTEXT_ACTIVATION_LOCKED')blocked.push('contract not locked');
+if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('must remain shadow-only');
+if(c.required_schedule_games!==16||c.required_scheduled_teams!==32)blocked.push('Week 1 schedule cardinality not locked');
+for(const t of ['role','injury','qb_context'])if(!c.required_signal_families.includes(t))blocked.push(`missing signal family ${t}`);
+if(c.rules.sportsbook_inputs_allowed!==false||c.rules.context_activation_may_mutate_model!==false)blocked.push('football/market isolation rule broken');
+if(c.rules.absence_from_injury_feed_implies_active!==false)blocked.push('absence-from-injury must not imply active');
+if(!s.includes("READY_FOR_FORECAST")||!s.includes("WAITING_FOR_CONTEXT"))blocked.push('state builder missing required transitions');
+console.log(JSON.stringify({step:28,result:blocked.length?'BLOCKED':'PASS',blocked},null,2));if(blocked.length)process.exit(1);
