@@ -21,8 +21,6 @@ jobs:
         run: node scripts/validate-automatic-football-context-adapters.mjs
       - name: Test automatic football context collection
         run: node scripts/collect-automatic-football-context.mjs --self-test
-      - name: Revalidate weekly football context normalization
-        run: node scripts/normalize-weekly-football-context.mjs --self-test
       - name: Revalidate Step 27 state transitions
         run: node scripts/validate-step27-week1-state-transition.mjs
       - name: Revalidate Step 24 orchestration contract
@@ -36,6 +34,5 @@ jobs:
             guardrails/step28-week1-context-activation-report.json
             guardrails/automatic-football-context-adapters-contract-report.json
             guardrails/automatic-football-context-adapters-report.json
-            guardrails/weekly-football-context-normalization-report.json
             guardrails/weekly-production-orchestration-contract-report.json
           if-no-files-found: error
