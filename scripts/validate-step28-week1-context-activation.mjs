@@ -20,6 +20,7 @@ if(!health.includes('WAITING_FOR_CONTEXT'))blocked.push('Step 27 context waiting
 const games=schedule.games||schedule.week1_games||[];
 const gameCount=Array.isArray(games)?games.length:Object.keys(games).length;
 if(gameCount!==16)blocked.push(`Week 1 authoritative seed expected 16 games, found ${gameCount}`);
-if(c.sportsbook_inputs_allowed!==false||/sportsbook_inputs_allowed[^\n]*true/.test(JSON.stringify(c)))blocked.push('sportsbook contamination policy drift');
+if(c.sportsbook_inputs_allowed!==false)blocked.push('sportsbook inputs allowed by adapter contract');
+if(!collector.includes('market contamination'))blocked.push('collector market-contamination protection missing');
 const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',step:28,season:2026,week:1,mode:'SHADOW_ONLY',actionable:false,authoritative_week1_games:gameCount,verified_schedule_week_primary:c.week_alignment_contract?.verified_schedule_week_is_primary===true,depth_chart_presence_implies_active:c.availability_contract?.depth_chart_presence_may_support_expected_active_true,context_gate_present:workflow.includes('id: context'),blocked};
 fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/step28-week1-context-activation-report.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
