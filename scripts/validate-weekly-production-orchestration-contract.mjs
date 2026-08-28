@@ -15,6 +15,9 @@ for(const needle of ['only autonomous production scheduler','Missing data remain
 if(!workflow.includes('Stage 1 - verify football context readiness')||!workflow.includes('id: context'))blocked.push('explicit football context readiness gate missing');
 if(!workflow.includes("if: steps.context.outputs.ready == 'true'"))blocked.push('downstream projection/market stages are not gated by football context');
 if(!workflow.includes('Verified schedule exists, but explicit current player availability context is not ready.'))blocked.push('context waiting path is not explicit');
-if((workflow.match(/git commit -m/g)||[]).length!==1||(workflow.match(/git push origin HEAD:main/g)||[]).length!==1)blocked.push('atomic single commit/push invariant drift');
-const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',status:c.status,ordered_stages:c.ordered_stages,concurrency_group:c.schedule?.concurrency_group,context_gate:true,blocked};
+if((workflow.match(/git commit -m/g)||[]).length!==1)blocked.push('atomic single commit invariant drift');
+if(workflow.includes('git push origin HEAD:main'))blocked.push('production must not push directly to protected main');
+for(const needle of ['pull-requests: write','checks: read','gh pr create','gh pr checks','gh pr merge'])if(!workflow.includes(needle))blocked.push(`PR-based persistence safeguard missing: ${needle}`);
+if(!workflow.includes('production/state-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}'))blocked.push('production state branch must be unique per run');
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',status:c.status,ordered_stages:c.ordered_stages,concurrency_group:c.schedule?.concurrency_group,context_gate:true,persistence:'PR_REQUIRED_GUARDRAIL_THEN_MERGE',blocked};
 fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/weekly-production-orchestration-contract-report.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
