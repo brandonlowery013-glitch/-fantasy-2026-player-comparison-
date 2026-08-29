@@ -17,6 +17,7 @@ on:
       - 'scripts/backtest-step3b-qb-smoothed-median.mjs'
       - 'scripts/backtest-step3b-rb-smoothed-median.mjs'
       - 'scripts/backtest-step3b-rb-robust-history-median.mjs'
+      - 'scripts/audit-step3b-rb-2022-composition.mjs'
       - 'scripts/validate-step3b-closure.mjs'
       - '.github/workflows/step3b-distribution-alternatives.yml'
       - 'data/sources/step3b-final-decision-2026.json'
@@ -67,6 +68,8 @@ jobs:
         run: node scripts/backtest-step3b-rb-smoothed-median.mjs
       - name: Backtest robust-history RB median
         run: node scripts/backtest-step3b-rb-robust-history-median.mjs
+      - name: Audit 2022 RB composition and health
+        run: node scripts/audit-step3b-rb-2022-composition.mjs
       - name: Validate substantive Step 3B closure
         run: node scripts/validate-step3b-closure.mjs
       - name: Run hard Guardrail QA
@@ -87,5 +90,6 @@ jobs:
             guardrails/step3b-qb-smoothed-median.json
             guardrails/step3b-rb-smoothed-median.json
             guardrails/step3b-rb-robust-history-median.json
+            guardrails/step3b-rb-2022-composition-diagnostic.json
             guardrails/step3b-closure.json
           if-no-files-found: error
