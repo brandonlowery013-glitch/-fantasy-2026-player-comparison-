@@ -1,0 +1,42 @@
+import fs from 'node:fs';
+
+const seasons=[2017,2018,2019,2020,2021,2022,2023,2024,2025];
+const targets=[2021,2022,2023,2024,2025];
+const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+const med=a=>{const x=a.filter(Number.isFinite).sort((a,b)=>a-b);if(!x.length)return null;const m=Math.floor(x.length/2);return x.length%2?x[m]:(x[m-1]+x[m])/2};
+const quant=(a,p)=>{const x=a.filter(Number.isFinite).sort((a,b)=>a-b);if(!x.length)return null;const z=(x.length-1)*p,l=Math.floor(z),h=Math.ceil(z);return l===h?x[l]:x[l]+(x[h]-x[l])*(z-l)};
+const n=v=>Number.isFinite(Number(v))?Number(v):0;
+function parseCsv(text){const rs=[];let row=[],f='',q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c==='"'&&text[i+1]==='"'){f+='"';i++;}else if(c==='"')q=false;else f+=c;}else{if(c==='"')q=true;else if(c===','){row.push(f);f='';}else if(c==='\n'){row.push(f.replace(/\r$/,''));rs.push(row);row=[];f='';}else f+=c;}}if(f.length||row.length){row.push(f);rs.push(row)}const h=rs.shift()||[];return rs.filter(r=>r.length>1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]??''])))}
+async function csv(url){const r=await fetch(url,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});if(!r.ok)throw new Error(`${r.status} ${url}`);return parseCsv(await r.text())}
+const rows=[];const sources=[];
+for(const season of seasons){const url=`https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_${season}.csv`;sources.push(url);for(const r of await csv(url)){if(String(r.season_type||'REG').toUpperCase()!=='REG')continue;if(String(r.position||'').toUpperCase()!=='QB')continue;const id=r.player_id||r.gsis_id;if(!id)continue;const attempts=n(r.attempts||r.passing_attempts),py=n(r.passing_yards||r.pass_yards),ptd=n(r.passing_tds||r.pass_tds),ints=n(r.interceptions||r.passing_interceptions),ry=n(r.rushing_yards||r.rush_yards),rtd=n(r.rushing_tds||r.rush_tds);rows.push({id:String(id),player:r.player_display_name||r.player_name||r.player||String(id),season,week:n(r.week),team:r.recent_team||r.team||null,attempts,fp:py*.04+ptd*4-ints*2+ry*.1+rtd*6});}}
+const byPS=new Map();for(const r of rows){const k=`${r.id}|${r.season}`;if(!byPS.has(k))byPS.set(k,[]);byPS.get(k).push(r)}
+const ss=[];for(const [k,rs] of byPS){const [id,ys]=k.split('|'),season=+ys;if(rs.length<4)continue;const teams=[...new Set(rs.map(r=>r.team).filter(Boolean))];const attempts=rs.reduce((s,r)=>s+r.attempts,0);ss.push({id,player:rs[0].player,season,games:rs.length,team:teams.join('+'),ppg:avg(rs.map(r=>r.fp)),att_pg:attempts/rs.length});}
+const map=new Map(ss.map(x=>[`${x.id}|${x.season}`,x]));
+function history(x,target){return [1,2,3].map(d=>map.get(`${x.id}|${target-d}`)).filter(Boolean)}
+function weightedHistory(h){if(!h.length)return null;const w=[.6,.3,.1];let num=0,den=0;for(let i=0;i<h.length;i++){num+=h[i].ppg*w[i];den+=w[i]}return num/den}
+function currentBase(train,x){const p=train.map(z=>z.resid);if(p.length<20)return null;return {q10:x.prior.ppg+quant(p,.1),q50:x.prior.ppg+quant(p,.5),q90:x.prior.ppg+quant(p,.9)}}
+function bucket(prior,targetTeam){const teamChange=Boolean(targetTeam&&prior.team&&targetTeam!==prior.team);if(prior.games>=10&&prior.att_pg>=25&&!teamChange)return 'ESTABLISHED_SAME_TEAM';if(teamChange&&prior.att_pg<20)return 'LOW_USAGE_TEAM_CHANGE';if(prior.games<10||prior.att_pg<20)return 'LOW_USAGE_OR_SMALL_SAMPLE';if(teamChange)return 'ESTABLISHED_TEAM_CHANGE';return 'OTHER';}
+const examples=[];for(const cur of ss){if(cur.season<2018||cur.games<6)continue;const prior=map.get(`${cur.id}|${cur.season-1}`);if(!prior||prior.games<4)continue;examples.push({...cur,prior,resid:cur.ppg-prior.ppg});}
+function cohortOutcome(train,b){const a=train.filter(z=>z.bucket===b).map(z=>z.ppg);return a.length>=12?med(a):null}
+function makeFold(target){const baseTrain=examples.filter(x=>x.season<target-1);const cal=examples.filter(x=>x.season===target-1);const test=examples.filter(x=>x.season===target);for(const x of [...baseTrain,...cal,...test])x.bucket=bucket(x.prior,x.team);
+  const corrections={};for(const q of [.1,.5,.9]){const ds=[];for(const x of cal){const p=currentBase(baseTrain,x);if(p)ds.push(x.ppg-p[`q${q*100}`]);}if(ds.length<20)throw new Error(`calibration too small ${target}`);corrections[`q${q*100}`]=quant(ds,q)}
+  const out=[];for(const x of test){const base=currentBase(examples.filter(z=>z.season<target),x);if(!base)continue;for(const k of ['q10','q50','q90'])base[k]+=corrections[k];const h=history(x,target);const wh=weightedHistory(h);const cohort=cohortOutcome(examples.filter(z=>z.season<target),x.bucket);let candidate=base.q50;
+    if(x.bucket==='ESTABLISHED_SAME_TEAM'&&wh!=null) candidate=.80*wh+.20*base.q50;
+    else if(x.bucket==='ESTABLISHED_TEAM_CHANGE'&&wh!=null) candidate=.60*wh+.25*base.q50+.15*(cohort??base.q50);
+    else if(x.bucket==='LOW_USAGE_TEAM_CHANGE') candidate=.25*base.q50+.75*(cohort??base.q50);
+    else if(x.bucket==='LOW_USAGE_OR_SMALL_SAMPLE') candidate=.40*base.q50+.60*(cohort??base.q50);
+    else if(wh!=null) candidate=.65*wh+.35*base.q50;
+    const rawCandidate=candidate;candidate=Math.min(base.q90,Math.max(base.q10,candidate));out.push({...x,target,baseline_q10:base.q10,baseline_q50:base.q50,baseline_q90:base.q90,regime_q50:candidate,raw_regime_q50:rawCandidate,clipped:rawCandidate!==candidate});}
+  return out;
+}
+const rec=targets.flatMap(makeFold);
+function compat(obs,p,N){return N>0&&Math.abs(obs-p)<=1.96*Math.sqrt(p*(1-p)/N)}
+function sum(a,key){const N=a.length,coverage=N?a.filter(x=>x.ppg<=x[key]).length/N:null;return {n:N,coverage,target:.5,compatible_95pct:compat(coverage,.5,N),absolute_error:coverage==null?null:Math.abs(coverage-.5),mean_gap:avg(a.map(x=>x.ppg-x[key])),median_gap:med(a.map(x=>x.ppg-x[key]))}}
+const by_year={};for(const y of targets){const a=rec.filter(x=>x.target===y);by_year[y]={baseline:sum(a,'baseline_q50'),regime_aware:sum(a,'regime_q50')}}
+const by_bucket={};for(const b of [...new Set(rec.map(x=>x.bucket))]){const a=rec.filter(x=>x.bucket===b);by_bucket[b]={baseline:sum(a,'baseline_q50'),regime_aware:sum(a,'regime_q50')}}
+const baseline=sum(rec,'baseline_q50'),regime=sum(rec,'regime_q50');
+const q10cov=rec.filter(x=>x.ppg<=x.baseline_q10).length/rec.length,q90cov=rec.filter(x=>x.ppg<=x.baseline_q90).length/rec.length,central=rec.filter(x=>x.ppg>=x.baseline_q10&&x.ppg<=x.baseline_q90).length/rec.length;
+const yearBaselineMAE=avg(Object.values(by_year).map(x=>x.baseline.absolute_error)),yearRegimeMAE=avg(Object.values(by_year).map(x=>x.regime_aware.absolute_error));
+const report={generated_at:new Date().toISOString(),step:'STEP3B_QB_REGIME_AWARE_MEDIAN_BACKTEST',history_window:seasons,evaluation_targets:targets,heldout_predictions:rec.length,information_rule:'Prediction-time inputs only: prior player seasons, prior games/attempts, target team identity, and historical cohorts. No target-season production or target-season workload is used to classify the player.',candidate_rules:{ESTABLISHED_SAME_TEAM:'80% weighted prior 3-season history + 20% conformal baseline',ESTABLISHED_TEAM_CHANGE:'60% weighted history + 25% conformal baseline + 15% historical same-regime cohort median',LOW_USAGE_TEAM_CHANGE:'25% conformal baseline + 75% historical same-regime cohort median',LOW_USAGE_OR_SMALL_SAMPLE:'40% conformal baseline + 60% historical same-regime cohort median',OTHER:'65% weighted history + 35% conformal baseline'},overall:{baseline,regime_aware:regime,mean_year_absolute_q50_error:{baseline:yearBaselineMAE,regime_aware:yearRegimeMAE,improvement:yearBaselineMAE-yearRegimeMAE}},by_year,by_bucket,tails_held_fixed:{q10_coverage:q10cov,q90_coverage:q90cov,central80_coverage:central,q10_target:.1,q90_target:.9,central80_target:.8,note:'Q10 and Q90 are exactly the baseline conformal tails; candidate changes Q50 only and clips it inside the existing tail interval.'},quantile_order:{raw_q50_outside_tail_count:rec.filter(x=>x.clipped).length,post_clip_violations:rec.filter(x=>x.regime_q50<x.baseline_q10||x.regime_q50>x.baseline_q90).length},decision:yearRegimeMAE<yearBaselineMAE&&Math.abs(regime.coverage-.5)<Math.abs(baseline.coverage-.5)?'CANDIDATE_IMPROVES_Q50_REQUIRES_REVIEW':'CANDIDATE_NOT_BETTER_CONTINUE_TESTING',sportsbook_or_adp_used:false,live_weight:0,live_projection_movement:0,live_rank_movement:0,promotion_allowed:false,sources};
+fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/step3b-qb-regime-aware-median.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));
