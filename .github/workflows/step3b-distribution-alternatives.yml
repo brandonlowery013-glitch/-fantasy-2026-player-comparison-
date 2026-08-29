@@ -11,6 +11,7 @@ on:
       - 'scripts/validate-step3b-distribution-conformal-recalibration.mjs'
       - 'scripts/backtest-step3b-distribution-broad-reference.mjs'
       - 'scripts/validate-step3b-distribution-broad-reference.mjs'
+      - 'scripts/audit-step3b-q50-by-year-outliers.mjs'
       - '.github/workflows/step3b-distribution-alternatives.yml'
       - 'data/sources/step3b-final-decision-2026.json'
   workflow_dispatch:
@@ -48,6 +49,8 @@ jobs:
         run: node scripts/backtest-step3b-distribution-broad-reference.mjs
       - name: Validate broad-reference robustness
         run: node scripts/validate-step3b-distribution-broad-reference.mjs
+      - name: Audit Q50 by year and player outliers
+        run: node scripts/audit-step3b-q50-by-year-outliers.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
       - name: Upload distribution reports
@@ -60,4 +63,5 @@ jobs:
             guardrails/step3b-distribution-heavy-tail.json
             guardrails/step3b-distribution-conformal-recalibration.json
             guardrails/step3b-distribution-broad-reference.json
+            guardrails/step3b-q50-year-outlier-audit.json
           if-no-files-found: error
