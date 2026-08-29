@@ -14,6 +14,7 @@ on:
       - 'scripts/audit-step3b-q50-by-year-outliers.mjs'
       - 'scripts/audit-step3b-expanded-holdouts-regimes.mjs'
       - 'scripts/backtest-step3b-qb-regime-aware-median.mjs'
+      - 'scripts/backtest-step3b-qb-smoothed-median.mjs'
       - '.github/workflows/step3b-distribution-alternatives.yml'
       - 'data/sources/step3b-final-decision-2026.json'
   workflow_dispatch:
@@ -57,6 +58,8 @@ jobs:
         run: node scripts/audit-step3b-expanded-holdouts-regimes.mjs
       - name: Backtest regime-aware QB median
         run: node scripts/backtest-step3b-qb-regime-aware-median.mjs
+      - name: Backtest smoothed QB median
+        run: node scripts/backtest-step3b-qb-smoothed-median.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
       - name: Upload distribution reports
@@ -72,4 +75,5 @@ jobs:
             guardrails/step3b-q50-year-outlier-audit.json
             guardrails/step3b-expanded-holdout-regime-audit.json
             guardrails/step3b-qb-regime-aware-median.json
+            guardrails/step3b-qb-smoothed-median.json
           if-no-files-found: error
