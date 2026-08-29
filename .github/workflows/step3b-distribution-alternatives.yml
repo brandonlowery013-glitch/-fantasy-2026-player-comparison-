@@ -9,6 +9,8 @@ on:
       - 'scripts/validate-step3b-distribution-heavy-tail.mjs'
       - 'scripts/backtest-step3b-distribution-conformal-recalibration.mjs'
       - 'scripts/validate-step3b-distribution-conformal-recalibration.mjs'
+      - 'scripts/backtest-step3b-distribution-broad-reference.mjs'
+      - 'scripts/validate-step3b-distribution-broad-reference.mjs'
       - '.github/workflows/step3b-distribution-alternatives.yml'
       - 'data/sources/step3b-final-decision-2026.json'
   workflow_dispatch:
@@ -40,6 +42,12 @@ jobs:
         run: node scripts/backtest-step3b-distribution-conformal-recalibration.mjs
       - name: Validate conformal quantile recalibration
         run: node scripts/validate-step3b-distribution-conformal-recalibration.mjs
+      - name: Build broad historical reference population
+        run: node scripts/build-historical-reference-population.mjs
+      - name: Backtest conformal candidate on broad reference
+        run: node scripts/backtest-step3b-distribution-broad-reference.mjs
+      - name: Validate broad-reference robustness
+        run: node scripts/validate-step3b-distribution-broad-reference.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
       - name: Upload distribution reports
@@ -51,4 +59,5 @@ jobs:
             guardrails/step3b-distribution-alternatives.json
             guardrails/step3b-distribution-heavy-tail.json
             guardrails/step3b-distribution-conformal-recalibration.json
+            guardrails/step3b-distribution-broad-reference.json
           if-no-files-found: error
