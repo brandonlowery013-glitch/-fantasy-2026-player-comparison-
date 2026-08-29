@@ -1,0 +1,37 @@
+name: Step 3B Bayesian Walk-Forward Backtest
+
+on:
+  pull_request:
+    paths:
+      - 'historicalStats2026.json'
+      - 'history-alias-reconciliation-audit.json'
+      - 'players*.json'
+      - 'scripts/backtest-step3b-bayesian-shrinkage.mjs'
+      - 'scripts/validate-step3b-bayesian-walkforward-backtest.mjs'
+      - '.github/workflows/step3b-bayesian-walkforward-backtest.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bayesian-walkforward:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run Bayesian walk-forward Phase 1 backtest
+        run: node scripts/backtest-step3b-bayesian-shrinkage.mjs
+      - name: Validate Bayesian walk-forward report
+        run: node scripts/validate-step3b-bayesian-walkforward-backtest.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload Bayesian walk-forward report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3b-bayesian-walkforward-backtest
+          path: guardrails/step3b-bayesian-walkforward-backtest.json
+          if-no-files-found: error
