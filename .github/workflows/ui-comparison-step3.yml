@@ -1,0 +1,25 @@
+name: UI Comparison Step 3
+
+on:
+  pull_request:
+    paths:
+      - 'compare.html'
+      - 'runtime-comparison-ui-step3.js'
+      - 'runtime-comparison-decision-2026.js'
+      - 'scripts/validate-ui-comparison-step3.mjs'
+      - '.github/workflows/ui-comparison-step3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-comparison-step3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Step 3 comparison results UI
+        run: node scripts/validate-ui-comparison-step3.mjs
