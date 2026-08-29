@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 
 const seasons=[2017,2018,2019,2020,2021,2022,2023,2024,2025];
-const targets=[2021,2022,2023,2024,2025];
+const targets=[2019,2020,2021,2022,2023,2024,2025];
 const n=v=>Number.isFinite(Number(v))?Number(v):0;
 const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
 const norm=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/\b(jr|sr|ii|iii|iv)\b/g,'').replace(/[^a-z0-9]/g,'');
@@ -25,7 +25,7 @@ function histCenter(id,target){const a=[1,2,3].map(d=>map.get(`${id}|${target-d}
 function priorSeasons(id,target){return ss.filter(x=>x.id===id&&x.season<target).length}
 
 const injuryOut=new Map();
-for(const season of [2020,2021,2022,2023,2024,2025]){
+for(const season of [2018,2019,2020,2021,2022,2023,2024,2025]){
   try{
     const u=`https://github.com/nflverse/nflverse-data/releases/download/injuries/injuries_${season}.csv`;
     for(const r of await csv(u)){
@@ -72,22 +72,14 @@ for(const target of targets){
   for(const g of ['HEALTHY_ESTABLISHED','INJURY_OR_RECOVERY_AFFECTED','FRINGE_PRIOR_ROLE','VETERAN_ROLE_DECLINE_PROXY','ROLE_OR_TEAM_CHANGE','OTHER']) groups[g]=summarize(relevant.filter(x=>x.diagnosticGroup===g));
   const injuryN=relevant.filter(x=>x.injuryAffected).length;
   const healthyN=relevant.filter(x=>x.diagnosticGroup==='HEALTHY_ESTABLISHED').length;
-  yearly[target]={
-    full_pool:summarize(pool),
-    fantasy_relevant_top56:summarize(relevant),
-    fantasy_relevant_health_environment:{n:relevant.length,injury_or_recovery_share:relevant.length?injuryN/relevant.length:null,healthy_established_share:relevant.length?healthyN/relevant.length:null,mean_target_games:avg(relevant.map(x=>x.games)),mean_target_opportunities_pg:avg(relevant.map(x=>x.opp_pg))},
-    fantasy_relevant_by_group:groups
-  };
+  yearly[target]={full_pool:summarize(pool),fantasy_relevant_top56:summarize(relevant),fantasy_relevant_health_environment:{n:relevant.length,injury_or_recovery_share:relevant.length?injuryN/relevant.length:null,healthy_established_share:relevant.length?healthyN/relevant.length:null,mean_target_games:avg(relevant.map(x=>x.games)),mean_target_opportunities_pg:avg(relevant.map(x=>x.opp_pg))},fantasy_relevant_by_group:groups};
   for(const x of relevant) allPlayers.push({season:target,player:x.player,group:x.diagnosticGroup,prior_games:x.prior.games,prior_opp_pg:x.prior.opp_pg,target_games:x.games,target_opp_pg:x.opp_pg,team_change:x.teamChange,injury_prior_out_weeks:x.injuryPriorOutWeeks,injury_target_out_weeks:x.injuryTargetOutWeeks,usage_ratio:x.usageRatio,projected_q50:x.projectedQ50,actual_ppg:x.ppg,gap:x.gap});
 }
 
-const early=[2021,2022,2023],late=[2024,2025];
+const early=[2019,2020,2021,2022,2023],late=[2024,2025];
 const meanMetric=(years,key)=>avg(years.map(y=>yearly[y].fantasy_relevant_health_environment[key]).filter(v=>v!=null));
-const comparison={
-  early_2021_2023:{injury_or_recovery_share:meanMetric(early,'injury_or_recovery_share'),healthy_established_share:meanMetric(early,'healthy_established_share'),mean_target_games:meanMetric(early,'mean_target_games')},
-  late_2024_2025:{injury_or_recovery_share:meanMetric(late,'injury_or_recovery_share'),healthy_established_share:meanMetric(late,'healthy_established_share'),mean_target_games:meanMetric(late,'mean_target_games')}
-};
-comparison.late_minus_early={injury_or_recovery_share:comparison.late_2024_2025.injury_or_recovery_share-comparison.early_2021_2023.injury_or_recovery_share,healthy_established_share:comparison.late_2024_2025.healthy_established_share-comparison.early_2021_2023.healthy_established_share,mean_target_games:comparison.late_2024_2025.mean_target_games-comparison.early_2021_2023.mean_target_games};
+const comparison={early_2019_2023:{injury_or_recovery_share:meanMetric(early,'injury_or_recovery_share'),healthy_established_share:meanMetric(early,'healthy_established_share'),mean_target_games:meanMetric(early,'mean_target_games')},late_2024_2025:{injury_or_recovery_share:meanMetric(late,'injury_or_recovery_share'),healthy_established_share:meanMetric(late,'healthy_established_share'),mean_target_games:meanMetric(late,'mean_target_games')}};
+comparison.late_minus_early={injury_or_recovery_share:comparison.late_2024_2025.injury_or_recovery_share-comparison.early_2019_2023.injury_or_recovery_share,healthy_established_share:comparison.late_2024_2025.healthy_established_share-comparison.early_2019_2023.healthy_established_share,mean_target_games:comparison.late_2024_2025.mean_target_games-comparison.early_2019_2023.mean_target_games};
 
-const report={generated_at:new Date().toISOString(),step:'STEP3B_RB_HEALTH_COMPOSITION_2021_2025',purpose:'Test whether aggregate RB median calibration swings are driven by health/role composition and whether 2024-2025 were unusually healthy relative to 2021-2023.',diagnostic_only:true,leakage_note:'Fantasy relevance is selected only from pre-target historical Q50. Health/role group tags use realized target-season outcomes for diagnosis only and are not authorized preseason predictors.',group_definitions:{HEALTHY_ESTABLISHED:'Prior season >=10 games and >=12 opportunities/game; fewer than 2 official OUT weeks in both prior and target seasons; target >11 games; no team change; no >30% opportunity drop.',INJURY_OR_RECOVERY_AFFECTED:'At least 2 official OUT weeks in prior or target season, or <=11 target games. Diagnostic only.',FRINGE_PRIOR_ROLE:'Prior season <10 games or <10 carries+targets per game.',VETERAN_ROLE_DECLINE_PROXY:'At least 5 prior qualifying NFL seasons and >30% opportunity decline in target season, excluding injury-affected cases. Workload/experience proxy, not literal age.',ROLE_OR_TEAM_CHANGE:'Team changed or target opportunity fell >30%, after excluding injury/fringe/veteran-decline groups.'},yearly,comparison_2024_2025_vs_2021_2023:comparison,players:allPlayers.sort((a,b)=>a.season-b.season||Math.abs(b.gap)-Math.abs(a.gap)),sportsbook_or_adp_used:false,live_weight:0,live_projection_movement:0,live_rank_movement:0,promotion_allowed:false};
+const report={generated_at:new Date().toISOString(),step:'STEP3B_RB_HEALTH_COMPOSITION_2019_2025',purpose:'Extend the same health/role composition diagnostic to 2019-2025 for apples-to-apples context.',diagnostic_only:true,leakage_note:'Fantasy relevance is selected only from pre-target historical Q50. Health/role group tags use realized target-season outcomes for diagnosis only and are not authorized preseason predictors.',group_definitions:{HEALTHY_ESTABLISHED:'Prior season >=10 games and >=12 opportunities/game; fewer than 2 official OUT weeks in both prior and target seasons; target >11 games; no team change; no >30% opportunity drop.',INJURY_OR_RECOVERY_AFFECTED:'At least 2 official OUT weeks in prior or target season, or <=11 target games. Diagnostic only.',FRINGE_PRIOR_ROLE:'Prior season <10 games or <10 carries+targets per game.',VETERAN_ROLE_DECLINE_PROXY:'At least 5 prior qualifying NFL seasons and >30% opportunity decline in target season, excluding injury-affected cases. Workload/experience proxy, not literal age.',ROLE_OR_TEAM_CHANGE:'Team changed or target opportunity fell >30%, after excluding injury/fringe/veteran-decline groups.'},yearly,comparison_2024_2025_vs_2019_2023:comparison,players:allPlayers.sort((a,b)=>a.season-b.season||Math.abs(b.gap)-Math.abs(a.gap)),sportsbook_or_adp_used:false,live_weight:0,live_projection_movement:0,live_rank_movement:0,promotion_allowed:false};
 fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/step3b-rb-health-composition-2021-2025.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));
