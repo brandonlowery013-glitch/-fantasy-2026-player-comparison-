@@ -1,0 +1,35 @@
+name: Step 3B Regime Change Subgroup Audit
+
+on:
+  pull_request:
+    paths:
+      - 'players*.json'
+      - 'scripts/backtest-step3b-regime-change-subgroups.mjs'
+      - 'scripts/validate-step3b-regime-change-subgroups.mjs'
+      - '.github/workflows/step3b-regime-change-subgroup-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regime-change-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run regime-change subgroup backtest
+        run: node scripts/backtest-step3b-regime-change-subgroups.mjs
+      - name: Validate regime-change subgroup report
+        run: node scripts/validate-step3b-regime-change-subgroups.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3b-regime-change-subgroup-audit
+          path: guardrails/step3b-regime-change-subgroup-audit.json
+          if-no-files-found: error
