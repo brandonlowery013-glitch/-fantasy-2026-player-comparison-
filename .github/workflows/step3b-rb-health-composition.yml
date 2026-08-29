@@ -5,6 +5,7 @@ on:
     paths:
       - 'scripts/audit-step3b-rb-health-composition-2021-2025.mjs'
       - 'scripts/audit-step3b-rb-top30-2019-2025.mjs'
+      - 'scripts/decide-step3b-rb-q50-2019-2025.mjs'
       - '.github/workflows/step3b-rb-health-composition.yml'
   workflow_dispatch:
 
@@ -23,6 +24,8 @@ jobs:
         run: node scripts/audit-step3b-rb-health-composition-2021-2025.mjs
       - name: Audit 2019-2025 preseason top-30 RB cohort
         run: node scripts/audit-step3b-rb-top30-2019-2025.mjs
+      - name: Decide 2019-2025 RB Q50 treatment
+        run: node scripts/decide-step3b-rb-q50-2019-2025.mjs
       - name: Upload RB health composition reports
         uses: actions/upload-artifact@v4
         with:
@@ -30,4 +33,5 @@ jobs:
           path: |
             guardrails/step3b-rb-health-composition-2021-2025.json
             guardrails/step3b-rb-top30-2019-2025.json
+            guardrails/step3b-rb-q50-2019-2025-decision.json
           if-no-files-found: error
