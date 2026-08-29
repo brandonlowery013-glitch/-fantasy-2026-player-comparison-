@@ -1,5 +1,5 @@
 {
-  "version": "STEP3B_FINAL_DECISION_2.0.0",
+  "version": "STEP3B_FINAL_DECISION_2.1.0",
   "season": 2026,
   "status": "STEP3B_FOUNDATION_LOCKED_AWAITING_USER_APPROVAL_FOR_3C",
   "live_weight": 0,
@@ -36,30 +36,33 @@
       "heldout_n": 173,
       "overall_q50_coverage": 0.5202312138728323,
       "all_years_compatible_95pct": true,
-      "year_q50_coverage": {
-        "2021": 0.65625,
-        "2022": 0.4444444444444444,
-        "2023": 0.5,
-        "2024": 0.5675675675675675,
-        "2025": 0.4411764705882353
-      },
+      "year_q50_coverage": {"2021":0.65625,"2022":0.4444444444444444,"2023":0.5,"2024":0.5675675675675675,"2025":0.4411764705882353},
       "q10_coverage": 0.12716763005780346,
       "q90_coverage": 0.9132947976878613,
       "quantile_clip_count": 0
     },
     "rb": {
-      "q50_status": "NO_NEW_Q50_PROMOTION_RETAIN_EXISTING_RB_DISTRIBUTION",
-      "decision": "REJECT_NEW_REPLACEMENT",
-      "reason": "Multiple leakage-safe candidate families calibrated well overall but failed the predeclared every-year robustness requirement because the 2022 RB season remained outside 95% Q50 compatibility. No 2022-only correction is authorized because that would be target-year hindsight tuning.",
-      "tested_heldout_seasons": [2021, 2022, 2023, 2024, 2025],
-      "tested_n": 404,
-      "robust_history_best_method": "HISTORY_DECAYED_3",
-      "robust_history_overall_q50_coverage": 0.5099009900990099,
-      "robust_history_2022_q50_coverage": 0.6463414634146342,
-      "robust_history_2022_compatible_95pct": false,
-      "diagnostic_2022_team_change_q50_coverage": 0.8095238095238095,
-      "diagnostic_2022_team_change_n": 21,
-      "existing_distribution_change_authorized": false
+      "q50_status": "VALIDATED_RETAIN_CORE_RB_Q50_FOR_3C_SHADOW",
+      "decision": "RETAIN_CORE_Q50_MODEL_AVAILABILITY_ROLE_DOWNSIDE_SEPARATELY",
+      "decision_population_seasons": [2019, 2020, 2021, 2022, 2023, 2024, 2025],
+      "preseason_top30_n": 210,
+      "preseason_top30_overall_q50_coverage": 0.6666666666666666,
+      "preseason_top30_mean_gap_ppg": -2.2435563716006994,
+      "healthy_established_n": 91,
+      "healthy_established_q50_coverage": 0.5274725274725275,
+      "healthy_established_compatible_95pct": true,
+      "healthy_established_mean_gap_ppg": 0.3172367532901629,
+      "healthy_established_median_gap_ppg": -0.10549019607843313,
+      "injury_or_recovery_affected_n": 157,
+      "injury_or_recovery_affected_q50_coverage": 0.7070063694267515,
+      "role_or_team_change_n": 50,
+      "role_or_team_change_q50_coverage": 0.64,
+      "veteran_role_decline_proxy_n": 9,
+      "veteran_role_decline_proxy_q50_coverage": 1.0,
+      "reason": "The mixed 2019-2025 fantasy-relevant RB population finishes below the core Q50 too often because injury/recovery, role loss, and decline outcomes are part of the realized sample. Normal healthy established RB seasons are calibrated near 50% (52.75%, n=91; median residual -0.105 PPR/G). A blanket downward Q50 correction would therefore miscalibrate healthy RBs. Keep the core RB median for 3C shadow and represent availability/role-collapse as downside risk rather than shifting every RB median.",
+      "blanket_q50_offset_authorized": false,
+      "existing_distribution_change_authorized": false,
+      "availability_role_downside_numeric_change_authorized_in_3b": false
     },
     "wr_te": {
       "status": "RETAIN_EXISTING_CALIBRATED_DISTRIBUTION",
@@ -75,11 +78,11 @@
   "team_qb_environment": {
     "environment_shift_cutoff_absolute_neutral_pass_rate_delta": 0.08122002564534368,
     "groups": {
-      "TEAM_CHANGE": {"n": 32, "history_mae": 4.169011275642249, "early_evidence_mae": 3.3059130713036966, "early_evidence_improvement_pct": 20.702707363284578},
-      "QB_CHANGE": {"n": 127, "history_mae": 3.657455498466847, "early_evidence_mae": 3.2701884314285876, "early_evidence_improvement_pct": 10.588428682197124},
-      "TEAM_OR_QB_CHANGE": {"n": 131, "history_mae": 3.6711223816347305, "early_evidence_mae": 3.22414578212288, "early_evidence_improvement_pct": 12.175475319153334},
-      "ENVIRONMENT_SHIFT_TOP_QUARTILE": {"n": 87, "history_mae": 3.8207184344466283, "early_evidence_mae": 3.6736485762003004, "early_evidence_improvement_pct": 3.8492723494195062},
-      "STABLE_TEAM_AND_QB": {"n": 217, "history_mae": 3.431140302869021, "early_evidence_mae": 3.9921420499623257, "early_evidence_improvement_pct": -16.35030041249584}
+      "TEAM_CHANGE": {"n":32,"history_mae":4.169011275642249,"early_evidence_mae":3.3059130713036966,"early_evidence_improvement_pct":20.702707363284578},
+      "QB_CHANGE": {"n":127,"history_mae":3.657455498466847,"early_evidence_mae":3.2701884314285876,"early_evidence_improvement_pct":10.588428682197124},
+      "TEAM_OR_QB_CHANGE": {"n":131,"history_mae":3.6711223816347305,"early_evidence_mae":3.22414578212288,"early_evidence_improvement_pct":12.175475319153334},
+      "ENVIRONMENT_SHIFT_TOP_QUARTILE": {"n":87,"history_mae":3.8207184344466283,"early_evidence_mae":3.6736485762003004,"early_evidence_improvement_pct":3.8492723494195062},
+      "STABLE_TEAM_AND_QB": {"n":217,"history_mae":3.431140302869021,"early_evidence_mae":3.9921420499623257,"early_evidence_improvement_pct":-16.35030041249584}
     },
     "stable_team_and_qb_policy": "RETAIN_ESTABLISHED_HISTORY_PRIMARY_NO_AUTOMATIC_EARLY_EVIDENCE_OVERRIDE",
     "coach_identity_status": "NOT_DIRECTLY_SOURCED",
@@ -108,27 +111,8 @@
   },
   "rookie_history_integrity": {
     "shadow_no_history_required": true,
-    "shadow_no_history_players": [
-      "Jeremiyah Love",
-      "Carnell Tate",
-      "Jordyn Tyson",
-      "Makai Lemon",
-      "KC Concepcion",
-      "Jadarian Price",
-      "Chris Bell",
-      "Jonah Coleman",
-      "Mike Washington Jr.",
-      "Kaytron Allen"
-    ],
-    "known_persistent_source_contamination_players": [
-      "Jordyn Tyson",
-      "Makai Lemon",
-      "KC Concepcion",
-      "Jadarian Price",
-      "Chris Bell",
-      "Jonah Coleman",
-      "Kaytron Allen"
-    ],
+    "shadow_no_history_players": ["Jeremiyah Love","Carnell Tate","Jordyn Tyson","Makai Lemon","KC Concepcion","Jadarian Price","Chris Bell","Jonah Coleman","Mike Washington Jr.","Kaytron Allen"],
+    "known_persistent_source_contamination_players": ["Jordyn Tyson","Makai Lemon","KC Concepcion","Jadarian Price","Chris Bell","Jonah Coleman","Kaytron Allen"],
     "persistent_source_repair_status": "NOT_YET_REPAIRED",
     "policy_for_3c": "Use the sanitized shadow historical input; contaminated 2025 rows have zero authority.",
     "hard_gate_before_3e": "Repair persistent historicalStats2026.json contamination and rerun integrity QA before any approved shadow changes are applied live."
@@ -142,10 +126,7 @@
     "status": "DEFERRED",
     "next_step": "STEP_3G_CORE_FEATURE_VALUE_LAYER_VALIDATION"
   },
-  "breakout_bust": {
-    "status": "DEFERRED_ZERO_AUTHORITY",
-    "next_step": "STEP_3G_CORE_FEATURES"
-  },
+  "breakout_bust": {"status":"DEFERRED_ZERO_AUTHORITY","next_step":"STEP_3G_CORE_FEATURES"},
   "rank_projection_impact": {
     "step3b_live_movement": 0,
     "first_full_player_level_assessment": "STEP_3C_FULL_162_SHADOW_RECALCULATION",
@@ -156,5 +137,5 @@
     "market_probability_calibration": "DOWNSTREAM_BETTING_LAYER",
     "ui_pr_74": "HOLD_DO_NOT_MERGE"
   },
-  "closure_statement": "Step 3B closes the historical/model foundation by locking only empirically supported football authority, explicitly rejecting failed replacement formulas, assigning zero weight to unsupported signals, and naming later validation gates. It does not apply any live player projection or rank changes."
+  "closure_statement": "Step 3B closes the historical/model foundation by locking empirically supported football authority. The 2019-2025 RB audit specifically rejects a blanket healthy-RB Q50 cut: healthy established seasons calibrate near 50%, while disrupted seasons create the downside bias. No live player projection or rank changes are applied in Step 3B."
 }
