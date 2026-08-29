@@ -8,6 +8,8 @@ on:
       - 'scripts/audit-step3b-rookie-history-contamination.mjs'
       - 'scripts/validate-step3b-rookie-history-quarantine.mjs'
       - 'scripts/build-step3b-162-shadow-recalculation.mjs'
+      - 'scripts/build-rookie-no-history-priors.mjs'
+      - 'scripts/validate-rookie-no-history-priors.mjs'
       - '.github/workflows/step3b-rookie-history-quarantine.yml'
   workflow_dispatch:
 
@@ -34,9 +36,13 @@ jobs:
         run: node scripts/validate-step3b-rookie-history-quarantine.mjs
       - name: Verify tracked history file was restored exactly
         run: git diff --exit-code -- historicalStats2026.json
+      - name: Build historical rookie/no-history priors for the locked 10-player set
+        run: node scripts/build-rookie-no-history-priors.mjs
+      - name: Validate rookie/no-history priors and sample floors
+        run: node scripts/validate-rookie-no-history-priors.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
-      - name: Upload rookie contamination and sanitized 162 shadow reports
+      - name: Upload rookie quarantine and prior-validation reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -47,4 +53,7 @@ jobs:
             guardrails/step3b-shadow-projection-context-162.json
             guardrails/step3b-shadow-projection-downstream-162.json
             guardrails/step3b-shadow-overall-review-queue-162.json
+            guardrails/rookie-no-history-priors-report.json
+            guardrails/rookie-no-history-priors-validation-report.json
+            data/probability/generated/rookie-no-history-priors-2016-2025.json
           if-no-files-found: error
