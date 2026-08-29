@@ -16,6 +16,8 @@ on:
       - 'scripts/validate-step3b-bayesian-subgroup-backtest.mjs'
       - 'scripts/backtest-step3b-bayesian-asymmetric-guardrail.mjs'
       - 'scripts/validate-step3b-bayesian-asymmetric-guardrail-backtest.mjs'
+      - 'scripts/backtest-step3b-bayesian-constrained-guardrail.mjs'
+      - 'scripts/validate-step3b-bayesian-constrained-guardrail-backtest.mjs'
       - '.github/workflows/step3b-bayesian-walkforward-backtest.yml'
   workflow_dispatch:
 
@@ -50,6 +52,10 @@ jobs:
         run: node scripts/backtest-step3b-bayesian-asymmetric-guardrail.mjs
       - name: Validate Bayesian asymmetric guardrail report
         run: node scripts/validate-step3b-bayesian-asymmetric-guardrail-backtest.mjs
+      - name: Run Bayesian constrained elite-tail Phase 3C backtest
+        run: node scripts/backtest-step3b-bayesian-constrained-guardrail.mjs
+      - name: Validate Bayesian constrained elite-tail report
+        run: node scripts/validate-step3b-bayesian-constrained-guardrail-backtest.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
       - name: Upload Bayesian validation reports
@@ -63,4 +69,5 @@ jobs:
             guardrails/step3b-bayesian-conformal-backtest.json
             guardrails/step3b-bayesian-subgroup-backtest.json
             guardrails/step3b-bayesian-asymmetric-guardrail-backtest.json
+            guardrails/step3b-bayesian-constrained-guardrail-backtest.json
           if-no-files-found: error
