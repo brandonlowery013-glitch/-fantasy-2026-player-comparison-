@@ -10,6 +10,8 @@ on:
       - 'scripts/validate-step3b-bayesian-walkforward-backtest.mjs'
       - 'scripts/backtest-step3b-bayesian-distribution.mjs'
       - 'scripts/validate-step3b-bayesian-distribution-backtest.mjs'
+      - 'scripts/backtest-step3b-bayesian-conformal.mjs'
+      - 'scripts/validate-step3b-bayesian-conformal-backtest.mjs'
       - '.github/workflows/step3b-bayesian-walkforward-backtest.yml'
   workflow_dispatch:
 
@@ -28,10 +30,14 @@ jobs:
         run: node scripts/backtest-step3b-bayesian-shrinkage.mjs
       - name: Validate Bayesian walk-forward report
         run: node scripts/validate-step3b-bayesian-walkforward-backtest.mjs
-      - name: Run Bayesian predictive-distribution Phase 2 backtest
+      - name: Run Bayesian Gaussian distribution Phase 2 backtest
         run: node scripts/backtest-step3b-bayesian-distribution.mjs
-      - name: Validate Bayesian predictive-distribution report
+      - name: Validate Bayesian Gaussian distribution report
         run: node scripts/validate-step3b-bayesian-distribution-backtest.mjs
+      - name: Run Bayesian empirical/conformal distribution Phase 2B backtest
+        run: node scripts/backtest-step3b-bayesian-conformal.mjs
+      - name: Validate Bayesian empirical/conformal distribution report
+        run: node scripts/validate-step3b-bayesian-conformal-backtest.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
       - name: Upload Bayesian validation reports
@@ -42,4 +48,5 @@ jobs:
           path: |
             guardrails/step3b-bayesian-walkforward-backtest.json
             guardrails/step3b-bayesian-distribution-backtest.json
+            guardrails/step3b-bayesian-conformal-backtest.json
           if-no-files-found: error
