@@ -1,0 +1,35 @@
+name: Step 4 Data Integrity
+
+on:
+  push:
+    branches: [model/step4-data-integrity]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  data-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: model/step4-data-integrity
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Repair persistent rookie history source
+        run: node scripts/step4-repair-data-integrity.mjs
+      - name: Verify rookie contamination is gone
+        run: node scripts/audit-step3b-rookie-history-contamination.mjs
+      - name: Persist source repair
+        shell: bash
+        run: |
+          if ! git diff --quiet -- historicalStats2026.json data/sources/step3b-history-integrity-status-2026.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add historicalStats2026.json data/sources/step3b-history-integrity-status-2026.json
+            git commit -m "Step 4: remove impossible rookie NFL history rows"
+            git push origin HEAD:model/step4-data-integrity
+          fi
