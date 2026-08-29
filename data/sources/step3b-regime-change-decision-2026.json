@@ -1,0 +1,52 @@
+{
+  "version": "STEP3B_REGIME_CHANGE_DECISION_1.0.0",
+  "season": 2026,
+  "status": "REGIME_CHANGE_SIGNAL_VALIDATED_FOR_FURTHER_SHADOW_TESTING_NOT_PROMOTED",
+  "live_weight": 0,
+  "live_projection_movement": 0,
+  "live_rank_movement": 0,
+  "sportsbook_or_adp_used": false,
+  "evidence": {
+    "target_seasons": [2021, 2022, 2023, 2024, 2025],
+    "role_upshift_n": 99,
+    "role_upshift_mae_improvement_pct": 21.9608832612288,
+    "role_upshift_rmse_improvement_pct": 26.84731483278208,
+    "role_downshift_n": 160,
+    "role_downshift_mae_improvement_pct": 24.355188844696233,
+    "role_downshift_rmse_improvement_pct": 21.080655506515185,
+    "role_stable_n": 542,
+    "role_stable_mae_improvement_pct": 9.021430318903674,
+    "role_stable_rmse_improvement_pct": 8.373562628685985,
+    "availability_disruption_proxy_n": 501,
+    "availability_disruption_proxy_mean_prior_error_ppg": 2.9315343666196427,
+    "role_upshift_fold_exception": {
+      "season": 2022,
+      "mae_improvement_pct": -11.73878018149138,
+      "rmse_improvement_pct": -5.366664230029444
+    }
+  },
+  "interpretation": {
+    "player_history_during_material_role_change": "SHOULD_NOT_REMAIN_UNADJUSTED",
+    "current_role_and_usage_evidence": "STRONGER_INCREMENTAL_VALUE_WHEN_ROLE_CHANGES_THAN_WHEN_ROLE_IS_STABLE",
+    "role_downshift_detection": "SUPPORTED_IN_AGGREGATE",
+    "role_upshift_detection": "SUPPORTED_IN_AGGREGATE_WITH_ONE_HISTORICAL_FOLD_FAILURE",
+    "confirmed_injury_specific_weighting": "NOT_YET_VALIDATED",
+    "availability_proxy": "INFORMATIONAL_ONLY_NOT_CONFIRMED_INJURY",
+    "generic_position_average_shrinkage": "REJECTED",
+    "promotion_allowed": false
+  },
+  "policy": {
+    "do_not_label_missing_game_as_injury_without_injury_evidence": true,
+    "do_not_hardcode_regime_thresholds_or_pseudogame_weights_live_from_this_test": true,
+    "material_role_change_should_reduce_reliance_on_stale_player_history": true,
+    "single_fold_failures_must_remain_visible": true
+  },
+  "next_required_tests": [
+    "team QB and coaching change subgroup audit",
+    "confirmed injury status and return-from-injury audit if historical status data is available",
+    "predictive distribution calibration",
+    "extreme disagreement audit",
+    "full exact-head Guardrail QA",
+    "user review and explicit approval"
+  ]
+}
