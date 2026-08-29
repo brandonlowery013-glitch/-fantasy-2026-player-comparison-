@@ -1,0 +1,28 @@
+name: Step 3B RB Health Composition
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/audit-step3b-rb-health-composition-2021-2025.mjs'
+      - '.github/workflows/step3b-rb-health-composition.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rb-health-composition:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit 2021-2025 RB health composition
+        run: node scripts/audit-step3b-rb-health-composition-2021-2025.mjs
+      - name: Upload RB health composition report
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3b-rb-health-composition
+          path: guardrails/step3b-rb-health-composition-2021-2025.json
+          if-no-files-found: error
