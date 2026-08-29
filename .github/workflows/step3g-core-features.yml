@@ -12,6 +12,8 @@ on:
       - 'players*.json'
       - 'scripts/build-step3g-core-features.mjs'
       - 'scripts/validate-step3g-core-features.mjs'
+      - 'scripts/validate-step3g-breakout-bust-cohorts.mjs'
+      - 'scripts/validate-step3g-historical-situations.mjs'
       - '.github/workflows/step3g-core-features.yml'
   workflow_dispatch:
 
@@ -42,6 +44,12 @@ jobs:
         run: node scripts/build-step3f-daily-evidence-queue.mjs
       - name: Validate Step 3F prerequisite
         run: node scripts/validate-step3f-daily-evidence.mjs
+      - name: Build broad historical player reference
+        run: node scripts/build-historical-reference-population.mjs
+      - name: Validate Breakout and Bust cohorts out of sample
+        run: node scripts/validate-step3g-breakout-bust-cohorts.mjs
+      - name: Validate historical situational indicators
+        run: node scripts/validate-step3g-historical-situations.mjs
       - name: Build Step 3G actual core feature outputs
         run: node scripts/build-step3g-core-features.mjs
       - name: Validate Step 3G substantive feature contract
@@ -54,6 +62,8 @@ jobs:
         with:
           name: step3g-core-features
           path: |
+            data/sources/step3g-breakout-bust-validation-2026.json
+            data/sources/step3g-historical-situational-validation-2026.json
             data/features/season-long-player-features-2026.json
             data/features/weekly-sit-start-2026.json
             data/features/weekly-game-features-2026.json
