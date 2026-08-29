@@ -12,7 +12,7 @@ on:
       - 'players*.json'
       - 'scripts/build-step3g-core-features-v2.mjs'
       - 'scripts/validate-step3g-core-features-v2.mjs'
-      - 'scripts/validate-step3g-breakout-bust-cohorts-v2.mjs'
+      - 'scripts/validate-step3g-breakout-bust-cohorts-v3.mjs'
       - 'scripts/validate-step3g-historical-situations-v2.mjs'
       - '.github/workflows/step3g-core-features.yml'
   workflow_dispatch:
@@ -47,7 +47,7 @@ jobs:
       - name: Build broad historical player reference
         run: node scripts/build-historical-reference-population.mjs
       - name: Empirically resolve Breakout and Bust cohorts
-        run: node scripts/validate-step3g-breakout-bust-cohorts-v2.mjs
+        run: node scripts/validate-step3g-breakout-bust-cohorts-v3.mjs
       - name: Empirically resolve historical situational indicators
         run: node scripts/validate-step3g-historical-situations-v2.mjs
       - name: Build Step 3G empirically gated feature outputs
