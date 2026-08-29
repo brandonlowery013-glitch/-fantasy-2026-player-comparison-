@@ -23,13 +23,19 @@ jobs:
         run: node scripts/step4-repair-data-integrity.mjs
       - name: Verify rookie contamination is gone
         run: node scripts/audit-step3b-rookie-history-contamination.mjs
-      - name: Persist source repair
+      - name: Resolve four blocked situational source contracts
+        run: node scripts/step4-resolve-situational-sources.mjs
+      - name: Audit Jayden Higgins held integrity anomaly
+        run: node scripts/step4-audit-held-integrity.mjs
+      - name: Persist Step 4 source decisions
         shell: bash
         run: |
-          if ! git diff --quiet -- historicalStats2026.json data/sources/step3b-history-integrity-status-2026.json; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add historicalStats2026.json data/sources/step3b-history-integrity-status-2026.json
-            git commit -m "Step 4: remove impossible rookie NFL history rows"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add historicalStats2026.json data/sources/step3b-history-integrity-status-2026.json data/sources/step4-situational-source-resolution-2026.json data/sources/step4-held-integrity-audit-2026.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Step 4: persist data integrity source resolutions"
             git push origin HEAD:model/step4-data-integrity
           fi
+      - name: Run repository hard Guardrail QA
+        run: node scripts/guardrail-qa.mjs
