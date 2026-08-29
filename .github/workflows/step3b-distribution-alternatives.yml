@@ -1,0 +1,39 @@
+name: Step 3B Distribution Alternatives
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/backtest-step3b-distribution-alternatives.mjs'
+      - 'scripts/validate-step3b-distribution-alternatives.mjs'
+      - '.github/workflows/step3b-distribution-alternatives.yml'
+      - 'data/sources/step3b-final-decision-2026.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  distribution-alternatives:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Rebuild historical core
+        run: node scripts/ingest-historical-core.mjs
+      - name: Rebuild injury and role context
+        run: node scripts/enrich-historical-context.mjs
+      - name: Backtest alternative predictive distributions
+        run: node scripts/backtest-step3b-distribution-alternatives.mjs
+      - name: Validate distribution alternatives
+        run: node scripts/validate-step3b-distribution-alternatives.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload distribution report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3b-distribution-alternatives
+          path: guardrails/step3b-distribution-alternatives.json
+          if-no-files-found: error
