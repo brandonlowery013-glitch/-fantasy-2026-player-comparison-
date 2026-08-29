@@ -27,15 +27,19 @@ jobs:
         run: node scripts/step4-resolve-situational-sources.mjs
       - name: Audit Jayden Higgins held integrity anomaly
         run: node scripts/step4-audit-held-integrity.mjs
+      - name: Validate Step 4 substantive closure
+        run: node scripts/validate-step4-data-integrity.mjs
+      - name: Verify Step 4 made no player-model edits
+        shell: bash
+        run: |
+          git diff --exit-code origin/model/step3h-full-step3-qa -- 'players*.json'
       - name: Persist Step 4 source decisions
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add historicalStats2026.json data/sources/step3b-history-integrity-status-2026.json data/sources/step4-situational-source-resolution-2026.json data/sources/step4-held-integrity-audit-2026.json
+          git add historicalStats2026.json data/sources/step3b-history-integrity-status-2026.json data/sources/step4-situational-source-resolution-2026.json data/sources/step4-held-integrity-audit-2026.json guardrails/step4-data-integrity-closure.json
           if ! git diff --cached --quiet; then
-            git commit -m "Step 4: persist data integrity source resolutions"
+            git commit -m "Step 4: persist data integrity closure"
             git push origin HEAD:model/step4-data-integrity
           fi
-      - name: Run repository hard Guardrail QA
-        run: node scripts/guardrail-qa.mjs
