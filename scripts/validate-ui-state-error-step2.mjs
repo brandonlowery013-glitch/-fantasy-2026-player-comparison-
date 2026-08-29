@@ -5,7 +5,8 @@ const blocked=[];
 const pass=msg=>console.log(`PASS: ${msg}`);
 const requireText=(needle,msg)=>index.includes(needle)?pass(msg):blocked.push(msg);
 
-for(const state of ['LOADING','FAILED','WAITING','STALE','EMPTY']) requireText(`data-state=\"${state}\"`,`UI has explicit ${state} presentation`);
+for(const state of ['LOADING','FAILED','WAITING','STALE']) requireText(`data-state=\"${state}\"`,`UI has explicit ${state} presentation`);
+requireText("stateBox('EMPTY'",'UI has explicit EMPTY presentation');
 for(const key of ['players','current','odds','forecast','schedule','readiness']) requireText(`${key}:'LOADING'`,`asset ${key} begins in explicit LOADING state`);
 
 requireText("ASSET_STATE[key]='FAILED'",'optional source failures are recorded as FAILED');
