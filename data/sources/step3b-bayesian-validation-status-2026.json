@@ -1,0 +1,76 @@
+{
+  "version": "STEP3B_BAYESIAN_VALIDATION_STATUS_1.1.0",
+  "season": 2026,
+  "status": "SHADOW_ONLY_NOT_PROMOTED",
+  "live_weight": 0,
+  "live_projection_movement": 0,
+  "live_rank_movement": 0,
+  "phase1_mean_shrinkage": {
+    "result": "PASS_CONTINUE_TESTING",
+    "selected_k_pseudogames": 12,
+    "heldout_2025": {
+      "baseline_mae": 2.322469476167573,
+      "bayes_mae": 1.9517033625140932,
+      "mae_improvement_pct": 15.965168357291116,
+      "baseline_rmse": 2.9431559717815676,
+      "bayes_rmse": 2.545897395025237,
+      "rmse_improvement_pct": 13.49599925790922,
+      "baseline_spearman": 0.8398543742443129,
+      "bayes_spearman": 0.8549854667844626
+    }
+  },
+  "phase2_gaussian_distribution": {
+    "result": "MIXED_OR_FAIL",
+    "reason": "Held-out likelihood and interval width improved, but probability calibration/PIT behavior did not improve cleanly enough for promotion."
+  },
+  "phase2b_empirical_conformal_distribution": {
+    "result": "MIXED_OR_FAIL",
+    "reason": "CRPS and interval efficiency improved, but PIT calibration remained mixed and interval coverage was still not sufficiently calibrated for promotion."
+  },
+  "phase3_position_adaptive_shrinkage": {
+    "result": "REJECT_AS_CURRENT_REPLACEMENT",
+    "reason": "Position-specific k values did not beat the simpler global k=12 candidate overall on held-out 2025."
+  },
+  "phase3b_asymmetric_guardrail": {
+    "result": "MEAN_ACCURACY_IMPROVED_BUT_PROMOTION_FAILS",
+    "heldout_2025": {
+      "mae": 1.7662353487871718,
+      "rmse": 2.3541819540243503,
+      "spearman": 0.849687315665712
+    },
+    "reason": "Mean error improved further, but distribution calibration remains unresolved and the candidate cannot be promoted on mean accuracy alone."
+  },
+  "phase3c_constrained_elite_tail_guardrail": {
+    "result": "FAIL",
+    "heldout_2025": {
+      "overall_baseline_mae": 2.322469476167573,
+      "overall_guarded_mae": 1.7662353487871718,
+      "overall_baseline_rmse": 2.9431559717815676,
+      "overall_guarded_rmse": 2.3541819540243503,
+      "far_above_baseline_mae": 1.8777842530438753,
+      "far_above_guarded_mae": 1.9789694165811629,
+      "far_above_baseline_rmse": 2.5032905248287416,
+      "far_above_guarded_rmse": 2.6152672765017293
+    },
+    "reason": "Aggregate accuracy improved, but the held-out high-performing/far-above-prior subgroup degraded beyond the predeclared protection cap. The model may not trade away elite-profile accuracy for average-case gains."
+  },
+  "decision": {
+    "mean_shrinkage_candidate": "RETAIN_FOR_FURTHER_SHADOW_TESTING",
+    "distribution_candidate": "NOT_VALIDATED",
+    "adaptive_or_asymmetric_candidate": "NOT_PROMOTED",
+    "elite_tail_protection": "NOT_PROVEN",
+    "rank_or_projection_authority": "NONE",
+    "sportsbook_or_adp_used": false,
+    "promotion_allowed": false
+  },
+  "required_before_any_promotion": [
+    "rookie/no-history prior validation",
+    "injury and regime-change subgroup audit",
+    "team/QB/coach change subgroup audit",
+    "extreme disagreement audit",
+    "resolve predictive-distribution calibration",
+    "prove elite/high-performing profile protection",
+    "full exact-head Guardrail QA",
+    "user review and explicit approval"
+  ]
+}

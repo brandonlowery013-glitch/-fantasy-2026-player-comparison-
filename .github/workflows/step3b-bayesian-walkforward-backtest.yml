@@ -1,0 +1,84 @@
+name: Step 3B Bayesian Walk-Forward Backtest
+
+on:
+  pull_request:
+    paths:
+      - 'historicalStats2026.json'
+      - 'history-alias-reconciliation-audit.json'
+      - 'players*.json'
+      - 'data/sources/step3b-bayesian-validation-status-2026.json'
+      - 'scripts/backtest-step3b-bayesian-shrinkage.mjs'
+      - 'scripts/validate-step3b-bayesian-walkforward-backtest.mjs'
+      - 'scripts/backtest-step3b-bayesian-distribution.mjs'
+      - 'scripts/validate-step3b-bayesian-distribution-backtest.mjs'
+      - 'scripts/backtest-step3b-bayesian-conformal.mjs'
+      - 'scripts/validate-step3b-bayesian-conformal-backtest.mjs'
+      - 'scripts/backtest-step3b-bayesian-subgroups.mjs'
+      - 'scripts/validate-step3b-bayesian-subgroup-backtest.mjs'
+      - 'scripts/backtest-step3b-bayesian-asymmetric-guardrail.mjs'
+      - 'scripts/validate-step3b-bayesian-asymmetric-guardrail-backtest.mjs'
+      - 'scripts/backtest-step3b-bayesian-constrained-guardrail.mjs'
+      - 'scripts/validate-step3b-bayesian-constrained-guardrail-backtest.mjs'
+      - '.github/workflows/step3b-bayesian-walkforward-backtest.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bayesian-walkforward:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate shadow-only promotion lock
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('data/sources/step3b-bayesian-validation-status-2026.json','utf8'));
+          if(s.status!=='SHADOW_ONLY_NOT_PROMOTED') throw new Error('Step 3B must remain shadow-only');
+          if(s.live_weight!==0||s.live_projection_movement!==0||s.live_rank_movement!==0) throw new Error('Step 3B live influence must remain exactly zero');
+          if(s.decision?.promotion_allowed!==false||s.decision?.rank_or_projection_authority!=='NONE') throw new Error('Step 3B promotion lock missing');
+          if(s.phase2_gaussian_distribution?.result!=='MIXED_OR_FAIL'||s.phase2b_empirical_conformal_distribution?.result!=='MIXED_OR_FAIL') throw new Error('Distribution validation status must remain unresolved');
+          NODE
+      - name: Run Bayesian walk-forward Phase 1 backtest
+        run: node scripts/backtest-step3b-bayesian-shrinkage.mjs
+      - name: Validate Bayesian walk-forward report
+        run: node scripts/validate-step3b-bayesian-walkforward-backtest.mjs
+      - name: Run Bayesian Gaussian distribution Phase 2 backtest
+        run: node scripts/backtest-step3b-bayesian-distribution.mjs
+      - name: Validate Bayesian Gaussian distribution report
+        run: node scripts/validate-step3b-bayesian-distribution-backtest.mjs
+      - name: Run Bayesian empirical/conformal distribution Phase 2B backtest
+        run: node scripts/backtest-step3b-bayesian-conformal.mjs
+      - name: Validate Bayesian empirical/conformal distribution report
+        run: node scripts/validate-step3b-bayesian-conformal-backtest.mjs
+      - name: Run Bayesian subgroup/adaptive Phase 3 backtest
+        run: node scripts/backtest-step3b-bayesian-subgroups.mjs
+      - name: Validate Bayesian subgroup/adaptive report
+        run: node scripts/validate-step3b-bayesian-subgroup-backtest.mjs
+      - name: Run Bayesian asymmetric guardrail Phase 3B backtest
+        run: node scripts/backtest-step3b-bayesian-asymmetric-guardrail.mjs
+      - name: Validate Bayesian asymmetric guardrail report
+        run: node scripts/validate-step3b-bayesian-asymmetric-guardrail-backtest.mjs
+      - name: Run Bayesian constrained elite-tail Phase 3C backtest
+        run: node scripts/backtest-step3b-bayesian-constrained-guardrail.mjs
+      - name: Validate Bayesian constrained elite-tail report
+        run: node scripts/validate-step3b-bayesian-constrained-guardrail-backtest.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload Bayesian validation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3b-bayesian-walkforward-backtest
+          path: |
+            guardrails/step3b-bayesian-walkforward-backtest.json
+            guardrails/step3b-bayesian-distribution-backtest.json
+            guardrails/step3b-bayesian-conformal-backtest.json
+            guardrails/step3b-bayesian-subgroup-backtest.json
+            guardrails/step3b-bayesian-asymmetric-guardrail-backtest.json
+            guardrails/step3b-bayesian-constrained-guardrail-backtest.json
+          if-no-files-found: error
