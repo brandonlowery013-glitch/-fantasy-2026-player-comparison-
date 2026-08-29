@@ -1,0 +1,43 @@
+name: Step 3B Final Historical Validation
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/finalize-step3b-validation.mjs'
+      - 'scripts/validate-step3b-final-validation.mjs'
+      - 'data/sources/step3b-final-decision-2026.json'
+      - '.github/workflows/step3b-final-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  final-step3b-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Rebuild historical core
+        run: node scripts/ingest-historical-core.mjs
+      - name: Rebuild injury and role context
+        run: node scripts/enrich-historical-context.mjs
+      - name: Rebuild QB and offensive environment context
+        run: node scripts/enrich-deeper-football-context.mjs
+      - name: Run final Step 3B historical validation
+        run: node scripts/finalize-step3b-validation.mjs
+      - name: Validate final Step 3B decision
+        run: node scripts/validate-step3b-final-validation.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload final Step 3B report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3b-final-historical-validation
+          path: |
+            guardrails/step3b-final-historical-validation.json
+            data/sources/step3b-final-decision-2026.json
+          if-no-files-found: error
