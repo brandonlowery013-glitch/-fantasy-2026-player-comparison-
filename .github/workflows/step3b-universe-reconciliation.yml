@@ -1,0 +1,39 @@
+name: Step 3B-2 Universe Reconciliation
+
+on:
+  pull_request:
+    paths:
+      - 'players*.json'
+      - 'projection-context-audit-2026.json'
+      - 'projection-downstream-audit.json'
+      - 'overall-rank-audit-decisions.json'
+      - '.github/workflows/apply-overall-audit-and-cohesion.yml'
+      - '.github/workflows/recalibrate-projections.yml'
+      - '.github/workflows/propagate-projection-recalibration.yml'
+      - '.github/workflows/final-162-qa-publish.yml'
+      - 'scripts/audit-step3b-universe-reconciliation.mjs'
+      - '.github/workflows/step3b-universe-reconciliation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile-universe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit 153-to-162 universe reconciliation
+        run: node scripts/audit-step3b-universe-reconciliation.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/guardrail-hard-qa.mjs
+      - name: Upload reconciliation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3b-universe-reconciliation
+          path: guardrails/step3b-universe-reconciliation-audit.json
+          if-no-files-found: error
