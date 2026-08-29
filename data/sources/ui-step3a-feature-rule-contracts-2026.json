@@ -1,0 +1,112 @@
+{
+  "version": "UI_STEP3A_FEATURE_RULES_1.0.0",
+  "season": 2026,
+  "status": "LOCKED_FOR_IMPLEMENTATION",
+  "scope": ["sit_start", "sleepers", "trap_games", "games_of_the_week", "historical_situational_indicators"],
+  "global_rules": [
+    "No feature may create a recommendation when required weekly football context is missing, stale, or failed.",
+    "Missing values remain unknown and are never converted to zero.",
+    "Sportsbook data may rank or price game-value features but may not rewrite the independent football projection.",
+    "Trap-game warnings and game-value picks are separate outputs and cannot automatically promote one another.",
+    "Historical situational indicators are supporting evidence unless and until they pass the locked promotion standard.",
+    "All live labels must retain provenance, capture time, prerequisite state, and explanation drivers."
+  ],
+  "sit_start": {
+    "level": "player_weekly",
+    "labels": ["START", "LEAN_START", "BORDERLINE", "LEAN_SIT", "SIT", "NO_CALL"],
+    "required_inputs": ["weekly_projection", "weekly_distribution", "expected_active", "role_context", "injury_context", "opponent_context"],
+    "gates": {
+      "expected_active_required": true,
+      "fresh_context_required": true,
+      "distribution_required": true,
+      "no_call_if_prerequisite_failed": true
+    },
+    "decision_policy": {
+      "basis": "Position-relative weekly projection plus downside/upside distribution, role certainty, injury certainty, matchup context, and replacement-level separation.",
+      "START": "Clear starter-range projection with positive separation from the position replacement line and no material availability/role red flag.",
+      "LEAN_START": "Starter-range or near-starter projection with modest edge but meaningful uncertainty.",
+      "BORDERLINE": "Projection overlaps the replacement line or uncertainty band enough that lineup alternatives matter.",
+      "LEAN_SIT": "Below replacement line with limited upside or material role/injury uncertainty.",
+      "SIT": "Clearly below replacement line, materially impaired role/availability, or downside distribution dominates viable alternatives.",
+      "NO_CALL": "Required data is missing, stale, contradictory, or failed."
+    },
+    "anti_rules": ["Season-long draft rank alone cannot determine a weekly START/SIT label.", "A single matchup statistic cannot override the full weekly distribution."]
+  },
+  "sleepers": {
+    "level": "player_weekly",
+    "labels": ["SLEEPER", "DEEP_SLEEPER", "WATCH", "NO_CALL"],
+    "required_inputs": ["weekly_projection", "weekly_ceiling", "weekly_distribution", "role_context", "expected_active"],
+    "eligibility": {
+      "must_be_outside_clear_starter_tier": true,
+      "must_have_actionable_ceiling": true,
+      "must_have_role_or_environment_path": true,
+      "expected_active_required": true
+    },
+    "decision_policy": {
+      "SLEEPER": "Non-obvious weekly option whose median projection is not a clear starter but whose ceiling and current role/environment create a credible path to starter-level production.",
+      "DEEP_SLEEPER": "Lower-baseline player with a credible but narrower high-end path supported by role change, high-value usage, injury-created opportunity, or unusually favorable environment.",
+      "WATCH": "Interesting signal exists but role, availability, sample, or ceiling evidence is not strong enough for a sleeper label.",
+      "NO_CALL": "Prerequisites failed or the case depends only on name value, draft cost, or unsupported narrative."
+    },
+    "anti_rules": ["Low draft rank alone does not make a sleeper.", "A player already projected as a clear weekly starter cannot be labeled a sleeper."]
+  },
+  "games_of_the_week": {
+    "level": "game_market",
+    "purpose": "Feature the strongest model-vs-market game values where Vegas may be wrong.",
+    "source_contract": "data/sources/game-market-recommendation-layer-2026.json",
+    "labels": ["GAME_OF_THE_WEEK", "STRONG_VALUE", "LEAN_VALUE", "PASS"],
+    "eligibility": {
+      "must_already_be_valid_pick": true,
+      "fresh_pre_kickoff_market_required": true,
+      "all_recommendation_prerequisites_required": true,
+      "minimum_model_conditional_win_probability": 0.52
+    },
+    "thresholds": {
+      "GAME_OF_THE_WEEK": {"minimum_probability_edge": 0.08, "minimum_expected_value": 0.08},
+      "STRONG_VALUE": {"minimum_probability_edge": 0.05, "minimum_expected_value": 0.04},
+      "LEAN_VALUE": {"minimum_probability_edge": 0.03, "minimum_expected_value": 0.02}
+    },
+    "ranking": ["confidence_band", "expected_value", "probability_edge", "market_freshness", "football_context_completeness"],
+    "locked_rules": ["Games of the Week are a featured subset of existing valid game-market PICK outputs, not a second betting engine.", "Closing lines are evaluation context only and cannot be substituted for the line available when the call was made.", "A large raw point-spread difference alone is insufficient if probability/EV gates fail."]
+  },
+  "trap_games": {
+    "level": "game_weekly",
+    "purpose": "Flag market-favored game setups where risk is materially higher than the headline line implies.",
+    "labels": ["TRAP_ALERT", "TRAP_WATCH", "NO_TRAP", "NO_CALL"],
+    "required_inputs": ["independent_game_projection", "weekly_game_distribution", "fresh_market", "football_context"],
+    "trigger_policy": {
+      "TRAP_ALERT": "Requires a material market-vs-model favorite overstatement plus at least two independent contextual or distribution-risk signals.",
+      "TRAP_WATCH": "One material disagreement plus one supporting risk signal, or multiple supporting risks without enough evidence for an alert.",
+      "NO_TRAP": "No material favorite-side vulnerability is supported.",
+      "NO_CALL": "Market or football prerequisites are stale, missing, or failed."
+    },
+    "material_disagreement": {"favorite_no_vig_probability_over_model_min": 0.05},
+    "supporting_signal_examples": ["travel_or_time_zone", "rest_disadvantage", "previous_game_workload", "injury_or_qb_uncertainty", "distribution_tail_risk", "line_movement_against_model", "schedule_sequence", "historical_situational_indicator"],
+    "minimum_independent_supporting_signals_for_alert": 2,
+    "locked_rules": ["Trap is a warning label, not an automatic bet on the opponent.", "Do not double-count correlated signals such as travel distance and time-zone crossing as two independent reasons.", "Public-betting percentages are optional context and are never required or fabricated."]
+  },
+  "historical_situational_indicators": {
+    "level": "game_context",
+    "purpose": "Test scheduling, travel, workload, comeback, rest, and sequence effects against historical expectation rather than narrative.",
+    "candidate_examples": ["trailed_14_plus_fourth_quarter_then_won", "overtime_previous_game", "high_snap_load_previous_game", "west_to_east_early_kick", "short_rest", "consecutive_road_games", "post_bye", "opponent_post_bye", "international_game_recovery"],
+    "evaluation_target": ["residual_margin_vs_pregame_expectation", "cover_probability_residual", "win_probability_residual", "total_residual_when_relevant"],
+    "controls": ["team_strength", "opponent_strength", "quarterback", "injuries", "home_road", "rest_days", "travel_distance", "time_zones", "closing_expectation_for_historical_evaluation_only", "offensive_efficiency", "defensive_efficiency", "season_week"],
+    "sample_policy": {
+      "minimum_raw_games_to_display_context": 30,
+      "minimum_effective_games_for_model_candidate": 75,
+      "minimum_raw_games_for_model_candidate": 100,
+      "minimum_distinct_seasons": 3
+    },
+    "promotion_policy": {
+      "out_of_sample_validation_required": true,
+      "directional_replication_required": true,
+      "shrinkage_required": true,
+      "single_indicator_max_margin_adjustment_points": 0.75,
+      "combined_situational_max_margin_adjustment_points": 1.5,
+      "larger_adjustment_requires_recalibration_approval": true
+    },
+    "overlap_policy": "Correlated indicators must be grouped or jointly modeled; raw historical effects cannot be blindly added together.",
+    "display_policy": "Indicators that clear context-display standards but not model-promotion standards may appear in Why/Context as supporting historical evidence with sample size and uncertainty, but receive zero projection weight.",
+    "anti_rules": ["No cherry-picked ATS trend becomes a model input from a small sample.", "No closing line from the current game may contaminate the independent pre-market football projection.", "Historical association must not be described as causal without causal evidence."]
+  }
+}
