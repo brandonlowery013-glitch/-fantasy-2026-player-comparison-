@@ -1,0 +1,45 @@
+name: Step 4 Data Integrity
+
+on:
+  push:
+    branches: [model/step4-data-integrity]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  data-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: model/step4-data-integrity
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Repair persistent rookie history source
+        run: node scripts/step4-repair-data-integrity.mjs
+      - name: Verify rookie contamination is gone
+        run: node scripts/audit-step3b-rookie-history-contamination.mjs
+      - name: Resolve four blocked situational source contracts
+        run: node scripts/step4-resolve-situational-sources.mjs
+      - name: Audit Jayden Higgins held integrity anomaly
+        run: node scripts/step4-audit-held-integrity.mjs
+      - name: Validate Step 4 substantive closure
+        run: node scripts/validate-step4-data-integrity.mjs
+      - name: Verify Step 4 made no player-model edits
+        shell: bash
+        run: |
+          git diff --exit-code origin/model/step3h-full-step3-qa -- 'players*.json'
+      - name: Persist Step 4 source decisions
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add historicalStats2026.json data/sources/step3b-history-integrity-status-2026.json data/sources/step4-situational-source-resolution-2026.json data/sources/step4-held-integrity-audit-2026.json guardrails/step4-data-integrity-closure.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Step 4: persist data integrity closure"
+            git push origin HEAD:model/step4-data-integrity
+          fi

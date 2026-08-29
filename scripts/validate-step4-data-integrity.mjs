@@ -1,0 +1,33 @@
+import fs from 'node:fs';
+
+const rookie=JSON.parse(fs.readFileSync('data/sources/rookie-no-history-inputs-2026.json','utf8'));
+const history=JSON.parse(fs.readFileSync('historicalStats2026.json','utf8'));
+const status=JSON.parse(fs.readFileSync('data/sources/step3b-history-integrity-status-2026.json','utf8'));
+const situational=JSON.parse(fs.readFileSync('data/sources/step4-situational-source-resolution-2026.json','utf8'));
+const held=JSON.parse(fs.readFileSync('data/sources/step4-held-integrity-audit-2026.json','utf8'));
+const players=[];
+for(let i=0;i<=12;i++){const p=`players${i}.json`;if(fs.existsSync(p))players.push(...JSON.parse(fs.readFileSync(p,'utf8')));}
+const checks=[];
+const add=(name,ok,details)=>checks.push({name,status:ok?'PASS':'FAIL',details});
+const names=(rookie.players||[]).map(x=>x.player);
+const dupes=players.map(x=>x.n).filter((n,i,a)=>a.indexOf(n)!==i);
+const contaminated=names.filter(n=>(history.players?.[n]||[]).length>0);
+add('authoritative_162_unique',players.length===162&&dupes.length===0,`count=${players.length} dupes=${dupes.join(',')}`);
+add('locked_no_history_universe',rookie.season===2026&&names.length===10,JSON.stringify(names));
+add('persistent_rookie_history_clean',contaminated.length===0,JSON.stringify(contaminated));
+add('persistent_repair_status',status.status==='PERSISTENT_HISTORY_SOURCE_REPAIRED'&&status.step4_repair?.repaired===true&&status.step4_repair?.all_10_locked_no_history_players_absent_from_direct_history===true,JSON.stringify(status.step4_repair||null));
+add('missing_history_unknown_not_zero',status.step4_repair?.missing_history_remains_unknown_not_zero===true,'missing must stay unknown');
+const decisions=situational.source_decisions||[];
+const allowed=new Set(['SOURCE_RESOLVED','ZERO_AUTHORITY_SOURCE_INSUFFICIENT']);
+add('four_situational_sources_explicit',decisions.length===4&&decisions.every(x=>allowed.has(x.status)),JSON.stringify(decisions.map(x=>[x.indicator,x.status])));
+add('situational_zero_numeric_authority',decisions.every(x=>x.projection_weight===0),JSON.stringify(decisions.map(x=>[x.indicator,x.projection_weight])));
+add('situational_missing_unknown',situational.missing_is_unknown===true,'missing_is_unknown');
+add('situational_no_market_inputs',situational.sportsbook_or_adp_used===false,'sportsbook/adp false');
+add('held_anomaly_resolved',held.status==='PASS'&&held.data_integrity_classification==='INTENTIONAL_ZERO_PROJECTION_CONFIRMED_BY_SEASON_ENDING_AVAILABILITY_STATE'&&held.availability_state?.explicit_season_ending_state===true,JSON.stringify({status:held.status,classification:held.data_integrity_classification,availability:held.availability_state}));
+add('held_zero_semantics_locked',held.zero_is_only_valid_when_explicitly_supported_by_availability_state===true&&held.missing_is_unknown===true,'zero requires explicit availability evidence');
+const failed=checks.filter(x=>x.status==='FAIL');
+const report={schema_version:'STEP4_DATA_INTEGRITY_CLOSURE_1.0.0',step:'STEP_4_DATA_INTEGRITY',result:failed.length?'FAIL':'PASS',failed_count:failed.length,checks,next_step:failed.length?null:'STEP_5_PERMISSIONS'};
+fs.mkdirSync('guardrails',{recursive:true});
+fs.writeFileSync('guardrails/step4-data-integrity-closure.json',JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report,null,2));
+if(failed.length)process.exit(1);
