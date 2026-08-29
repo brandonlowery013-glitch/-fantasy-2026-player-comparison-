@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'players*.json'
+      - 'data/sources/step3b-role-cohort-current-evidence-decision-2026.json'
       - 'scripts/backtest-step3b-role-cohort-current-evidence-fast.mjs'
       - 'scripts/validate-step3b-role-cohort-current-evidence.mjs'
       - '.github/workflows/step3b-role-cohort-current-evidence.yml'
@@ -22,7 +23,7 @@ jobs:
           node-version: '22'
       - name: Run role cohort and current evidence walk-forward
         run: node scripts/backtest-step3b-role-cohort-current-evidence-fast.mjs
-      - name: Validate role cohort and current evidence report
+      - name: Validate role cohort report and locked decision
         run: node scripts/validate-step3b-role-cohort-current-evidence.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
