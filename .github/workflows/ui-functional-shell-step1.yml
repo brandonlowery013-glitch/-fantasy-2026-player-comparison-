@@ -1,0 +1,28 @@
+name: UI Functional Shell Step 1
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-functional-shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate existing platform interface contract
+        run: node scripts/validate-step12-platform-interface.mjs
+      - name: Validate functional shell and visible controls
+        run: node scripts/validate-ui-functional-shell.mjs
+      - name: Upload Step 1 UI report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-functional-shell-step1
+          path: guardrails/ui-functional-shell-step1-report.json
+          if-no-files-found: error
