@@ -1,0 +1,38 @@
+name: Step 3C Full 162 Shadow Recalculation
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/build-step3c-full-162-shadow.mjs'
+      - 'scripts/validate-step3c-full-162-shadow.mjs'
+      - 'data/sources/step3b-final-decision-2026.json'
+      - '.github/workflows/step3c-full-162-shadow.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  step3c-shadow:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build full 162-player Step 3C shadow recalculation
+        run: node scripts/build-step3c-full-162-shadow.mjs
+      - name: Validate Step 3C shadow contract
+        run: node scripts/validate-step3c-full-162-shadow.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload Step 3C reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3c-full-162-shadow
+          path: |
+            guardrails/step3c-shadow-recalculation-162.json
+            guardrails/step3c-user-review-queue-162.json
+            guardrails/step3c-validation.json
+          if-no-files-found: error
