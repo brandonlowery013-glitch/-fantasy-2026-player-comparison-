@@ -1,3 +1,33 @@
 import fs from 'node:fs';
-const p='guardrails/step3b-multiyear-ppr-walkforward.json';if(!fs.existsSync(p))throw new Error('Missing multiyear report');const r=JSON.parse(fs.readFileSync(p,'utf8'));const need=(ok,msg)=>{if(!ok)throw new Error(msg)};
-need(r.status==='SHADOW_ONLY','must remain shadow only');need(r.live_weight===0,'live weight must remain zero');need(r.promotion_allowed===false,'promotion must remain blocked');need(r.scoring?.passing_td===4,'passing TD must equal 4');need(r.scoring?.reception===1,'full PPR reception scoring required');need(r.scoring?.rushing_td===6&&r.scoring?.receiving_td===6,'skill TD scoring must equal 6');need(r.selection_policy?.target_outcomes_used_for_selection===false,'fantasy-relevant selection may not use target outcomes');need((r.folds||[]).length>=4,'need at least four historical folds');for(const f of r.folds){need(f.tuning_season<f.target_season,`leakage in ${f.target_season}`);need(f.examples>=40,`too few examples ${f.target_season}`);need(Number.isFinite(f.baseline?.mae)&&Number.isFinite(f.bayes?.mae),`missing MAE ${f.target_season}`);need(Number.isFinite(f.baseline?.rmse)&&Number.isFinite(f.bayes?.rmse),`missing RMSE ${f.target_season}`);need(f.elite_quartile?.n>=8,`elite subgroup too small ${f.target_season}`);}console.log(`Step 3B multi-year walk-forward validation PASS — ${r.folds.length} folds, ${r.summary.total_examples} examples`);
+const p='guardrails/step3b-multiyear-ppr-walkforward.json';
+const d='data/sources/step3b-multiyear-shrinkage-decision-2026.json';
+if(!fs.existsSync(p))throw new Error('Missing multiyear report');
+if(!fs.existsSync(d))throw new Error('Missing multiyear shrinkage decision');
+const r=JSON.parse(fs.readFileSync(p,'utf8'));
+const decision=JSON.parse(fs.readFileSync(d,'utf8'));
+const need=(ok,msg)=>{if(!ok)throw new Error(msg)};
+need(r.status==='SHADOW_ONLY','must remain shadow only');
+need(r.live_weight===0,'live weight must remain zero');
+need(r.promotion_allowed===false,'promotion must remain blocked');
+need(r.scoring?.passing_td===4,'passing TD must equal 4');
+need(r.scoring?.reception===1,'full PPR reception scoring required');
+need(r.scoring?.rushing_td===6&&r.scoring?.receiving_td===6,'skill TD scoring must equal 6');
+need(r.selection_policy?.target_outcomes_used_for_selection===false,'fantasy-relevant selection may not use target outcomes');
+need((r.folds||[]).length>=4,'need at least four historical folds');
+for(const f of r.folds){
+  need(f.tuning_season<f.target_season,`leakage in ${f.target_season}`);
+  need(f.examples>=40,`too few examples ${f.target_season}`);
+  need(Number.isFinite(f.baseline?.mae)&&Number.isFinite(f.bayes?.mae),`missing MAE ${f.target_season}`);
+  need(Number.isFinite(f.baseline?.rmse)&&Number.isFinite(f.bayes?.rmse),`missing RMSE ${f.target_season}`);
+  need(f.elite_quartile?.n>=8,`elite subgroup too small ${f.target_season}`);
+}
+need(decision.status==='GENERIC_POSITION_SHRINKAGE_REJECTED','generic position shrinkage decision must remain rejected');
+need(decision.live_weight===0&&decision.live_projection_movement===0&&decision.live_rank_movement===0,'decision must have zero live authority');
+need(decision.promotion_allowed===false,'decision must block promotion');
+need(decision.evidence?.folds===r.summary?.folds,'decision fold count must match report');
+need(decision.evidence?.total_fantasy_relevant_player_seasons===r.summary?.total_examples,'decision example count must match report');
+need(decision.evidence?.folds_with_both_mae_and_rmse_improvement===r.summary?.folds_with_mae_and_rmse_improvement,'decision improvement count must match report');
+need(Math.abs(decision.evidence?.weighted_mae_improvement_pct-r.summary?.weighted_mae_improvement_pct)<1e-9,'decision MAE summary must match report');
+need(Math.abs(decision.evidence?.weighted_rmse_improvement_pct-r.summary?.weighted_rmse_improvement_pct)<1e-9,'decision RMSE summary must match report');
+need(decision.evidence?.scoring?.passing_td===4&&decision.evidence?.scoring?.reception===1,'decision scoring must remain 4-point pass TD full PPR');
+console.log(`Step 3B multi-year walk-forward validation PASS — ${r.folds.length} folds, ${r.summary.total_examples} examples, generic position shrinkage rejected`);
