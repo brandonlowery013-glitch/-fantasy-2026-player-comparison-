@@ -12,7 +12,7 @@ need(contract.name==='Core Feature QA','Step 3 must remain Core Feature QA');
 for(const [k,v] of Object.entries(contract.rules)) need(v===true,`Step 3 rule must stay enabled: ${k}`);
 
 const byId=Object.fromEntries(contract.features.map(x=>[x.id,x]));
-for(const id of ['compare','props','nfl_games','weekly_opportunities','filters','sit_start','sleepers','trap_games']) need(byId[id],`Missing Step 3 feature contract: ${id}`);
+for(const id of ['compare','props','nfl_games','weekly_opportunities','filters','sit_start','sleepers_breakouts','avoid_busts','games_of_the_week','trap_games','historical_situational_indicators']) need(byId[id],`Missing Step 3 feature contract: ${id}`);
 
 need(index.includes('data-route="compare"')&&index.includes('compare.html'),'Compare route/surface missing');
 need(compare.includes('runtime-comparison-decision-2026.js'),'Compare must load the locked decision runtime');
@@ -27,28 +27,32 @@ for(const path of [
   'data/market/player-prop-recommendations-2026.json',
   'data/probability/generated/weekly-game-projections-2026.json',
   'data/market/weekly-game-market-recommendations-2026.json',
-  'data/market/unified-opportunities-2026.json'
-]) need(fs.existsSync(path),`Required feature data missing: ${path}`);
+  'data/market/unified-opportunities-2026.json',
+  'data/sources/ui-step3a-feature-rule-contracts-2026.json'
+]) need(fs.existsSync(path),`Required feature data/contract missing: ${path}`);
 
-for(const id of ['sit_start','sleepers','trap_games']){
+for(const id of ['sit_start','sleepers_breakouts','avoid_busts','games_of_the_week','trap_games','historical_situational_indicators']){
   const f=byId[id];
-  need(f.status==='BLOCKED_RULES_REQUIRED',`${id} must remain explicitly blocked until its trigger/scoring rules are locked`);
-  need(f.surface===null,`${id} cannot claim a live surface before its rules are locked`);
+  need(f.status==='RULES_LOCKED_PENDING_IMPLEMENTATION',`${id} must have locked rules and remain pending implementation`);
+  need(f.surface===null,`${id} cannot claim a live surface before implementation`);
 }
 
 need(byId.sit_start.level==='player_weekly','Sit/Start must stay player-level weekly');
-need(byId.sleepers.level==='player_weekly','Sleepers must stay player-level weekly');
+need(byId.sleepers_breakouts.level==='player_season_long','Sleepers/Breakouts must stay season-long');
+need(byId.avoid_busts.level==='player_season_long','Avoid/Bust must stay season-long');
+need(byId.games_of_the_week.level==='game_market','Games of the Week must stay game-market level');
 need(byId.trap_games.level==='game_weekly','Trap Games must stay NFL game-level weekly');
+need(byId.historical_situational_indicators.level==='game_context','Historical situational indicators must stay game-context level');
 
 const report={
   version:contract.version,
-  status:'PASS_WITH_BLOCKERS',
+  status:'PASS_RULES_LOCKED_IMPLEMENTATION_PENDING',
   ready_for_qa:contract.features.filter(x=>x.status==='READY_FOR_QA').map(x=>x.id),
-  blocked_rules_required:contract.features.filter(x=>x.status==='BLOCKED_RULES_REQUIRED').map(x=>x.id),
+  rules_locked_pending_implementation:contract.features.filter(x=>x.status==='RULES_LOCKED_PENDING_IMPLEMENTATION').map(x=>x.id),
   core_feature_step_complete:false,
-  reason:'Sit/Start, Sleepers, and Trap Games do not yet have locked recommendation/trigger contracts.'
+  reason:'Step 3A feature definitions are locked. New feature surfaces and the validated mathematical foundation/recalculation pipeline still must be implemented and QA-tested.'
 };
 fs.mkdirSync('guardrails',{recursive:true});
 fs.writeFileSync('guardrails/ui-core-feature-step3-report.json',JSON.stringify(report,null,2)+'\n');
-console.log('UI Step 3 core feature audit PASS_WITH_BLOCKERS');
+console.log('UI Step 3 core feature audit PASS_RULES_LOCKED_IMPLEMENTATION_PENDING');
 console.log(JSON.stringify(report,null,2));
