@@ -1,0 +1,56 @@
+{
+  "version": "STEP3G_CORE_FEATURES_1.0.0",
+  "season": 2026,
+  "status": "EXECUTABLE_FEATURE_ENGINES",
+  "source_contract": "data/sources/ui-step3a-feature-rule-contracts-2026.json",
+  "features": ["sit_start","sleepers_breakouts","avoid_busts","games_of_the_week","trap_games","historical_situational_indicators"],
+  "global_rules": {
+    "missing_is_unknown": true,
+    "sportsbook_may_mutate_football_projection": false,
+    "adp_may_mutate_football_classification": false,
+    "live_player_projection_write": false,
+    "live_rank_write": false,
+    "cross_feature_auto_promotion": false,
+    "provenance_required": true
+  },
+  "season_long_player_features": {
+    "authoritative_universe": "players0.json..players12.json",
+    "football_inputs": ["mp","ce","r","e","a","rl","su","projection_context","st","ns","nm","na"],
+    "existing_draft_side_context": ["s6","s7","px","ad","fw"],
+    "breakout_policy": "Until historical breakout-cohort similarity is validated out of sample, the engine may emit WATCH or NO_CALL but may not manufacture BREAKOUT_CANDIDATE or SLEEPER from arbitrary thresholds, ADP, one camp report, or unvalidated narrative.",
+    "bust_policy": "Football-risk context is surfaced independently. Existing downstream OVERPRICED/AVOID draft-side states may be preserved as current market/draft context, but they may not be reverse-engineered into the football projection or Better Player logic. A new BUST_CANDIDATE label requires validated downside-cohort evidence and is not fabricated here.",
+    "football_value": {
+      "formula_reference": "FV = E[X] + lambda*(Q90-Q50) - rho*(Q50-Q10) + gamma*S",
+      "lambda": null,
+      "rho": null,
+      "gamma": null,
+      "numeric_authority": 0,
+      "reason": "Weights were deferred from Step 3B and have not been empirically validated; Step 3G exposes components without inventing coefficients."
+    }
+  },
+  "weekly_sit_start": {
+    "projection_source": "data/probability/weekly-projection-inputs-2026.json",
+    "context_source": "data/probability/weekly-football-context-inputs-2026.json",
+    "fallback_when_prerequisites_missing": "NO_CALL"
+  },
+  "game_features": {
+    "projection_source": "data/probability/generated/weekly-game-projections-2026.json",
+    "market_recommendation_source": "data/market/weekly-game-market-recommendations-2026.json",
+    "game_of_week_must_be_existing_valid_pick": true,
+    "trap_is_warning_not_opponent_pick": true,
+    "fallback_when_prerequisites_missing": "PASS_OR_NO_CALL"
+  },
+  "historical_situational_indicators": {
+    "minimum_raw_games_display": 30,
+    "minimum_effective_games_model": 75,
+    "minimum_raw_games_model": 100,
+    "minimum_distinct_seasons": 3,
+    "out_of_sample_required": true,
+    "directional_replication_required": true,
+    "shrinkage_required": true,
+    "single_indicator_max_margin_adjustment_points": 0.75,
+    "combined_max_margin_adjustment_points": 1.5,
+    "weight_when_promotion_gate_not_cleared": 0
+  },
+  "completion_rule": "A feature engine is implemented when it deterministically consumes its declared prerequisites, emits only contract-allowed labels, and fails safely when prerequisites are missing. Lack of live Week 1 data is a data-state limitation, not permission to fabricate a call."
+}
