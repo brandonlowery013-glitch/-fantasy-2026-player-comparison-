@@ -1,0 +1,68 @@
+{
+  "version": "STEP3B_HISTORY_INTEGRITY_STATUS_1.0.0",
+  "season": 2026,
+  "status": "SHADOW_ONLY_LIVE_HISTORY_CORRECTION_REQUIRED",
+  "live_projection_movement": 0,
+  "live_rank_movement": 0,
+  "sportsbook_or_adp_used": false,
+  "authoritative_player_universe": 162,
+  "sanitized_shadow_history": {
+    "players_with_legitimate_direct_history": 152,
+    "players_without_direct_nfl_history": 10,
+    "no_history_policy": "Use validated rookie/no-history priors; never synthesize or infer an NFL season that did not occur."
+  },
+  "contamination_finding": {
+    "result": "CONFIRMED_AND_QUARANTINED_IN_SHADOW",
+    "invalid_player_count": 7,
+    "invalid_rows_count": 7,
+    "players": [
+      "Jordyn Tyson",
+      "Makai Lemon",
+      "KC Concepcion",
+      "Jadarian Price",
+      "Chris Bell",
+      "Jonah Coleman",
+      "Kaytron Allen"
+    ],
+    "reason": "These players are in the locked 2026 rookie/no-history source, so 2025 NFL regular-season rows under their names are chronologically impossible for the 2026 model and cannot be used as player history.",
+    "live_history_file_mutated_by_step3b": false,
+    "shadow_quarantine_required": true
+  },
+  "rookie_no_history_prior_validation": {
+    "result": "PASS_SHADOW_ONLY",
+    "players": 10,
+    "historical_rookie_population": {
+      "RB_unique_rookies": 176,
+      "WR_unique_rookies": 248
+    },
+    "all_current_players_use_eligible_draft_tier_cohort": true,
+    "position_fallbacks_used": 0,
+    "age_modifier_active": false,
+    "college_production_modifier_active": false,
+    "prospect_grade_modifier_active": false,
+    "sportsbook_inputs_used": false
+  },
+  "current_model_prior_hierarchy": [
+    "player_specific_history_when_legitimate",
+    "rookie_no_history_prior_when_no_legitimate_nfl_history",
+    "current_role_cohort_prior_when_supported_by fresh role evidence",
+    "position_prior_as_last_fallback"
+  ],
+  "prohibited": [
+    "Treating quarantined rookie rows as NFL history",
+    "Converting missing history to zero",
+    "Generic position-average shrinkage with automatic authority over established elite players",
+    "Sportsbook or ADP contamination of football priors",
+    "Publishing projection or rank changes before Step 3D review"
+  ],
+  "promotion_allowed": false,
+  "next_required_validation": [
+    "early/current role evidence update backtest",
+    "injury and regime-change subgroup audit",
+    "team/QB/coach change subgroup audit",
+    "predictive distribution calibration",
+    "extreme disagreement audit",
+    "exact-head Guardrail QA",
+    "user review and explicit approval"
+  ]
+}
