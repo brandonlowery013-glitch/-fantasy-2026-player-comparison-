@@ -1,5 +1,5 @@
 {
-  "version": "STEP3B_BAYESIAN_VALIDATION_STATUS_1.0.0",
+  "version": "STEP3B_BAYESIAN_VALIDATION_STATUS_1.1.0",
   "season": 2026,
   "status": "SHADOW_ONLY_NOT_PROMOTED",
   "live_weight": 0,
@@ -40,9 +40,25 @@
     },
     "reason": "Mean error improved further, but distribution calibration remains unresolved and the candidate cannot be promoted on mean accuracy alone."
   },
+  "phase3c_constrained_elite_tail_guardrail": {
+    "result": "FAIL",
+    "heldout_2025": {
+      "overall_baseline_mae": 2.322469476167573,
+      "overall_guarded_mae": 1.7662353487871718,
+      "overall_baseline_rmse": 2.9431559717815676,
+      "overall_guarded_rmse": 2.3541819540243503,
+      "far_above_baseline_mae": 1.8777842530438753,
+      "far_above_guarded_mae": 1.9789694165811629,
+      "far_above_baseline_rmse": 2.5032905248287416,
+      "far_above_guarded_rmse": 2.6152672765017293
+    },
+    "reason": "Aggregate accuracy improved, but the held-out high-performing/far-above-prior subgroup degraded beyond the predeclared protection cap. The model may not trade away elite-profile accuracy for average-case gains."
+  },
   "decision": {
     "mean_shrinkage_candidate": "RETAIN_FOR_FURTHER_SHADOW_TESTING",
     "distribution_candidate": "NOT_VALIDATED",
+    "adaptive_or_asymmetric_candidate": "NOT_PROMOTED",
+    "elite_tail_protection": "NOT_PROVEN",
     "rank_or_projection_authority": "NONE",
     "sportsbook_or_adp_used": false,
     "promotion_allowed": false
@@ -53,6 +69,7 @@
     "team/QB/coach change subgroup audit",
     "extreme disagreement audit",
     "resolve predictive-distribution calibration",
+    "prove elite/high-performing profile protection",
     "full exact-head Guardrail QA",
     "user review and explicit approval"
   ]
