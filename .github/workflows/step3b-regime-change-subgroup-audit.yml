@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'players*.json'
+      - 'data/sources/step3b-regime-change-decision-2026.json'
       - 'scripts/backtest-step3b-regime-change-subgroups.mjs'
       - 'scripts/validate-step3b-regime-change-subgroups.mjs'
       - '.github/workflows/step3b-regime-change-subgroup-audit.yml'
@@ -22,7 +23,7 @@ jobs:
           node-version: '22'
       - name: Run regime-change subgroup backtest
         run: node scripts/backtest-step3b-regime-change-subgroups.mjs
-      - name: Validate regime-change subgroup report
+      - name: Validate regime-change subgroup report and locked decision
         run: node scripts/validate-step3b-regime-change-subgroups.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
