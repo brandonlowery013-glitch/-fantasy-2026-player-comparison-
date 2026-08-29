@@ -8,6 +8,8 @@ on:
       - 'players*.json'
       - 'scripts/backtest-step3b-bayesian-shrinkage.mjs'
       - 'scripts/validate-step3b-bayesian-walkforward-backtest.mjs'
+      - 'scripts/backtest-step3b-bayesian-distribution.mjs'
+      - 'scripts/validate-step3b-bayesian-distribution-backtest.mjs'
       - '.github/workflows/step3b-bayesian-walkforward-backtest.yml'
   workflow_dispatch:
 
@@ -26,12 +28,18 @@ jobs:
         run: node scripts/backtest-step3b-bayesian-shrinkage.mjs
       - name: Validate Bayesian walk-forward report
         run: node scripts/validate-step3b-bayesian-walkforward-backtest.mjs
+      - name: Run Bayesian predictive-distribution Phase 2 backtest
+        run: node scripts/backtest-step3b-bayesian-distribution.mjs
+      - name: Validate Bayesian predictive-distribution report
+        run: node scripts/validate-step3b-bayesian-distribution-backtest.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
-      - name: Upload Bayesian walk-forward report
+      - name: Upload Bayesian validation reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: step3b-bayesian-walkforward-backtest
-          path: guardrails/step3b-bayesian-walkforward-backtest.json
+          path: |
+            guardrails/step3b-bayesian-walkforward-backtest.json
+            guardrails/step3b-bayesian-distribution-backtest.json
           if-no-files-found: error
