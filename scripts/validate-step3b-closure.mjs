@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 const p='data/sources/step3b-final-decision-2026.json';
 const d=JSON.parse(fs.readFileSync(p,'utf8'));
+const rbReportPath='guardrails/step3b-rb-q50-2019-2025-decision.json';
+const rbReport=fs.existsSync(rbReportPath)?JSON.parse(fs.readFileSync(rbReportPath,'utf8')):null;
 const checks=[];
 const add=(name,ok,details)=>checks.push({name,status:ok?'PASS':'FAIL',details});
 add('status_locked',d.status==='STEP3B_FOUNDATION_LOCKED_AWAITING_USER_APPROVAL_FOR_3C',d.status);
@@ -8,7 +10,9 @@ add('zero_live_authority',d.live_weight===0&&d.live_projection_movement===0&&d.l
 add('no_market_inputs',d.sportsbook_or_adp_used===false,'sportsbook/adp false');
 add('approval_gate',d.user_approval_required_before_3c===true&&d.next_step_after_approval==='STEP_3C_FULL_162_SHADOW_RECALCULATION',d.next_step_after_approval);
 add('qb_q50_locked',d.predictive_distribution?.qb?.q50_status==='VALIDATED_LOCKED_FOR_3C_SHADOW'&&d.predictive_distribution?.qb?.method==='TRAILING_2'&&d.predictive_distribution?.qb?.all_years_compatible_95pct===true,JSON.stringify(d.predictive_distribution?.qb));
-add('rb_replacement_rejected',d.predictive_distribution?.rb?.q50_status==='NO_NEW_Q50_PROMOTION_RETAIN_EXISTING_RB_DISTRIBUTION'&&d.predictive_distribution?.rb?.decision==='REJECT_NEW_REPLACEMENT'&&d.predictive_distribution?.rb?.existing_distribution_change_authorized===false,JSON.stringify(d.predictive_distribution?.rb));
+const rb=d.predictive_distribution?.rb;
+add('rb_2019_2025_core_q50_locked',rb?.q50_status==='VALIDATED_RETAIN_CORE_RB_Q50_FOR_3C_SHADOW'&&rb?.decision==='RETAIN_CORE_Q50_MODEL_AVAILABILITY_ROLE_DOWNSIDE_SEPARATELY'&&rb?.preseason_top30_n===210&&Math.abs(rb?.healthy_established_q50_coverage-0.5274725274725275)<1e-12&&rb?.healthy_established_compatible_95pct===true&&rb?.blanket_q50_offset_authorized===false&&rb?.existing_distribution_change_authorized===false,JSON.stringify(rb));
+add('rb_decision_report_matches_contract',rbReport?.recommendation==='RETAIN_CORE_RB_Q50_MODEL_AVAILABILITY_ROLE_DOWNSIDE_SEPARATELY'&&rbReport?.locked_decision?.healthy_established_n===91&&Math.abs(rbReport?.locked_decision?.healthy_established_q50_coverage-0.5274725274725275)<1e-12&&rbReport?.locked_decision?.healthy_established_compatible_95pct===true&&Math.abs(rbReport?.overall?.q50_coverage-2/3)<1e-12,JSON.stringify(rbReport?.locked_decision||null));
 add('preseason_current_evidence_zero',d.preseason_authority?.current_weeks_1_4_evidence_weight===0&&d.preseason_authority?.same_role_cohort_preseason_numeric_weight===0,d.preseason_authority?.same_role_cohort_status);
 add('role_upshift_no_auto_boost',d.role_regime?.role_upshift_2022_exception==='FAILED'&&d.role_regime?.automatic_preseason_role_upshift_numeric_modifier_authorized===false,d.role_regime?.policy);
 add('stable_environment_history_rule',d.team_qb_environment?.stable_team_and_qb_policy==='RETAIN_ESTABLISHED_HISTORY_PRIMARY_NO_AUTOMATIC_EARLY_EVIDENCE_OVERRIDE',d.team_qb_environment?.groups?.STABLE_TEAM_AND_QB?.early_evidence_improvement_pct);
