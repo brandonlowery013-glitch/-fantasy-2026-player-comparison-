@@ -5,6 +5,7 @@ on:
     paths:
       - 'scripts/build-step3c-full-162-shadow.mjs'
       - 'scripts/validate-step3c-full-162-shadow.mjs'
+      - 'scripts/build-step3d-user-review-gate.mjs'
       - 'data/sources/step3b-final-decision-2026.json'
       - '.github/workflows/step3c-full-162-shadow.yml'
   workflow_dispatch:
@@ -24,9 +25,11 @@ jobs:
         run: node scripts/build-step3c-full-162-shadow.mjs
       - name: Validate Step 3C shadow contract
         run: node scripts/validate-step3c-full-162-shadow.mjs
+      - name: Build Step 3D structured user review gate
+        run: node scripts/build-step3d-user-review-gate.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
-      - name: Upload Step 3C reports
+      - name: Upload Step 3C and 3D reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -35,4 +38,5 @@ jobs:
             guardrails/step3c-shadow-recalculation-162.json
             guardrails/step3c-user-review-queue-162.json
             guardrails/step3c-validation.json
+            guardrails/step3d-user-review-gate.json
           if-no-files-found: error
