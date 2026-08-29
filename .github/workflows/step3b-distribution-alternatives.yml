@@ -16,6 +16,7 @@ on:
       - 'scripts/backtest-step3b-qb-regime-aware-median.mjs'
       - 'scripts/backtest-step3b-qb-smoothed-median.mjs'
       - 'scripts/backtest-step3b-rb-smoothed-median.mjs'
+      - 'scripts/backtest-step3b-rb-balanced-median.mjs'
       - 'scripts/backtest-step3b-rb-robust-history-median.mjs'
       - 'scripts/audit-step3b-rb-2022-composition.mjs'
       - 'scripts/audit-step3b-rb-health-composition-2021-2025.mjs'
@@ -67,6 +68,8 @@ jobs:
         run: node scripts/backtest-step3b-qb-smoothed-median.mjs
       - name: Backtest smoothed RB median
         run: node scripts/backtest-step3b-rb-smoothed-median.mjs
+      - name: Backtest balanced RB median
+        run: node scripts/backtest-step3b-rb-balanced-median.mjs
       - name: Backtest robust-history RB median
         run: node scripts/backtest-step3b-rb-robust-history-median.mjs
       - name: Audit 2022 RB composition and health
@@ -92,6 +95,7 @@ jobs:
             guardrails/step3b-qb-regime-aware-median.json
             guardrails/step3b-qb-smoothed-median.json
             guardrails/step3b-rb-smoothed-median.json
+            guardrails/step3b-rb-balanced-median.json
             guardrails/step3b-rb-robust-history-median.json
             guardrails/step3b-rb-2022-composition-diagnostic.json
             guardrails/step3b-rb-health-composition-2021-2025.json
