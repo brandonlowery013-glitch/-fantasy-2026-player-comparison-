@@ -5,6 +5,8 @@ on:
     paths:
       - 'scripts/backtest-step3b-distribution-alternatives.mjs'
       - 'scripts/validate-step3b-distribution-alternatives.mjs'
+      - 'scripts/backtest-step3b-distribution-heavy-tail.mjs'
+      - 'scripts/validate-step3b-distribution-heavy-tail.mjs'
       - '.github/workflows/step3b-distribution-alternatives.yml'
       - 'data/sources/step3b-final-decision-2026.json'
   workflow_dispatch:
@@ -24,16 +26,22 @@ jobs:
         run: node scripts/ingest-historical-core.mjs
       - name: Rebuild injury and role context
         run: node scripts/enrich-historical-context.mjs
-      - name: Backtest alternative predictive distributions
+      - name: Backtest empirical and scaled distributions
         run: node scripts/backtest-step3b-distribution-alternatives.mjs
-      - name: Validate distribution alternatives
+      - name: Validate empirical and scaled distributions
         run: node scripts/validate-step3b-distribution-alternatives.mjs
+      - name: Backtest heavy-tail distributions
+        run: node scripts/backtest-step3b-distribution-heavy-tail.mjs
+      - name: Validate heavy-tail distributions
+        run: node scripts/validate-step3b-distribution-heavy-tail.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
-      - name: Upload distribution report
+      - name: Upload distribution reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: step3b-distribution-alternatives
-          path: guardrails/step3b-distribution-alternatives.json
+          path: |
+            guardrails/step3b-distribution-alternatives.json
+            guardrails/step3b-distribution-heavy-tail.json
           if-no-files-found: error
