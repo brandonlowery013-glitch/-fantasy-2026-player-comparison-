@@ -1,7 +1,7 @@
 {
-  "version": "STEP3B_HISTORY_INTEGRITY_STATUS_1.0.0",
+  "version": "STEP4_HISTORY_INTEGRITY_STATUS_2.0.0",
   "season": 2026,
-  "status": "SHADOW_ONLY_LIVE_HISTORY_CORRECTION_REQUIRED",
+  "status": "PERSISTENT_HISTORY_SOURCE_REPAIRED",
   "live_projection_movement": 0,
   "live_rank_movement": 0,
   "sportsbook_or_adp_used": false,
@@ -12,7 +12,7 @@
     "no_history_policy": "Use validated rookie/no-history priors; never synthesize or infer an NFL season that did not occur."
   },
   "contamination_finding": {
-    "result": "CONFIRMED_AND_QUARANTINED_IN_SHADOW",
+    "result": "REPAIRED_AT_PERSISTENT_SOURCE",
     "invalid_player_count": 7,
     "invalid_rows_count": 7,
     "players": [
@@ -26,7 +26,13 @@
     ],
     "reason": "These players are in the locked 2026 rookie/no-history source, so 2025 NFL regular-season rows under their names are chronologically impossible for the 2026 model and cannot be used as player history.",
     "live_history_file_mutated_by_step3b": false,
-    "shadow_quarantine_required": true
+    "shadow_quarantine_required": false,
+    "previously_invalid_player_count": 7,
+    "previously_invalid_rows_count": 7,
+    "remaining_invalid_player_count": 0,
+    "remaining_invalid_rows_count": 0,
+    "live_history_file_mutated_by_step4": true,
+    "repair_commit_required": true
   },
   "rookie_no_history_prior_validation": {
     "result": "PASS_SHADOW_ONLY",
@@ -64,5 +70,21 @@
     "extreme disagreement audit",
     "exact-head Guardrail QA",
     "user review and explicit approval"
-  ]
+  ],
+  "step4_repair": {
+    "persistent_source": "historicalStats2026.json",
+    "repaired": true,
+    "removed_players": [
+      "Jordyn Tyson",
+      "Makai Lemon",
+      "KC Concepcion",
+      "Jadarian Price",
+      "Chris Bell",
+      "Jonah Coleman",
+      "Kaytron Allen"
+    ],
+    "all_10_locked_no_history_players_absent_from_direct_history": true,
+    "missing_history_remains_unknown_not_zero": true,
+    "sportsbook_or_adp_used": false
+  }
 }
