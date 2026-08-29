@@ -10,10 +10,10 @@ on:
       - 'data/probability/generated/weekly-game-projections-2026.json'
       - 'data/market/weekly-game-market-recommendations-2026.json'
       - 'players*.json'
-      - 'scripts/build-step3g-core-features.mjs'
-      - 'scripts/validate-step3g-core-features.mjs'
-      - 'scripts/validate-step3g-breakout-bust-cohorts.mjs'
-      - 'scripts/validate-step3g-historical-situations.mjs'
+      - 'scripts/build-step3g-core-features-v2.mjs'
+      - 'scripts/validate-step3g-core-features-v2.mjs'
+      - 'scripts/validate-step3g-breakout-bust-cohorts-v2.mjs'
+      - 'scripts/validate-step3g-historical-situations-v2.mjs'
       - '.github/workflows/step3g-core-features.yml'
   workflow_dispatch:
 
@@ -46,14 +46,14 @@ jobs:
         run: node scripts/validate-step3f-daily-evidence.mjs
       - name: Build broad historical player reference
         run: node scripts/build-historical-reference-population.mjs
-      - name: Validate Breakout and Bust cohorts out of sample
-        run: node scripts/validate-step3g-breakout-bust-cohorts.mjs
-      - name: Validate historical situational indicators
-        run: node scripts/validate-step3g-historical-situations.mjs
-      - name: Build Step 3G actual core feature outputs
-        run: node scripts/build-step3g-core-features.mjs
-      - name: Validate Step 3G substantive feature contract
-        run: node scripts/validate-step3g-core-features.mjs
+      - name: Empirically resolve Breakout and Bust cohorts
+        run: node scripts/validate-step3g-breakout-bust-cohorts-v2.mjs
+      - name: Empirically resolve historical situational indicators
+        run: node scripts/validate-step3g-historical-situations-v2.mjs
+      - name: Build Step 3G empirically gated feature outputs
+        run: node scripts/build-step3g-core-features-v2.mjs
+      - name: Validate Step 3G empirical closure contract
+        run: node scripts/validate-step3g-core-features-v2.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
       - name: Upload Step 3G feature audit
