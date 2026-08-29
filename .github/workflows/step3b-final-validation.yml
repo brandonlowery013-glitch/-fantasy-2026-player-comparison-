@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - 'scripts/finalize-step3b-validation.mjs'
-      - 'scripts/validate-step3b-final-validation.mjs'
+      - 'scripts/validate-step3b-closure.mjs'
       - 'data/sources/step3b-final-decision-2026.json'
       - '.github/workflows/step3b-final-validation.yml'
   workflow_dispatch:
@@ -26,10 +26,12 @@ jobs:
         run: node scripts/enrich-historical-context.mjs
       - name: Rebuild QB and offensive environment context
         run: node scripts/enrich-deeper-football-context.mjs
-      - name: Run final Step 3B historical validation
+      - name: Run final Step 3B historical audit
         run: node scripts/finalize-step3b-validation.mjs
-      - name: Validate final Step 3B decision
-        run: node scripts/validate-step3b-final-validation.mjs
+      - name: Restore locked Step 3B decision contract
+        run: git checkout -- data/sources/step3b-final-decision-2026.json
+      - name: Validate substantive Step 3B closure
+        run: node scripts/validate-step3b-closure.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
       - name: Upload final Step 3B report
@@ -39,5 +41,6 @@ jobs:
           name: step3b-final-historical-validation
           path: |
             guardrails/step3b-final-historical-validation.json
+            guardrails/step3b-closure.json
             data/sources/step3b-final-decision-2026.json
           if-no-files-found: error
