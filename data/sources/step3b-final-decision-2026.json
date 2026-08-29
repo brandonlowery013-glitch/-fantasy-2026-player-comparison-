@@ -1,0 +1,44 @@
+{
+  "version": "STEP3B_FINAL_DECISION_1.0.0",
+  "season": 2026,
+  "status": "STEP3B_VALIDATION_COMPLETE_AWAITING_USER_REVIEW",
+  "live_weight": 0,
+  "live_projection_movement": 0,
+  "live_rank_movement": 0,
+  "sportsbook_or_adp_used": false,
+  "conclusions": {
+    "generic_position_average_shrinkage": "REJECTED",
+    "established_player_history": "PRIMARY_PRESEASON_PRIOR",
+    "rookie_no_history_cohorts": "VALIDATED_SHADOW_INPUT",
+    "current_role_usage_evidence": "VALIDATED_INCREMENTAL_IN_SEASON_SIGNAL",
+    "same_role_cohort": "MODEST_VALIDATED_INCREMENTAL_IN_SEASON_SIGNAL",
+    "regime_change_role_evidence": "VALIDATED_IN_AGGREGATE_WITH_DOCUMENTED_2022_UPSHIFT_EXCEPTION"
+  },
+  "team_qb_environment": {
+    "environment_shift_cutoff_absolute_neutral_pass_rate_delta": 0.08122002564534368,
+    "groups": {
+      "TEAM_CHANGE": {"n":32,"history_mae":4.169011275642249,"early_evidence_mae":3.3059130713036966,"early_evidence_improvement_pct":20.702707363284578},
+      "QB_CHANGE": {"n":127,"history_mae":3.657455498466847,"early_evidence_mae":3.2701884314285876,"early_evidence_improvement_pct":10.588428682197124},
+      "TEAM_OR_QB_CHANGE": {"n":131,"history_mae":3.6711223816347305,"early_evidence_mae":3.22414578212288,"early_evidence_improvement_pct":12.175475319153334},
+      "ENVIRONMENT_SHIFT_TOP_QUARTILE": {"n":87,"history_mae":3.8207184344466283,"early_evidence_mae":3.6736485762003004,"early_evidence_improvement_pct":3.8492723494195062},
+      "STABLE_TEAM_AND_QB": {"n":217,"history_mae":3.431140302869021,"early_evidence_mae":3.9921420499623257,"early_evidence_improvement_pct":-16.35030041249584}
+    },
+    "coach_identity_status": "NOT_DIRECTLY_SOURCED_NO_COACH_SPECIFIC_WEIGHT_AUTHORIZED",
+    "scheme_status": "TEAM/QB/ROLE/OFFENSIVE_ENVIRONMENT PROXIES TESTED; NO COACH-NAME EFFECT CLAIMED"
+  },
+  "confirmed_injury": {
+    "confirmed_out_sample": 26,
+    "numeric_injury_penalty_authorized": false,
+    "policy": "Confirmed injury status may affect availability/review state, but no new numeric injury severity weight is promoted from this audit."
+  },
+  "extreme_disagreement": {"threshold_ppg":9.498105203619907,"review_required":true,"automatic_publish":false},
+  "predictive_distribution": {
+    "candidate_status": "SHADOW_ONLY_NOT_PROMOTED",
+    "decision": "NO_NEW_DISTRIBUTION_PROMOTION",
+    "reason": "Earlier Gaussian and empirical/conformal candidates were mixed on calibration. Step 3B closes by withholding new distribution authority rather than tuning against holdout failures. Existing production distribution remains unchanged until a separately validated replacement exists."
+  },
+  "coach_specific_weight_authorized": false,
+  "promotion_allowed": false,
+  "user_review_required": true,
+  "next_step_after_approval": "STEP_3C_FULL_162_SHADOW_RECALCULATION"
+}
