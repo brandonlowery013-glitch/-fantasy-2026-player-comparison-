@@ -1,12 +1,12 @@
 {
-  "version": "UI_STEP3A_FEATURE_RULES_1.0.0",
+  "version": "UI_STEP3A_FEATURE_RULES_1.1.0",
   "season": 2026,
   "status": "LOCKED_FOR_IMPLEMENTATION",
-  "scope": ["sit_start", "sleepers", "trap_games", "games_of_the_week", "historical_situational_indicators"],
+  "scope": ["sit_start", "sleepers_breakouts", "avoid_busts", "trap_games", "games_of_the_week", "historical_situational_indicators"],
   "global_rules": [
-    "No feature may create a recommendation when required weekly football context is missing, stale, or failed.",
     "Missing values remain unknown and are never converted to zero.",
-    "Sportsbook data may rank or price game-value features but may not rewrite the independent football projection.",
+    "Sportsbook data may rank or price market-value features but may not rewrite the independent football projection.",
+    "Weekly Sit/Start and season-long Breakout/Avoid classifications are separate outputs and cannot automatically promote one another.",
     "Trap-game warnings and game-value picks are separate outputs and cannot automatically promote one another.",
     "Historical situational indicators are supporting evidence unless and until they pass the locked promotion standard.",
     "All live labels must retain provenance, capture time, prerequisite state, and explanation drivers."
@@ -15,12 +15,7 @@
     "level": "player_weekly",
     "labels": ["START", "LEAN_START", "BORDERLINE", "LEAN_SIT", "SIT", "NO_CALL"],
     "required_inputs": ["weekly_projection", "weekly_distribution", "expected_active", "role_context", "injury_context", "opponent_context"],
-    "gates": {
-      "expected_active_required": true,
-      "fresh_context_required": true,
-      "distribution_required": true,
-      "no_call_if_prerequisite_failed": true
-    },
+    "gates": {"expected_active_required": true, "fresh_context_required": true, "distribution_required": true, "no_call_if_prerequisite_failed": true},
     "decision_policy": {
       "basis": "Position-relative weekly projection plus downside/upside distribution, role certainty, injury certainty, matchup context, and replacement-level separation.",
       "START": "Clear starter-range projection with positive separation from the position replacement line and no material availability/role red flag.",
@@ -30,37 +25,40 @@
       "SIT": "Clearly below replacement line, materially impaired role/availability, or downside distribution dominates viable alternatives.",
       "NO_CALL": "Required data is missing, stale, contradictory, or failed."
     },
-    "anti_rules": ["Season-long draft rank alone cannot determine a weekly START/SIT label.", "A single matchup statistic cannot override the full weekly distribution."]
+    "anti_rules": ["Season-long draft rank alone cannot determine a weekly START/SIT label.", "A single matchup statistic cannot override the full weekly distribution.", "Do not create a separate weekly Avoid feature; SIT and LEAN_SIT already express the negative weekly decision."]
   },
-  "sleepers": {
-    "level": "player_weekly",
-    "labels": ["SLEEPER", "DEEP_SLEEPER", "WATCH", "NO_CALL"],
-    "required_inputs": ["weekly_projection", "weekly_ceiling", "weekly_distribution", "role_context", "expected_active"],
-    "eligibility": {
-      "must_be_outside_clear_starter_tier": true,
-      "must_have_actionable_ceiling": true,
-      "must_have_role_or_environment_path": true,
-      "expected_active_required": true
-    },
+  "sleepers_breakouts": {
+    "level": "player_season_long",
+    "purpose": "Identify season-long players whose underlying football profile resembles historically successful breakout paths before the market fully recognizes them.",
+    "labels": ["BREAKOUT_CANDIDATE", "SLEEPER", "WATCH", "NO_CALL"],
+    "required_inputs": ["season_projection", "predictive_distribution", "role_context", "availability_context", "historical_or_rookie_prior", "career_stage_context"],
+    "candidate_evidence": ["role_trajectory", "target_or_touch_earning", "route_participation", "high_value_usage", "efficiency_sustainability", "offensive_environment_change", "depth_chart_path", "quarterback_or_coaching_change", "age_experience_curve", "historical_breakout_cohort_similarity"],
+    "eligibility": {"credible_season_long_upside_required": true, "football_evidence_required": true, "historical_or_rookie_prior_required": true, "market_price_alone_insufficient": true},
     "decision_policy": {
-      "SLEEPER": "Non-obvious weekly option whose median projection is not a clear starter but whose ceiling and current role/environment create a credible path to starter-level production.",
-      "DEEP_SLEEPER": "Lower-baseline player with a credible but narrower high-end path supported by role change, high-value usage, injury-created opportunity, or unusually favorable environment.",
-      "WATCH": "Interesting signal exists but role, availability, sample, or ceiling evidence is not strong enough for a sleeper label.",
-      "NO_CALL": "Prerequisites failed or the case depends only on name value, draft cost, or unsupported narrative."
+      "BREAKOUT_CANDIDATE": "Multiple independent football indicators and a credible historical/cohort path support a materially higher season-long outcome than the current baseline expectation.",
+      "SLEEPER": "The player has a plausible season-long value path that is not yet fully recognized, supported by role, talent, environment or cohort evidence rather than price alone.",
+      "WATCH": "Interesting forward-looking evidence exists, but role, sample, health, prior quality or opportunity is not strong enough for a breakout/sleeper label.",
+      "NO_CALL": "Evidence is insufficient, contradictory, stale, or dependent only on unsupported narrative or market price."
     },
-    "anti_rules": ["Low draft rank alone does not make a sleeper.", "A player already projected as a clear weekly starter cannot be labeled a sleeper."]
+    "validation_rules": ["Historical cohort similarity must be tested out of sample before receiving meaningful model weight.", "Small or rookie samples must be shrunk toward appropriate priors.", "A breakout label may influence review priority but cannot directly overwrite the Overall Draft Board without the normal model/review gate."],
+    "anti_rules": ["Low ADP alone does not make a sleeper.", "One strong camp report alone does not make a breakout candidate.", "Weekly matchup strength cannot determine a season-long breakout label."]
+  },
+  "avoid_busts": {
+    "level": "player_season_long",
+    "purpose": "Identify the season-long downside/opposite of Breakout Candidates: players whose football profile, risk distribution or current cost creates elevated bust or overvaluation risk.",
+    "labels": ["AVOID", "OVERPRICED", "BUST_CANDIDATE", "WATCH", "NO_CALL"],
+    "required_inputs": ["season_projection", "predictive_distribution", "role_context", "availability_context", "historical_or_rookie_prior", "career_stage_context"],
+    "candidate_evidence": ["role_erosion", "touch_or_target_decline", "efficiency_regression_risk", "touchdown_regression_risk", "offensive_environment_decline", "depth_chart_competition", "age_decline_curve", "injury_or_availability_risk", "historical_bust_cohort_similarity"],
+    "separation_rules": ["BUST_CANDIDATE is a football/downside classification and does not require ADP.", "OVERPRICED requires market cost and must remain downstream of the football evaluation.", "AVOID is the final draft-side recommendation when downside and/or overpricing is strong enough; it is not a weekly lineup label."],
+    "validation_rules": ["Historical downside cohorts must be tested out of sample before receiving meaningful model weight.", "Extreme downside signals must be shrunk when sample quality is weak.", "Avoid/Bust labels cannot directly overwrite the Overall Draft Board without the normal model/review gate."],
+    "anti_rules": ["Do not create a separate weekly Avoid feature.", "ADP cannot contaminate Better Player, True Value, or the independent football projection.", "One injury rumor or one bad preseason game cannot create an AVOID label by itself."]
   },
   "games_of_the_week": {
     "level": "game_market",
     "purpose": "Feature the strongest model-vs-market game values where Vegas may be wrong.",
     "source_contract": "data/sources/game-market-recommendation-layer-2026.json",
     "labels": ["GAME_OF_THE_WEEK", "STRONG_VALUE", "LEAN_VALUE", "PASS"],
-    "eligibility": {
-      "must_already_be_valid_pick": true,
-      "fresh_pre_kickoff_market_required": true,
-      "all_recommendation_prerequisites_required": true,
-      "minimum_model_conditional_win_probability": 0.52
-    },
+    "eligibility": {"must_already_be_valid_pick": true, "fresh_pre_kickoff_market_required": true, "all_recommendation_prerequisites_required": true, "minimum_model_conditional_win_probability": 0.52},
     "thresholds": {
       "GAME_OF_THE_WEEK": {"minimum_probability_edge": 0.08, "minimum_expected_value": 0.08},
       "STRONG_VALUE": {"minimum_probability_edge": 0.05, "minimum_expected_value": 0.04},
@@ -91,20 +89,8 @@
     "candidate_examples": ["trailed_14_plus_fourth_quarter_then_won", "overtime_previous_game", "high_snap_load_previous_game", "west_to_east_early_kick", "short_rest", "consecutive_road_games", "post_bye", "opponent_post_bye", "international_game_recovery"],
     "evaluation_target": ["residual_margin_vs_pregame_expectation", "cover_probability_residual", "win_probability_residual", "total_residual_when_relevant"],
     "controls": ["team_strength", "opponent_strength", "quarterback", "injuries", "home_road", "rest_days", "travel_distance", "time_zones", "closing_expectation_for_historical_evaluation_only", "offensive_efficiency", "defensive_efficiency", "season_week"],
-    "sample_policy": {
-      "minimum_raw_games_to_display_context": 30,
-      "minimum_effective_games_for_model_candidate": 75,
-      "minimum_raw_games_for_model_candidate": 100,
-      "minimum_distinct_seasons": 3
-    },
-    "promotion_policy": {
-      "out_of_sample_validation_required": true,
-      "directional_replication_required": true,
-      "shrinkage_required": true,
-      "single_indicator_max_margin_adjustment_points": 0.75,
-      "combined_situational_max_margin_adjustment_points": 1.5,
-      "larger_adjustment_requires_recalibration_approval": true
-    },
+    "sample_policy": {"minimum_raw_games_to_display_context": 30, "minimum_effective_games_for_model_candidate": 75, "minimum_raw_games_for_model_candidate": 100, "minimum_distinct_seasons": 3},
+    "promotion_policy": {"out_of_sample_validation_required": true, "directional_replication_required": true, "shrinkage_required": true, "single_indicator_max_margin_adjustment_points": 0.75, "combined_situational_max_margin_adjustment_points": 1.5, "larger_adjustment_requires_recalibration_approval": true},
     "overlap_policy": "Correlated indicators must be grouped or jointly modeled; raw historical effects cannot be blindly added together.",
     "display_policy": "Indicators that clear context-display standards but not model-promotion standards may appear in Why/Context as supporting historical evidence with sample size and uncertainty, but receive zero projection weight.",
     "anti_rules": ["No cherry-picked ATS trend becomes a model input from a small sample.", "No closing line from the current game may contaminate the independent pre-market football projection.", "Historical association must not be described as causal without causal evidence."]
