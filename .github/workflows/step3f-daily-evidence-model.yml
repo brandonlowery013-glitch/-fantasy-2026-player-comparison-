@@ -1,0 +1,53 @@
+name: Step 3F Daily Evidence to Model Review
+
+on:
+  schedule:
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'injuryOverrides2026.json'
+      - 'players*.json'
+      - 'data/sources/step3f-daily-evidence-model-2026.json'
+      - 'scripts/finalize-step3e-noop.mjs'
+      - 'scripts/build-step3f-daily-evidence-queue.mjs'
+      - 'scripts/validate-step3f-daily-evidence.mjs'
+      - '.github/workflows/step3f-daily-evidence-model.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  evidence-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Rebuild Step 3C shadow prerequisite
+        run: node scripts/build-step3c-full-162-shadow.mjs
+      - name: Validate Step 3C prerequisite
+        run: node scripts/validate-step3c-full-162-shadow.mjs
+      - name: Rebuild Step 3D review gate
+        run: node scripts/build-step3d-user-review-gate.mjs
+      - name: Rebuild Step 3D final decisions
+        run: node scripts/finalize-step3d-user-review.mjs
+      - name: Close Step 3E audited no-op
+        run: node scripts/finalize-step3e-noop.mjs
+      - name: Build Step 3F daily evidence review queue
+        run: node scripts/build-step3f-daily-evidence-queue.mjs
+      - name: Validate Step 3F contract
+        run: node scripts/validate-step3f-daily-evidence.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload Step 3E and 3F audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3f-daily-evidence-review
+          path: |
+            guardrails/step3e-application-audit.json
+            guardrails/step3f-daily-evidence-queue.json
+            guardrails/step3f-validation.json
+          if-no-files-found: error
