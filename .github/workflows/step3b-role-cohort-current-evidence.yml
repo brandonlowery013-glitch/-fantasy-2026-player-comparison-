@@ -1,0 +1,35 @@
+name: Step 3B Role Cohort Current Evidence
+
+on:
+  pull_request:
+    paths:
+      - 'players*.json'
+      - 'scripts/backtest-step3b-role-cohort-current-evidence.mjs'
+      - 'scripts/validate-step3b-role-cohort-current-evidence.mjs'
+      - '.github/workflows/step3b-role-cohort-current-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  role-cohort-current-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run role cohort and current evidence walk-forward
+        run: node scripts/backtest-step3b-role-cohort-current-evidence.mjs
+      - name: Validate role cohort and current evidence report
+        run: node scripts/validate-step3b-role-cohort-current-evidence.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3b-role-cohort-current-evidence
+          path: guardrails/step3b-role-cohort-current-evidence-backtest.json
+          if-no-files-found: error
