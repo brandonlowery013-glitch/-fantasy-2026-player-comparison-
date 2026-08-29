@@ -13,6 +13,7 @@ const rows=history.players?.['Jayden Higgins']||[];
 const numericFields={mp:target.mp,cp:target.cp,s:target.s,pd:target.pd,ce:target.ce,r:target.r,e:target.e,a:target.a,rl:target.rl,su:target.su};
 const zeroNumeric=Object.entries(numericFields).filter(([,v])=>Number(v)===0).map(([k])=>k);
 const out={
+  schema_version:'STEP4_HELD_INTEGRITY_AUDIT_1.0.0',
   status:'PASS',
   authoritative_player_count:players.length,
   player:'Jayden Higgins',
@@ -27,8 +28,9 @@ const out={
   ceiling_text:target.cl||null,
   legitimate_history_rows:rows,
   history_row_count:rows.length,
+  missing_is_unknown:true,
   data_integrity_classification: Number(target.mp)===0 ? 'LIVE_MODEL_PROJECTION_ZERO_REQUIRES_REPAIR' : 'NO_CURRENT_ZERO_PROJECTION_ANOMALY'
 };
-fs.mkdirSync('guardrails',{recursive:true});
-fs.writeFileSync('guardrails/step4-held-integrity-audit.json',JSON.stringify(out,null,2)+'\n');
+fs.mkdirSync('data/sources',{recursive:true});
+fs.writeFileSync('data/sources/step4-held-integrity-audit-2026.json',JSON.stringify(out,null,2)+'\n');
 console.log(JSON.stringify(out,null,2));
