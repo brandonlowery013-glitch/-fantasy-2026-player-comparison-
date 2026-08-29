@@ -1,0 +1,43 @@
+{
+  "version": "STEP3H_FULL_STEP3_QA_1.0.0",
+  "season": 2026,
+  "status": "FULL_STEP3_CLOSURE_AUDIT",
+  "scope": ["3A","3B","3C","3D","3E","3F","3G"],
+  "closure_requirements": {
+    "3A": "Locked six-feature definitions validate without mutation.",
+    "3B": "Foundation decision remains locked; QB trailing-2 and RB no-blanket-offset rules used by 3C remain intact; no market contamination.",
+    "3C": "Exactly 162 unique shadow rows; zero live movement; rookie sanitization and persistent contamination exclusion retained.",
+    "3D": "User review gate remains complete; no shadow proposal silently publishes.",
+    "3E": "Approved-change application is an audited no-op unless explicit approvals exist; current approved/applied count is zero.",
+    "3F": "Evidence pipeline maps only known players, preserves missing-as-unknown, excludes market inputs, and grants zero automatic numeric authority to unvalidated evidence.",
+    "3G": "All six core engines are executable; Breakout/Bust cohorts have empirical decisions; all nine historical-situation candidates are empirically resolved or explicitly source-blocked; weekly/game missing prerequisites fail safely; zero live projection/rank movement."
+  },
+  "cross_step_invariants": [
+    "authoritative_player_count_162",
+    "unique_player_count_162",
+    "sportsbook_and_adp_do_not_contaminate_football_projection",
+    "missing_data_never_silently_becomes_zero",
+    "manual_or_explicit_approval_required_before_live_step3_application",
+    "no_duplicate_injury_penalty",
+    "no_unvalidated_role_or_coach_numeric_authority",
+    "step3g_classifications_do_not_rewrite_projection_or_rank",
+    "weekly_features_fail_safe_when_live_prerequisites_are_absent",
+    "source_blocked_historical_indicators_keep_zero_weight"
+  ],
+  "known_external_or_later_gates": {
+    "persistent_rookie_history_source_repair": "STEP_4_DATA_INTEGRITY",
+    "four_source_blocked_historical_situations": "STEP_4_DATA_INTEGRITY_SOURCE_ENRICHMENT",
+    "weekly_live_sit_start_game_outputs": "ACTIVATE_WHEN_VERIFIED_WEEKLY_INPUTS_EXIST",
+    "football_value_lambda_rho_gamma": "UNVALIDATED_ZERO_AUTHORITY_UNTIL_SEPARATE_EMPIRICAL_TEST",
+    "weekly_betting_calibration_sample_and_metrics": "ONGOING_PRODUCTION_CALIBRATION"
+  },
+  "prohibited_closure_shortcuts": [
+    "workflow_success_alone_is_not_substantive_completion",
+    "quarantine_alone_is_not_resolution",
+    "missing_live_weekly_data_must_not_be_fabricated",
+    "source_unavailability_must_be_named_and_zero_weight",
+    "no_market_data_may_backsolve_football_projection"
+  ],
+  "pass_rule": "Step 3H passes only if every in-scope Step 3 requirement is empirically/contractually resolved or explicitly moved to a named later gate, all cross-step invariants pass, and no live projection/rank movement is introduced by the Step 3 QA chain.",
+  "next_step_on_pass": "STEP_4_DATA_INTEGRITY"
+}
