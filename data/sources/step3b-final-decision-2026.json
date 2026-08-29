@@ -1,44 +1,160 @@
 {
-  "version": "STEP3B_FINAL_DECISION_1.0.0",
+  "version": "STEP3B_FINAL_DECISION_2.0.0",
   "season": 2026,
-  "status": "STEP3B_VALIDATION_COMPLETE_AWAITING_USER_REVIEW",
+  "status": "STEP3B_FOUNDATION_LOCKED_AWAITING_USER_APPROVAL_FOR_3C",
   "live_weight": 0,
   "live_projection_movement": 0,
   "live_rank_movement": 0,
   "sportsbook_or_adp_used": false,
-  "conclusions": {
-    "generic_position_average_shrinkage": "REJECTED",
+  "promotion_allowed": false,
+  "user_approval_required_before_3c": true,
+  "next_step_after_approval": "STEP_3C_FULL_162_SHADOW_RECALCULATION",
+  "preseason_authority": {
     "established_player_history": "PRIMARY_PRESEASON_PRIOR",
+    "generic_position_average_shrinkage": "REJECTED",
+    "current_weeks_1_4_evidence_weight": 0,
+    "same_role_cohort_preseason_numeric_weight": 0,
+    "same_role_cohort_status": "VALIDATED_FOR_FURTHER_SHADOW_TESTING_NOT_PROMOTED",
     "rookie_no_history_cohorts": "VALIDATED_SHADOW_INPUT",
-    "current_role_usage_evidence": "VALIDATED_INCREMENTAL_IN_SEASON_SIGNAL",
-    "same_role_cohort": "MODEST_VALIDATED_INCREMENTAL_IN_SEASON_SIGNAL",
-    "regime_change_role_evidence": "VALIDATED_IN_AGGREGATE_WITH_DOCUMENTED_2022_UPSHIFT_EXCEPTION"
+    "unvalidated_context_weight": 0
+  },
+  "historical_relevance": {
+    "maximum_player_history_seasons": 3,
+    "recency_weights_oldest_to_latest": {
+      "one_season": [1.0],
+      "two_seasons": [0.35, 0.65],
+      "three_seasons": [0.20, 0.30, 0.50]
+    },
+    "richer_decay_model_status": "DEFERRED_ZERO_AUTHORITY",
+    "richer_decay_model_next_step": "STEP_3F_DAILY_EVIDENCE_TO_MODEL_AUTOMATION_AND_STEP_3H_VALIDATION"
+  },
+  "predictive_distribution": {
+    "qb": {
+      "q50_status": "VALIDATED_LOCKED_FOR_3C_SHADOW",
+      "method": "TRAILING_2",
+      "heldout_seasons": [2021, 2022, 2023, 2024, 2025],
+      "heldout_n": 173,
+      "overall_q50_coverage": 0.5202312138728323,
+      "all_years_compatible_95pct": true,
+      "year_q50_coverage": {
+        "2021": 0.65625,
+        "2022": 0.4444444444444444,
+        "2023": 0.5,
+        "2024": 0.5675675675675675,
+        "2025": 0.4411764705882353
+      },
+      "q10_coverage": 0.12716763005780346,
+      "q90_coverage": 0.9132947976878613,
+      "quantile_clip_count": 0
+    },
+    "rb": {
+      "q50_status": "NO_NEW_Q50_PROMOTION_RETAIN_EXISTING_RB_DISTRIBUTION",
+      "decision": "REJECT_NEW_REPLACEMENT",
+      "reason": "Multiple leakage-safe candidate families calibrated well overall but failed the predeclared every-year robustness requirement because the 2022 RB season remained outside 95% Q50 compatibility. No 2022-only correction is authorized because that would be target-year hindsight tuning.",
+      "tested_heldout_seasons": [2021, 2022, 2023, 2024, 2025],
+      "tested_n": 404,
+      "robust_history_best_method": "HISTORY_DECAYED_3",
+      "robust_history_overall_q50_coverage": 0.5099009900990099,
+      "robust_history_2022_q50_coverage": 0.6463414634146342,
+      "robust_history_2022_compatible_95pct": false,
+      "diagnostic_2022_team_change_q50_coverage": 0.8095238095238095,
+      "diagnostic_2022_team_change_n": 21,
+      "existing_distribution_change_authorized": false
+    },
+    "wr_te": {
+      "status": "RETAIN_EXISTING_CALIBRATED_DISTRIBUTION",
+      "reason": "Broad-reference audit did not identify a position-level Q50 blocker requiring a replacement."
+    }
+  },
+  "role_regime": {
+    "aggregate_current_evidence_status": "VALIDATED_INCREMENTAL_IN_SEASON_SIGNAL_NOT_PRESEASON_AUTHORITY",
+    "role_upshift_2022_exception": "FAILED",
+    "automatic_preseason_role_upshift_numeric_modifier_authorized": false,
+    "policy": "Do not automatically boost preseason projections from a role-upshift label. Role changes remain review context; in-season production may update only through separately validated evidence logic."
   },
   "team_qb_environment": {
     "environment_shift_cutoff_absolute_neutral_pass_rate_delta": 0.08122002564534368,
     "groups": {
-      "TEAM_CHANGE": {"n":32,"history_mae":4.169011275642249,"early_evidence_mae":3.3059130713036966,"early_evidence_improvement_pct":20.702707363284578},
-      "QB_CHANGE": {"n":127,"history_mae":3.657455498466847,"early_evidence_mae":3.2701884314285876,"early_evidence_improvement_pct":10.588428682197124},
-      "TEAM_OR_QB_CHANGE": {"n":131,"history_mae":3.6711223816347305,"early_evidence_mae":3.22414578212288,"early_evidence_improvement_pct":12.175475319153334},
-      "ENVIRONMENT_SHIFT_TOP_QUARTILE": {"n":87,"history_mae":3.8207184344466283,"early_evidence_mae":3.6736485762003004,"early_evidence_improvement_pct":3.8492723494195062},
-      "STABLE_TEAM_AND_QB": {"n":217,"history_mae":3.431140302869021,"early_evidence_mae":3.9921420499623257,"early_evidence_improvement_pct":-16.35030041249584}
+      "TEAM_CHANGE": {"n": 32, "history_mae": 4.169011275642249, "early_evidence_mae": 3.3059130713036966, "early_evidence_improvement_pct": 20.702707363284578},
+      "QB_CHANGE": {"n": 127, "history_mae": 3.657455498466847, "early_evidence_mae": 3.2701884314285876, "early_evidence_improvement_pct": 10.588428682197124},
+      "TEAM_OR_QB_CHANGE": {"n": 131, "history_mae": 3.6711223816347305, "early_evidence_mae": 3.22414578212288, "early_evidence_improvement_pct": 12.175475319153334},
+      "ENVIRONMENT_SHIFT_TOP_QUARTILE": {"n": 87, "history_mae": 3.8207184344466283, "early_evidence_mae": 3.6736485762003004, "early_evidence_improvement_pct": 3.8492723494195062},
+      "STABLE_TEAM_AND_QB": {"n": 217, "history_mae": 3.431140302869021, "early_evidence_mae": 3.9921420499623257, "early_evidence_improvement_pct": -16.35030041249584}
     },
-    "coach_identity_status": "NOT_DIRECTLY_SOURCED_NO_COACH_SPECIFIC_WEIGHT_AUTHORIZED",
-    "scheme_status": "TEAM/QB/ROLE/OFFENSIVE_ENVIRONMENT PROXIES TESTED; NO COACH-NAME EFFECT CLAIMED"
+    "stable_team_and_qb_policy": "RETAIN_ESTABLISHED_HISTORY_PRIMARY_NO_AUTOMATIC_EARLY_EVIDENCE_OVERRIDE",
+    "coach_identity_status": "NOT_DIRECTLY_SOURCED",
+    "coach_specific_weight": 0,
+    "offensive_coordinator_weight": 0,
+    "primary_play_caller_weight": 0,
+    "coach_source_completion_next_step": "STEP_4_DATA_INTEGRITY",
+    "scheme_policy": "Team/QB/role/environment proxies may be review context; no coach-name numeric effect is authorized."
   },
   "confirmed_injury": {
     "confirmed_out_sample": 26,
-    "numeric_injury_penalty_authorized": false,
-    "policy": "Confirmed injury status may affect availability/review state, but no new numeric injury severity weight is promoted from this audit."
+    "history_mae": 2.8609,
+    "early_evidence_mae": 3.2741,
+    "early_evidence_improvement_pct": -14.44,
+    "numeric_injury_severity_penalty_authorized": false,
+    "official_out_status_use": "AVAILABILITY_AND_REVIEW_CONTEXT_ONLY",
+    "severity_recovery_model_status": "DEFERRED_ZERO_AUTHORITY",
+    "severity_recovery_model_next_step": "STEP_3F_DAILY_EVIDENCE_TO_MODEL_AUTOMATION"
   },
-  "extreme_disagreement": {"threshold_ppg":9.498105203619907,"review_required":true,"automatic_publish":false},
-  "predictive_distribution": {
-    "candidate_status": "SHADOW_ONLY_NOT_PROMOTED",
-    "decision": "NO_NEW_DISTRIBUTION_PROMOTION",
-    "reason": "Earlier Gaussian and empirical/conformal candidates were mixed on calibration. Step 3B closes by withholding new distribution authority rather than tuning against holdout failures. Existing production distribution remains unchanged until a separately validated replacement exists."
+  "extreme_disagreement": {
+    "threshold_ppg": 9.498105203619907,
+    "review_required": true,
+    "automatic_publish": false,
+    "sample_n": 18,
+    "policy": "Any shadow update at or above the empirical disagreement threshold is quarantined for manual review."
   },
-  "coach_specific_weight_authorized": false,
-  "promotion_allowed": false,
-  "user_review_required": true,
-  "next_step_after_approval": "STEP_3C_FULL_162_SHADOW_RECALCULATION"
+  "rookie_history_integrity": {
+    "shadow_no_history_required": true,
+    "shadow_no_history_players": [
+      "Jeremiyah Love",
+      "Carnell Tate",
+      "Jordyn Tyson",
+      "Makai Lemon",
+      "KC Concepcion",
+      "Jadarian Price",
+      "Chris Bell",
+      "Jonah Coleman",
+      "Mike Washington Jr.",
+      "Kaytron Allen"
+    ],
+    "known_persistent_source_contamination_players": [
+      "Jordyn Tyson",
+      "Makai Lemon",
+      "KC Concepcion",
+      "Jadarian Price",
+      "Chris Bell",
+      "Jonah Coleman",
+      "Kaytron Allen"
+    ],
+    "persistent_source_repair_status": "NOT_YET_REPAIRED",
+    "policy_for_3c": "Use the sanitized shadow historical input; contaminated 2025 rows have zero authority.",
+    "hard_gate_before_3e": "Repair persistent historicalStats2026.json contamination and rerun integrity QA before any approved shadow changes are applied live."
+  },
+  "football_value_terms": {
+    "formula_concept": "FV=E[X]+lambda*(Q90-Q50)-rho*(Q50-Q10)+gamma*S",
+    "lambda": null,
+    "rho": null,
+    "gamma": null,
+    "numeric_authority": 0,
+    "status": "DEFERRED",
+    "next_step": "STEP_3G_CORE_FEATURE_VALUE_LAYER_VALIDATION"
+  },
+  "breakout_bust": {
+    "status": "DEFERRED_ZERO_AUTHORITY",
+    "next_step": "STEP_3G_CORE_FEATURES"
+  },
+  "rank_projection_impact": {
+    "step3b_live_movement": 0,
+    "first_full_player_level_assessment": "STEP_3C_FULL_162_SHADOW_RECALCULATION",
+    "user_review_gate": "STEP_3D"
+  },
+  "downstream_non_blockers": {
+    "weekly_betting_calibration": "STEP_3G_STEP_3H_AND_PRODUCTION",
+    "market_probability_calibration": "DOWNSTREAM_BETTING_LAYER",
+    "ui_pr_74": "HOLD_DO_NOT_MERGE"
+  },
+  "closure_statement": "Step 3B closes the historical/model foundation by locking only empirically supported football authority, explicitly rejecting failed replacement formulas, assigning zero weight to unsupported signals, and naming later validation gates. It does not apply any live player projection or rank changes."
 }
