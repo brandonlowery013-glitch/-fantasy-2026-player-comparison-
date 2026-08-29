@@ -1,0 +1,30 @@
+name: UI State and Error Handling Step 2
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-state-error-handling:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Revalidate Step 1 functional shell
+        run: node scripts/validate-ui-functional-shell.mjs
+      - name: Revalidate existing platform interface contract
+        run: node scripts/validate-step12-platform-interface.mjs
+      - name: Validate Step 2 state and error handling
+        run: node scripts/validate-ui-state-error-step2.mjs
+      - name: Upload Step 2 UI report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-state-error-step2
+          path: guardrails/ui-state-error-step2-report.json
+          if-no-files-found: error
