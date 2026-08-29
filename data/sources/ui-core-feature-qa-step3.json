@@ -1,0 +1,26 @@
+{
+  "version": "UI_STEP3_CORE_FEATURE_QA_1.1.0",
+  "official_sequence_step": 3,
+  "name": "Core Feature QA",
+  "base_main_sha": "82e47f6b53599bff2e47fd868b8f58daf52ef0ca",
+  "rules": {
+    "no_visual_redesign": true,
+    "no_model_math_changes": true,
+    "no_missing_to_zero": true,
+    "no_fake_recommendations": true,
+    "no_cross_feature_auto_promotion": true
+  },
+  "features": [
+    {"id":"compare","level":"player","status":"READY_FOR_QA","surface":"compare.html","required_contracts":["runtime-comparison-decision-2026.js"],"notes":"Better Player must remain separate from price/value and independent of sportsbook inputs."},
+    {"id":"props","level":"player_market","status":"READY_FOR_QA","surface":"index.html#props","required_data":["data/market/player-prop-market-snapshots-2026.json","data/market/player-prop-recommendations-2026.json"],"notes":"Missing or stale markets cannot be shown as current or converted to zero."},
+    {"id":"nfl_games","level":"game","status":"READY_FOR_QA","surface":"index.html#games","required_data":["data/probability/generated/weekly-game-projections-2026.json","data/market/weekly-game-market-recommendations-2026.json"],"notes":"Football projections remain independent of sportsbook pricing."},
+    {"id":"weekly_opportunities","level":"weekly_ranked_market","status":"READY_FOR_QA","surface":"weekly-opportunities.html","required_data":["data/market/unified-opportunities-2026.json"],"notes":"The UI consumes existing PICK/PASS outputs and cannot manufacture recommendations."},
+    {"id":"filters","level":"ui_control","status":"READY_FOR_QA","surface":"index.html","notes":"Existing player search/position filters and feature-specific filters must change only presentation/selection, never model outputs."},
+    {"id":"sit_start","level":"player_weekly","status":"RULES_LOCKED_PENDING_IMPLEMENTATION","surface":null,"required_contracts":["data/sources/ui-step3a-feature-rule-contracts-2026.json"],"notes":"Weekly player decision only. START through SIT plus NO_CALL; no separate weekly Avoid feature."},
+    {"id":"sleepers_breakouts","level":"player_season_long","status":"RULES_LOCKED_PENDING_IMPLEMENTATION","surface":null,"required_contracts":["data/sources/ui-step3a-feature-rule-contracts-2026.json"],"notes":"Season-long sleeper/breakout identification using football evidence, historical/rookie priors and forward-looking role/context; price alone is insufficient."},
+    {"id":"avoid_busts","level":"player_season_long","status":"RULES_LOCKED_PENDING_IMPLEMENTATION","surface":null,"required_contracts":["data/sources/ui-step3a-feature-rule-contracts-2026.json"],"notes":"Season-long downside opposite of breakout. Bust Candidate is football-only; Overpriced/Avoid may use downstream market cost. Not a weekly lineup feature."},
+    {"id":"games_of_the_week","level":"game_market","status":"RULES_LOCKED_PENDING_IMPLEMENTATION","surface":null,"required_contracts":["data/sources/ui-step3a-feature-rule-contracts-2026.json","data/sources/game-market-recommendation-layer-2026.json"],"notes":"Featured subset of existing valid game PICKS; no parallel betting engine."},
+    {"id":"trap_games","level":"game_weekly","status":"RULES_LOCKED_PENDING_IMPLEMENTATION","surface":null,"required_contracts":["data/sources/ui-step3a-feature-rule-contracts-2026.json"],"notes":"Weekly NFL game warning signal. Trap is not an automatic opponent bet."},
+    {"id":"historical_situational_indicators","level":"game_context","status":"RULES_LOCKED_PENDING_IMPLEMENTATION","surface":null,"required_contracts":["data/sources/ui-step3a-feature-rule-contracts-2026.json"],"notes":"Historical context may display with adequate evidence; model weight requires stronger out-of-sample promotion standards."}
+  ]
+}

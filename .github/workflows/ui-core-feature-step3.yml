@@ -1,0 +1,55 @@
+name: UI Core Feature Step 3
+
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'compare.html'
+      - 'weekly-opportunities.html'
+      - 'data/market/**'
+      - 'data/probability/generated/weekly-game-projections-2026.json'
+      - 'data/sources/ui-core-feature-qa-step3.json'
+      - 'data/sources/ui-step3a-feature-rule-contracts-2026.json'
+      - 'scripts/validate-ui-core-feature-step3.mjs'
+      - 'scripts/validate-ui-step3a-feature-rules.mjs'
+      - '.github/workflows/ui-core-feature-step3.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-core-feature-step3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Revalidate Step 1 functional shell
+        run: node scripts/validate-ui-functional-shell.mjs
+      - name: Revalidate Step 2 state handling
+        run: node scripts/validate-ui-state-error-step2.mjs
+      - name: Revalidate comparison decision separation
+        run: node scripts/validate-ui-comparison-step3.mjs
+      - name: Revalidate platform interface contract
+        run: node scripts/validate-step12-platform-interface.mjs
+      - name: Revalidate player prop recommendation contract
+        run: node scripts/validate-player-prop-recommendation-contract.mjs
+      - name: Revalidate NFL game recommendation contract
+        run: node scripts/validate-game-market-recommendation-contract.mjs
+      - name: Revalidate unified opportunity contract
+        run: node scripts/validate-unified-opportunity-contract.mjs
+      - name: Revalidate Weekly Opportunities UI
+        run: node scripts/validate-weekly-opportunities-ui.mjs
+      - name: Validate Step 3A feature rule contracts
+        run: node scripts/validate-ui-step3a-feature-rules.mjs
+      - name: Audit official Step 3 core features
+        run: node scripts/validate-ui-core-feature-step3.mjs
+      - name: Upload Step 3 feature audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-core-feature-step3
+          path: guardrails/ui-core-feature-step3-report.json
+          if-no-files-found: error
