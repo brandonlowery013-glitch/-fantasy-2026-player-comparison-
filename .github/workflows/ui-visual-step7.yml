@@ -1,0 +1,48 @@
+name: UI Visual System Step 7
+
+on:
+  push:
+    branches:
+      - ui/chuck-the-duke-step7
+  pull_request:
+    branches:
+      - ui/responsive-step6
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  visual-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Apply idempotent Step 7 visual integration
+        run: node scripts/apply-ui-visual-step7.mjs
+      - name: Commit integration when needed
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "Step 7 integration already committed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html compare.html weekly-opportunities.html
+          git commit -m "Integrate Chuck The Duke Step 7 visual system"
+          git push origin HEAD:ui/chuck-the-duke-step7
+      - name: Revalidate Step 5 permissions
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Revalidate Step 6 responsive closure
+        run: node scripts/validate-ui-responsive-step6.mjs
+      - name: Validate Step 7 visual system
+        run: node scripts/validate-ui-visual-step7.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
