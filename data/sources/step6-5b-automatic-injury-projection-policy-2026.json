@@ -1,0 +1,78 @@
+{
+  "schema_version": "STEP6_5B_AUTOMATIC_INJURY_PROJECTION_POLICY_1.0.0",
+  "season": 2026,
+  "status": "SHADOW_POLICY_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "sportsbook_inputs_allowed": false,
+  "shared_state_rule": "One resolved injury/availability state is consumed by player weekly projections, teammate redistribution, team offense, game projections, props and explanations. The same injury may not be applied twice through both direct-player and team-environment adjustments without an explicit decomposition.",
+  "polling": {
+    "orchestrator": "Step 24 Weekly Production Orchestration",
+    "cron": "10 * * * *",
+    "rule": "Poll current injury/practice/designation state on every hourly scheduled orchestration invocation. A material injury-state change overrides the normal cadence skip and forces the football context -> weekly projection -> distribution -> downstream outlook pipeline to rerun before game lock.",
+    "max_injury_age_hours": 12
+  },
+  "designation_actions": {
+    "IR": {
+      "expected_active": false,
+      "weekly_display_points": 0,
+      "rule": "Requires verified reserve/injured roster status. No playing-time projection is generated; fantasy UI may display 0 projected points with IR status because the player cannot play that week."
+    },
+    "O": {
+      "expected_active": false,
+      "weekly_display_points": 0,
+      "rule": "Verified out/unavailable status forces no playing-time projection and a 0-point weekly display for the affected game."
+    },
+    "D": {
+      "expected_active": null,
+      "weekly_display_points": null,
+      "rule": "Doubtful forces REVIEW_REQUIRED and heightened availability uncertainty. It may reduce expected points only through a historically validated play-probability/workload model; no guessed fixed haircut is allowed."
+    },
+    "Q": {
+      "expected_active": null,
+      "weekly_display_points": null,
+      "rule": "Questionable/current workload uncertainty triggers a rerun. Mean/workload changes require current practice/workload evidence plus validated translation; uncertainty may be widened only by an authorized calibrated rule. No fixed Q haircut is allowed."
+    },
+    "CLEARED": {
+      "expected_active": true,
+      "weekly_display_points": null,
+      "rule": "Verified active/full-practice clearance removes stale Q/D/O status and triggers a rerun restoring the current healthy-state projection subject to other football evidence."
+    }
+  },
+  "projection_decomposition": {
+    "conditional_if_active_projection": "Existing weekly football projection conditional on playing.",
+    "play_probability": "Separate availability probability learned from historical designation + practice participation + injury context. O/IR are deterministic zero; Q/D coefficients require leakage-safe calibration before promotion.",
+    "workload_factor_if_active": "Separate workload/ramp factor learned from historical practice/return evidence. Missing factor is unknown, never assumed to be 1 or 0.",
+    "expected_weekly_fantasy_points": "conditional_if_active_fantasy_points * play_probability * workload_factor_if_active",
+    "current_authority": "O/IR deterministic inactivity is authorized. Q/D play-probability and workload coefficients remain zero-authority until historical walk-forward calibration."
+  },
+  "automatic_change_triggers": [
+    "new injury appears",
+    "designation changes among Q/D/O/IR/cleared",
+    "practice participation changes materially",
+    "PUP/NFI/IR activation or placement changes",
+    "verified expected-active state changes",
+    "material workload restriction or return-to-full-work evidence changes"
+  ],
+  "rerun_path": [
+    "poll current injury state",
+    "resolve latest designation and practice state",
+    "invalidate stale pregame weekly outlook for affected player/team",
+    "collect canonical football context",
+    "normalize injury/availability evidence",
+    "rebuild player weekly conditional projections",
+    "apply authorized availability/workload layer",
+    "rebuild probability distributions",
+    "propagate teammate/team/game/prop effects once",
+    "refresh weekly outlook/recommendations",
+    "persist through guarded production-state PR"
+  ],
+  "freeze_rule": "Pregame outlooks may refresh whenever new verified evidence arrives. Once the relevant game starts, the frozen forecast used for calibration is immutable and must never be rewritten with hindsight.",
+  "promotion_requirements": [
+    "Historical designation/practice participation outcomes are backfilled without hindsight leakage.",
+    "Q and D play-probability/workload mappings improve out-of-sample calibration versus no adjustment.",
+    "No double counting between direct injury availability and team-environment effects.",
+    "Automatic change detection is tested for injury, recovery and clearance transitions.",
+    "O/IR deterministic no-play behavior is tested separately from Q/D probabilistic behavior.",
+    "Full Guardrail QA passes on the exact promotion head."
+  ]
+}
