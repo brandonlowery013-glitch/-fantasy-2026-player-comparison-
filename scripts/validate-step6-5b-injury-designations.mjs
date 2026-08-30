@@ -2,6 +2,7 @@ import fs from 'node:fs';
 
 const p='data/sources/step6-5b-player-injury-designations-2026.json';
 const c=JSON.parse(fs.readFileSync(p,'utf8'));
+const ui=fs.readFileSync('index.html','utf8');
 const fail=[];
 const need=(v,m)=>{if(!v)fail.push(m)};
 const allowed=new Set(['Q','D','O','IR']);
@@ -18,5 +19,9 @@ for(const [name,x] of Object.entries(c.players||{})){
 need(c.players?.["Ja'Marr Chase"]?.tag==='Q',"Ja'Marr Chase current injury tag regression missing");
 need(c.players?.['Alvin Kamara']?.tag==='O','Alvin Kamara current injury tag regression missing');
 need(c.players?.['Alec Pierce']?.tag==='Q','Alec Pierce current injury tag regression missing');
+need(ui.includes("data/sources/step6-5b-player-injury-designations-2026.json"),'profile shell does not load injury designation registry');
+need(ui.includes('function injuryBadge(name)'),'profile shell injury badge renderer missing');
+need(ui.includes("row('Injury status',inj?.tag||'—')"),'profile injury-status row missing');
+need(ui.includes('injuryBadge(p.n)'),'profile hero injury badge missing');
 if(fail.length){console.error(JSON.stringify({status:'FAIL',failures:fail},null,2));process.exit(1)}
-console.log(JSON.stringify({status:'PASS',tagged_players:Object.keys(c.players||{}).length,labels:[...allowed]},null,2));
+console.log(JSON.stringify({status:'PASS',tagged_players:Object.keys(c.players||{}).length,labels:[...allowed],profile_ui:true},null,2));
