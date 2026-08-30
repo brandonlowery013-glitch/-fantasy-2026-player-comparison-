@@ -1,0 +1,76 @@
+{
+  "schema_version": "STEP6_5D_GAME_SPREAD_TOTAL_CALIBRATION_1.0.0",
+  "season": 2026,
+  "status": "SHADOW_ONLY",
+  "actionable": false,
+  "production_numeric_authority": 0,
+  "base_step": "STEP_14_WEEKLY_GAME_PROJECTION_ENGINE_LOCKED",
+  "base_rule": "The existing Step 14 shrunk offense + opponent points-allowed + empirical home-field model remains the baseline and may not be displaced unless the challenger improves leakage-safe held-out results.",
+  "historical_seasons": [2021, 2022, 2023, 2024, 2025],
+  "held_out_test_seasons": [2024, 2025],
+  "forecast_outputs": [
+    "projected_home_score",
+    "projected_away_score",
+    "fair_spread",
+    "fair_total",
+    "home_win_probability",
+    "margin_distribution",
+    "total_distribution",
+    "uncertainty"
+  ],
+  "football_feature_families": [
+    "prior_season_team_points_for",
+    "prior_season_team_points_allowed",
+    "current_season_team_points_for_before_target_game",
+    "current_season_team_points_allowed_before_target_game",
+    "home_field",
+    "pregame_rest_differential"
+  ],
+  "current_state_extensions": {
+    "canonical_2026_team_state": "Step 6.5B roster/personnel/coaching/injury state may be attached to the game record, but receives no numeric score adjustment until the corresponding coefficient is leakage-safe validated.",
+    "defense": "Step 6.5C DST evidence may inform shared defensive state only through separately validated pathways; a DST fantasy score itself is not a team-points input.",
+    "kicker": "Kicker quality/conditions may remain shared context, but the richer kicker model failed its 6.5C promotion test and therefore receives no new score-mean authority here."
+  },
+  "prior_decay": {
+    "rule": "The prior season is the preseason/Week 1 marker and is gradually weeded out as current-season games accumulate. The decay rate is selected from historical walk-forward data, never hand-set for 2026.",
+    "candidate_half_life_games": [1, 2, 4, 6, 8, 12, 16]
+  },
+  "walk_forward": {
+    "target_week_leakage_allowed": false,
+    "target_season_parameter_selection_allowed": false,
+    "parameter_selection": "For each held-out season, select decay and regularization using earlier seasons only, then refit without the held-out season and grade the untouched held-out games.",
+    "ridge_lambda_grid": [0.01, 0.1, 1, 10, 100]
+  },
+  "baseline": {
+    "method": "Step 14 equivalent: prior historical/shrunk team scoring offense paired with opponent defensive points allowed plus empirical home field.",
+    "targets": ["home_score", "away_score", "margin", "total"]
+  },
+  "promotion_gate": {
+    "automatic_promotion": false,
+    "required": [
+      "pooled margin MAE improves",
+      "pooled total MAE improves",
+      "pooled team-score MAE improves",
+      "no held-out season has material regression in both margin and total error",
+      "sportsbook contamination is false"
+    ]
+  },
+  "market_separation": {
+    "sportsbook_inputs_allowed_in_forecast": false,
+    "spread_line_allowed_as_feature": false,
+    "total_line_allowed_as_feature": false,
+    "odds_allowed_as_feature": false,
+    "allowed_later": "After the football forecast is frozen, historical/live market lines may be compared downstream for edge, ATS/total evaluation, EV and CLV."
+  },
+  "missing_data_rule": "Missing football fields are unknown, not zero; unavailable optional context is omitted rather than silently imputed from a sportsbook line.",
+  "double_count_rule": "A football fact or adjustment may enter a team score pathway once. The same injury, defensive effect, rest effect or personnel effect may not be applied again downstream unless an explicitly validated decomposition prevents double counting.",
+  "distribution_rule": "Margin/total uncertainty must be estimated from football forecast residuals or another leakage-safe football-only calibration, never inferred from bookmaker prices.",
+  "locked_rules": [
+    "2025 is the 2026 starting prior and is progressively weeded out as valid 2026 evidence accumulates.",
+    "No guessed coefficients.",
+    "No target-week leakage.",
+    "Football forecasts are generated before market comparison.",
+    "Sportsbook/ADP inputs cannot create, tune or backsolve football score forecasts.",
+    "All Step 6.5D outputs remain SHADOW_ONLY with zero production authority pending later governance and the full backward audit."
+  ]
+}
