@@ -1,0 +1,40 @@
+name: Final Parlay Step 3
+
+on:
+  pull_request:
+    paths:
+      - 'data/sources/parlay-engine-2026.json'
+      - 'data/sources/betting-data-source-price-contract-2026.json'
+      - 'data/sources/correlation-modeling-2026.json'
+      - 'data/market/weekly-game-market-recommendations-2026.json'
+      - 'data/market/player-prop-recommendations-2026.json'
+      - 'scripts/parlay-engine-2026.mjs'
+      - 'scripts/validate-final-parlay-step3.mjs'
+      - '.github/workflows/final-parlay-step3.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/sources/parlay-engine-2026.json'
+      - 'data/sources/betting-data-source-price-contract-2026.json'
+      - 'data/sources/correlation-modeling-2026.json'
+      - 'data/market/weekly-game-market-recommendations-2026.json'
+      - 'data/market/player-prop-recommendations-2026.json'
+      - 'scripts/parlay-engine-2026.mjs'
+      - 'scripts/validate-final-parlay-step3.mjs'
+      - '.github/workflows/final-parlay-step3.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  parlay-engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 2 betting data contract
+        run: node scripts/validate-final-betting-data-step2.mjs
+      - name: Validate Step 3 parlay engine
+        run: node scripts/validate-final-parlay-step3.mjs
