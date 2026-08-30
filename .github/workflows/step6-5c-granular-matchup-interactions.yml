@@ -1,0 +1,42 @@
+name: Step 6.5C Granular Matchup Interactions
+
+on:
+  push:
+    branches: [model/step6-5c-granular-matchup-interactions]
+  pull_request:
+    branches: [model/step6-5c-player-defense-dst-calibration]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  granular-matchup-interactions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Revalidate Step 6.5C base contract
+        run: node scripts/validate-step6-5c-player-defense-dst-calibration.mjs
+      - name: Re-run position-level defense calibration
+        run: node scripts/backtest-step6-5c-player-defense-dst-calibration.mjs
+      - name: Validate granular interaction contract
+        run: node scripts/validate-step6-5c-granular-matchup-interactions.mjs
+      - name: Test interaction and decay math
+        run: node scripts/backtest-step6-5c-granular-matchup-interactions.mjs --self-test
+      - name: Run historical granular matchup interaction calibration
+        run: node scripts/backtest-step6-5c-granular-matchup-interactions.mjs
+      - name: Upload granular interaction artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5c-granular-matchup-interactions
+          path: data/probability/generated/step6-5c-granular-matchup-interactions.json
+          if-no-files-found: error
+      - name: Revalidate Step 5 permissions
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
