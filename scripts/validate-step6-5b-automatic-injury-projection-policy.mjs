@@ -1,0 +1,30 @@
+import fs from 'node:fs';
+
+const policy=JSON.parse(fs.readFileSync('data/sources/step6-5b-automatic-injury-projection-policy-2026.json','utf8'));
+const cadence=fs.readFileSync('scripts/production-cadence-gate.mjs','utf8');
+const poll=fs.readFileSync('scripts/poll-live-injury-changes.mjs','utf8');
+const projection=fs.readFileSync('scripts/build-weekly-projection-generator.mjs','utf8');
+const adapter=JSON.parse(fs.readFileSync('data/sources/automatic-football-context-adapters-2026.json','utf8'));
+const failures=[];
+const need=(v,m)=>{if(!v)failures.push(m)};
+need(policy.schema_version==='STEP6_5B_AUTOMATIC_INJURY_PROJECTION_POLICY_1.0.0','policy schema mismatch');
+need(policy.mode==='SHADOW_ONLY','policy must remain SHADOW_ONLY');
+need(policy.sportsbook_inputs_allowed===false,'sportsbook contamination prohibited');
+for(const tag of ['Q','D','O','IR','CLEARED'])need(Boolean(policy.designation_actions?.[tag]),`missing action ${tag}`);
+need(policy.designation_actions.O.expected_active===false&&policy.designation_actions.O.weekly_display_points===0,'O must deterministically no-play / display zero');
+need(policy.designation_actions.IR.expected_active===false&&policy.designation_actions.IR.weekly_display_points===0,'IR must deterministically no-play / display zero');
+need(policy.designation_actions.Q.weekly_display_points===null,'Q may not use guessed fixed weekly points');
+need(policy.designation_actions.D.weekly_display_points===null,'D may not use guessed fixed weekly points');
+need(String(policy.projection_decomposition?.expected_weekly_fantasy_points||'').includes('play_probability'),'availability probability decomposition missing');
+need(String(policy.projection_decomposition?.expected_weekly_fantasy_points||'').includes('workload_factor'),'workload factor decomposition missing');
+need(cadence.includes("INJURY_STATE_CHANGED==='true'"),'cadence does not read injury change trigger');
+need(cadence.includes("reason:'INJURY_STATE_CHANGED'"),'cadence does not force on injury change');
+need(poll.includes("data/ingestion/live-injury-poll-2026.json"),'live injury poll state missing');
+need(poll.includes("designation:'Q'")||poll.includes("designation==='Q'"),'poll Q behavior self-test missing');
+need(projection.includes("if(p.expected_active===false)"),'weekly projection generator no-play gate missing');
+need(adapter.adapters?.injury?.max_capture_age_hours===12,'injury adapter must remain <=12h freshness');
+need(adapter.availability_contract?.injury_out_ir_pup_suspended_overrides_active===true,'injury inactive override missing');
+need(policy.freeze_rule.includes('immutable'),'pregame/game-start freeze rule missing');
+need(policy.shared_state_rule.includes('may not be applied twice'),'double-counting safeguard missing');
+if(failures.length){console.error(JSON.stringify({status:'FAIL',failures},null,2));process.exit(1)}
+console.log(JSON.stringify({status:'PASS',automatic_poll:true,injury_change_forces_rerun:true,deterministic_inactive:['O','IR'],probabilistic_pending_calibration:['Q','D']},null,2));
