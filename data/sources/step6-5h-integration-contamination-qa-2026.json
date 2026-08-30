@@ -1,0 +1,47 @@
+{
+  "schema_version": "STEP6_5H_INTEGRATION_CONTAMINATION_QA_1.0.0",
+  "season": 2026,
+  "status": "SHADOW_ONLY",
+  "base_step": "STEP6_5G_CALIBRATION_ABLATION_FULL_UNIVERSE_1.0.0",
+  "base_head_sha": "014ae9372ffecccbcd3eb3a78ef43f15c062f3ac",
+  "production_numeric_authority": 0,
+  "automatic_promotion": false,
+  "canonical_flow": [
+    "CANONICAL_FOOTBALL_STATE",
+    "FANTASY_PROJECTION",
+    "GAME_PROJECTION",
+    "PLAYER_PROP_PROJECTION",
+    "DST_PROJECTION",
+    "K_PROJECTION",
+    "MARKET_COMPARISON",
+    "UNIFIED_REASON_STACK"
+  ],
+  "surface_scopes": {
+    "FANTASY_PROJECTION": ["canonical_player_state", "validated_weekly_QB_RB_WR_matchup_shadow"],
+    "GAME_PROJECTION": ["canonical_team_state", "step6_5D_game_shadow", "validated_rest_context"],
+    "PLAYER_PROP_PROJECTION": ["canonical_player_state", "fantasy_volume_components", "validated_weekly_matchup_shadow"],
+    "DST_PROJECTION": ["canonical_team_state", "validated_dst_scoring_path", "validated_dst_matchup_shadow"],
+    "K_PROJECTION": ["canonical_team_state", "simple_kicker_baseline"],
+    "MARKET_COMPARISON": ["football_forecast_outputs", "sportsbook_prices", "ADP", "ECR"],
+    "UNIFIED_REASON_STACK": ["canonical_evidence", "forecast_outputs", "downstream_market_comparison"]
+  },
+  "rejected_numeric_modules": [
+    "broad_team_defense_modifier",
+    "granular_matchup_TE",
+    "kicker_rich_model",
+    "extra_historical_situations_6_5E",
+    "legacy_hand_tuned_projection_recalibration"
+  ],
+  "locked_rules": [
+    "Sportsbook prices, odds, spread, total, implied probability, ADP and ECR may not influence canonical football state or any football forecast.",
+    "Market comparison is downstream only and may consume football forecasts after they are produced.",
+    "A canonical evidence key may receive numeric authority in at most one layer unless an explicit decomposition documents non-overlapping effects.",
+    "Rejected, quarantined and zero-authority modules may not change projections, ranks, True Value, market verdicts, fair lines or probabilities.",
+    "The unified reason stack is read-only and may not mutate upstream outputs.",
+    "Missing evidence remains unknown, not zero.",
+    "Season-long player numerics remain unchanged because no validated weekly-to-season aggregation bridge exists.",
+    "All 162 authoritative fantasy players must remain unique and represented exactly once.",
+    "Full backward audit is the next promotion gate and remains required before any Step 6.5 promotion or merge."
+  ],
+  "next_gate": "FULL_BACKWARD_AUDIT"
+}
