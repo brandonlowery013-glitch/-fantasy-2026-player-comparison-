@@ -1,0 +1,47 @@
+{
+  "schema_version": "STEP6_5B_INJURY_RERUN_COVERAGE_1.0.0",
+  "season": 2026,
+  "status": "IN_PROGRESS_FULL_RERUN",
+  "window": {
+    "start_rule": "Start at each team's 2026 training-camp report/check-in date and include pre-existing injuries that affected camp participation.",
+    "through": "2026-08-29",
+    "post_cut_reconciliation_required": true
+  },
+  "population_scope": {
+    "fantasy_positions": ["QB","RB","WR","TE","K"],
+    "impact_non_fantasy_positions": ["OT","OG","C","EDGE","DE","DT","LB","CB","S"],
+    "include_if": [
+      "expected starter or meaningful rotational player",
+      "injury can materially change teammate fantasy opportunity",
+      "injury can materially change team offense or defense",
+      "injury can materially change DST sacks/interceptions/fumble-recovery/TD/points-allowed expectation",
+      "injury can materially change spread, total or player-prop distribution"
+    ],
+    "exclude_only_if": "Player has no plausible pathway to fantasy, team efficiency, DST, spread/total or prop output. Exclusion must be reviewable, not assumed from position alone."
+  },
+  "chronology_rule": "Record every meaningful injury/recovery/PUP/NFI/IR/practice-return event. Preserve history but resolve one current state; latest verified state wins unless credible sources conflict.",
+  "materiality": ["MATERIAL","POSSIBLY_MATERIAL","CONTEXT_ONLY","NO_CURRENT_EFFECT"],
+  "newly_caught_examples": [
+    {"subject":"Alec Pierce","team":"IND","position":"WR","status":"POSSIBLY_MATERIAL","reason":"Ankle/heel issue carried from 2025, March surgery, missed offseason work, opened camp on Active/PUP, activated Aug. 27 and still required ramp-up toward Week 1.","affected_engines":["WR","QB","TEAM_OFFENSE","PLAYER_PROPS"]},
+    {"subject":"Malik Nabers","team":"NYG","position":"WR","status":"POSSIBLY_MATERIAL","reason":"2025 ACL plus offseason cleanup procedure; avoided PUP, later returned to limited full-speed team work but remained in a ramp-up state.","affected_engines":["WR","QB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"subject":"George Kittle","team":"SF","position":"TE","status":"MATERIAL","reason":"Entered camp on PUP during Achilles recovery and remained uncertain for Week 1; absence/ramp materially affects 49ers passing efficiency and target distribution.","affected_engines":["TE","QB","WR","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"subject":"Micah Parsons","team":"GB","position":"EDGE","status":"MATERIAL","reason":"ACL plus meniscus rehab; confirmed expected to miss start of season with target around mid-October.","affected_engines":["TEAM_DEFENSE","DST","SPREAD","TOTAL","QB","WR","TE","PLAYER_PROPS"]},
+    {"subject":"Braxton Jones","team":"CHI","position":"OT","status":"POSSIBLY_MATERIAL","reason":"Lead LT left camp practice injured but reportedly avoided major injury; Week 1 health affects protection and run efficiency.","affected_engines":["TEAM_OFFENSE","QB","RB","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"subject":"Coby Bryant","team":"CHI","position":"S","status":"POSSIBLY_MATERIAL","reason":"Knee injury adds uncertainty to a secondary already replacing starters.","affected_engines":["TEAM_DEFENSE","DST","SPREAD","TOTAL","QB","WR","TE","PLAYER_PROPS"]},
+    {"subject":"Austin Jackson","team":"MIA","position":"OT","status":"POSSIBLY_MATERIAL","reason":"Key starting RT missed camp time with injury; absence would materially affect Miami protection and rushing efficiency.","affected_engines":["TEAM_OFFENSE","QB","RB","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"subject":"Rene Konga","team":"MIA","position":"DT","status":"MATERIAL","reason":"Reported out for entire 2026 season; defensive front availability must be reflected in the adjusted defensive prior.","affected_engines":["TEAM_DEFENSE","DST","SPREAD","TOTAL"]},
+    {"subject":"Roy Robertson-Harris","team":"NYG","position":"DL","status":"MATERIAL","reason":"Torn Achilles during offseason work; especially relevant after other defensive-line turnover.","affected_engines":["TEAM_DEFENSE","DST","SPREAD","TOTAL","RB"]},
+    {"subject":"Nick Bosa","team":"SF","position":"EDGE","status":"POSSIBLY_MATERIAL","reason":"Returning from 2025 ACL; availability and effectiveness at season start affect pressure-based defensive expectations.","affected_engines":["TEAM_DEFENSE","DST","SPREAD","TOTAL","QB","WR","TE","PLAYER_PROPS"]},
+    {"subject":"Fred Warner","team":"SF","position":"LB","status":"NO_CURRENT_EFFECT","reason":"Entered 2026 returning from a major ankle injury but was reported good to go; preserve recovery history without current penalty unless new evidence changes state.","affected_engines":["TEAM_DEFENSE","DST","SPREAD","TOTAL","RB","TE"]}
+  ],
+  "qa_requirements": [
+    "All 32 teams reviewed from camp opening through current date.",
+    "Every fantasy-relevant player reviewed, even if currently healthy after an earlier injury.",
+    "Every expected-starting or materially rotational OL and defensive player reviewed for injury history/current state.",
+    "Opening PUP/NFI/IR and pre-camp surgeries are included.",
+    "Camp and preseason injuries are included.",
+    "Recovery/activation events are included so stale injury flags are not carried forward.",
+    "Current-state resolution is separated from historical injury chronology.",
+    "No numeric model movement occurs from a headline alone; only authorized deterministic availability rules or validated coefficients may move projections."
+  ]
+}
