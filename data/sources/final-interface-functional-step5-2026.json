@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "step": "FINAL_INTERFACE_STEP_5",
+  "status": "LOCKED",
+  "authority": "UI_AND_DOWNSTREAM_BETTING_ONLY",
+  "purpose": "Make every final Games control operational and expose a real Build Your Own parlay analysis workflow without allowing UI state or sportsbook prices to mutate football or fantasy model outputs.",
+  "required_navigation": ["Player Board", "Compare", "Weekly", "Games", "Bets", "Props", "Parlays", "Model Picks", "Build Your Own"],
+  "game_interaction": {
+    "same_page_detail": true,
+    "ticker_click": true,
+    "rendered_game_card_click": true,
+    "keyboard_enter_space": true,
+    "selected_game_survives_ticker_refresh": true
+  },
+  "build_your_own": {
+    "minimum_legs": 2,
+    "maximum_legs": 12,
+    "source": "ALREADY_APPROVED_DOWNSTREAM_RECOMMENDATION",
+    "standalone_pick_required": true,
+    "analyze_ticket": true,
+    "remove_weakest": true,
+    "find_better_replacement": true,
+    "compare_versions": true,
+    "optimize_ticket": true,
+    "clear_ticket": true,
+    "same_game_unknown_correlation_result": "CORRELATION_REVIEW_REQUIRED",
+    "cross_book_executable": false,
+    "same_game_independence_fallback": false,
+    "display": ["grade", "model_hit_probability", "implied_probability", "expected_value", "sportsbook_execution_status", "correlation_status", "strongest_leg", "weakest_leg", "verdict"]
+  },
+  "controlled_states": ["WAITING_FOR_CURRENT_WEEK", "WAITING_FOR_CURRENT_WEEK_OUTPUTS", "MARKET_UNAVAILABLE", "PASS", "READY", "CORRELATION_REVIEW_REQUIRED"],
+  "separation_guardrails": {
+    "ui_may_mutate_football_projection": false,
+    "ui_may_mutate_player_projection": false,
+    "ui_may_mutate_true_value": false,
+    "ui_may_mutate_overall_rank": false,
+    "ui_may_mutate_market_value": false,
+    "ui_may_mutate_opportunity_label": false,
+    "ui_may_mutate_compare_winner": false,
+    "sportsbook_price_may_enter_football_probability_model": false,
+    "automatic_wagering": false,
+    "stake_sizing": false
+  }
+}

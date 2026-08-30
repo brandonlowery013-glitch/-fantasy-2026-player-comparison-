@@ -1,0 +1,43 @@
+name: Final Interface Step 5
+
+on:
+  pull_request:
+    paths:
+      - 'data/sources/final-interface-functional-step5-2026.json'
+      - 'scripts/build-final-betting-ui-feed.mjs'
+      - 'runtime-final-betting-pipeline-2026.js'
+      - 'runtime-final-interface-2026.js'
+      - 'scripts/validate-final-interface-step5.mjs'
+      - 'index.html'
+      - '.github/workflows/final-interface-step5.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/sources/final-interface-functional-step5-2026.json'
+      - 'scripts/build-final-betting-ui-feed.mjs'
+      - 'runtime-final-betting-pipeline-2026.js'
+      - 'runtime-final-interface-2026.js'
+      - 'scripts/validate-final-interface-step5.mjs'
+      - 'index.html'
+      - '.github/workflows/final-interface-step5.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  final-controls-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Revalidate Step 2 sportsbook contract
+        run: node scripts/validate-final-betting-data-step2.mjs
+      - name: Revalidate Step 3 parlay engine
+        run: node scripts/validate-final-parlay-step3.mjs
+      - name: Revalidate Step 4 current-week feed rollover
+        run: node scripts/build-final-betting-ui-feed.mjs --self-test
+      - name: Validate final Step 5 control wiring
+        run: node scripts/validate-final-interface-step5.mjs
