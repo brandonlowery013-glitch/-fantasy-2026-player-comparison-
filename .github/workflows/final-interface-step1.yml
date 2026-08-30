@@ -1,0 +1,22 @@
+name: Final Interface Step 1
+
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'compare.html'
+      - 'runtime-final-interface-2026.js'
+      - 'scripts/validate-final-interface-step1.mjs'
+      - '.github/workflows/final-interface-step1.yml'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate final interface structure and game switching contract
+        run: node scripts/validate-final-interface-step1.mjs
