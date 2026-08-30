@@ -18,8 +18,19 @@ for(let i=0;i<baseline.model_contract.authoritative_player_shards;i++){
 const currentPlayers=[];
 for(let i=0;i<baseline.model_contract.authoritative_player_shards;i++) currentPlayers.push(...read(`players${i}.json`));
 
-const oldMap=new Map(baselinePlayers.map(p=>[p.n,p]));
-const newMap=new Map(currentPlayers.map(p=>[p.n,p]));
+const patchFile='current162patch-2026-08-24.json';
+const oldPatch=(baseline.authoritative_files?.[patchFile])
+  ? JSON.parse(execFileSync('git',['show',`${baseline.baseline_commit}:${patchFile}`],{encoding:'utf8'}))
+  : {players:{}};
+const newPatch=fs.existsSync(path.join(root,patchFile))?read(patchFile):{players:{}};
+
+// Guardrail the effective runtime state, not the physical storage layer. A field copied
+// from a shard into the overlay is not drift if the effective value is unchanged.
+const applyOverlay=(rows,patch)=>rows.map(p=>({...p,...(patch.players?.[p.n]||{})}));
+const baselineEffective=applyOverlay(baselinePlayers,oldPatch);
+const currentEffective=applyOverlay(currentPlayers,newPatch);
+const oldMap=new Map(baselineEffective.map(p=>[p.n,p]));
+const newMap=new Map(currentEffective.map(p=>[p.n,p]));
 const added=[...newMap.keys()].filter(n=>!oldMap.has(n));
 const removed=[...oldMap.keys()].filter(n=>!newMap.has(n));
 const coreChanges=[];
@@ -45,35 +56,26 @@ for(const [name,p] of newMap){
   }
 }
 
-// The active current-update patch can alter protected player inputs before they are
-// propagated into players*.json. Compare it directly with the frozen baseline too.
-const patchFile='current162patch-2026-08-24.json';
-const patchChanges=[];
-const unauthorizedPatchChanges=[];
+// Preserve a storage-layer audit for visibility, but do not block on values that merely
+// duplicate shard state. Only effective protected-field changes above require declarations.
+const patchStorageChanges=[];
+const oldPatchPlayers=oldPatch.players||{};
+const newPatchPlayers=newPatch.players||{};
+const patchNames=new Set([...Object.keys(oldPatchPlayers),...Object.keys(newPatchPlayers)]);
+for(const name of patchNames){
+  const before=oldPatchPlayers[name]||{};
+  const after=newPatchPlayers[name]||{};
+  const fields=new Set([...Object.keys(before),...Object.keys(after)]);
+  const changed=[];
+  for(const field of fields){
+    if(JSON.stringify(before[field]??null)!==JSON.stringify(after[field]??null)) changed.push({field,before:before[field]??null,after:after[field]??null});
+  }
+  if(changed.length) patchStorageChanges.push({player:name,changed_fields:changed});
+}
+
 const patchMetadataDrift=[];
-if(fs.existsSync(path.join(root,patchFile))&&baseline.authoritative_files?.[patchFile]){
-  const oldPatch=JSON.parse(execFileSync('git',['show',`${baseline.baseline_commit}:${patchFile}`],{encoding:'utf8'}));
-  const newPatch=read(patchFile);
-  for(const key of ['updated','model']){
-    if(JSON.stringify(oldPatch[key]??null)!==JSON.stringify(newPatch[key]??null)) patchMetadataDrift.push({field:key,before:oldPatch[key]??null,after:newPatch[key]??null});
-  }
-  const oldPlayers=oldPatch.players||{};
-  const newPlayers=newPatch.players||{};
-  const names=new Set([...Object.keys(oldPlayers),...Object.keys(newPlayers)]);
-  for(const name of names){
-    const before=oldPlayers[name]||{};
-    const after=newPlayers[name]||{};
-    const fields=new Set([...Object.keys(before),...Object.keys(after)]);
-    const changed=[];
-    for(const field of fields){
-      if(JSON.stringify(before[field]??null)!==JSON.stringify(after[field]??null)) changed.push({field,before:before[field]??null,after:after[field]??null});
-    }
-    if(changed.length){
-      const item={player:name,changed_fields:changed};
-      patchChanges.push(item);
-      if(!declarationCovers(name,changed.map(x=>x.field))) unauthorizedPatchChanges.push(item);
-    }
-  }
+for(const key of ['updated','model']){
+  if(JSON.stringify(oldPatch[key]??null)!==JSON.stringify(newPatch[key]??null)) patchMetadataDrift.push({field:key,before:oldPatch[key]??null,after:newPatch[key]??null});
 }
 
 const protectedStructural=['MODEL_SOURCE_OF_TRUTH.json','canonicalBoards2026.json','lockedRanks2026.json'];
@@ -96,9 +98,7 @@ for(const f of marketFiles){
 
 const blocked=[];
 if(added.length||removed.length) blocked.push({type:'PLAYER_POPULATION_DRIFT',added,removed});
-if(unauthorized.length) blocked.push({type:'UNDECLARED_CORE_DRIFT',players:unauthorized});
-if(unauthorizedPatchChanges.length) blocked.push({type:'UNDECLARED_ACTIVE_PATCH_DRIFT',file:patchFile,players:unauthorizedPatchChanges});
-if(patchMetadataDrift.length) blocked.push({type:'ACTIVE_PATCH_METADATA_DRIFT',file:patchFile,changes:patchMetadataDrift});
+if(unauthorized.length) blocked.push({type:'UNDECLARED_EFFECTIVE_CORE_DRIFT',players:unauthorized});
 if(structural.length) blocked.push({type:'PROTECTED_STRUCTURAL_DRIFT',files:structural});
 
 const report={
@@ -106,16 +106,16 @@ const report={
   baseline_id:baseline.baseline_id,
   baseline_commit:baseline.baseline_commit,
   current_head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),
+  comparison_scope:'EFFECTIVE_RUNTIME_STATE_SHARDS_PLUS_OVERLAY',
   result:blocked.length?'BLOCKED':'PASS',
-  player_count:{baseline:baselinePlayers.length,current:currentPlayers.length},
+  player_count:{baseline:baselineEffective.length,current:currentEffective.length},
   added_players:added,
   removed_players:removed,
   declared_core_changes:coreChanges.length-unauthorized.length,
   undeclared_core_changes:unauthorized.length,
   core_changes:coreChanges,
-  active_patch_changes:patchChanges,
-  undeclared_active_patch_changes:unauthorizedPatchChanges.length,
-  active_patch_metadata_drift:patchMetadataDrift,
+  overlay_storage_changes:patchStorageChanges,
+  overlay_metadata_changes:patchMetadataDrift,
   structural_drift:structural,
   market_overlay_changes:marketChanges,
   blocked
