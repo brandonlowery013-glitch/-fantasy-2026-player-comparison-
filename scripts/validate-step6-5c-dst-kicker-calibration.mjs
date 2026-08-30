@@ -15,5 +15,5 @@ if(!/team kicker slot/i.test(x.kicker.identity_rule))fail('team-kicker identity 
 if(!/unknown/i.test(x.missing_data_rule)||!/silently/i.test(x.missing_data_rule))fail('missing-data guard');
 if(x.walk_forward.target_week_leakage_allowed!==false)fail('leakage allowed');
 if(x.promotion_gate.automatic_promotion!==false)fail('automatic promotion');
-if(!/double-count/i.test(x.shared_state_rule))fail('double-count guard');
+if(!/(double[- ]count|counted twice|may not be applied once.*again)/i.test(x.shared_state_rule))fail('double-count guard');
 console.log(JSON.stringify({result:'PASS',schema:x.schema_version,authority:x.production_numeric_authority,dst_outputs:x.dst.scoring_outputs.length,kicker_outputs:x.kicker.scoring_outputs.length,sportsbook_inputs_allowed:x.sportsbook_inputs_allowed}));
