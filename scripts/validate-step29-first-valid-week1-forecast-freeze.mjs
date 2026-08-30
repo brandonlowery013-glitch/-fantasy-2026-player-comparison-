@@ -49,7 +49,7 @@ function fixture(stage,week=1,gameCount=16){
   if(stage==='context')return {schedule,context:{week:null,players:{}},distributions:{},ledger:{forecasts:[]}};
   if(stage==='dist')return {schedule,context,distributions:{week,distributions:{}},ledger:{forecasts:[]}};
   if(stage==='freeze')return {schedule,context,distributions,ledger:{forecasts:[]}};
-  if(stage==='stale'){const stale=structuredClone(ledger);stale.forecasts[0].week=Math.max(1,week-1);return {schedule,context,distributions,ledger:stale};}
+  if(stage==='stale'){const stale=structuredClone(ledger);stale.forecasts[0].week=week===1?2:week-1;return {schedule,context,distributions,ledger:stale};}
   if(stage==='blocked'){const bad=structuredClone(ledger);bad.forecasts[0].captured_at='2026-10-10T21:00:00Z';return {schedule,context,distributions,ledger:bad};}
   return {schedule,context,distributions,ledger};
 }
