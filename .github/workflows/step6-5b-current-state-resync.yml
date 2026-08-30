@@ -60,6 +60,17 @@ jobs:
         with:
           name: step6-5b-shared-defensive-intelligence
           path: data/probability/generated/step6-5b-shared-defensive-intelligence-2026.json
+      - name: Validate defensive walk-forward prior-decay contract
+        run: node scripts/validate-step6-5b-defensive-walkforward-decay.mjs
+      - name: Test defensive prior-decay math
+        run: node scripts/backtest-step6-5b-defensive-walkforward-decay.mjs --self-test
+      - name: Run historical defensive walk-forward and learn prior decay
+        run: node scripts/backtest-step6-5b-defensive-walkforward-decay.mjs
+      - name: Upload defensive walk-forward calibration artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5b-defensive-walkforward-decay-calibration
+          path: data/probability/generated/step6-5b-defensive-walkforward-decay-calibration.json
       - name: Revalidate Step 5 permissions
         run: node scripts/validate-ui-permissions-step5.mjs
       - name: Run hard Guardrail QA
