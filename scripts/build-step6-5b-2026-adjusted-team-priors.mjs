@@ -5,8 +5,8 @@ const root=process.cwd();
 const OUT='data/probability/generated/step6-5b-2026-adjusted-team-priors.json';
 const LEDGER='data/sources/step6-5b-current-evidence-ledger-2026.json';
 const SCHEDULE_URL='https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv';
-const TEAM_CODES=['ARI','ATL','BAL','BUF','CAR','CHI','CIN','CLE','DAL','DEN','DET','GB','HOU','IND','JAX','KC','LV','LAC','LA','MIA','MIN','NE','NO','NYG','NYJ','PHI','PIT','SEA','SF','TB','TEN','WAS'];
-const canon=x=>({LAR:'LA',JAC:'JAX',WSH:'WAS'}[String(x||'').toUpperCase()]||String(x||'').toUpperCase());
+const TEAM_CODES=['ARI','ATL','BAL','BUF','CAR','CHI','CIN','CLE','DAL','DEN','DET','GB','HOU','IND','JAX','KC','LV','LAC','LAR','MIA','MIN','NE','NO','NYG','NYJ','PHI','PIT','SEA','SF','TB','TEN','WAS'];
+const canon=x=>({LA:'LAR',JAC:'JAX',WSH:'WAS'}[String(x||'').toUpperCase()]||String(x||'').toUpperCase());
 const readJson=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 
 function csvRows(text){
