@@ -1,0 +1,63 @@
+{
+  "schema_version": "STEP6_5B_ROSTER_DRIVEN_INJURY_REVIEW_1.0.0",
+  "season": 2026,
+  "status": "IN_PROGRESS",
+  "closure_allowed": false,
+  "authoritative_fantasy_universe": {
+    "source": "players0.json through players12.json",
+    "expected_count": 162,
+    "rule": "Every authoritative fantasy player must have an explicit review record. Absence of an injury is still a reviewed state; absence of a review record is UNREVIEWED and blocks closure."
+  },
+  "impact_non_fantasy_universe": {
+    "positions": ["OT","OG","C","EDGE","DE","DT","LB","CB","S"],
+    "rule": "Each team must enumerate expected starters and materially rotational impact players whose availability can affect offense, defense, DST, spread, total or props. Missing team manifests block closure.",
+    "teams_complete": []
+  },
+  "allowed_review_states": ["HEALTHY_NO_RELEVANT_CAMP_INJURY","INJURED_CURRENT","RECOVERING_RAMP","RETURNED_NO_CURRENT_EFFECT","PUP_NFI_IR","SEASON_OUT","UNCERTAIN_CURRENT_STATE"],
+  "reviews": [
+    {
+      "subject": "Ja'Marr Chase",
+      "team": "Cincinnati Bengals",
+      "position": "WR",
+      "review_state": "UNCERTAIN_CURRENT_STATE",
+      "materiality": "POSSIBLY_MATERIAL",
+      "latest_event_date": "2026-08-25",
+      "detail": "Left practice after landing awkwardly on his left knee and limping off. Bengals reporting indicated he wanted to return, so severity appeared limited, but the event remains reviewable until subsequent full-practice/Week 1 status is confirmed.",
+      "affected_engines": ["WR","QB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source": "Bengals official training-camp report"
+    },
+    {
+      "subject": "Alec Pierce",
+      "team": "Indianapolis Colts",
+      "position": "WR",
+      "review_state": "RECOVERING_RAMP",
+      "materiality": "POSSIBLY_MATERIAL",
+      "latest_event_date": "2026-08-27",
+      "detail": "Ankle/heel issue carried from 2025, March surgery, missed offseason work, opened camp on Active/PUP and was activated Aug. 27 with a Week 1 ramp still to resolve.",
+      "affected_engines": ["WR","QB","TEAM_OFFENSE","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source": "Colts official reporting"
+    },
+    {
+      "subject": "Alvin Kamara",
+      "team": "New Orleans Saints",
+      "position": "RB",
+      "review_state": "INJURED_CURRENT",
+      "materiality": "MATERIAL",
+      "latest_event_date": "2026-08-18",
+      "detail": "Grade 2 MCL sprain with reported 4-6 week absence; this supersedes earlier healthy camp-role observations.",
+      "affected_engines": ["RB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source": "NFL official reporting"
+    }
+  ],
+  "closure_rules": [
+    "All 162 authoritative fantasy players must be present exactly once in reviews.",
+    "Every review must have a resolved review_state and latest verified chronology state.",
+    "All 32 teams must be present in the impact non-fantasy manifest before closure.",
+    "No player may be omitted because no injury headline was found.",
+    "No numeric projection movement occurs from this registry alone.",
+    "closure_allowed may become true only when the completeness validator reports zero missing fantasy players and zero missing impact-team manifests."
+  ]
+}
