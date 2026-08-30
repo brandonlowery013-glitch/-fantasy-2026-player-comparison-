@@ -14,23 +14,58 @@ function check(name, ok, details, severity='HARD') {
 }
 
 const contract = read('data/sources/full-backward-audit-2026.json');
-check('audit_contract_schema', contract.schema_version === 'FULL_BACKWARD_AUDIT_1.0.0', contract.schema_version);
+check('audit_contract_schema', contract.schema_version === 'FULL_BACKWARD_AUDIT_1.1.0', contract.schema_version);
 check('automatic_promotion_disabled', contract.automatic_promotion === false, String(contract.automatic_promotion));
 
-// 162-player source of truth and rank integrity.
+// Audit the same 162-player shard + overlay state used by runtime.
 const shardFiles = fs.readdirSync('.').filter(f => /^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
-const players = shardFiles.flatMap(read);
+const rawPlayers = shardFiles.flatMap(read);
+const patch = read('current162patch-2026-08-24.json');
+const patchPlayers = patch.players || {};
+const players = rawPlayers.map(p => ({...p, ...(patchPlayers[p.n] || {})}));
 const names = players.map(p => p.n);
 const uniqueNames = new Set(names);
-const ranks = players.map(p => Number(p.o));
-const finiteRanks = ranks.filter(Number.isFinite);
-const uniqueRanks = new Set(finiteRanks);
+const overallRanks = players.map(p => Number(p.o));
+const trueValueRanks = players.map(p => Number(p.tr));
+const sortedOverall = [...overallRanks].sort((a,b)=>a-b);
+const sortedTrueValue = [...trueValueRanks].sort((a,b)=>a-b);
+const exactPermutation = arr => arr.length === 162 && arr.every((x,i) => Number.isFinite(x) && x === i + 1);
 check('source_of_truth_shards_13', shardFiles.length === 13, String(shardFiles.length));
 check('authoritative_player_count_162', players.length === 162, String(players.length));
 check('unique_player_count_162', uniqueNames.size === 162, String(uniqueNames.size));
-check('overall_rank_count_162', finiteRanks.length === 162, String(finiteRanks.length));
-check('overall_ranks_unique', uniqueRanks.size === 162, String(uniqueRanks.size));
-check('overall_ranks_cover_1_162', Math.min(...finiteRanks) === 1 && Math.max(...finiteRanks) === 162, `${Math.min(...finiteRanks)}-${Math.max(...finiteRanks)}`);
+check('runtime_overlay_effective_aug30', patch.updated === '2026-08-30' && patch.step3e_status === 'APPLIED_APPROVED_CHANGES', `${patch.updated}; ${patch.step3e_status}`);
+check('runtime_overlay_covers_162', Object.keys(patchPlayers).length === 162, String(Object.keys(patchPlayers).length));
+check('overall_ranks_exact_1_162', exactPermutation(sortedOverall), `${Math.min(...overallRanks)}-${Math.max(...overallRanks)}; unique=${new Set(overallRanks).size}`);
+check('true_value_ranks_exact_1_162', exactPermutation(sortedTrueValue), `${Math.min(...trueValueRanks)}-${Math.max(...trueValueRanks)}; unique=${new Set(trueValueRanks).size}`);
+
+// Explicit Aug. 30 Step 3E application must match the user-approved ledger exactly.
+const approval = read('guardrails/step3e-approved-changes-2026-08-30.json');
+const step3e = read('guardrails/step3e-application-audit.json');
+check('step3e_prior_noop_superseded', approval.supersedes_prior_noop === true && step3e.prior_noop_superseded === true, 'Aug. 30 approval supersedes historical no-op');
+check('step3e_decision_counts_exact', approval.review_queue === 5 && approval.direct_changes === 2 && approval.connected_changes_count === 1 && approval.holds === 3, `review=${approval.review_queue}; direct=${approval.direct_changes}; connected=${approval.connected_changes_count}; holds=${approval.holds}`);
+check('step3e_application_complete', step3e.status === 'COMPLETE_APPROVED_CHANGES_APPLIED' && step3e.direct_changes === 2 && step3e.connected_changes === 1 && step3e.holds === 3, `${step3e.status}; direct=${step3e.direct_changes}; connected=${step3e.connected_changes}; holds=${step3e.holds}`);
+const expectedStep3E = {
+  'Kaytron Allen': {o:141,tr:159,s:7.125,pd:6.9,ce:6.3,r:6.5,mp:68},
+  'Chuba Hubbard': {o:116,tr:118,s:8.055,pd:8.3,ce:7,r:8.2,mp:162.75},
+  'Jonathon Brooks': {o:112,tr:130,s:7.655,pd:7.8,ce:8,r:7.3,mp:169.25}
+};
+for (const [name,want] of Object.entries(expectedStep3E)) {
+  const got = patchPlayers[name];
+  check(`step3e_exact_${name.toLowerCase().replace(/[^a-z0-9]+/g,'_')}`, !!got && Object.entries(want).every(([k,v]) => got[k] === v), got ? JSON.stringify({o:got.o,tr:got.tr,s:got.s,pd:got.pd,ce:got.ce,r:got.r,mp:got.mp}) : 'missing');
+}
+check('step3e_only_three_projection_changes', Array.isArray(step3e.live_projection_changes) && step3e.live_projection_changes.length === 3 && ['Kaytron Allen','Chuba Hubbard','Jonathon Brooks'].every(x => step3e.live_projection_changes.includes(x)), JSON.stringify(step3e.live_projection_changes));
+check('step3e_market_independent', step3e.market_independence === true && /ADP\/ECR did not create/.test(approval.market_independence || ''), 'market did not create football changes');
+
+// Current-cost repair is downstream only and must complete the 162-player layer.
+const marketRepair = read('data/sources/market-repair-2026-08-30.json');
+check('market_repair_nine_records', Object.keys(marketRepair.players || {}).length === 9, String(Object.keys(marketRepair.players || {}).length));
+check('market_repair_coverage_162', marketRepair.coverage_after_repair === 162, String(marketRepair.coverage_after_repair));
+check('market_repair_zero_football_authority', marketRepair.football_projection_authority === 0 && marketRepair.intrinsic_rank_mutations_from_market === 0, `authority=${marketRepair.football_projection_authority}; rank mutations=${marketRepair.intrinsic_rank_mutations_from_market}`);
+for (const name of Object.keys(marketRepair.players || {})) {
+  const p = patchPlayers[name];
+  const m = marketRepair.players[name];
+  check(`market_repair_runtime_${name.toLowerCase().replace(/[^a-z0-9]+/g,'_')}`, !!p && p.ad === m.adp && p.px === m.market_read && p.fw === m.fair_range && p.market_read_override === true, p ? `ad=${p.ad}; px=${p.px}; fw=${p.fw}; override=${p.market_read_override}` : 'missing');
+}
 
 // Step 6.5G/H scope and market directionality.
 const g = read('data/sources/step6-5g-calibration-ablation-full-universe-2026.json');
@@ -60,7 +95,7 @@ check('missing_unknown_not_zero', /(unknown.{0,40}not zero|missing.{0,40}not zer
 check('current_status_supremacy', /(current resolved|current status|supersed|stale)/i.test(injuryPolicy + profileStatus), 'Current resolved status precedence present');
 check('no_guessed_injury_coefficients', /(no guessed|coefficient.{0,40}(zero|validation)|numeric authority.{0,20}zero)/is.test(injuryPolicy), 'Q/D coefficients require validation; deterministic inactive states only');
 
-// Roster/injury closure: expected to block promotion without making audit execution itself fail.
+// Roster/injury closure may block promotion without making audit execution itself fail.
 const registry = read('data/sources/step6-5b-roster-driven-injury-review-registry-2026.json');
 const regText = text('data/sources/step6-5b-roster-driven-injury-review-registry-2026.json');
 const closureAllowed = registry.closure_allowed === true || /"closure_allowed"\s*:\s*true/.test(regText);
@@ -101,7 +136,7 @@ check('ui_contracts_present', ['data/sources/ui-step3a-feature-rule-contracts-20
 const permissions = text('data/sources/ui-permissions-step5-2026.json');
 check('public_client_read_only', /(READ_ONLY|read.only)/i.test(permissions) && /(mutation|credential|authorization)/i.test(permissions), 'Least-privilege public client contract present');
 
-// The process policy must still require this audit before promotion/merge and must not restore the removed between-step wait rule.
+// Process policy still requires this audit before promotion/merge.
 const processPolicy = read('data/sources/step6-5d-current-process-policy.json');
 check('between_step_global_wait_removed', processPolicy.between_step_global_guardrail_wait_required === false, String(processPolicy.between_step_global_guardrail_wait_required));
 check('backward_audit_required_before_promotion_merge', processPolicy.full_backward_audit_required_before_promotion_or_merge === true, String(processPolicy.full_backward_audit_required_before_promotion_or_merge));
@@ -110,7 +145,7 @@ const hardFailures = checks.filter(c => c.status === 'FAIL');
 const auditExecutionResult = hardFailures.length ? 'FAIL' : 'PASS';
 const promotionAllowed = auditExecutionResult === 'PASS' && blockers.length === 0;
 const report = {
-  schema_version: 'FULL_BACKWARD_AUDIT_REPORT_1.0.0',
+  schema_version: 'FULL_BACKWARD_AUDIT_REPORT_1.1.0',
   generated_at: new Date().toISOString(),
   audit_execution_result: auditExecutionResult,
   promotion_allowed: promotionAllowed,
@@ -119,12 +154,20 @@ const report = {
   players_checked: players.length,
   unique_players: uniqueNames.size,
   shards: shardFiles.length,
-  repair_log: [{item:'Atwell/Hunter trade direction', status:'FIXED_NON_NUMERIC'}],
+  runtime_overlay: 'current162patch-2026-08-24.json',
+  runtime_overlay_effective_date: patch.updated,
+  approved_step3e_projection_changes: ['Kaytron Allen','Chuba Hubbard','Jonathon Brooks'],
+  current_cost_coverage: marketRepair.coverage_after_repair,
+  repair_log: [
+    {item:'Atwell/Hunter trade direction', status:'FIXED_NON_NUMERIC'},
+    {item:'Aug. 30 Step 3E historical no-op assumption', status:'SUPERSEDED_BY_EXPLICIT_APPROVAL'},
+    {item:'Nine missing current-cost records', status:'REPAIRED_MARKET_ONLY'}
+  ],
   promotion_blockers: blockers,
   warnings,
   checks
 };
 fs.mkdirSync('guardrails', {recursive:true});
 fs.writeFileSync('guardrails/full-backward-audit-report-2026.json', JSON.stringify(report, null, 2) + '\n');
-console.log(JSON.stringify({audit_execution_result:auditExecutionResult,promotion_allowed:promotionAllowed,blockers:blockers.length,hard_failures:hardFailures.length,players:players.length}, null, 2));
+console.log(JSON.stringify({audit_execution_result:auditExecutionResult,promotion_allowed:promotionAllowed,blockers:blockers.length,hard_failures:hardFailures.length,players:players.length,current_cost_coverage:marketRepair.coverage_after_repair}, null, 2));
 if (hardFailures.length) process.exit(2);
