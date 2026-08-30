@@ -73,7 +73,11 @@ jobs:
         run: |
           node scripts/build-game-market-recommendations.mjs
           node scripts/build-player-prop-recommendations.mjs
-          node scripts/build-unified-opportunity-engine.mjs
+          if [ -f data/probability/generated/weekly-probability-distributions-2026.json ]; then
+            node scripts/build-unified-opportunity-engine.mjs
+          else
+            echo "Weekly probability distributions are not ready; preserving the existing unified-opportunity state instead of failing the market refresh."
+          fi
           node scripts/build-weekly-parlay-recommendations.mjs
           node scripts/build-final-betting-ui-feed.mjs
           node scripts/validate-final-betting-pipeline-step4.mjs
