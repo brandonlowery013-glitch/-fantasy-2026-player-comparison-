@@ -1,0 +1,28 @@
+name: Step 6.5A Football Game Intelligence
+
+on:
+  push:
+    branches: [model/step6-5-football-game-intelligence]
+  pull_request:
+    branches: [ui/responsive-step6]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  step6-5a-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 6.5A source and authority contract
+        run: node scripts/validate-step6-5a-football-game-intelligence.mjs
+      - name: Revalidate Step 5 permissions
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Revalidate Step 6 responsive closure
+        run: node scripts/validate-ui-responsive-step6.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
