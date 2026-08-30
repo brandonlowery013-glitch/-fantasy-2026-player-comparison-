@@ -38,6 +38,15 @@ jobs:
         run: node scripts/poll-live-injury-changes.mjs --self-test
       - name: Test injury change cadence override
         run: node scripts/production-cadence-gate.mjs --self-test
+      - name: Test adjusted-team-prior builder
+        run: node scripts/build-step6-5b-2026-adjusted-team-priors.mjs --self-test
+      - name: Build 2025 scoring baseline and attach verified 2026 adjustment features
+        run: node scripts/build-step6-5b-2026-adjusted-team-priors.mjs
+      - name: Upload adjusted team-prior audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5b-2026-adjusted-team-priors
+          path: data/probability/generated/step6-5b-2026-adjusted-team-priors.json
       - name: Revalidate Step 5 permissions
         run: node scripts/validate-ui-permissions-step5.mjs
       - name: Run hard Guardrail QA
