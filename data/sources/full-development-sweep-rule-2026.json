@@ -1,0 +1,44 @@
+{
+  "version": "FULL_DEVELOPMENT_SWEEP_RULE_1.0",
+  "season": 2026,
+  "status": "LOCKED_FOR_IMPLEMENTATION",
+  "player_universe": 162,
+  "scope": [
+    "market_movement",
+    "injuries",
+    "suspensions_and_discipline",
+    "training_camp_news",
+    "role_changes",
+    "rb_backfield_battles",
+    "wr_target_battles",
+    "te_target_role_battles",
+    "qb_competitions_when_fantasy_relevant",
+    "depth_chart_changes",
+    "roster_transactions",
+    "availability_and_return_timetables"
+  ],
+  "sweep_order": [
+    "Run a full football-development sweep across all 162 active players first.",
+    "Capture material developments even when ECR or ADP has not moved.",
+    "Evaluate RB backfield battles for lead-role share, early-down work, passing-down work, goal-line work, snap share, touch share, and contingency value.",
+    "Evaluate WR and TE target battles for route participation, first-team usage, target share, slot/outside role, red-zone usage, quarterback rapport, and depth-chart movement.",
+    "Evaluate injuries, suspensions, discipline, roster moves and return timetables before interpreting market movement.",
+    "Only after the football sweep is complete, compare current ECR/ADP to the locked market baseline and determine Market Value impact.",
+    "Market movement alone may change acquisition strategy or BUY/FAIR/REACH/FADE, but may not rewrite True Value without independent football evidence.",
+    "Any development that materially changes role, workload, target/touch expectation, availability, offensive environment, or reliability reopens True Value review under the normal model gate.",
+    "Small market moves are excluded unless they cross a meaningful draft-price threshold or are supported by football developments.",
+    "The canonical report table uses columns: Player, ECR old → new, ADP old → new, Model impact. Model impact must state effects on True Value, Overall/Actionable Draft Board, and Market Value."
+  ],
+  "camp_phase_rule": {
+    "training_camp_news_active": true,
+    "stop_condition": "The dedicated training-camp-news sync stops when NFL training camp/preseason camp phase has ended for the 2026 season.",
+    "post_camp_behavior": "After camp ends, continue the full development sweep using regular-season practice reports, injury reports, suspensions/discipline, depth-chart and role changes, roster transactions, weekly usage, and market movement. Do not continue labeling ordinary in-season updates as training-camp news."
+  },
+  "anti_rules": [
+    "Do not filter the football-development sweep only to players with meaningful ECR/ADP movement.",
+    "Do not treat no market movement as no news.",
+    "Do not infer a role win from one camp report, one preseason play, or unsupported narrative.",
+    "Do not let ADP/ECR contaminate the independent football projection or True Value.",
+    "Do not double-count correlated role signals from the same underlying event."
+  ]
+}
