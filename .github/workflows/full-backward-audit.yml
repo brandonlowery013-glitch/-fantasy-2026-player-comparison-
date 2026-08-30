@@ -1,0 +1,89 @@
+name: Full Backward Audit Promotion Gate
+on:
+  pull_request:
+    branches:
+      - model/step6-5h-integration-contamination-qa
+    paths:
+      - 'data/sources/full-backward-audit-2026.json'
+      - 'data/sources/step6-5b-current-evidence-ledger-2026.json'
+      - 'scripts/run-full-backward-audit.mjs'
+      - '.github/workflows/full-backward-audit.yml'
+      - 'data/sources/**'
+      - 'data/probability/**'
+      - 'scripts/**'
+      - 'players*.json'
+      - 'index.html'
+      - 'compare.html'
+      - 'weekly-opportunities.html'
+      - 'operations-dashboard.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-backward-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 3B closure and rookie integrity
+        run: |
+          node scripts/validate-step3b-closure.mjs
+          node scripts/validate-step3b-rookie-history-quarantine.mjs
+      - name: Validate full Step 3 and Step 4 integrity
+        run: |
+          node scripts/validate-step3h-full-step3-qa.mjs
+          node scripts/validate-step4-data-integrity.mjs
+      - name: Validate distribution tail and EV math
+        run: |
+          node scripts/validate-exact-tail-math-contract.mjs
+          node scripts/test-exact-tail-math.mjs
+          node scripts/validate-fair-market-probability-contract.mjs
+          node scripts/test-ev-math.mjs
+      - name: Validate correlation integrity
+        run: |
+          node scripts/validate-correlation-modeling-contract.mjs
+          node scripts/test-correlation-modeling.mjs
+      - name: Validate UI and least privilege contracts
+        run: |
+          node scripts/validate-ui-functional-shell.mjs
+          node scripts/validate-ui-state-error-step2.mjs
+          node scripts/validate-ui-comparison-step3.mjs
+          node scripts/validate-ui-core-feature-step3.mjs
+          node scripts/validate-ui-step3a-feature-rules.mjs
+          node scripts/validate-ui-permissions-step5.mjs
+          node scripts/validate-ui-responsive-step6.mjs
+      - name: Revalidate Step 6.5 contracts
+        run: |
+          node scripts/validate-step6-5a-football-game-intelligence.mjs
+          node scripts/validate-step6-5b-current-evidence-ledger.mjs
+          node scripts/validate-step6-5b-automatic-injury-projection-policy.mjs
+          node scripts/validate-step6-5b-injury-designations.mjs
+          node scripts/validate-step6-5b-shared-defensive-intelligence.mjs
+          node scripts/validate-step6-5b-defensive-walkforward-decay.mjs
+          node scripts/validate-step6-5c-player-defense-dst-calibration.mjs
+          node scripts/validate-step6-5c-granular-matchup-interactions.mjs
+          node scripts/validate-step6-5c-dst-kicker-calibration.mjs
+          node scripts/validate-step6-5d-process-policy.mjs
+          node scripts/validate-step6-5d-game-spread-total-calibration.mjs
+          node scripts/validate-step6-5e-historical-situational-intelligence.mjs
+          node scripts/validate-step6-5f-unified-reason-stack.mjs
+          node scripts/validate-step6-5g-calibration-ablation-full-universe.mjs
+          node scripts/build-step6-5g-full-universe-shadow.mjs
+          node scripts/validate-step6-5h-integration-contamination-qa.mjs
+          node scripts/test-step6-5h-integration-contamination-qa.mjs
+      - name: Run full backward audit promotion gate
+        run: node scripts/run-full-backward-audit.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload backward audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-backward-audit-2026
+          path: |
+            guardrails/full-backward-audit-report-2026.json
+            data/probability/generated/step6-5g-full-universe-shadow.json
+          if-no-files-found: error
