@@ -14,6 +14,9 @@ on:
       - 'scripts/build-step3d-user-review-gate.mjs'
       - 'scripts/finalize-step3d-user-review.mjs'
       - 'scripts/finalize-step3e-noop.mjs'
+      - 'guardrails/step3e-approved-changes-2026-08-30.json'
+      - 'current162patch-2026-08-24.json'
+      - 'data/sources/market-repair-2026-08-30.json'
       - 'scripts/build-step3f-daily-evidence-queue.mjs'
       - 'scripts/validate-step3f-daily-evidence.mjs'
       - 'scripts/validate-step3g-breakout-bust-cohorts-v3.mjs'
@@ -48,9 +51,9 @@ jobs:
         run: node scripts/validate-step3c-full-162-shadow.mjs
       - name: Rebuild Step 3D review gate
         run: node scripts/build-step3d-user-review-gate.mjs
-      - name: Finalize Step 3D review decisions
+      - name: Finalize Step 3D historical review decisions
         run: node scripts/finalize-step3d-user-review.mjs
-      - name: Rebuild Step 3E audited application
+      - name: Apply and validate approved Step 3E changes
         run: node scripts/finalize-step3e-noop.mjs
       - name: Rebuild Step 3F evidence queue
         run: node scripts/build-step3f-daily-evidence-queue.mjs
@@ -79,7 +82,9 @@ jobs:
             guardrails/step3b-closure.json
             guardrails/step3c-shadow-recalculation-162.json
             guardrails/step3d-final-decisions.json
+            guardrails/step3e-approved-changes-2026-08-30.json
             guardrails/step3e-application-audit.json
+            data/sources/market-repair-2026-08-30.json
             guardrails/step3f-validation.json
             data/sources/step3g-breakout-bust-validation-2026.json
             data/sources/step3g-historical-situational-validation-2026.json
