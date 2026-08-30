@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+const c=JSON.parse(fs.readFileSync('data/sources/step6-5g-calibration-ablation-full-universe-2026.json','utf8'));
+const fail=m=>{throw new Error(m)};
+if(c.schema_version!=='STEP6_5G_CALIBRATION_ABLATION_FULL_UNIVERSE_1.0.0')fail('schema');
+if(c.status!=='SHADOW_ONLY'||c.production_numeric_authority!==0||c.automatic_promotion!==false)fail('authority');
+if(c.sportsbook_inputs_allowed_for_football_projection!==false)fail('market contamination');
+if(c.expected_player_universe!==162)fail('universe');
+if(c.season_long_bridge_policy?.validated_bridge_available!==false)fail('bridge must remain unavailable');
+if(c.season_long_bridge_policy?.result!=='PRESERVE_CURRENT_PLAYER_NUMERICS')fail('preserve numerics');
+const retain=new Map(c.validated_module_decisions.map(x=>[x.module,x.decision]));
+for(const k of ['granular_matchup_QB','granular_matchup_RB','granular_matchup_WR','dst_granular_matchup'])if(retain.get(k)!=='RETAIN_WEEKLY_SHADOW')fail(`weekly retain ${k}`);
+for(const k of ['broad_team_defense_modifier','granular_matchup_TE','kicker_rich_model','extra_historical_situations_6_5E'])if(retain.get(k)!=='REJECT_NUMERIC_AUTHORITY')fail(`reject ${k}`);
+if(retain.get('game_spread_total_6_5D')!=='RETAIN_GAME_SHADOW')fail('game retain');
+if(retain.get('unified_reason_stack_6_5F')!=='RETAIN_READ_ONLY')fail('reason retain');
+console.log(JSON.stringify({result:'PASS',schema:c.schema_version,expected_player_universe:c.expected_player_universe,bridge_available:false,production_numeric_authority:0}));
