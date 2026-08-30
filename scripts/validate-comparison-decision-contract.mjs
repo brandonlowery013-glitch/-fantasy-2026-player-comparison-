@@ -5,7 +5,6 @@ const root=process.cwd();
 const contract=JSON.parse(fs.readFileSync(path.join(root,'data/sources/comparison-decision-2026.json'),'utf8'));
 const risk=JSON.parse(fs.readFileSync(path.join(root,'data/sources/preseason-comparison-risk-2026.json'),'utf8'));
 const runtime=fs.readFileSync(path.join(root,'runtime-comparison-decision-2026.js'),'utf8');
-const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const comparePath=path.join(root,'compare.html');
 const compare=fs.existsSync(comparePath)?fs.readFileSync(comparePath,'utf8'):'';
 fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});
@@ -39,14 +38,13 @@ for(const bad of ['p.ad','p.px','sportsbook','implied'])if(runtime.includes(bad)
 if(!runtime.includes('Number(p.a)*0.45+Number(p.rl)*0.35+Number(p.su)*0.20'))blocked.push('Runtime risk bridge formula drifted');
 if(!runtime.includes("usesDraftPrice:false")||!runtime.includes("usesSportsbook:false"))blocked.push('Runtime independence flags missing');
 if(!runtime.includes("label:'Toss-up'")||!runtime.includes('winner:null'))blocked.push('Runtime toss-up must not name a winner');
-const productionRuntimeLoaded=index.includes('runtime-comparison-decision-2026.js')||(
-  index.includes('compare.html')&&compare.includes('runtime-comparison-decision-2026.js')
-);
-if(!productionRuntimeLoaded)blocked.push('Production Compare entry does not load Step 6B runtime');
+// Compare is now a dedicated primary entry point; it no longer needs to be linked by literal text inside index.html.
+const productionRuntimeLoaded=compare.includes('runtime-comparison-decision-2026.js');
+if(!productionRuntimeLoaded)blocked.push('Dedicated Compare entry does not load Step 6B runtime');
 if(contract.public_language?.max_sentences!==3)blocked.push('Explanation sentence cap must remain 3');
 if(contract.step_5a_status!=='COMPLETE'||contract.step_5b_status!=='COMPLETE'||contract.step_6b_runtime_status!=='ACTIVE')blocked.push('Step 5/6B completion state invalid');
 
-const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',mode:contract.mode,actionable:contract.actionable,head_to_head_weight_sum:sum,edge_band_count:bands.length,production_runtime_loaded:productionRuntimeLoaded,adp_allowed_in_head_to_head:sep.head_to_head_may_use_adp,sportsbook_allowed_in_head_to_head:sep.head_to_head_may_use_sportsbook_data,blocked};
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',mode:contract.mode,actionable:contract.actionable,head_to_head_weight_sum:sum,edge_band_count:bands.length,production_entry:'compare.html',production_runtime_loaded:productionRuntimeLoaded,adp_allowed_in_head_to_head:sep.head_to_head_may_use_adp,sportsbook_allowed_in_head_to_head:sep.head_to_head_may_use_sportsbook_data,blocked};
 fs.writeFileSync(path.join(root,'guardrails/comparison-decision-contract-report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));
 if(blocked.length)process.exit(1);
