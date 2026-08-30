@@ -17,6 +17,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Validate current Step 6.5 process policy
+        run: node scripts/validate-step6-5d-process-policy.mjs
       - name: Revalidate Step 6.5C DST/K base contract
         run: node scripts/validate-step6-5c-dst-kicker-calibration.mjs
       - name: Validate Step 6.5D game model contract
