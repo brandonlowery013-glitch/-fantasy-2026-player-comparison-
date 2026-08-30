@@ -1,0 +1,36 @@
+name: Final Betting Data Step 2
+
+on:
+  pull_request:
+    paths:
+      - 'data/sources/betting-data-source-price-contract-2026.json'
+      - 'data/sources/live-market-ingestion-2026.json'
+      - 'data/sources/game-market-recommendation-layer-2026.json'
+      - 'data/sources/player-prop-recommendation-layer-2026.json'
+      - 'scripts/validate-final-betting-data-step2.mjs'
+      - '.github/workflows/final-betting-data-step2.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/sources/betting-data-source-price-contract-2026.json'
+      - 'data/sources/live-market-ingestion-2026.json'
+      - 'data/sources/game-market-recommendation-layer-2026.json'
+      - 'data/sources/player-prop-recommendation-layer-2026.json'
+      - 'scripts/validate-final-betting-data-step2.mjs'
+      - '.github/workflows/final-betting-data-step2.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  betting-data-source-price-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 23 live market ingestion contract
+        run: node scripts/validate-live-market-ingestion-contract.mjs
+      - name: Validate final betting data Step 2
+        run: node scripts/validate-final-betting-data-step2.mjs
