@@ -1,0 +1,27 @@
+{
+  "schema_version": "UI_PERMISSIONS_STEP5_1.0.0",
+  "step": "STEP_5_PERMISSIONS",
+  "public_client_model": "READ_ONLY",
+  "public_routes": ["board", "profile", "compare", "weekly", "props", "games", "weekly-opportunities"],
+  "operations_surface": {
+    "path": "operations-dashboard.html",
+    "classification": "PUBLIC_READ_ONLY_HEALTH_VIEW",
+    "linked_from_primary_navigation": false,
+    "write_authority": false,
+    "credential_entry_allowed": false,
+    "production_trigger_allowed": false
+  },
+  "prohibited_public_capabilities": [
+    "POST/PUT/PATCH/DELETE model mutations",
+    "production workflow triggers",
+    "credential or token entry",
+    "repository write controls",
+    "browser geolocation requests",
+    "camera or microphone requests",
+    "notification permission requests",
+    "clipboard-write permission requests"
+  ],
+  "missing_or_unavailable_data_policy": "DISPLAY_UNAVAILABLE_OR_WAITING; NEVER ESCALATE CLIENT AUTHORITY",
+  "security_boundary": "All state mutation remains outside the public static client and requires repository/workflow authorization and review.",
+  "pr74_hold": true
+}
