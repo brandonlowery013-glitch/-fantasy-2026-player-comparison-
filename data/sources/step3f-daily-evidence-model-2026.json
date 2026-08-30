@@ -1,0 +1,52 @@
+{
+  "version": "STEP3F_DAILY_EVIDENCE_MODEL_1.0.0",
+  "season": 2026,
+  "status": "PROPOSAL_ONLY_REVIEW_REQUIRED",
+  "purpose": "Convert current football evidence into normalized, auditable model-impact proposals without silently changing live projections or ranks.",
+  "flow": [
+    "evidence_ingestion",
+    "normalization",
+    "confidence_metadata",
+    "model_impact_proposal",
+    "review_queue",
+    "explicit_approval",
+    "recalculation",
+    "guardrail",
+    "publish",
+    "audit"
+  ],
+  "football_evidence_sources": [
+    "injuryOverrides2026.json",
+    "data/sources/weekly-football-context-2026.json",
+    "data/sources/weekly-football-ingestion-2026.json"
+  ],
+  "market_inputs_allowed_in_football_model": false,
+  "sportsbook_allowed": false,
+  "adp_allowed": false,
+  "automatic_live_write": false,
+  "approval_required": true,
+  "unvalidated_numeric_authority": {
+    "injury_severity": 0,
+    "role_upshift": 0,
+    "coach_identity": 0,
+    "offensive_coordinator_identity": 0,
+    "primary_play_caller_identity": 0,
+    "generic_news_sentiment": 0
+  },
+  "authorized_automatic_actions": [
+    "NORMALIZE_EVIDENCE",
+    "ASSIGN_REVIEW_CATEGORY",
+    "ASSIGN_EVIDENCE_COMPLETENESS",
+    "CREATE_REVIEW_QUEUE",
+    "QUARANTINE_UNKNOWN_OR_EXTREME_INPUT"
+  ],
+  "prohibited_automatic_actions": [
+    "CHANGE_LIVE_PROJECTION",
+    "CHANGE_LIVE_RANK",
+    "CHANGE_LIVE_TRUE_VALUE",
+    "CHANGE_LIVE_RECOMMENDATION",
+    "PUBLISH_MODEL_CHANGE"
+  ],
+  "daily_schedule_utc": "13:00",
+  "next_step_after_validated_automation": "STEP_3G_ACTUAL_CORE_FEATURES"
+}

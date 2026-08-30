@@ -1,0 +1,73 @@
+name: Step 3G Actual Core Features
+
+on:
+  pull_request:
+    paths:
+      - 'data/sources/step3g-core-features-2026.json'
+      - 'data/sources/ui-step3a-feature-rule-contracts-2026.json'
+      - 'data/probability/weekly-projection-inputs-2026.json'
+      - 'data/probability/weekly-football-context-inputs-2026.json'
+      - 'data/probability/generated/weekly-game-projections-2026.json'
+      - 'data/market/weekly-game-market-recommendations-2026.json'
+      - 'players*.json'
+      - 'scripts/build-step3g-core-features-v2.mjs'
+      - 'scripts/validate-step3g-core-features-v2.mjs'
+      - 'scripts/validate-step3g-breakout-bust-cohorts-v3.mjs'
+      - 'scripts/validate-step3g-historical-situations-v2.mjs'
+      - '.github/workflows/step3g-core-features.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core-features:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Revalidate Step 3A locked feature definitions
+        run: node scripts/validate-ui-step3a-feature-rules.mjs
+      - name: Rebuild Step 3C shadow prerequisite
+        run: node scripts/build-step3c-full-162-shadow.mjs
+      - name: Validate Step 3C prerequisite
+        run: node scripts/validate-step3c-full-162-shadow.mjs
+      - name: Rebuild Step 3D review gate
+        run: node scripts/build-step3d-user-review-gate.mjs
+      - name: Rebuild Step 3D final decisions
+        run: node scripts/finalize-step3d-user-review.mjs
+      - name: Close Step 3E audited no-op
+        run: node scripts/finalize-step3e-noop.mjs
+      - name: Rebuild Step 3F evidence prerequisite
+        run: node scripts/build-step3f-daily-evidence-queue.mjs
+      - name: Validate Step 3F prerequisite
+        run: node scripts/validate-step3f-daily-evidence.mjs
+      - name: Build broad historical player reference
+        run: node scripts/build-historical-reference-population.mjs
+      - name: Empirically resolve Breakout and Bust cohorts
+        run: node scripts/validate-step3g-breakout-bust-cohorts-v3.mjs
+      - name: Empirically resolve historical situational indicators
+        run: node scripts/validate-step3g-historical-situations-v2.mjs
+      - name: Build Step 3G empirically gated feature outputs
+        run: node scripts/build-step3g-core-features-v2.mjs
+      - name: Validate Step 3G empirical closure contract
+        run: node scripts/validate-step3g-core-features-v2.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload Step 3G feature audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3g-core-features
+          path: |
+            data/sources/step3g-breakout-bust-validation-2026.json
+            data/sources/step3g-historical-situational-validation-2026.json
+            data/features/season-long-player-features-2026.json
+            data/features/weekly-sit-start-2026.json
+            data/features/weekly-game-features-2026.json
+            data/features/historical-situational-indicators-2026.json
+            guardrails/step3g-core-features-summary.json
+            guardrails/step3g-validation.json
+          if-no-files-found: error

@@ -1,0 +1,58 @@
+name: Step 3B Final Historical Validation
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/finalize-step3b-validation.mjs'
+      - 'scripts/audit-step3b-rb-health-composition-2021-2025.mjs'
+      - 'scripts/audit-step3b-rb-top30-2019-2025.mjs'
+      - 'scripts/decide-step3b-rb-q50-2019-2025.mjs'
+      - 'scripts/validate-step3b-closure.mjs'
+      - 'data/sources/step3b-final-decision-2026.json'
+      - '.github/workflows/step3b-final-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  final-step3b-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Rebuild historical core
+        run: node scripts/ingest-historical-core.mjs
+      - name: Rebuild injury and role context
+        run: node scripts/enrich-historical-context.mjs
+      - name: Rebuild QB and offensive environment context
+        run: node scripts/enrich-deeper-football-context.mjs
+      - name: Run final Step 3B historical audit
+        run: node scripts/finalize-step3b-validation.mjs
+      - name: Restore locked Step 3B decision contract
+        run: git checkout -- data/sources/step3b-final-decision-2026.json
+      - name: Audit 2019-2025 RB health composition
+        run: node scripts/audit-step3b-rb-health-composition-2021-2025.mjs
+      - name: Audit 2019-2025 preseason top-30 RB cohort
+        run: node scripts/audit-step3b-rb-top30-2019-2025.mjs
+      - name: Decide 2019-2025 RB Q50 treatment
+        run: node scripts/decide-step3b-rb-q50-2019-2025.mjs
+      - name: Validate substantive Step 3B closure
+        run: node scripts/validate-step3b-closure.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload final Step 3B report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3b-final-historical-validation
+          path: |
+            guardrails/step3b-final-historical-validation.json
+            guardrails/step3b-rb-health-composition-2021-2025.json
+            guardrails/step3b-rb-top30-2019-2025.json
+            guardrails/step3b-rb-q50-2019-2025-decision.json
+            guardrails/step3b-closure.json
+            data/sources/step3b-final-decision-2026.json
+          if-no-files-found: error

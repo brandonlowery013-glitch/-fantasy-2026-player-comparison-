@@ -1,0 +1,218 @@
+{
+  "schema_version": "STEP6_5B_TRAINING_CAMP_INJURY_CHRONOLOGY_1.0.0",
+  "season": 2026,
+  "status": "IN_PROGRESS_FULL_CAMP_BACKFILL",
+  "review_window": {
+    "rule": "For every team, begin at that team's first 2026 training-camp player report/check-in and retain all subsequent injury, PUP, NFI, IR, recovery, activation, practice-return and material role events through Week 1 lock.",
+    "includes_preexisting_injuries": true,
+    "includes_players_entering_camp_on_pup_or_nfi": true,
+    "includes_injuries_sustained_during_camp": true,
+    "includes_recovery_and_activation_events": true,
+    "includes_preseason_injuries": true,
+    "captured_through": "2026-08-29"
+  },
+  "state_resolution": {
+    "chronology_required": true,
+    "latest_verified_state_wins": true,
+    "do_not_delete_prior_state": true,
+    "rule": "Earlier camp evidence remains in history, but a later verified injury/recovery/activation event supersedes the earlier CURRENT state. Models must consume the resolved current state while explainability may inspect the full chronology.",
+    "conflict_rule": "When credible sources disagree, preserve both records, mark POSSIBLY_MATERIAL, and do not force a numeric assumption until resolved."
+  },
+  "source_policy": {
+    "primary": ["NFL.com official news/injury/transaction reporting", "official club roster/PUP/NFI/IR transactions"],
+    "fallback": ["FantasyPros current injury/news", "documented team/beat reporting when primary source lacks timing detail"],
+    "rule": "Current availability must not depend on nflverse injury data for 2025+ because that feed is unavailable."
+  },
+  "events": [
+    {
+      "subject": "Alvin Kamara",
+      "team": "NO",
+      "event_date": "2026-08-18",
+      "evidence_type": "CAMP_INJURY",
+      "status": "MATERIAL",
+      "current_state": "EXPECTED_ABSENCE_INTO_REGULAR_SEASON",
+      "detail": "Sprained MCL in practice; NFL reporting on Aug. 19 said expected to miss at least the next month, while NFL Network described a Grade 2 MCL sprain with an expected 4-6 week absence.",
+      "supersedes": "Earlier camp role/availability evidence showing Kamara participating in passing-down work.",
+      "affected_engines": ["RB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-wednesday-aug-19", "https://www.nfl.com/videos/garafolo-alvin-kamara-has-a-grade-2-mcl-sprain-expected-to-miss-4-6-weeks-the-insiders"]
+    },
+    {
+      "subject": "Taylor Moton",
+      "team": "CAR",
+      "event_date": "2026-07-21",
+      "evidence_type": "ENTERED_CAMP_INJURED_NFI",
+      "status": "MATERIAL",
+      "current_state": "EXPECTED_TO_MISS_START_OF_REGULAR_SEASON",
+      "detail": "Carolina announced Moton would start camp on reserve/NFI because of a blood clot in his lung and was expected to miss the start of the 2026 regular season.",
+      "affected_engines": ["TEAM_OFFENSE","QB","RB","SPREAD","TOTAL","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/news-migrated-v2/nfl-news-roundup-latest-league-updates-from-tuesday-july-21"]
+    },
+    {
+      "subject": "Kenny McIntosh",
+      "team": "SEA",
+      "event_date": "2026-07-20",
+      "evidence_type": "ENTERED_CAMP_INJURED_PUP",
+      "status": "MATERIAL",
+      "current_state": "PUP_REHAB",
+      "detail": "Placed on PUP while recovering from a torn ACL.",
+      "affected_engines": ["RB","TEAM_OFFENSE","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-monday-july-20"]
+    },
+    {
+      "subject": "Nick Emmanwori",
+      "team": "SEA",
+      "event_date": "2026-07-20",
+      "evidence_type": "ENTERED_CAMP_INJURED_PUP",
+      "status": "POSSIBLY_MATERIAL",
+      "current_state": "PUP_AT_CAMP_OPEN",
+      "detail": "Placed on PUP after an ankle injury dating to the prior postseason; later recovery state must be reconciled before Week 1.",
+      "affected_engines": ["TEAM_DEFENSE","DST","SPREAD","TOTAL"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-monday-july-20"]
+    },
+    {
+      "subject": "Joe Mixon",
+      "team": "HOU",
+      "event_date": "2026-07-23",
+      "evidence_type": "ENTERED_CAMP_INJURED_NFI",
+      "status": "MATERIAL",
+      "current_state": "ACTIVE_NFI_AT_CAMP_OPEN",
+      "detail": "Placed on active/NFI at the opening of camp; subsequent availability must be chronologically resolved.",
+      "affected_engines": ["RB","TEAM_OFFENSE","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-wednesday-july-23"]
+    },
+    {
+      "subject": "Dameon Pierce",
+      "team": "HOU",
+      "event_date": "2026-07-23",
+      "evidence_type": "ENTERED_CAMP_INJURED_PUP",
+      "status": "POSSIBLY_MATERIAL",
+      "current_state": "ACTIVE_PUP_AT_CAMP_OPEN",
+      "detail": "Placed on active/PUP at camp opening; subsequent return/role evidence must be reconciled before Week 1.",
+      "affected_engines": ["RB","TEAM_OFFENSE","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-wednesday-july-23"]
+    },
+    {
+      "subject": "Tank Dell",
+      "team": "HOU",
+      "event_date": "2026-07-23",
+      "evidence_type": "ENTERED_CAMP_INJURED_PUP",
+      "status": "MATERIAL",
+      "current_state": "PUP_NO_RETURN_TIMELINE_AT_CAMP_OPEN",
+      "detail": "Placed on PUP while rehabbing his knee; team said there was no return timeline in the opening-camp report.",
+      "affected_engines": ["WR","QB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-wednesday-july-23"]
+    },
+    {
+      "subject": "Trent Brown",
+      "team": "HOU",
+      "event_date": "2026-07-23",
+      "evidence_type": "ENTERED_CAMP_INJURED_PUP",
+      "status": "POSSIBLY_MATERIAL",
+      "current_state": "PUP_AT_CAMP_OPEN",
+      "detail": "Placed on PUP at camp opening; offensive-line availability can affect pressure, rushing efficiency and team scoring.",
+      "affected_engines": ["TEAM_OFFENSE","QB","RB","SPREAD","TOTAL","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-wednesday-july-23"]
+    },
+    {
+      "subject": "Denico Autry / Derek Barnett / Foley Fatukasi / Kurt Hinish / Jimmie Ward",
+      "team": "HOU",
+      "event_date": "2026-07-23",
+      "evidence_type": "DEFENSIVE_PLAYERS_ENTERED_CAMP_PUP",
+      "status": "POSSIBLY_MATERIAL",
+      "current_state": "MULTIPLE_DEFENSIVE_PUP_AT_CAMP_OPEN",
+      "detail": "Multiple defensive contributors opened camp on PUP, requiring player-by-player recovery reconciliation before the 2026 defensive prior is set.",
+      "affected_engines": ["TEAM_DEFENSE","DST","SPREAD","TOTAL","QB","RB","WR","TE","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-wednesday-july-23"]
+    },
+    {
+      "subject": "Jeremiyah Love",
+      "team": "ARI",
+      "event_date": "2026-08",
+      "evidence_type": "CAMP_INJURY",
+      "status": "POSSIBLY_MATERIAL",
+      "current_state": "HIGH_ANKLE_SPRain_PRESEASON_LIMITATION",
+      "detail": "NFL injury index reported a high ankle sprain and that he was unlikely to play again in preseason; Week 1 state requires final reconciliation.",
+      "affected_engines": ["RB","TEAM_OFFENSE","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/injuries/"]
+    },
+    {
+      "subject": "Breece Hall",
+      "team": "NYJ",
+      "event_date": "2026-08",
+      "evidence_type": "CAMP_INJURY_AND_RECOVERY",
+      "status": "POSSIBLY_MATERIAL",
+      "current_state": "GROIN_INJURY_EXPECTED_READY_WEEK1",
+      "detail": "NFL injury index reports a camp groin strain followed by expectation he would be ready for Week 1; retain both injury and positive recovery evidence.",
+      "affected_engines": ["RB","TEAM_OFFENSE","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/injuries/"]
+    },
+    {
+      "subject": "Tucker Kraft",
+      "team": "GB",
+      "event_date": "2026-08",
+      "evidence_type": "INJURY_RECOVERY",
+      "status": "POSSIBLY_MATERIAL",
+      "current_state": "RETURNED_TO_TEAM_DRILLS",
+      "detail": "NFL injury index reports return to team drills from knee injury; positive progression does not erase recovery/ramp uncertainty.",
+      "affected_engines": ["TE","TEAM_OFFENSE","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/injuries/"]
+    },
+    {
+      "subject": "Jordyn Tyson",
+      "team": "NO",
+      "event_date": "2026-08",
+      "evidence_type": "CAMP_INJURY",
+      "status": "MATERIAL",
+      "current_state": "EXPECTED_MULTI_WEEK_ABSENCE",
+      "detail": "NFL injury index reports a hamstring injury expected to sideline him roughly two months.",
+      "affected_engines": ["WR","QB","TEAM_OFFENSE","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/injuries/"]
+    },
+    {
+      "subject": "Jayden Higgins",
+      "team": "HOU",
+      "event_date": "2026-08",
+      "evidence_type": "SEASON_ENDING_INJURY",
+      "status": "MATERIAL",
+      "current_state": "OUT_FOR_2026_SEASON",
+      "detail": "NFL injury index reports a torn ACL and season-ending absence.",
+      "affected_engines": ["WR","QB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/injuries/"]
+    },
+    {
+      "subject": "Tyler Biadasz",
+      "team": "LAC",
+      "event_date": "2026-08",
+      "evidence_type": "CAMP_INJURY",
+      "status": "MATERIAL",
+      "current_state": "OUT_INDEFINITELY_ACL",
+      "detail": "NFL injury index reports an ACL injury during practice with an indefinite absence.",
+      "affected_engines": ["TEAM_OFFENSE","QB","RB","SPREAD","TOTAL","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": ["https://www.nfl.com/injuries/"]
+    }
+  ],
+  "required_backfill": {
+    "all_32_teams": true,
+    "opening_camp_pup_nfi_ir": true,
+    "daily_injury_and_recovery_changes": true,
+    "preseason_game_injuries": true,
+    "week1_status_resolution": true,
+    "post_53_man_cut_reconciliation": true,
+    "closure_rule": "Step 6.5B cannot close until every team has been reviewed from its camp opening through the post-cutdown Week 1 roster/injury state."
+  }
+}

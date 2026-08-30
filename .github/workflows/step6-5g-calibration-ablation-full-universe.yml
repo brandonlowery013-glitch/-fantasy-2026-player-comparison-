@@ -1,0 +1,39 @@
+name: Step 6.5G Calibration Ablation Full Universe
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  calibration-ablation-full-universe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate current Step 6.5 process policy
+        run: node scripts/validate-step6-5d-process-policy.mjs
+      - name: Revalidate Step 6.5F unified reason contract
+        run: node scripts/validate-step6-5f-unified-reason-stack.mjs
+      - name: Validate Step 6.5G calibration and ablation contract
+        run: node scripts/validate-step6-5g-calibration-ablation-full-universe.mjs
+      - name: Build full 162-player shadow recalculation and ablation report
+        run: node scripts/build-step6-5g-full-universe-shadow.mjs
+      - name: Upload Step 6.5G full-universe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5g-full-universe-shadow
+          path: |
+            data/probability/generated/step6-5g-full-universe-shadow.json
+            guardrails/step6-5g-ablation-report.json
+          if-no-files-found: error
+      - name: Revalidate Step 5 permissions
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs

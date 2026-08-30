@@ -1,0 +1,37 @@
+name: UI Permissions Step 5
+
+on:
+  pull_request:
+  push:
+    branches: [ui/permissions-step5]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  permissions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Step 5 public permission boundary
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Verify Step 5 changes no player-model files
+        shell: bash
+        run: |
+          git fetch origin model/step4-data-integrity --depth=1
+          if git diff --name-only origin/model/step4-data-integrity...HEAD | grep -Eq '^(players([0-9]+)?\.json|historicalStats2026\.json|data/(calibration|market|probability)/)'; then
+            echo 'Step 5 may not modify model/player/market state.'
+            git diff --name-only origin/model/step4-data-integrity...HEAD
+            exit 1
+          fi
+      - name: Upload Step 5 permission report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-permissions-step5
+          path: guardrails/ui-permissions-step5-report.json
+          if-no-files-found: error

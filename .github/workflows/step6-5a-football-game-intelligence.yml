@@ -1,0 +1,35 @@
+name: Step 6.5A Football Game Intelligence
+
+on:
+  push:
+    branches: [model/step6-5-football-game-intelligence]
+  pull_request:
+    branches: [ui/responsive-step6]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  STEP6_BASE_SHA: 75fe85d862917c332f60d5e127969e28ce3c9d60
+
+jobs:
+  step6-5a-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 6.5A source and authority contract
+        run: node scripts/validate-step6-5a-football-game-intelligence.mjs
+      - name: Verify validated Step 6 head is inherited unchanged
+        run: |
+          git merge-base --is-ancestor "$STEP6_BASE_SHA" HEAD
+          test "$(git merge-base "$STEP6_BASE_SHA" HEAD)" = "$STEP6_BASE_SHA"
+      - name: Revalidate Step 5 permissions on current head
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Run hard Guardrail QA on current Step 6.5A head
+        run: node scripts/run-guardrail-qa.mjs

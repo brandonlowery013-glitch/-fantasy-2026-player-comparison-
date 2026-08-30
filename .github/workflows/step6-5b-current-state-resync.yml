@@ -1,0 +1,77 @@
+name: Step 6.5B Current State Resync
+
+on:
+  push:
+    branches: [model/step6-5b-current-state-resync]
+  pull_request:
+    branches: [model/step6-5-football-game-intelligence]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  step6-5b-resync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate Step 6.5A contract
+        run: node scripts/validate-step6-5a-football-game-intelligence.mjs
+      - name: Validate Step 6.5B current evidence ledger
+        run: node scripts/validate-step6-5b-current-evidence-ledger.mjs
+      - name: Validate exhaustive injury rerun coverage
+        run: node scripts/validate-step6-5b-injury-rerun-coverage.mjs
+      - name: Validate roster-driven injury completeness and block false closure
+        run: node scripts/validate-step6-5b-roster-driven-injury-completeness.mjs
+      - name: Generate and validate 162-player roster-driven injury coverage
+        run: node scripts/validate-step6-5b-roster-driven-injury-audit.mjs
+      - name: Validate player profile injury designations
+        run: node scripts/validate-step6-5b-injury-designations.mjs
+      - name: Validate automatic injury-to-weekly projection policy
+        run: node scripts/validate-step6-5b-automatic-injury-projection-policy.mjs
+      - name: Test hourly live injury change poll
+        run: node scripts/poll-live-injury-changes.mjs --self-test
+      - name: Test injury change cadence override
+        run: node scripts/production-cadence-gate.mjs --self-test
+      - name: Validate roster cutdown reconciliation gate
+        run: node scripts/validate-step6-5b-roster-cutdown-reconciliation.mjs
+      - name: Test adjusted-team-prior builder
+        run: node scripts/build-step6-5b-2026-adjusted-team-priors.mjs --self-test
+      - name: Build 2025 scoring baseline and attach verified 2026 adjustment features
+        run: node scripts/build-step6-5b-2026-adjusted-team-priors.mjs
+      - name: Upload adjusted team-prior audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5b-2026-adjusted-team-priors
+          path: data/probability/generated/step6-5b-2026-adjusted-team-priors.json
+      - name: Validate shared defensive intelligence contract
+        run: node scripts/validate-step6-5b-shared-defensive-intelligence.mjs
+      - name: Test shared defensive intelligence builder
+        run: node scripts/build-step6-5b-shared-defensive-intelligence.mjs --self-test
+      - name: Build 2025 shared defensive component baseline
+        run: node scripts/build-step6-5b-shared-defensive-intelligence.mjs
+      - name: Upload shared defensive intelligence audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5b-shared-defensive-intelligence
+          path: data/probability/generated/step6-5b-shared-defensive-intelligence-2026.json
+      - name: Validate defensive walk-forward prior-decay contract
+        run: node scripts/validate-step6-5b-defensive-walkforward-decay.mjs
+      - name: Test defensive prior-decay math
+        run: node scripts/backtest-step6-5b-defensive-walkforward-decay.mjs --self-test
+      - name: Run historical defensive walk-forward and learn prior decay
+        run: node scripts/backtest-step6-5b-defensive-walkforward-decay.mjs
+      - name: Upload defensive walk-forward calibration artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5b-defensive-walkforward-decay-calibration
+          path: data/probability/generated/step6-5b-defensive-walkforward-decay-calibration.json
+      - name: Revalidate Step 5 permissions
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs

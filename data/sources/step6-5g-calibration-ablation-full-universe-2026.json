@@ -1,0 +1,42 @@
+{
+  "schema_version": "STEP6_5G_CALIBRATION_ABLATION_FULL_UNIVERSE_1.0.0",
+  "season": 2026,
+  "status": "SHADOW_ONLY",
+  "base_step": "STEP6_5F_UNIFIED_REASON_STACK_1.0.0",
+  "base_head_sha": "821c6da7c6044c3399c62697151ee9dad40922da",
+  "expected_player_universe": 162,
+  "production_numeric_authority": 0,
+  "automatic_promotion": false,
+  "sportsbook_inputs_allowed_for_football_projection": false,
+  "validated_module_decisions": [
+    {"module":"broad_team_defense_modifier","decision":"REJECT_NUMERIC_AUTHORITY","reason":"Failed stable held-out improvement in Step 6.5B/6.5C."},
+    {"module":"granular_matchup_QB","decision":"RETAIN_WEEKLY_SHADOW","reason":"Cleared strict 2024/2025 historical gate in Step 6.5C."},
+    {"module":"granular_matchup_RB","decision":"RETAIN_WEEKLY_SHADOW","reason":"Cleared strict 2024/2025 historical gate in Step 6.5C."},
+    {"module":"granular_matchup_WR","decision":"RETAIN_WEEKLY_SHADOW","reason":"Cleared strict 2024/2025 historical gate in Step 6.5C."},
+    {"module":"granular_matchup_TE","decision":"REJECT_NUMERIC_AUTHORITY","reason":"Did not clear strict Step 6.5C promotion gate."},
+    {"module":"dst_granular_matchup","decision":"RETAIN_WEEKLY_SHADOW","reason":"DST proxy interaction cleared Step 6.5C; full DST scoring path later cleared Step 6.5C DST/K calibration."},
+    {"module":"kicker_rich_model","decision":"REJECT_NUMERIC_AUTHORITY","reason":"Did not beat simple kicker baseline in Step 6.5C DST/K calibration."},
+    {"module":"game_spread_total_6_5D","decision":"RETAIN_GAME_SHADOW","reason":"Improved margin, total and team-score error in both held-out seasons."},
+    {"module":"extra_historical_situations_6_5E","decision":"REJECT_NUMERIC_AUTHORITY","reason":"Validation selected REST_ONLY incumbent in both held-out seasons."},
+    {"module":"unified_reason_stack_6_5F","decision":"RETAIN_READ_ONLY","reason":"Behavioral and negative tests passed; numeric authority is structurally zero."}
+  ],
+  "season_long_bridge_policy": {
+    "rule": "Weekly or game-level promotion candidates may not change season-long player projections or ranks without a separately validated aggregation bridge.",
+    "validated_bridge_available": false,
+    "result": "PRESERVE_CURRENT_PLAYER_NUMERICS"
+  },
+  "legacy_recalibration_policy": {
+    "workflow": ".github/workflows/recalibrate-projections.yml",
+    "status": "QUARANTINED_FROM_6_5G_AUTHORITY",
+    "reason": "Contains hand-set historical weights and context multipliers that were not selected by the Step 6.5 walk-forward calibration framework."
+  },
+  "locked_rules": [
+    "Every authoritative fantasy player must be represented exactly once in the 6.5G shadow recalculation manifest.",
+    "No failed, quarantined or zero-authority module may move a projection, True Value score, overall rank, positional rank or market-value verdict.",
+    "No weekly matchup effect may be converted into a season-long adjustment by averaging or summing without a validated bridge.",
+    "Sportsbook, ADP, ECR and market prices remain downstream and cannot influence football projections or ranks.",
+    "Missing evidence is unknown, not zero.",
+    "Current player numerics remain unchanged when no validated numeric bridge exists.",
+    "Full backward audit remains required before promotion or merge."
+  ]
+}

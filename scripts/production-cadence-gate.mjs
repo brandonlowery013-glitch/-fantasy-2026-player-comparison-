@@ -36,9 +36,10 @@ function dayPolicy(parts){
   if(parts.weekday==='Mon')return ([0,6,12].includes(h)||h>=14)?'MONDAY_MNF_WINDOW':'SKIP_MONDAY';
   return [0,6,12,18].includes(h)?'OFFDAY_6_HOUR':'SKIP_OFFDAY_6_HOUR';
 }
-function decide(d){
+function decide(d,{injuryChanged=process.env.INJURY_STATE_CHANGED==='true'}={}){
   if(event==='workflow_dispatch')return {run:true,reason:'MANUAL_DISPATCH'};
   const parts=chicagoParts(d);
+  if(injuryChanged)return {run:true,reason:'INJURY_STATE_CHANGED',parts};
   const gameReason=gameWindowReason(d);
   if(gameReason)return {run:true,reason:gameReason,parts};
   const reason=dayPolicy(parts);
@@ -54,15 +55,15 @@ if(process.argv.includes('--self-test')){
     ['2026-09-14T19:10:00Z',true,'Mon afternoon/MNF'],
     ['2026-09-12T13:10:00Z',true,'Sat 4-hour']
   ];
-  const saved=process.env.GITHUB_EVENT_NAME;
-  for(const [iso,expected,label] of cases){const r=decide(new Date(iso));if(r.run!==expected)throw new Error(`${label} expected ${expected} got ${r.run} (${r.reason})`);}
-  if(saved!==undefined)process.env.GITHUB_EVENT_NAME=saved;
-  console.log(JSON.stringify({result:'PASS',timezone:TZ,cases:cases.length},null,2));
+  for(const [iso,expected,label] of cases){const r=decide(new Date(iso),{injuryChanged:false});if(r.run!==expected)throw new Error(`${label} expected ${expected} got ${r.run} (${r.reason})`);}
+  const forced=decide(new Date('2026-09-08T13:10:00Z'),{injuryChanged:true});
+  if(!forced.run||forced.reason!=='INJURY_STATE_CHANGED')throw new Error('injury change did not override cadence skip');
+  console.log(JSON.stringify({result:'PASS',timezone:TZ,cases:cases.length+1,injury_change_override:true},null,2));
   process.exit(0);
 }
 
 const decision=decide(now);
-const report={generated_at:new Date().toISOString(),evaluated_at:now.toISOString(),timezone:TZ,event,run:decision.run,reason:decision.reason,chicago:decision.parts||chicagoParts(now),policy:{tue_wed_fri:'every 6 hours',sat:'every 4 hours',thu:'00/06/12 plus hourly from 14:00 through 23:00 CT',sun:'00/04/08 plus hourly from 09:00 through 23:00 CT',mon:'00/06/12 plus hourly from 14:00 through 23:00 CT',dynamic:'hourly when a persisted kickoff is within 6 hours or within 4 hours after kickoff for settlement'}};
+const report={generated_at:new Date().toISOString(),evaluated_at:now.toISOString(),timezone:TZ,event,run:decision.run,reason:decision.reason,injury_state_changed:process.env.INJURY_STATE_CHANGED==='true',chicago:decision.parts||chicagoParts(now),policy:{tue_wed_fri:'every 6 hours unless injury state changed',sat:'every 4 hours unless injury state changed',thu:'00/06/12 plus hourly from 14:00 through 23:00 CT',sun:'00/04/08 plus hourly from 09:00 through 23:00 CT',mon:'00/06/12 plus hourly from 14:00 through 23:00 CT',dynamic:'hourly when a persisted kickoff is within 6 hours, within 4 hours after kickoff for settlement, or whenever the hourly live injury poll detects a material state change'}};
 fs.mkdirSync('guardrails',{recursive:true});
 fs.writeFileSync('guardrails/production-cadence-gate-report.json',JSON.stringify(report,null,2)+'\n');
 if(outFile)fs.appendFileSync(outFile,`run=${decision.run?'true':'false'}\nreason=${decision.reason}\n`);

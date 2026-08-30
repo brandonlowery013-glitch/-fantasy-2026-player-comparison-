@@ -1,0 +1,52 @@
+{
+  "schema_version": "STEP6_5E_HISTORICAL_SITUATIONAL_INTELLIGENCE_1.0.0",
+  "season": 2026,
+  "status": "SHADOW_ONLY",
+  "base_step": "STEP6_5D_GAME_SPREAD_TOTAL_CALIBRATION_1.0.0",
+  "base_head_sha": "cd241704ec912c850180634fc3736b5e023c7d64",
+  "sportsbook_inputs_allowed": false,
+  "production_numeric_authority": 0,
+  "automatic_promotion": false,
+  "history_window": [2021, 2022, 2023, 2024, 2025],
+  "held_out_test_seasons": [2024, 2025],
+  "candidate_features": [
+    "rest_difference_days",
+    "home_short_rest_le_6",
+    "away_short_rest_le_6",
+    "home_long_rest_ge_10",
+    "away_long_rest_ge_10",
+    "division_game",
+    "same_season_rematch",
+    "home_previous_game_margin_abs",
+    "away_previous_game_margin_abs",
+    "home_previous_game_total",
+    "away_previous_game_total"
+  ],
+  "quarantined_until_source_resolved": [
+    "international_travel_recovery",
+    "time_zone_direction_and_body_clock",
+    "verified_travel_distance",
+    "prior_game_overtime_without_source_field",
+    "extreme_comeback_or_collapse_without_play_by_play",
+    "weather_or_surface_context_not already locked pregame"
+  ],
+  "selection": {
+    "validation_season": "test_season_minus_1",
+    "ridge_lambda_grid": [0.01, 0.1, 1, 4, 16, 64],
+    "candidate_feature_sets": ["REST_ONLY", "REST_SCHEDULE", "REST_SCHEDULE_PRIOR_GAME_STRESS"],
+    "test_year_may_select_parameters": false
+  },
+  "promotion_gate": {
+    "required": "candidate must improve pooled margin MAE and total MAE versus the exact 6.5D feature set and may not be worse on both margin and total MAE in either held-out season",
+    "per_signal_authority": "zero unless carried by a passing out-of-sample feature set; no narrative trend receives authority by itself"
+  },
+  "locked_rules": [
+    "Only information known before kickoff may enter a feature row.",
+    "Sportsbook spread, total, odds, implied probability, closing line, consensus price and ADP are prohibited from fitting, selection and targets.",
+    "The incumbent 6.5D football feature set is the comparison baseline and may not be weakened to make situational features look better.",
+    "Missing situational data is unknown, not zero, unless zero has a defined football meaning for that feature.",
+    "A historical trend may be displayed as context without receiving numeric forecast authority.",
+    "No situational effect may be double counted in team priors, player matchup layers and game adjustments without an explicit decomposition.",
+    "Outputs remain SHADOW_ONLY until the full backward audit and later promotion governance."
+  ]
+}

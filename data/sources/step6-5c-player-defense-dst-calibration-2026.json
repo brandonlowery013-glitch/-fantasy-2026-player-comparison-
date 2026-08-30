@@ -1,0 +1,72 @@
+{
+  "schema_version": "STEP6_5C_PLAYER_DEFENSE_DST_CALIBRATION_1.0.0",
+  "season": 2026,
+  "status": "SHADOW_CALIBRATION_CONTRACT_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "base_step6_5b_head": "b55f5485cef06364712d71b6a77436ad636f668a",
+  "sportsbook_inputs_allowed": false,
+  "production_numeric_authority": 0,
+  "automatic_promotion": false,
+  "source_backbone": {
+    "team_weekly": "nflverse stats_team weekly regular-season files",
+    "player_weekly": "nflverse stats_player weekly regular-season files",
+    "schedule": "nflverse schedules games.csv",
+    "history_seasons": [2021, 2022, 2023, 2024, 2025]
+  },
+  "fantasy_scoring": {
+    "reception": 1,
+    "rushing_yard": 0.1,
+    "receiving_yard": 0.1,
+    "rushing_td": 6,
+    "receiving_td": 6,
+    "passing_yard": 0.04,
+    "passing_td": 4,
+    "interception_thrown": -2
+  },
+  "targets": {
+    "QB": "total opposing QB PPR generated in the game",
+    "RB": "total opposing RB PPR generated in the game",
+    "WR": "total opposing WR PPR generated in the game",
+    "TE": "total opposing TE PPR generated in the game",
+    "DST_PROXY": "league-scored defensive components available from the team/schedule source: sacks, interceptions, opponent fumbles lost when available, and points-allowed bucket; defensive/special-teams TDs are intentionally excluded unless a complete source is added"
+  },
+  "dst_proxy_scoring": {
+    "sack": 1,
+    "interception": 2,
+    "fumble_recovery_proxy_from_opponent_fumbles_lost": 2,
+    "points_allowed_buckets": {"0":10,"1_6":7,"7_13":4,"14_20":1,"21_27":0,"28_34":-1,"35_plus":-4},
+    "defensive_or_special_teams_td": null,
+    "rule": "DST_PROXY is not labeled full DST fantasy points while defensive/special-teams touchdown coverage is absent. Missing touchdown data is unknown, not zero."
+  },
+  "defensive_features": [
+    "points_allowed_mean",
+    "overall_epa_allowed_per_play",
+    "pass_epa_allowed_per_dropback",
+    "rush_epa_allowed_per_carry",
+    "pass_yards_allowed_per_attempt",
+    "rush_yards_allowed_per_carry",
+    "sack_rate",
+    "interception_rate",
+    "explosive_pass_20_rate_allowed",
+    "explosive_rush_10_rate_allowed"
+  ],
+  "baseline": "For each target, blend that defense's previous-season target allowed with current-season target allowed before the game using a leakage-safe half-life selected only on pre-test validation data.",
+  "candidate": "Use the same pre-game target baseline plus shared defensive components whose half-lives and ridge regularization are selected without looking at the held-out test season.",
+  "walk_forward": {
+    "held_out_test_seasons": [2024, 2025],
+    "candidate_half_life_games": [1, 2, 4, 6, 8, 12, 16],
+    "ridge_lambda_grid": [0.25, 1, 4, 16, 64],
+    "parameter_rule": "For test season Y, select target/feature decay and regularization using seasons strictly before Y; Y may never select its own parameters.",
+    "target_week_leakage_prohibited": true
+  },
+  "promotion_rule": {
+    "per_target": "Candidate must improve both MAE and RMSE versus the target-specific baseline in every held-out season before it can become a promotion candidate.",
+    "cross_position_blanket_weight_prohibited": true,
+    "production_authority_requires_later_governance": true
+  },
+  "anti_double_count_rule": "A validated matchup adjustment may alter the player's weekly opponent component, but the same defensive effect may not be applied again through team environment or game model unless the overlap is explicitly decomposed.",
+  "season_long_rule": "Opponent matchup effects are weekly. A single opponent does not permanently rewrite season-long player quality.",
+  "market_isolation_rule": "Sportsbook spreads, totals, moneylines and player props are prohibited from feature construction, parameter selection and target construction. Market comparison remains downstream.",
+  "missing_data_rule": "Missing values are unknown, not zero. A target or feature family with insufficient coverage remains zero-authority.",
+  "next_gate": "Run the 2024/2025 held-out calibration, inspect position-specific stability/ablation, and retain zero live authority unless each target clears its own gate."
+}

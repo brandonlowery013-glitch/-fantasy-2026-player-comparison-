@@ -1,0 +1,50 @@
+{
+  "schema_version": "STEP6_5B_SHARED_DEFENSIVE_INTELLIGENCE_1.0.0",
+  "season": 2026,
+  "status": "SHADOW_COMPONENTS_READY_COMPOSITE_UNCALIBRATED",
+  "source_season": 2025,
+  "sportsbook_inputs_used": false,
+  "source": {
+    "name": "nflverse weekly team stats",
+    "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2025.csv",
+    "authority": "PRIMARY_HISTORICAL_TEAM_COMPONENT_SOURCE"
+  },
+  "shared_information_rule": "Defensive facts and derived defensive components are canonical shared football-state inputs. Fantasy, DST, player matchup, spread, total and player-prop engines may transform them differently but may not maintain contradictory independent versions of the same fact.",
+  "compartmentalization_rule": "Compartmentalize calculations, not information.",
+  "anti_double_count_rule": "A defensive effect already represented in the shared team-defense state may not be applied again as a direct player matchup penalty or bonus unless the decomposition explicitly removes the overlapping team-level contribution.",
+  "market_isolation_rule": "Sportsbook spreads, totals, moneylines and player props are prohibited from building or calibrating the football defensive state. Market comparison remains downstream only.",
+  "components": {
+    "overall_epa_allowed_per_play": {"direction": "LOWER_IS_BETTER", "authority": "RAW_COMPONENT"},
+    "pass_epa_allowed_per_dropback": {"direction": "LOWER_IS_BETTER", "authority": "RAW_COMPONENT"},
+    "rush_epa_allowed_per_carry": {"direction": "LOWER_IS_BETTER", "authority": "RAW_COMPONENT"},
+    "pass_yards_allowed_per_attempt": {"direction": "LOWER_IS_BETTER", "authority": "RAW_COMPONENT"},
+    "rush_yards_allowed_per_carry": {"direction": "LOWER_IS_BETTER", "authority": "RAW_COMPONENT"},
+    "sack_rate": {"direction": "HIGHER_IS_BETTER", "authority": "RAW_COMPONENT"},
+    "interception_rate": {"direction": "HIGHER_IS_BETTER", "authority": "RAW_COMPONENT"},
+    "explosive_pass_20_rate_allowed": {"direction": "LOWER_IS_BETTER", "authority": "RAW_COMPONENT"},
+    "explosive_rush_10_rate_allowed": {"direction": "LOWER_IS_BETTER", "authority": "RAW_COMPONENT"}
+  },
+  "engine_consumers": ["TEAM_DEFENSE", "DST", "QB", "RB", "WR", "TE", "SPREAD", "TOTAL", "PLAYER_PROPS"],
+  "composite_policy": {
+    "composite_rating_authority": 0,
+    "rule": "Do not assign hand-tuned or guessed weights to the component metrics. A single composite defensive rating remains null until leakage-safe historical calibration validates weights and out-of-sample behavior.",
+    "promotion_requires": [
+      "historical walk-forward calibration",
+      "out-of-sample improvement over points-allowed-only baseline",
+      "ablation by component family",
+      "stability check across seasons",
+      "no-market-contamination verification"
+    ]
+  },
+  "2026_adjustment_policy": {
+    "rule": "Verified 2026 personnel, coaching and availability changes attach to the same canonical defensive state but carry zero direct numeric adjustment authority until a deterministic authorized rule or validated coefficient exists.",
+    "unknown_is_not_zero": true
+  },
+  "closure_gate": {
+    "all_32_teams_required": true,
+    "no_missing_core_components": true,
+    "sportsbook_inputs_used_must_be_false": true,
+    "composite_must_remain_null_until_calibrated": true,
+    "2026_adjustment_numeric_authority_must_remain_zero_until_validated": true
+  }
+}

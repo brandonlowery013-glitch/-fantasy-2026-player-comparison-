@@ -1,0 +1,11 @@
+import fs from 'fs';
+const p='data/sources/step6-5h-integration-contamination-qa-2026.json';
+const d=JSON.parse(fs.readFileSync(p,'utf8'));
+const req=['CANONICAL_FOOTBALL_STATE','FANTASY_PROJECTION','GAME_PROJECTION','PLAYER_PROP_PROJECTION','DST_PROJECTION','K_PROJECTION','MARKET_COMPARISON','UNIFIED_REASON_STACK'];
+for(const x of req) if(!d.canonical_flow.includes(x)) throw new Error(`missing flow node ${x}`);
+if(d.production_numeric_authority!==0) throw new Error('6.5H must remain zero authority');
+if(d.next_gate!=='FULL_BACKWARD_AUDIT') throw new Error('wrong next gate');
+const rules=d.locked_rules.join(' ');
+for(const term of ['Sportsbook','downstream','evidence key','read-only','162','backward audit']) if(!rules.includes(term)) throw new Error(`missing rule ${term}`);
+if(!d.rejected_numeric_modules.includes('legacy_hand_tuned_projection_recalibration')) throw new Error('legacy guessed coefficients not quarantined');
+console.log(JSON.stringify({result:'PASS',schema:d.schema_version,authority:d.production_numeric_authority,next_gate:d.next_gate,rejected:d.rejected_numeric_modules.length}));

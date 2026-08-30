@@ -1,0 +1,96 @@
+{
+  "schema_version": "STEP6_5B_ROSTER_DRIVEN_INJURY_AUDIT_1.0.0",
+  "season": 2026,
+  "status": "IN_PROGRESS",
+  "captured_through": "2026-08-29",
+  "closure_allowed": false,
+  "authoritative_fantasy_universe": {
+    "source": "players0.json through players12.json",
+    "expected_count": 162,
+    "rule": "Every player in the authoritative 162-player fantasy universe must have an explicit review result. Missing review is a blocking failure."
+  },
+  "impact_player_scope": {
+    "positions": ["OT","OG","C","EDGE","DE","DT","LB","CB","S"],
+    "all_32_teams_required": true,
+    "rule": "Each team must have an explicit impact-player injury review for expected starters and materially important rotation players whose health can affect team offense, team defense, DST, spreads, totals or player props."
+  },
+  "discovery_sources": [
+    {
+      "name": "NFL training-camp reporting dates / all-32 opening window",
+      "url": "https://www.nfl.com/news/2026-nfl-training-camps-report-dates-locations-announced-for-all-32-teams",
+      "use": "Defines camp-opening window; all clubs reported by 2026-07-28."
+    },
+    {
+      "name": "NFL Training Camp News series",
+      "url": "https://www.nfl.com/news/series/training-camp-news",
+      "use": "Primary league-level current camp/injury discovery and confirmation."
+    },
+    {
+      "name": "NFL injuries index",
+      "url": "https://www.nfl.com/injuries/",
+      "use": "Primary current injury-state cross-check."
+    },
+    {
+      "name": "Stokastic 2026 daily all-32 training-camp report and injury tracker",
+      "url": "https://www.stokastic.com/articles/fantasy-football/nfl-training-camp-report-2026-08-10",
+      "use": "Discovery net across daily editions from July 31 through August 28; material cases require NFL/team confirmation where available."
+    },
+    {
+      "name": "FantasyPros 2026 training-camp injury news",
+      "url": "https://www.fantasypros.com/2026/07/nfl-injury-news-fantasy-football-impact-2026/",
+      "use": "Fallback fantasy-player injury discovery and chronology detail."
+    }
+  ],
+  "review_result_states": [
+    "MATERIAL",
+    "POSSIBLY_MATERIAL",
+    "CONTEXT_ONLY",
+    "NO_CURRENT_EFFECT",
+    "NO_MATERIAL_CAMP_INJURY_FOUND"
+  ],
+  "known_material_or_review_cases": [
+    {"player":"Ja'Marr Chase","team":"CIN","position":"WR","status":"POSSIBLY_MATERIAL","current_state":"KNEE_INCIDENT_NEEDS_FULL_PRACTICE_CONFIRMATION","reason":"Left Aug. 25 practice after landing awkwardly on left knee; later full-practice/Week 1 confirmation required before clearing.","affected_engines":["WR","QB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"player":"Alec Pierce","team":"IND","position":"WR","status":"POSSIBLY_MATERIAL","current_state":"RAMPING_TOWARD_WEEK1_AFTER_PUP","reason":"Offseason ankle/heel surgery, missed offseason work, opened camp on Active/PUP and was activated Aug. 27 with ramp-up still required.","affected_engines":["WR","QB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"player":"Alvin Kamara","team":"NO","position":"RB","status":"MATERIAL","current_state":"EXPECTED_ABSENCE_INTO_REGULAR_SEASON","reason":"Grade 2 MCL sprain reported with multi-week absence expectation.","affected_engines":["RB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"player":"Luther Burden III","team":"CHI","position":"WR","status":"POSSIBLY_MATERIAL","current_state":"GROIN_RAMP_WEEK1_WATCH","reason":"Groin injury cost substantial August practice time; Week 1 role/ramp needs final resolution.","affected_engines":["WR","TEAM_OFFENSE","PLAYER_PROPS"]},
+    {"player":"Josh Downs","team":"IND","position":"WR","status":"POSSIBLY_MATERIAL","current_state":"GROIN_INJURY_REPORTED_NOT_SERIOUS","reason":"Missed camp work with groin injury; coach indicated short-term absence, requiring return confirmation.","affected_engines":["WR","QB","TEAM_OFFENSE","PLAYER_PROPS"]},
+    {"player":"Zay Flowers","team":"BAL","position":"WR","status":"POSSIBLY_MATERIAL","current_state":"QUAD_CONTUSION_DAY_TO_DAY","reason":"Missed camp practice with quadriceps contusion; day-to-day status requires current-state confirmation.","affected_engines":["WR","QB","TEAM_OFFENSE","PLAYER_PROPS"]},
+    {"player":"Tucker Kraft","team":"GB","position":"TE","status":"POSSIBLY_MATERIAL","current_state":"ACL_RAMP_RETURNED_TO_TEAM_WORK","reason":"Returned to routes/team work while ramping from ACL rehab; positive recovery does not erase early-season ramp uncertainty.","affected_engines":["TE","QB","TEAM_OFFENSE","PLAYER_PROPS"]},
+    {"player":"Malik Nabers","team":"NYG","position":"WR","status":"POSSIBLY_MATERIAL","current_state":"ACL_RECOVERY_TRENDING_WEEK1","reason":"2025 ACL plus offseason cleanup procedure; progressed into team work but remains a recovery/ramp case.","affected_engines":["WR","QB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"player":"George Kittle","team":"SF","position":"TE","status":"MATERIAL","current_state":"ACHILLES_RECOVERY_WEEK1_UNCERTAINTY","reason":"Entered camp on PUP in Achilles recovery; availability materially affects passing efficiency and target distribution.","affected_engines":["TE","QB","WR","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"player":"Ashton Jeanty","team":"LV","position":"RB","status":"MATERIAL","current_state":"MAJOR_RIGHT_LEG_KNEE_INJURY_DIAGNOSIS_PENDING","reason":"Helped off without bearing weight in late-August preseason action; diagnosis/timetable unresolved in current model state.","affected_engines":["RB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"player":"Christian McCaffrey","team":"SF","position":"RB","status":"NO_CURRENT_EFFECT","current_state":"RETURNED_FROM_PLANNED_PRACTICE_ABSENCE","reason":"Missed practices were characterized as planned and he returned; retain history without adding a new penalty absent setback.","affected_engines":["RB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"player":"Breece Hall","team":"NYJ","position":"RB","status":"POSSIBLY_MATERIAL","current_state":"GROIN_RECOVERY_EXPECTED_WEEK1","reason":"Camp groin strain followed by positive Week 1 expectation; retain soft-tissue/ramp uncertainty until final practice status.","affected_engines":["RB","TEAM_OFFENSE","PLAYER_PROPS"]}
+  ],
+  "known_impact_nonfantasy_cases": [
+    {"player":"Laremy Tunsil","team":"WAS","position":"OT","status":"MATERIAL","reason":"Triceps injury reported to cost a large portion of the season, materially changing protection and run-blocking assumptions.","affected_engines":["TEAM_OFFENSE","QB","RB","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"player":"Dillon Radunz","team":"NO","position":"OL","status":"MATERIAL","reason":"Torn ACL in camp; removes a meaningful offensive-line option.","affected_engines":["TEAM_OFFENSE","QB","RB","SPREAD","TOTAL"]},
+    {"player":"Ben Bartch","team":"DET","position":"OG","status":"POSSIBLY_MATERIAL","reason":"Competing for starting LG while working through a foot injury; role and health both affect line continuity.","affected_engines":["TEAM_OFFENSE","QB","RB","SPREAD","TOTAL"]},
+    {"player":"Micah Parsons","team":"GB","position":"EDGE","status":"MATERIAL","reason":"ACL/meniscus recovery expected to keep him out to start the season; major pass-rush/DST/spread input.","affected_engines":["TEAM_DEFENSE","DST","SPREAD","TOTAL","QB","WR","TE","PLAYER_PROPS"]},
+    {"player":"Nick Bosa","team":"SF","position":"EDGE","status":"POSSIBLY_MATERIAL","reason":"Returning from 2025 ACL; early-season pressure expectation depends on verified workload/effectiveness.","affected_engines":["TEAM_DEFENSE","DST","SPREAD","TOTAL","QB","WR","TE","PLAYER_PROPS"]},
+    {"player":"Fred Warner","team":"SF","position":"LB","status":"NO_CURRENT_EFFECT","reason":"Major 2025 ankle injury is retained historically, but current reporting indicated he was good to go.","affected_engines":["TEAM_DEFENSE","DST","SPREAD","TOTAL","RB","TE"]},
+    {"player":"Taylor Moton","team":"CAR","position":"OT","status":"MATERIAL","reason":"Entered camp on NFI with blood clot and was expected to miss start of regular season.","affected_engines":["TEAM_OFFENSE","QB","RB","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"player":"Austin Jackson","team":"MIA","position":"OT","status":"POSSIBLY_MATERIAL","reason":"Starting RT missed camp time; current availability materially affects protection and rushing efficiency.","affected_engines":["TEAM_OFFENSE","QB","RB","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"player":"Rene Konga","team":"MIA","position":"DT","status":"MATERIAL","reason":"Reported out for 2026 season; defensive-front prior must reflect absence.","affected_engines":["TEAM_DEFENSE","DST","SPREAD","TOTAL"]},
+    {"player":"Roy Robertson-Harris","team":"NYG","position":"DL","status":"MATERIAL","reason":"Torn Achilles removes a meaningful defensive-front contributor.","affected_engines":["TEAM_DEFENSE","DST","SPREAD","TOTAL","RB"]},
+    {"player":"Braxton Jones","team":"CHI","position":"OT","status":"POSSIBLY_MATERIAL","reason":"Camp injury reportedly avoided major damage; Week 1 health still affects protection/run efficiency.","affected_engines":["TEAM_OFFENSE","QB","RB","SPREAD","TOTAL","PLAYER_PROPS"]},
+    {"player":"Coby Bryant","team":"CHI","position":"S","status":"POSSIBLY_MATERIAL","reason":"Knee injury adds secondary uncertainty and can affect pass defense/DST/game projections.","affected_engines":["TEAM_DEFENSE","DST","SPREAD","TOTAL","QB","WR","TE","PLAYER_PROPS"]}
+  ],
+  "team_impact_review": [
+    {"team":"ARI","status":"REVIEWED"},{"team":"ATL","status":"REVIEWED"},{"team":"BAL","status":"REVIEWED"},{"team":"BUF","status":"REVIEWED"},
+    {"team":"CAR","status":"REVIEWED"},{"team":"CHI","status":"REVIEWED"},{"team":"CIN","status":"REVIEWED"},{"team":"CLE","status":"REVIEWED"},
+    {"team":"DAL","status":"REVIEWED"},{"team":"DEN","status":"REVIEWED"},{"team":"DET","status":"REVIEWED"},{"team":"GB","status":"REVIEWED"},
+    {"team":"HOU","status":"REVIEWED"},{"team":"IND","status":"REVIEWED"},{"team":"JAX","status":"REVIEWED"},{"team":"KC","status":"REVIEWED"},
+    {"team":"LV","status":"REVIEWED"},{"team":"LAC","status":"REVIEWED"},{"team":"LAR","status":"REVIEWED"},{"team":"MIA","status":"REVIEWED"},
+    {"team":"MIN","status":"REVIEWED"},{"team":"NE","status":"REVIEWED"},{"team":"NO","status":"REVIEWED"},{"team":"NYG","status":"REVIEWED"},
+    {"team":"NYJ","status":"REVIEWED"},{"team":"PHI","status":"REVIEWED"},{"team":"PIT","status":"REVIEWED"},{"team":"SEA","status":"REVIEWED"},
+    {"team":"SF","status":"REVIEWED"},{"team":"TB","status":"REVIEWED"},{"team":"TEN","status":"REVIEWED"},{"team":"WAS","status":"REVIEWED"}
+  ],
+  "rules": [
+    "Roster-driven matching is mandatory: source corpus is matched against the entire authoritative fantasy universe, not the other way around.",
+    "Absence from injury sources may only yield NO_MATERIAL_CAMP_INJURY_FOUND after the all-camp source sweep has been completed through captured_through.",
+    "Earlier injury states are retained; latest verified state controls current availability/context.",
+    "No injury headline directly changes projection weight without an existing deterministic availability rule or validated coefficient.",
+    "Post-2026-08-30 roster/PUP/NFI reconciliation remains mandatory before Step 6.5B closure."
+  ]
+}

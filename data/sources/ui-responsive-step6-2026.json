@@ -1,0 +1,41 @@
+{
+  "version": "UI_RESPONSIVE_STEP6_1.0.0",
+  "status": "RESPONSIVE_QA_CLOSURE_CANDIDATE",
+  "base_step5_sha": "95340e2e7bafe4d905fd1efa6d3fbb1e0994912b",
+  "scope": "Official Step 6 Responsive QA only; no Step 7 visual redesign.",
+  "public_surfaces": [
+    "index.html",
+    "compare.html",
+    "weekly-opportunities.html",
+    "operations-dashboard.html"
+  ],
+  "viewport_contract_css_px": [320, 375, 390, 768, 1024, 1440],
+  "requirements": {
+    "viewport_meta_on_every_surface": true,
+    "fluid_page_shells": true,
+    "intentional_horizontal_scroll_only": true,
+    "mobile_touch_target_min_px": 44,
+    "narrow_content_wraps_or_stacks": true,
+    "long_status_values_wrap": true,
+    "comparison_has_explicit_phone_contract": true,
+    "model_data_changes_allowed": false,
+    "market_data_changes_allowed": false,
+    "ranking_changes_allowed": false,
+    "step7_visual_system_changes_allowed": false
+  },
+  "allowed_step6_paths": [
+    "index.html",
+    "compare.html",
+    "weekly-opportunities.html",
+    "operations-dashboard.html",
+    "data/sources/ui-responsive-step6-2026.json",
+    "scripts/validate-ui-responsive-step6.mjs",
+    ".github/workflows/ui-responsive-step6.yml",
+    "guardrails/ui-responsive-step6-closure.json"
+  ],
+  "notes": [
+    "The main shell already had a responsive mobile breakpoint and intentional nav/table overflow behavior before Step 6.",
+    "Step 6 hardens narrow-phone behavior on Weekly Opportunities, Operations, and the dynamically loaded comparison UI without changing the visual identity.",
+    "Step 7 remains the only authorized visual-system redesign gate."
+  ]
+}

@@ -1,0 +1,93 @@
+name: Step 3H Full Step 3 QA
+
+on:
+  pull_request:
+    paths:
+      - 'data/sources/step3h-full-step3-qa-2026.json'
+      - 'scripts/validate-step3h-full-step3-qa.mjs'
+      - '.github/workflows/step3h-full-step3-qa.yml'
+      - 'data/sources/ui-step3a-feature-rule-contracts-2026.json'
+      - 'data/sources/step3b-final-decision-2026.json'
+      - 'scripts/validate-step3b-closure.mjs'
+      - 'scripts/build-step3c-full-162-shadow.mjs'
+      - 'scripts/validate-step3c-full-162-shadow.mjs'
+      - 'scripts/build-step3d-user-review-gate.mjs'
+      - 'scripts/finalize-step3d-user-review.mjs'
+      - 'scripts/finalize-step3e-noop.mjs'
+      - 'guardrails/step3e-approved-changes-2026-08-30.json'
+      - 'current162patch-2026-08-24.json'
+      - 'data/sources/market-repair-2026-08-30.json'
+      - 'scripts/build-step3f-daily-evidence-queue.mjs'
+      - 'scripts/validate-step3f-daily-evidence.mjs'
+      - 'scripts/validate-step3g-breakout-bust-cohorts-v3.mjs'
+      - 'scripts/validate-step3g-historical-situations-v2.mjs'
+      - 'scripts/build-step3g-core-features-v2.mjs'
+      - 'scripts/validate-step3g-core-features-v2.mjs'
+      - 'players*.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-step3-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Step 3A locked feature definitions
+        run: node scripts/validate-ui-step3a-feature-rules.mjs
+      - name: Validate Step 3B substantive closure
+        run: node scripts/validate-step3b-closure.mjs
+      - name: Rebuild Step 3C full 162 shadow
+        run: node scripts/build-step3c-full-162-shadow.mjs
+      - name: Validate Step 3C
+        run: node scripts/validate-step3c-full-162-shadow.mjs
+      - name: Rebuild Step 3D review gate
+        run: node scripts/build-step3d-user-review-gate.mjs
+      - name: Finalize Step 3D historical review decisions
+        run: node scripts/finalize-step3d-user-review.mjs
+      - name: Apply and validate approved Step 3E changes
+        run: node scripts/finalize-step3e-noop.mjs
+      - name: Rebuild Step 3F evidence queue
+        run: node scripts/build-step3f-daily-evidence-queue.mjs
+      - name: Validate Step 3F
+        run: node scripts/validate-step3f-daily-evidence.mjs
+      - name: Rebuild broad historical player reference
+        run: node scripts/build-historical-reference-population.mjs
+      - name: Resolve Step 3G Breakout and Bust cohorts
+        run: node scripts/validate-step3g-breakout-bust-cohorts-v3.mjs
+      - name: Resolve Step 3G historical situations
+        run: node scripts/validate-step3g-historical-situations-v2.mjs
+      - name: Rebuild Step 3G feature outputs
+        run: node scripts/build-step3g-core-features-v2.mjs
+      - name: Validate Step 3G empirical closure
+        run: node scripts/validate-step3g-core-features-v2.mjs
+      - name: Validate Step 3H cross-step semantic closure
+        run: node scripts/validate-step3h-full-step3-qa.mjs
+      - name: Run repository hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload Step 3H closure audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: step3h-full-step3-qa
+          path: |
+            guardrails/step3b-closure.json
+            guardrails/step3c-shadow-recalculation-162.json
+            guardrails/step3d-final-decisions.json
+            guardrails/step3e-approved-changes-2026-08-30.json
+            guardrails/step3e-application-audit.json
+            data/sources/market-repair-2026-08-30.json
+            guardrails/step3f-validation.json
+            data/sources/step3g-breakout-bust-validation-2026.json
+            data/sources/step3g-historical-situational-validation-2026.json
+            guardrails/step3g-validation.json
+            guardrails/step3h-full-step3-qa.json
+          if-no-files-found: error

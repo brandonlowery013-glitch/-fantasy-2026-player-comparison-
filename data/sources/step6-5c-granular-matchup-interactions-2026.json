@@ -1,0 +1,39 @@
+{
+  "schema_version": "STEP6_5C_GRANULAR_MATCHUP_INTERACTIONS_1.0.0",
+  "season": 2026,
+  "status": "SHADOW_CALIBRATION_REQUIRED",
+  "mode": "SHADOW_ONLY",
+  "production_numeric_authority": 0,
+  "sportsbook_inputs_allowed": false,
+  "baseline": "Position-specific historical fantasy points allowed by the opponent, blended from prior-season and current-season evidence without target-week leakage.",
+  "principle": "Test football interactions, not generic defense quality. An opponent characteristic may matter only when it meets a compatible offensive/player usage tendency.",
+  "position_interactions": {
+    "QB": ["offense_pass_rate_x_defense_sack_rate", "offense_pass_rate_x_defense_pass_epa_allowed", "offense_explosive_pass_rate_x_defense_explosive_pass_rate_allowed", "offense_sack_susceptibility_x_defense_sack_rate"],
+    "RB": ["offense_rush_rate_x_defense_rush_epa_allowed", "offense_explosive_rush_rate_x_defense_explosive_rush_rate_allowed", "offense_rush_epa_x_defense_rush_epa_allowed"],
+    "WR": ["offense_pass_rate_x_defense_pass_epa_allowed", "offense_explosive_pass_rate_x_defense_explosive_pass_rate_allowed", "offense_sack_susceptibility_x_defense_sack_rate"],
+    "TE": ["offense_pass_rate_x_defense_pass_epa_allowed", "offense_sack_susceptibility_x_defense_sack_rate"],
+    "DST_PROXY": ["offense_sack_susceptibility_x_defense_sack_rate", "offense_interception_rate_x_defense_interception_rate", "offense_explosive_pass_rate_x_defense_explosive_pass_rate_allowed"]
+  },
+  "data_rules": {
+    "source": "nflverse weekly team and player regular-season statistics plus schedules",
+    "history_window": [2021, 2022, 2023, 2024, 2025],
+    "held_out_test_seasons": [2024, 2025],
+    "pregame_only": true,
+    "target_week_excluded_from_features": true,
+    "missing_is_unknown": true,
+    "defensive_special_teams_td_missing_is_zero": false
+  },
+  "calibration": {
+    "candidate_half_life_games": [1, 2, 4, 8],
+    "ridge_lambda_grid": [0.1, 1, 10, 100],
+    "selection": "Tune half-life and regularization only on seasons before each held-out test season.",
+    "promotion_gate": "A position is only a candidate when interaction model MAE and RMSE both beat or tie the baseline in every held-out season and pooled MAE improves. No blanket cross-position weight is permitted."
+  },
+  "locked_rules": [
+    "No interaction term receives production authority from plausibility alone.",
+    "No target-week result may enter its own pregame feature state.",
+    "No sportsbook/ADP input may enter football interaction calibration.",
+    "A team-level effect already used upstream may not be applied again at player level without explicit decomposition.",
+    "Results may reject every tested interaction family; rejection is a valid outcome."
+  ]
+}

@@ -1,0 +1,21 @@
+import fs from 'node:fs';
+
+const p='data/sources/step6-5b-defensive-walkforward-decay-calibration-2026.json';
+const c=JSON.parse(fs.readFileSync(p,'utf8'));
+const fail=m=>{console.error(`FAIL: ${m}`);process.exitCode=1;};
+const features=['points_allowed_mean','overall_epa_allowed_per_play','pass_epa_allowed_per_dropback','rush_epa_allowed_per_carry','pass_yards_allowed_per_attempt','rush_yards_allowed_per_carry','sack_rate','interception_rate','explosive_pass_20_rate_allowed','explosive_rush_10_rate_allowed'];
+if(c.schema_version!=='STEP6_5B_DEFENSIVE_WALKFORWARD_DECAY_CALIBRATION_1.0.0')fail('schema');
+if(c.season!==2026||c.sportsbook_inputs_used!==false)fail('season/market isolation');
+if(JSON.stringify(c.historical_source?.seasons)!==JSON.stringify([2021,2022,2023,2024,2025]))fail('historical seasons');
+for(const f of features)if(!(c.feature_components||[]).includes(f))fail(`missing feature ${f}`);
+if(c.prior_transition?.no_target_week_leakage!==true)fail('target-week leakage gate');
+if(c.prior_transition?.component_specific_decay_allowed!==true)fail('component-specific decay');
+if(c.prior_transition?.hard_coded_production_decay_prohibited!==true)fail('hard-coded decay prohibition');
+if(JSON.stringify(c.walk_forward?.held_out_test_seasons)!==JSON.stringify([2024,2025]))fail('held-out seasons');
+if(c.walk_forward?.test_season_must_not_select_parameters!==true)fail('test-season isolation');
+if(c.walk_forward?.ablation_required!==true)fail('ablation requirement');
+if(c.governance?.production_numeric_authority!==0||c.governance?.automatic_promotion!==false)fail('governance authority');
+if(!/prior_weight = 2\^\(-current_season_games_played \/ half_life_games\)/.test(c.prior_transition?.blend_formula||''))fail('decay formula');
+if(!/Sportsbook/.test(c.market_isolation_rule||''))fail('market isolation rule');
+if(process.exitCode)process.exit(process.exitCode);
+console.log(JSON.stringify({result:'PASS',schema:c.schema_version,features:features.length,held_out:c.walk_forward.held_out_test_seasons,authority:c.governance.production_numeric_authority},null,2));

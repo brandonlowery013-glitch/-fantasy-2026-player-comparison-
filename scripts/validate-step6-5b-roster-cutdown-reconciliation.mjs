@@ -1,0 +1,16 @@
+import fs from 'node:fs';
+const p='data/sources/step6-5b-roster-cutdown-reconciliation-2026.json';
+const x=JSON.parse(fs.readFileSync(p,'utf8'));
+const teams=['ARI','ATL','BAL','BUF','CAR','CHI','CIN','CLE','DAL','DEN','DET','GB','HOU','IND','JAX','KC','LV','LAC','LAR','MIA','MIN','NE','NO','NYG','NYJ','PHI','PIT','SEA','SF','TB','TEN','WAS'];
+const fail=m=>{console.error(m);process.exit(1)};
+if(x.schema_version!=='STEP6_5B_ROSTER_CUTDOWN_RECONCILIATION_1.0.0')fail('schema');
+if(x.season!==2026||x.deadline!=='2026-08-30T18:00:00-04:00')fail('season/deadline');
+if(Object.keys(x.teams||{}).length!==32||teams.some(t=>!(t in x.teams)))fail('all-32 team universe missing');
+const pending=teams.filter(t=>x.teams[t]==='PENDING_FINAL_53');
+if(x.status==='PRE_CUTDOWN_IN_PROGRESS'&&x.closure_allowed!==false)fail('pre-cutdown cannot close');
+if(x.closure_allowed&&pending.length)fail(`closure with pending teams: ${pending.join(',')}`);
+const tutu=(x.verified_pre_deadline_moves||[]).find(r=>r.player==='Tutu Atwell');
+const hunter=(x.verified_pre_deadline_moves||[]).find(r=>r.player==='Jarquez Hunter');
+if(!tutu||tutu.origin_team!=='MIA'||tutu.destination_team!=='LAR')fail('Tutu Atwell direction regression');
+if(!hunter||hunter.origin_team!=='LAR'||hunter.destination_team!=='MIA')fail('Jarquez Hunter direction regression');
+console.log(JSON.stringify({result:'PASS',pending_teams:pending.length,closure_allowed:x.closure_allowed},null,2));

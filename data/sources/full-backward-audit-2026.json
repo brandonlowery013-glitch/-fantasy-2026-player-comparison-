@@ -1,0 +1,55 @@
+{
+  "schema_version": "FULL_BACKWARD_AUDIT_1.1.0",
+  "season": 2026,
+  "status": "PROMOTION_GATE_AFTER_AUG30_STEP3E_SYNC",
+  "base_step": "STEP6_5H_INTEGRATION_CONTAMINATION_QA_1.0.0",
+  "automatic_promotion": false,
+  "purpose": "Re-run the older platform invariants against the complete Step 6.5A-H stack and the current Aug. 30 runtime overlay before any promotion or merge, while distinguishing audit execution from promotion eligibility.",
+  "current_runtime_state": {
+    "base_player_shards": 13,
+    "runtime_overlay": "current162patch-2026-08-24.json",
+    "runtime_overlay_effective_date": "2026-08-30",
+    "step3e_approval_ledger": "guardrails/step3e-approved-changes-2026-08-30.json",
+    "market_repair_ledger": "data/sources/market-repair-2026-08-30.json",
+    "rule": "Audit the same shard-plus-overlay state loaded by the runtime. Do not audit raw shards as if they were the final current player state."
+  },
+  "required_invariants": [
+    "authoritative_runtime_player_universe_is_exactly_162_unique",
+    "runtime_overall_and_true_value_ranks_are_exact_permutations_1_through_162",
+    "approved_aug30_step3e_changes_exactly_match_the_explicit_approval_ledger",
+    "no_player_projection_changes_exist_beyond_the_three_approved_step3e_cases",
+    "nine_player_market_repair_completes_162_current_cost_coverage_with_zero_football_projection_authority",
+    "sportsbook_adp_ecr_market_inputs_are_downstream_only",
+    "missing_or_unknown_evidence_is_not_coerced_to_zero",
+    "canonical_evidence_is_not_applied_twice_numerically_without_documented_decomposition",
+    "current_resolved_injury_status_supersedes_stale_worst_history",
+    "no_unvalidated_or_hand_set_coefficients_receive_step6_5_authority",
+    "walk_forward_and_holdout_calibration_prevents_target_week_or_holdout_leakage",
+    "historical_prior_decay_and_shrinkage_remain_governed",
+    "rookie_no_history_records_remain_quarantined_from_fake_veteran_history",
+    "football_projection_precedes_distribution_probability_market_and_ev_layers",
+    "exact_tail_and_push_math_remain_valid",
+    "correlation_layer_preserves_marginals_and_valid_dependence_bounds",
+    "public_ui_remains_read_only_and_least_privilege",
+    "step6_5_module_scope_decisions_remain_enforced",
+    "legacy_hand_tuned_projection_recalibration_remains_quarantined",
+    "step6_5b_current_roster_injury_reconciliation_must_be_complete_before_promotion",
+    "step7_visual_system_remains_outside_this audit_and_no_merge_occurs"
+  ],
+  "promotion_policy": {
+    "rule": "Audit machinery may PASS while promotion remains BLOCKED. Any unresolved current-state completeness gate blocks promotion even when structural/model invariants pass.",
+    "known_required_current_state_gate": "STEP6_5B_ROSTER_DRIVEN_INJURY_REVIEW_COMPLETE",
+    "production_numeric_authority_before_promotion": 0
+  },
+  "approved_aug30_step3e": {
+    "direct_changes": ["Kaytron Allen", "Chuba Hubbard"],
+    "connected_change": ["Jonathon Brooks"],
+    "holds": ["Tyler Allgeier", "Rashee Rice", "Josh Downs"],
+    "market_created_football_changes": 0
+  },
+  "known_audit_repair": {
+    "item": "Atwell/Hunter late-August trade direction",
+    "correct_state": "Tutu Atwell Miami to Los Angeles Rams; Jarquez Hunter Los Angeles Rams to Miami",
+    "numeric_effect": "NONE"
+  }
+}

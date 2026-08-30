@@ -1,0 +1,156 @@
+{
+  "version": "STEP3B_MATH_FOUNDATION_SHADOW_1.0.0",
+  "season": 2026,
+  "status": "SHADOW_ONLY_VALIDATION_REQUIRED",
+  "purpose": "Provide a governing mathematical framework for player and game inference without allowing the new layer to publish rankings, projections, recommendations, or market outputs until it proves additive out of sample.",
+  "governing_framework": {
+    "family": "bayesian_predictive_updating",
+    "principle": "Historical and cohort information forms a prior distribution. Current player/team evidence updates that prior. The result is a predictive distribution, not a direct rank command.",
+    "conceptual_equation": "posterior(theta|D) proportional_to likelihood(D|theta) * prior(theta)",
+    "distribution_first": true
+  },
+  "separation_rules": {
+    "sportsbook_inputs_forbidden_from_football_prior_or_posterior": true,
+    "adp_forbidden_from_football_prior_or_posterior": true,
+    "market_inputs_allowed_only_downstream_for_value_comparison": true,
+    "shadow_layer_may_not_write_live_rankings": true,
+    "shadow_layer_may_not_write_live_projections": true,
+    "shadow_layer_may_not_write_live_recommendations": true,
+    "manual_review_required_before_any_future_promotion": true
+  },
+  "player_prior_sources": [
+    "position_and_role_cohorts",
+    "age_and_experience_curves",
+    "rookie_or_no_history_priors",
+    "historical_per_game_production",
+    "historical_usage_and_high_value_touches",
+    "historical_efficiency_with_regression_to_sustainable_baseline",
+    "historical_projection_error_and_uncertainty"
+  ],
+  "current_evidence_updates": [
+    "role_and_volume",
+    "routes_targets_carries_and_high_value_usage",
+    "injury_and_expected_availability",
+    "quarterback_context",
+    "coaching_and_scheme_environment",
+    "depth_chart_and_competition",
+    "team_change",
+    "offensive_environment",
+    "current_efficiency_with_sample_quality",
+    "camp_and_preseason_evidence_with_source_confidence"
+  ],
+  "historical_relevance_layer": {
+    "purpose": "Prevent stale history from receiving equal weight when the present football environment has materially changed.",
+    "dimensions": [
+      "recency",
+      "head_coach_continuity",
+      "coordinator_and_scheme_continuity",
+      "quarterback_continuity",
+      "team_continuity",
+      "role_similarity",
+      "roster_and_competition_similarity",
+      "opponent_and_strength_context",
+      "sample_size_and_effective_sample_size",
+      "data_quality"
+    ],
+    "rules": [
+      "Older and less comparable observations must be shrunk more heavily.",
+      "Coaching, quarterback, team, role, or scheme changes must reduce the relevance of history when those changes plausibly alter the generating process.",
+      "Recent observations do not automatically dominate if sample quality is weak.",
+      "No fixed relevance weights are promoted before empirical validation.",
+      "Historical ATS or situational records are not model inputs merely because the raw record is extreme."
+    ]
+  },
+  "situational_history": {
+    "examples": [
+      "favorite_or_underdog_band_history",
+      "travel_and_time_zone",
+      "rest_and_short_week",
+      "overtime_or_extreme_previous_game_workload",
+      "large_comeback_or_game_stress",
+      "consecutive_road_games",
+      "coach_or_quarterback_specific_situations"
+    ],
+    "requirements_before_weight": [
+      "matched_or_controlled_comparison",
+      "sufficient_raw_and_effective_sample",
+      "out_of_sample_validation",
+      "directional_replication",
+      "shrinkage",
+      "regime_relevance_check",
+      "no_double_counting_of_correlated_signals"
+    ],
+    "default_if_not_validated": "DISPLAY_CONTEXT_ONLY_ZERO_PROJECTION_WEIGHT"
+  },
+  "player_predictive_outputs_shadow": [
+    "posterior_expected_fantasy_points",
+    "posterior_median",
+    "posterior_downside_quantile",
+    "posterior_upside_quantile",
+    "posterior_uncertainty",
+    "breakout_probability_candidate",
+    "bust_probability_candidate"
+  ],
+  "football_value_shadow": {
+    "principle": "Expected production, upside, downside, and positional/draft-strategy effects may be combined only after their scaling and incremental predictive value are validated.",
+    "candidate_components": [
+      "expected_production",
+      "upside_above_median",
+      "downside_below_median",
+      "positional_scarcity_or_replacement_separation"
+    ],
+    "weights_status": "UNSET_PENDING_BACKTEST",
+    "no_unvalidated_single_component_may_dominate": true
+  },
+  "validation_plan": {
+    "mode": "shadow",
+    "compare_against": [
+      "existing_2026_projection",
+      "existing_expected_production",
+      "existing_true_value_player_quality",
+      "existing_overall_board",
+      "existing_risk_and_distribution_outputs"
+    ],
+    "historical_backtest_targets": [
+      "projection_mae",
+      "projection_rmse",
+      "probability_calibration",
+      "coverage_of_prediction_intervals",
+      "rank_correlation",
+      "breakout_identification",
+      "bust_identification"
+    ],
+    "promotion_requirements": [
+      "no_material_degradation_on_primary accuracy metrics",
+      "incremental_signal demonstrated out of sample",
+      "extreme disagreements manually audited",
+      "rookie low sample injury team change and coaching change cases audited",
+      "no sportsbook or ADP contamination",
+      "no unrelated player drift",
+      "full Guardrail QA green"
+    ]
+  },
+  "extreme_disagreement_policy": {
+    "action": "REVIEW_REQUIRED",
+    "rule": "Large shadow-vs-current disagreements must be surfaced for explanation and may not publish automatically.",
+    "numeric_thresholds_status": "TO_BE_SELECTED_FROM_EMPIRICAL_DISTRIBUTION_NOT_GUESSED"
+  },
+  "initial_influence_policy": {
+    "live_weight": 0,
+    "live_rank_movement": 0,
+    "live_projection_movement": 0,
+    "future_weight_or_caps": "Must be earned from backtest and calibration results; do not assign arbitrary percentages before validation."
+  },
+  "downstream_betting_branch": {
+    "starts_after_independent_football_distribution": true,
+    "sequence": [
+      "independent_football_probability_distribution",
+      "de_vigged_market_probability",
+      "probability_edge",
+      "expected_value",
+      "bet_qualification",
+      "bankroll_sizing_only_after_bet_qualification"
+    ],
+    "kelly_status": "downstream_bankroll_tool_not_football_foundation"
+  }
+}

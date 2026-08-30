@@ -1,0 +1,48 @@
+name: Step 6.5C Player Defense and DST Calibration
+
+on:
+  push:
+    branches: [model/step6-5c-player-defense-dst-calibration]
+  pull_request:
+    branches: [model/step6-5b-current-state-resync]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  step6-5c-calibration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Revalidate Step 6.5A architecture
+        run: node scripts/validate-step6-5a-football-game-intelligence.mjs
+      - name: Revalidate Step 6.5B current evidence state
+        run: node scripts/validate-step6-5b-current-evidence-ledger.mjs
+      - name: Revalidate Step 6.5B false-closure injury gate
+        run: node scripts/validate-step6-5b-roster-driven-injury-completeness.mjs
+      - name: Revalidate shared defensive intelligence contract
+        run: node scripts/validate-step6-5b-shared-defensive-intelligence.mjs
+      - name: Re-run defensive prior-decay calibration
+        run: node scripts/backtest-step6-5b-defensive-walkforward-decay.mjs
+      - name: Validate Step 6.5C player-defense contract
+        run: node scripts/validate-step6-5c-player-defense-dst-calibration.mjs
+      - name: Test Step 6.5C scoring and decay math
+        run: node scripts/backtest-step6-5c-player-defense-dst-calibration.mjs --self-test
+      - name: Run Step 6.5C historical player-defense and DST calibration
+        run: node scripts/backtest-step6-5c-player-defense-dst-calibration.mjs
+      - name: Upload Step 6.5C calibration artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5c-player-defense-dst-calibration
+          path: data/probability/generated/step6-5c-player-defense-dst-calibration.json
+          if-no-files-found: error
+      - name: Revalidate Step 5 permissions
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs

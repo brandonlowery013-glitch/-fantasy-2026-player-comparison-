@@ -1,0 +1,139 @@
+name: Full Backward Audit Promotion Gate
+on:
+  pull_request:
+    branches:
+      - model/step6-5h-integration-contamination-qa
+      - audit/full-backward-audit-step6-5
+    paths:
+      - 'data/sources/full-backward-audit-2026.json'
+      - 'data/sources/step6-5b-current-evidence-ledger-2026.json'
+      - 'data/sources/market-repair-2026-08-30.json'
+      - 'guardrails/step3e-approved-changes-2026-08-30.json'
+      - 'current162patch-2026-08-24.json'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'scripts/run-full-backward-audit.mjs'
+      - '.github/workflows/full-backward-audit.yml'
+      - 'data/sources/**'
+      - 'data/probability/**'
+      - 'scripts/**'
+      - 'players*.json'
+      - 'index.html'
+      - 'compare.html'
+      - 'weekly-opportunities.html'
+      - 'operations-dashboard.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  full-backward-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Step 3B closure
+        run: node scripts/validate-step3b-closure.mjs
+      - name: Rebuild and validate Step 3B rookie-history quarantine
+        run: |
+          node scripts/audit-step3b-rookie-history-contamination.mjs
+          cp historicalStats2026.json /tmp/historicalStats2026.original.json
+          cp guardrails/step3b-sanitized-historicalStats2026.json historicalStats2026.json
+          node scripts/build-step3b-162-shadow-recalculation.mjs
+          cp /tmp/historicalStats2026.original.json historicalStats2026.json
+          node scripts/validate-step3b-rookie-history-quarantine.mjs
+          git diff --exit-code -- historicalStats2026.json
+          node scripts/build-rookie-no-history-priors.mjs
+          node scripts/validate-rookie-no-history-priors.mjs
+      - name: Rebuild full Step 3 dependency chain
+        run: |
+          node scripts/validate-ui-step3a-feature-rules.mjs
+          node scripts/build-step3c-full-162-shadow.mjs
+          node scripts/validate-step3c-full-162-shadow.mjs
+          node scripts/build-step3d-user-review-gate.mjs
+          node scripts/finalize-step3d-user-review.mjs
+          node scripts/finalize-step3e-noop.mjs
+          node scripts/build-step3f-daily-evidence-queue.mjs
+          node scripts/validate-step3f-daily-evidence.mjs
+          node scripts/build-historical-reference-population.mjs
+          node scripts/validate-step3g-breakout-bust-cohorts-v3.mjs
+          node scripts/validate-step3g-historical-situations-v2.mjs
+          node scripts/build-step3g-core-features-v2.mjs
+          node scripts/validate-step3g-core-features-v2.mjs
+      - name: Validate full Step 3 and Step 4 integrity
+        run: |
+          node scripts/validate-step3h-full-step3-qa.mjs
+          node scripts/validate-step4-data-integrity.mjs
+      - name: Validate distribution tail and EV math
+        run: |
+          node scripts/validate-exact-tail-math-contract.mjs
+          node scripts/test-exact-tail-math.mjs
+          node scripts/validate-fair-market-probability-contract.mjs
+          node scripts/test-ev-math.mjs
+      - name: Validate correlation integrity
+        run: |
+          node scripts/validate-correlation-modeling-contract.mjs
+          node scripts/test-correlation-modeling.mjs
+      - name: Validate UI and least privilege contracts
+        run: |
+          node scripts/validate-ui-functional-shell.mjs
+          node scripts/validate-ui-state-error-step2.mjs
+          node scripts/validate-ui-comparison-step3.mjs
+          node scripts/validate-ui-core-feature-step3.mjs
+          node scripts/validate-ui-step3a-feature-rules.mjs
+          node scripts/validate-ui-permissions-step5.mjs
+          node scripts/validate-ui-responsive-step6.mjs --audit-mode
+      - name: Validate weekly production lifecycle across Weeks 1-17
+        run: |
+          node scripts/validate-step27-week1-state-transition.mjs
+          node scripts/validate-step28-week1-context-activation.mjs
+          node scripts/validate-step29-first-valid-week1-forecast-freeze.mjs --self-test
+          node scripts/validate-weekly-production-orchestration-contract.mjs
+          node scripts/check-weekly-pipeline-health.mjs --self-test
+          node scripts/build-production-readiness-status.mjs --self-test
+          node scripts/validate-final-production-signoff.mjs
+      - name: Revalidate Step 6.5 contracts
+        run: |
+          node scripts/validate-step6-5a-football-game-intelligence.mjs
+          node scripts/validate-step6-5b-current-evidence-ledger.mjs
+          node scripts/validate-step6-5b-automatic-injury-projection-policy.mjs
+          node scripts/validate-step6-5b-injury-designations.mjs
+          node scripts/validate-step6-5b-shared-defensive-intelligence.mjs
+          node scripts/validate-step6-5b-defensive-walkforward-decay.mjs
+          node scripts/validate-step6-5c-player-defense-dst-calibration.mjs
+          node scripts/validate-step6-5c-granular-matchup-interactions.mjs
+          node scripts/validate-step6-5c-dst-kicker-calibration.mjs
+          node scripts/validate-step6-5d-process-policy.mjs
+          node scripts/validate-step6-5d-game-spread-total-calibration.mjs
+          node scripts/validate-step6-5e-historical-situational-intelligence.mjs
+          node scripts/validate-step6-5f-unified-reason-stack.mjs
+          node scripts/validate-step6-5g-calibration-ablation-full-universe.mjs
+          node scripts/build-step6-5g-full-universe-shadow.mjs
+          node scripts/validate-step6-5h-integration-contamination-qa.mjs
+          node scripts/test-step6-5h-integration-contamination-qa.mjs
+      - name: Run full backward audit promotion gate
+        run: node scripts/run-full-backward-audit.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload backward audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-backward-audit-2026
+          path: |
+            guardrails/full-backward-audit-report-2026.json
+            guardrails/step3e-approved-changes-2026-08-30.json
+            guardrails/step3e-application-audit.json
+            data/sources/market-repair-2026-08-30.json
+            guardrails/step3b-rookie-history-contamination-audit.json
+            guardrails/step3b-shadow-projection-context-162.json
+            guardrails/step3c-shadow-recalculation-162.json
+            guardrails/step3h-full-step3-qa.json
+            guardrails/step27-weekly-state-transition-report.json
+            guardrails/step28-weekly-context-activation-report.json
+            guardrails/step29-weekly-forecast-freeze-report.json
+            guardrails/final-production-signoff-report.json
+            data/probability/generated/step6-5g-full-universe-shadow.json
+          if-no-files-found: warn

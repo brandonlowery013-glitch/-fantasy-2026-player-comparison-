@@ -1,0 +1,1 @@
+This sync branch is intentionally based on PR #103 (`audit/full-backward-audit-step6-5`), not on main or the historical Step 3 branches. It preserves the later Step 6.5 stack and brings the active 162-player season-long model/current-cost layer forward to the explicitly approved Aug. 30 state. Promotion and merge remain separate decisions after CI/backward-audit results.

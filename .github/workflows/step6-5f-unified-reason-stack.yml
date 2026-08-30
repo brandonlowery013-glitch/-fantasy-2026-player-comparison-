@@ -1,0 +1,37 @@
+name: Step 6.5F Unified Reason Stack
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unified-reason-stack:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate current Step 6.5 process policy
+        run: node scripts/validate-step6-5d-process-policy.mjs
+      - name: Revalidate Step 6.5E situational contract
+        run: node scripts/validate-step6-5e-historical-situational-intelligence.mjs
+      - name: Validate Step 6.5F unified reason contract
+        run: node scripts/validate-step6-5f-unified-reason-stack.mjs
+      - name: Run unified reason-stack behavioral and negative tests
+        run: node scripts/test-step6-5f-unified-reason-stack.mjs --write-artifact
+      - name: Upload Step 6.5F reason-stack artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5f-unified-reason-stack
+          path: guardrails/step6-5f-unified-reason-stack-report.json
+          if-no-files-found: error
+      - name: Revalidate Step 5 permissions
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs

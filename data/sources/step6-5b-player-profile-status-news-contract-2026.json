@@ -1,0 +1,41 @@
+{
+  "schema_version": "STEP6_5B_PLAYER_PROFILE_STATUS_NEWS_1.1.0",
+  "season": 2026,
+  "status": "SHADOW_UI_CONTRACT_LOCKED",
+  "design_reference": "Use the same interaction concept common to ESPN/Yahoo fantasy player pages: compact status indicator near the player name, expandable current-status/news detail, recent-game statistics, and upcoming-opponent context. Do not copy proprietary visual design or text.",
+  "status_badge": {
+    "placement": "player profile header/corner near player name",
+    "color": "red for active injury/unavailable/suspension states",
+    "clickable": true,
+    "labels": ["Q","D","O","IR","SSPD"],
+    "hidden_when_clear": true
+  },
+  "expanded_status_panel": {
+    "fields": ["status","headline","injury_or_status_note","body_part","practice_status","expected_return","expected_active","captured_at","source"],
+    "rules": [
+      "Keep the panel compact and decision-useful rather than a full medical history.",
+      "Expected return is shown only when supported by current evidence; otherwise show Unknown/TBD.",
+      "Suspension notes show covered games or return week/date when known.",
+      "Stale notes must not remain attached after a player clears the status."
+    ]
+  },
+  "player_news": {
+    "sections": ["latest_status_update","recent_game","next_matchup"],
+    "recent_game_fields": ["week","opponent","fantasy_points","position_relevant_box_score","usage_context"],
+    "next_matchup_fields": ["week","opponent","home_away","event_start"],
+    "source_priority": ["NFL/nflverse finalized weekly stats","verified NFL schedule/event ledger","canonical current football evidence","documented current player news"],
+    "rules": [
+      "Recent-game statistics are factual context and never directly alter the model twice if those stats already entered the rolling football state.",
+      "The next opponent is derived only from the verified schedule/event ledger; if no verified upcoming event exists, show TBD rather than inventing an opponent or kickoff time.",
+      "Current news may trigger a model refresh only through a canonical football-state field with authorized model authority.",
+      "News display and model authority are separate: a note can appear without receiving numeric projection weight.",
+      "No sportsbook information is allowed in this profile-news layer."
+    ]
+  },
+  "automation": {
+    "status_updates": "Hourly current-status poll plus normal weekly ingestion.",
+    "recent_game_updates": "After finalized game statistics enter the weekly outcome/stat pipeline.",
+    "next_matchup_updates": "Whenever the verified event schedule is refreshed or the player's just-completed game advances the next eligible event.",
+    "profile_refresh": "The client reads the latest persisted canonical state with no manual per-player UI edits."
+  }
+}

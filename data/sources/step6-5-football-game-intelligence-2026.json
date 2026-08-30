@@ -1,0 +1,93 @@
+{
+  "schema_version": "STEP6_5_FOOTBALL_GAME_INTELLIGENCE_1.1.0",
+  "season": 2026,
+  "status": "STEP6_5A_SOURCE_AND_MODEL_CONTRACT_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "inherited_step6_sha": "75fe85d862917c332f60d5e127969e28ce3c9d60",
+  "live_projection_weight": 0,
+  "live_rank_weight": 0,
+  "sportsbook_inputs_allowed_in_football_projection": false,
+  "baseline_policy": {
+    "preseason_prior": "2025 full-season football performance is the primary current-team prior, adjusted for verified 2026 personnel, coaching, role and availability changes before Week 1.",
+    "rolling_2026_update": "2026 football evidence gains authority progressively as valid current-season sample accumulates; no abrupt replacement of the 2025 prior.",
+    "small_sample_rule": "Early 2026 observations are shrunk toward the adjusted 2025 prior and may not receive arbitrary fixed authority.",
+    "promotion_rule": "Any 2026-vs-2025 blend, matchup coefficient, situational coefficient, defensive weight, personnel adjustment or coaching adjustment must be selected by leakage-safe historical walk-forward validation before live promotion."
+  },
+  "primary_data_backbone": {
+    "source": "nflverse / nflreadr / nflfastR",
+    "required_feeds": ["play_by_play","team_stats","player_stats","schedules","weekly_rosters","depth_charts","snap_counts","pfr_advanced_stats","next_gen_stats"],
+    "historical_market_fields": ["spread_line","total_line"],
+    "game_context_fields": ["home_rest","away_rest","roof","surface","weather"],
+    "play_state_fields": ["qtr","game_seconds_remaining","score_differential","posteam","defteam"],
+    "rule": "Use football/event data for forecasting. Historical spread/total fields are permitted only for ATS/total backtesting and market-evaluation targets, never as football-prior features."
+  },
+  "current_evidence_sources": {
+    "injury_primary": "NFL.com official injury/practice/game-status reporting",
+    "injury_fallback": "FantasyPros injury/news",
+    "training_camp_and_role": ["Fantasy Life Utilization Report / Game Log","documented team depth-chart and beat-reporter evidence","StatRankings verification when applicable"],
+    "transaction_and_roster": ["official team/NFL transaction reporting","nflverse weekly rosters/depth charts"],
+    "coaching_and_scheme": "documented official team coaching/play-caller evidence",
+    "rule": "Do not depend on nflverse injury data for 2025+ current injury status because that feed is not currently available."
+  },
+  "evidence_materiality_contract": {
+    "statuses": ["MATERIAL","POSSIBLY_MATERIAL","CONTEXT_ONLY","NO_CURRENT_EFFECT"],
+    "required_fields": ["subject","evidence_type","source","captured_at","status","affected_engines","reason","confidence","projection_authority"],
+    "affected_engines": ["QB","RB","WR","TE","DST","K","TEAM_OFFENSE","TEAM_DEFENSE","SPREAD","TOTAL","PLAYER_PROPS"],
+    "rules": [
+      "MATERIAL requires a verified role, availability, personnel, starter, play-caller, scheme or workload change with a plausible direct model pathway.",
+      "POSSIBLY_MATERIAL is retained and surfaced when evidence is credible but magnitude, permanence or role translation is uncertain.",
+      "CONTEXT_ONLY may inform review/explanation but receives zero numeric authority unless separately validated.",
+      "NO_CURRENT_EFFECT is preserved when evidence was reviewed but does not alter the current football state.",
+      "Training-camp and preseason observations may not be treated as regular-season production.",
+      "Uncertain evidence is unknown, not zero, and must not be silently discarded.",
+      "A materiality label does not itself create a numeric adjustment; coefficients require validation or an already-authorized deterministic availability/role rule."
+    ]
+  },
+  "validation_sources": ["nflverse PFR advanced defensive stats","Pro Football Reference public team defense/advanced defense pages","NFL Savant historical advanced verification"],
+  "team_defense_feature_families": ["opponent_adjusted_epa_per_play_allowed","pass_epa_per_dropback_allowed","rush_epa_per_carry_allowed","pass_and_rush_success_rate_allowed","explosive_pass_and_run_rate_allowed","pressure_sack_hit_hurry_context","red_zone_td_rate_allowed","third_down_conversion_allowed","turnover_generation_with_regression_control","pace_and_play_volume_context","defensive_personnel_availability","coaching_scheme_continuity_and_change","schedule_strength_normalization"],
+  "player_matchup_feature_families": {
+    "QB": ["pressure","sack_rate","coverage_efficiency","explosive_pass_prevention","qb_rush_containment"],
+    "RB": ["rush_efficiency_allowed","stuff_rate","explosive_run_prevention","rb_receiving_allowed","red_zone_rush_defense"],
+    "WR": ["outside_slot_role_context","target_and_yard_efficiency_allowed","explosive_pass_prevention","pressure_effect_on_qb"],
+    "TE": ["te_target_yard_td_context","middle_field_coverage_context","pressure_effect_on_qb"]
+  },
+  "fantasy_dst_contract": {
+    "scoring_outputs": ["sacks","interceptions","fumble_recoveries","defensive_or_special_teams_touchdowns","points_allowed_bucket"],
+    "rule": "Advanced defensive and opponent information is used as predictive input but only league-scored DST categories are fantasy outputs."
+  },
+  "fantasy_kicker_contract": {
+    "scoring_outputs": ["field_goals_made_by_scoring_distance_bucket","extra_points_made"],
+    "game_model_inputs": ["kicker_accuracy_by_distance","weather_wind","dome_outdoor","team_scoring_expectation","red_zone_stall_rate","fourth_down_aggressiveness"],
+    "rule": "Fantasy kicker modeling may remain comparatively simple while kicker quality and conditions remain available to the shared game-scoring model."
+  },
+  "shared_information_rule": "Football facts and derived team/player context are canonical shared inputs. Fantasy, DST, kicker, game, prop and market-comparison engines may transform those inputs differently but may not maintain contradictory independent versions of the same football fact.",
+  "game_model_outputs": ["projected_home_score","projected_away_score","fair_spread","fair_total","win_probability","margin_distribution","total_distribution","uncertainty"],
+  "situational_intelligence_families": ["prior_game_fourth_quarter_comeback_or_collapse","overtime_previous_game","short_rest","extended_rest","home_road_sequence","travel_and_time_zone","international_game_recovery","division_rematch","turnover_outlier","scoring_outlier","prior_game_snap_or_workload_stress"],
+  "situational_validation_outputs": ["sample_size","ats_win_rate","average_ats_margin","over_rate","under_rate","average_total_margin","season_stability","out_of_sample_result","promotion_status"],
+  "explainability_contract": {
+    "required_for_preferred_games": true,
+    "reason_fields": ["code","category","direction","magnitude","authority","evidence_window","sample_size","confidence"],
+    "must_surface_contradicting_evidence": true,
+    "rule": "Reasons must be generated from model inputs/validated indicators; the UI may display them but may not invent post-hoc explanations."
+  },
+  "implementation_sequence": [
+    "6.5A source/quarantine audit, inherited-QA repair, shared information and materiality contracts",
+    "6.5B current 2026 roster/acquisition/coaching/injury/camp resync plus adjusted team priors and defensive ratings",
+    "6.5C player-by-defense weekly matchup calibration plus DST/K fantasy support",
+    "6.5D spread/total game model upgrade using the same canonical football state",
+    "6.5E historical situational ATS/total engine",
+    "6.5F unified game/fantasy preference reason-stack and explainability",
+    "6.5G leakage-safe walk-forward calibration, ablation QA and full projection/ranking resync",
+    "6.5H integration, no-market-contamination audit, Guardrail QA and promotion decision"
+  ],
+  "locked_rules": [
+    "No guessed defensive, matchup, situational, personnel, coaching, injury-severity or 2025/2026 blend weights may be promoted.",
+    "One-game opponent effects adjust weekly fantasy forecasts and uncertainty; they do not permanently rewrite season-long player quality solely because of that opponent.",
+    "Football forecasts are generated before market comparison.",
+    "Sportsbook lines may be used as evaluation targets and to compute downstream edge/EV only.",
+    "Missing fields are unknown, not zero.",
+    "All new Step 6.5 outputs remain shadow-only until historical and prospective governance approves promotion.",
+    "PR #74 remains HOLD / DO NOT MERGE and Step 7 visual work remains frozen while Step 6.5 backend work is validated."
+  ]
+}

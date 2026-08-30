@@ -1,0 +1,53 @@
+{
+  "schema_version": "STEP6_5B_DEFENSIVE_WALKFORWARD_DECAY_CALIBRATION_1.0.0",
+  "season": 2026,
+  "status": "SHADOW_CALIBRATION_REQUIRED",
+  "sportsbook_inputs_used": false,
+  "historical_source": {
+    "name": "nflverse weekly team stats",
+    "seasons": [2021, 2022, 2023, 2024, 2025],
+    "url_pattern": "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_{season}.csv"
+  },
+  "schedule_source": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
+  "target": "opponent points scored against the defense in the target regular-season game",
+  "feature_components": [
+    "points_allowed_mean",
+    "overall_epa_allowed_per_play",
+    "pass_epa_allowed_per_dropback",
+    "rush_epa_allowed_per_carry",
+    "pass_yards_allowed_per_attempt",
+    "rush_yards_allowed_per_carry",
+    "sack_rate",
+    "interception_rate",
+    "explosive_pass_20_rate_allowed",
+    "explosive_rush_10_rate_allowed"
+  ],
+  "prior_transition": {
+    "rule": "The immediately prior season is the preseason anchor. As current-season games accumulate, the prior-season contribution decays and current-season evidence gains authority.",
+    "blend_formula": "prior_weight = 2^(-current_season_games_played / half_life_games); blended_feature = prior_weight * prior_season_feature + (1 - prior_weight) * current_season_to_date_feature",
+    "week_one_rule": "With zero current-season games played, prior_weight is 1.0.",
+    "no_target_week_leakage": true,
+    "candidate_half_life_games": [1, 2, 3, 4, 6, 8, 12, 16],
+    "component_specific_decay_allowed": true,
+    "hard_coded_production_decay_prohibited": true
+  },
+  "walk_forward": {
+    "held_out_test_seasons": [2024, 2025],
+    "minimum_model_season": 2022,
+    "inner_validation_rule": "For each held-out season, use the latest earlier season as validation and only seasons earlier than that validation season for parameter fitting.",
+    "test_season_must_not_select_parameters": true,
+    "baseline": "points-allowed-only blended prior/current model",
+    "rich_model": "regularized model using points allowed plus the nine shared defensive components",
+    "ridge_lambda_grid": [0.01, 0.1, 1, 10, 100],
+    "metrics": ["MAE", "RMSE"],
+    "stability_rule": "A promotion candidate must beat the points-allowed baseline in pooled held-out MAE and must not lose MAE in either held-out season.",
+    "ablation_required": true
+  },
+  "governance": {
+    "production_numeric_authority": 0,
+    "automatic_promotion": false,
+    "rule": "A favorable backtest creates a promotion candidate only. Production authority remains zero until the calibration result is reviewed under model governance and the no-market-contamination and anti-double-counting gates pass."
+  },
+  "market_isolation_rule": "Sportsbook spreads, totals, moneylines and player props are prohibited from feature construction, parameter selection and scoring.",
+  "anti_double_count_rule": "Calibration may determine the shared defensive state contribution once. Downstream player/game engines may transform that shared state but may not reapply the same effect without explicit decomposition."
+}

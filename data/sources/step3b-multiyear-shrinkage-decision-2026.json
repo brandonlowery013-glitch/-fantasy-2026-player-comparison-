@@ -1,0 +1,45 @@
+{
+  "version": "STEP3B_MULTIYEAR_SHRINKAGE_DECISION_1.0.0",
+  "season": 2026,
+  "status": "GENERIC_POSITION_SHRINKAGE_REJECTED",
+  "live_weight": 0,
+  "live_projection_movement": 0,
+  "live_rank_movement": 0,
+  "sportsbook_or_adp_used": false,
+  "evidence": {
+    "history_source_seasons": [2018,2019,2020,2021,2022,2023,2024,2025],
+    "target_seasons": [2021,2022,2023,2024,2025],
+    "total_fantasy_relevant_player_seasons": 810,
+    "folds": 5,
+    "folds_with_both_mae_and_rmse_improvement": 0,
+    "weighted_mae_improvement_pct": -0.2077427995630067,
+    "weighted_rmse_improvement_pct": -0.12006741984934237,
+    "scoring": {
+      "reception": 1,
+      "rushing_yard": 0.1,
+      "receiving_yard": 0.1,
+      "rushing_td": 6,
+      "receiving_td": 6,
+      "passing_yard": 0.04,
+      "passing_td": 4,
+      "interception": -2
+    },
+    "ppr_source": "recalculated from raw nflverse weekly regular-season component stats; no precomputed fantasy-points field used",
+    "selection": "fantasy-relevant players selected only from pre-target player-history projections using the current 162-player position counts",
+    "walkforward": "for each target season, shrinkage strength was tuned only on the immediately preceding season and frozen before evaluation"
+  },
+  "interpretation": {
+    "earlier_single_holdout_2025_signal": "NOT_ROBUST_ACROSS_MULTIPLE_YEARS",
+    "generic_position_average_prior_for_established_players": "REJECT",
+    "bayesian_framework_overall": "NOT_REJECTED",
+    "reason": "The broader leakage-safe multi-year test found no target season in which generic position-average shrinkage improved both MAE and RMSE. Player-specific history should not be automatically pulled toward a broad positional mean. Bayesian updating may still be useful when priors are based on validated role/cohort similarity, rookie/no-history cohorts, or current evidence updates."
+  },
+  "allowed_next_tests": [
+    "validated role/cohort prior backtest",
+    "current role and usage update backtest",
+    "injury/regime-change subgroup audit",
+    "team/QB/coach change subgroup audit",
+    "predictive-distribution calibration"
+  ],
+  "promotion_allowed": false
+}

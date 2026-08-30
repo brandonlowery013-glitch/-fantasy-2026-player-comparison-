@@ -1,0 +1,25 @@
+name: Step 3B Shadow Math Foundation
+
+on:
+  pull_request:
+    paths:
+      - 'data/sources/step3b-math-foundation-shadow-2026.json'
+      - 'scripts/validate-step3b-math-foundation-shadow.mjs'
+      - '.github/workflows/step3b-math-foundation-shadow.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  step3b-shadow-math:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate Step 3B shadow math contract
+        run: node scripts/validate-step3b-math-foundation-shadow.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
