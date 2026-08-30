@@ -1,0 +1,37 @@
+name: Step 6.5D Game Spread Total Calibration
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  game-spread-total-calibration:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Revalidate Step 6.5C DST/K base contract
+        run: node scripts/validate-step6-5c-dst-kicker-calibration.mjs
+      - name: Validate Step 6.5D game model contract
+        run: node scripts/validate-step6-5d-game-spread-total-calibration.mjs
+      - name: Test Step 6.5D scoring and decay math
+        run: node scripts/backtest-step6-5d-game-spread-total-calibration.mjs --self-test
+      - name: Run historical Step 6.5D game calibration
+        run: node scripts/backtest-step6-5d-game-spread-total-calibration.mjs
+      - name: Upload Step 6.5D calibration artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5d-game-spread-total-calibration
+          path: data/probability/generated/step6-5d-game-spread-total-calibration.json
+          if-no-files-found: error
+      - name: Revalidate Step 5 permissions
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
