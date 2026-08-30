@@ -1,0 +1,20 @@
+import fs from 'node:fs';
+const contract=JSON.parse(fs.readFileSync('data/sources/step6-5g-calibration-ablation-full-universe-2026.json','utf8'));
+const files=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
+const players=files.flatMap(file=>JSON.parse(fs.readFileSync(file,'utf8')).map(p=>({...p,_shard:file})));
+if(players.length!==contract.expected_player_universe)throw new Error(`expected ${contract.expected_player_universe} players, found ${players.length}`);
+const names=new Set();
+for(const p of players){if(!p.n||names.has(p.n))throw new Error(`duplicate/missing player ${p.n}`);names.add(p.n);if(!Number.isFinite(Number(p.mp)))throw new Error(`missing mp ${p.n}`);if(!Number.isFinite(Number(p.o)))throw new Error(`missing overall ${p.n}`)}
+const legacy=fs.readFileSync('.github/workflows/recalibrate-projections.yml','utf8');
+const legacyHandSet=/histWeight=years>=3\?\.28/.test(legacy)&&/\*\.018/.test(legacy)&&/\*\.012/.test(legacy);
+if(!legacyHandSet)throw new Error('legacy hand-set coefficient signature changed; review quarantine');
+const ranks=players.map(p=>Number(p.o));
+const duplicateOverall=[...new Set(ranks.filter((x,i,a)=>a.indexOf(x)!==i))].sort((a,b)=>a-b);
+const weeklyRetained=contract.validated_module_decisions.filter(x=>x.decision==='RETAIN_WEEKLY_SHADOW').map(x=>x.module);
+const rejected=contract.validated_module_decisions.filter(x=>x.decision==='REJECT_NUMERIC_AUTHORITY').map(x=>x.module);
+const rows=players.map(p=>({name:p.n,position:p.p,team:p.t,source_shard:p._shard,current_projection_ppr:Number(p.mp),recalculated_projection_ppr:Number(p.mp),projection_delta:0,current_overall_rank:Number(p.o),recalculated_overall_rank:Number(p.o),overall_rank_delta:0,current_position_rank:p.pr??null,recalculated_position_rank:p.pr??null,true_value_score:Number.isFinite(Number(p.s))?Number(p.s):null,market_value:p.px??null,numeric_change_applied:false,reason:'No validated season-long aggregation bridge exists for the retained weekly/game modules; preserve current player numerics.'}));
+const out={schema_version:'STEP6_5G_FULL_UNIVERSE_SHADOW_1.0.0',status:'SHADOW_ONLY',generated_at:new Date().toISOString(),player_count:rows.length,shard_count:files.length,unique_player_count:names.size,duplicate_overall_ranks:duplicateOverall,season_long_bridge_available:false,players_changed:0,weekly_modules_retained:weeklyRetained,rejected_numeric_modules:rejected,game_module_retained:'game_spread_total_6_5D',reason_stack_retained:'unified_reason_stack_6_5F',legacy_recalibration_quarantined:legacyHandSet,sportsbook_inputs_used:false,production_numeric_authority:0,players:rows};
+fs.mkdirSync('data/probability/generated',{recursive:true});
+fs.writeFileSync('data/probability/generated/step6-5g-full-universe-shadow.json',JSON.stringify(out,null,2)+'\n');
+fs.writeFileSync('guardrails/step6-5g-ablation-report.json',JSON.stringify({schema_version:'STEP6_5G_ABLATION_REPORT_1.0.0',status:'PASS',player_count:rows.length,shard_count:files.length,players_changed:0,season_long_bridge_available:false,weekly_modules_retained:weeklyRetained,rejected_numeric_modules:rejected,legacy_hand_set_coefficients_quarantined:legacyHandSet,duplicate_overall_ranks:duplicateOverall,notes:['Full-universe recalculation executed over every authoritative player.','No season-long fantasy numeric changes were applied because no validated aggregation bridge exists.','Weekly QB/RB/WR/DST matchup effects remain eligible only in weekly shadow outputs.','6.5D game model remains a game-level shadow output; 6.5F remains read-only.']},null,2)+'\n');
+console.log(JSON.stringify({result:'PASS',players:rows.length,shards:files.length,players_changed:0,weekly_modules_retained:weeklyRetained,rejected_numeric_modules:rejected,duplicate_overall_ranks:duplicateOverall},null,2));
