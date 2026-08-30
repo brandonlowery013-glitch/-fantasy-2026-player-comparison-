@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "season": 2026,
   "step": 23,
   "mode": "MARKET_CONTEXT_ONLY",
@@ -26,10 +26,22 @@
     "season_long_player_props_supported": false
   },
   "cadence": {
-    "workflow_cron": "30 */2 * * *",
-    "featured_refresh_minutes_near_kickoff": 120,
-    "featured_refresh_minutes_far_from_kickoff": 360,
-    "near_kickoff_window_hours": 24,
+    "workflow_cron": "*/5 * * * *",
+    "adaptive_featured_refresh": true,
+    "adaptive_bands": [
+      {"minimum_minutes_to_kickoff": 10080, "target_refresh_seconds": 3600, "label": "14_TO_7_DAYS_PLUS"},
+      {"minimum_minutes_to_kickoff": 2880, "target_refresh_seconds": 1800, "label": "7_TO_2_DAYS"},
+      {"minimum_minutes_to_kickoff": 1440, "target_refresh_seconds": 900, "label": "48_TO_24_HOURS"},
+      {"minimum_minutes_to_kickoff": 60, "target_refresh_seconds": 600, "label": "24_TO_1_HOUR"},
+      {"minimum_minutes_to_kickoff": 15, "target_refresh_seconds": 120, "label": "FINAL_60_TO_15_MINUTES"},
+      {"minimum_minutes_to_kickoff": 0, "target_refresh_seconds": 60, "label": "FINAL_15_MINUTES"}
+    ],
+    "github_actions_scheduler_floor_seconds": 300,
+    "effective_scheduled_refresh_never_slower_than_target_when_target_is_at_least_floor": true,
+    "sub_five_minute_targets_require_low_latency_production_runner": true,
+    "featured_refresh_minutes_near_kickoff": 5,
+    "featured_refresh_minutes_far_from_kickoff": 60,
+    "near_kickoff_window_hours": 168,
     "player_prop_refresh_minutes": 180,
     "player_prop_window_hours": 48,
     "max_prop_events_per_run": 4,

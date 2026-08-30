@@ -1,0 +1,134 @@
+name: Adaptive Pregame Market Refresh
+
+on:
+  pull_request:
+    paths:
+      - 'data/sources/live-market-ingestion-2026.json'
+      - 'data/sources/final-betting-live-pipeline-2026.json'
+      - 'scripts/adaptive-market-refresh-gate.mjs'
+      - '.github/workflows/adaptive-market-refresh.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/sources/live-market-ingestion-2026.json'
+      - 'data/sources/final-betting-live-pipeline-2026.json'
+      - 'scripts/adaptive-market-refresh-gate.mjs'
+      - '.github/workflows/adaptive-market-refresh.yml'
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+concurrency:
+  group: weekly-production-orchestration
+  cancel-in-progress: false
+
+jobs:
+  cadence-qa:
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate adaptive market cadence bands
+        run: node scripts/adaptive-market-refresh-gate.mjs --self-test
+      - name: Revalidate live market ingestion contract
+        run: node scripts/validate-live-market-ingestion-contract.mjs
+      - name: Revalidate Step 4 betting pipeline
+        run: node scripts/validate-final-betting-pipeline-step4.mjs
+
+  adaptive-market-refresh:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Determine time-to-kickoff market cadence
+        id: cadence
+        run: node scripts/adaptive-market-refresh-gate.mjs
+      - name: Capture current sportsbook markets when due
+        if: steps.cadence.outputs.run == 'true'
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          MARKET_MAX_PROP_EVENTS: ${{ vars.MARKET_MAX_PROP_EVENTS }}
+        run: node scripts/ingest-live-market-snapshots.mjs
+      - name: Validate current market snapshots
+        if: steps.cadence.outputs.run == 'true'
+        run: |
+          node scripts/validate-weekly-matchup-market-snapshots.mjs
+          node scripts/validate-player-prop-market-snapshots.mjs
+      - name: Rebuild betting recommendations
+        if: steps.cadence.outputs.run == 'true'
+        run: |
+          node scripts/build-game-market-recommendations.mjs
+          node scripts/build-player-prop-recommendations.mjs
+          node scripts/build-unified-opportunity-engine.mjs
+          node scripts/build-weekly-parlay-recommendations.mjs
+          node scripts/build-final-betting-ui-feed.mjs
+          node scripts/validate-final-betting-pipeline-step4.mjs
+      - name: Persist adaptive market state through guarded PR
+        id: persist
+        if: steps.cadence.outputs.run == 'true'
+        shell: bash
+        run: |
+          paths=(
+            data/market/weekly-matchup-market-snapshots-2026.json
+            data/market/player-prop-market-snapshots-2026.json
+            data/market/live-market-ingestion-status-2026.json
+            data/market/weekly-game-market-recommendations-2026.json
+            data/market/player-prop-recommendations-2026.json
+            data/market/unified-opportunities-2026.json
+            data/market/parlay-recommendations-2026.json
+            data/market/final-betting-ui-feed-2026.json
+          )
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${paths[@]}"
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          branch="production/adaptive-market-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$branch"
+          git commit -m "Refresh adaptive pregame market state"
+          git push origin "HEAD:$branch"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+      - name: Open guarded adaptive market PR
+        id: state_pr
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          pr_url=$(gh pr create --base main --head "${{ steps.persist.outputs.branch }}" --title "Production: adaptive pregame market refresh" --body "Automated pregame spread/total/moneyline refresh selected by time-to-kickoff cadence. Market data remains downstream-only and stale-week isolation remains enforced. Required Guardrail QA must pass before merge.")
+          echo "url=$pr_url" >> "$GITHUB_OUTPUT"
+      - name: Wait for guardrail and merge adaptive market state
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.state_pr.outputs.url }}
+        shell: bash
+        run: |
+          found=false
+          for i in $(seq 1 60); do
+            if gh pr checks "$PR_URL" --required 2>&1 | grep -q "guardrail-qa"; then found=true; break; fi
+            sleep 10
+          done
+          if [ "$found" != "true" ]; then
+            echo "Required guardrail-qa check did not appear."
+            exit 1
+          fi
+          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
+          gh pr merge "$PR_URL" --merge --delete-branch

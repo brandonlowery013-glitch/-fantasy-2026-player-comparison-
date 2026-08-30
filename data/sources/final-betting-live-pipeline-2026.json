@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "season": 2026,
   "step": "FINAL_INTERFACE_STEP_4",
   "status": "LOCKED",
@@ -13,6 +13,22 @@
     "later_weeks_use_same_pipeline": true,
     "prior_week_recommendations_may_display_as_current": false,
     "week_mismatch_result": "WAITING_FOR_CURRENT_WEEK_OUTPUTS"
+  },
+  "market_refresh_contract": {
+    "policy_source": "data/sources/live-market-ingestion-2026.json",
+    "adaptive_by_time_to_kickoff": true,
+    "pregame_only": true,
+    "bands": [
+      {"window": "14_TO_7_DAYS_PLUS", "target_seconds": 3600},
+      {"window": "7_TO_2_DAYS", "target_seconds": 1800},
+      {"window": "48_TO_24_HOURS", "target_seconds": 900},
+      {"window": "24_TO_1_HOUR", "target_seconds": 600},
+      {"window": "FINAL_60_TO_15_MINUTES", "target_seconds": 120},
+      {"window": "FINAL_15_MINUTES", "target_seconds": 60}
+    ],
+    "current_github_actions_floor_seconds": 300,
+    "sub_five_minute_target_requires_low_latency_runner": true,
+    "score_and_ui_feed_refresh_are_separate_from_sportsbook_ingestion": true
   },
   "input_order": [
     "data/calibration/weekly-event-schedule-2026.json",
