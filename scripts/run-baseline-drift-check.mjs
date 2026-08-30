@@ -8,6 +8,9 @@ const baseline=read('guardrails/baselines/pre-ev-baseline-2026-08-24.json');
 const cfg=read('guardrails/guardrails-config.json');
 const manifest=fs.existsSync(path.join(root,cfg.drift.change_manifest_file))?read(cfg.drift.change_manifest_file):{changes:[]};
 const declared=new Map((manifest.changes||[]).map(x=>[x.player,x]));
+const structuralManifestFile='guardrails/structural-change-manifest.json';
+const structuralManifest=fs.existsSync(path.join(root,structuralManifestFile))?read(structuralManifestFile):{changes:[]};
+const declaredStructural=new Map((structuralManifest.changes||[]).map(x=>[x.file,x]));
 const coreFields=['o','tr','tp','pr','s','pd','ce','r','e','a','rl','su','mp'];
 
 const baselinePlayers=[];
@@ -40,6 +43,10 @@ const declarationCovers=(name,fields)=>{
   const d=declared.get(name);
   const declaredFields=new Set(Array.isArray(d?.changed_fields)?d.changed_fields:[]);
   return !!(d&&d.reason&&d.source&&fields.every(f=>declaredFields.has(f)));
+};
+const structuralDeclarationCovers=file=>{
+  const d=declaredStructural.get(file);
+  return !!(d&&d.reason&&d.source);
 };
 
 for(const [name,p] of newMap){
@@ -80,11 +87,16 @@ for(const key of ['updated','model']){
 
 const protectedStructural=['MODEL_SOURCE_OF_TRUTH.json','canonicalBoards2026.json','lockedRanks2026.json'];
 const structural=[];
+const unauthorizedStructural=[];
 for(const f of protectedStructural){
   const expected=baseline.authoritative_files?.[f];
   if(!expected) continue;
   const actual=execFileSync('git',['hash-object',f],{encoding:'utf8'}).trim();
-  if(actual!==expected) structural.push({file:f,baseline_blob:expected,current_blob:actual});
+  if(actual!==expected){
+    const item={file:f,baseline_blob:expected,current_blob:actual};
+    structural.push(item);
+    if(!structuralDeclarationCovers(f)) unauthorizedStructural.push(item);
+  }
 }
 
 const marketFiles=['market2026.json','vegasOdds2026.json'];
@@ -99,7 +111,7 @@ for(const f of marketFiles){
 const blocked=[];
 if(added.length||removed.length) blocked.push({type:'PLAYER_POPULATION_DRIFT',added,removed});
 if(unauthorized.length) blocked.push({type:'UNDECLARED_EFFECTIVE_CORE_DRIFT',players:unauthorized});
-if(structural.length) blocked.push({type:'PROTECTED_STRUCTURAL_DRIFT',files:structural});
+if(unauthorizedStructural.length) blocked.push({type:'UNDECLARED_PROTECTED_STRUCTURAL_DRIFT',files:unauthorizedStructural});
 
 const report={
   generated_at:new Date().toISOString(),
@@ -117,6 +129,9 @@ const report={
   overlay_storage_changes:patchStorageChanges,
   overlay_metadata_changes:patchMetadataDrift,
   structural_drift:structural,
+  declared_structural_changes:structural.length-unauthorizedStructural.length,
+  undeclared_structural_changes:unauthorizedStructural.length,
+  structural_change_manifest:structuralManifestFile,
   market_overlay_changes:marketChanges,
   blocked
 };
