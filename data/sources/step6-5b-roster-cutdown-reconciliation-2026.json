@@ -1,0 +1,39 @@
+{
+  "schema_version": "STEP6_5B_ROSTER_CUTDOWN_RECONCILIATION_1.0.0",
+  "season": 2026,
+  "status": "PRE_CUTDOWN_IN_PROGRESS",
+  "captured_at": "2026-08-29",
+  "deadline": "2026-08-30T18:00:00-04:00",
+  "deadline_source": "NFL Football Operations important dates",
+  "closure_allowed": false,
+  "required_final_states": ["ACTIVE_53","RESERVE_PUP","RESERVE_NFI","IR","SSPD_OR_EXEMPT","WAIVED_OR_RELEASED","TRADED"],
+  "rules": [
+    "Every team must be reconciled after the final 53-man deadline, not inferred from a pre-deadline projection.",
+    "Active/PUP and Active/NFI players require an explicit final resolution at cutdown.",
+    "Reserve/PUP and Reserve/NFI imply the league-required opening absence and must propagate to player availability and team context.",
+    "Fantasy-relevant and materially impactful OL/defensive players must be resolved individually when their status affects model inputs.",
+    "Roster moves after the initial 53, including waiver claims and post-cutdown IR moves, remain part of the Week 1 reconciliation.",
+    "No final team prior may claim current-roster completeness while any team remains PENDING_FINAL_53."
+  ],
+  "verified_pre_deadline_moves": [
+    {"date":"2026-08-29","team":"BUF","player":"Mecole Hardman Jr.","state":"WAIVED_OR_RELEASED","source":"Reuters roster-cuts roundup"},
+    {"date":"2026-08-29","team":"MIA","player":"Donovan Edwards","state":"WAIVED_OR_RELEASED","source":"Reuters roster-cuts roundup"},
+    {"date":"2026-08-29","team":"MIA","player":"Coleman Bennett","state":"WAIVED_OR_RELEASED","source":"Reuters roster-cuts roundup"},
+    {"date":"2026-08-29","team":"MIA","player":"Theo Wease Jr.","state":"WAIVED_OR_RELEASED","source":"Reuters roster-cuts roundup"},
+    {"date":"2026-08-27","team":"LAR","player":"Tutu Atwell","state":"TRADED","destination":"LAR","source":"NFL transactions","note":"NFL transaction table lists Dolphins -> Rams."},
+    {"date":"2026-08-27","team":"MIA","player":"Jarquez Hunter","state":"TRADED","destination":"MIA","source":"NFL transactions","note":"NFL transaction table lists Rams -> Dolphins."},
+    {"date":"2026-08-24","team":"HOU","player":"Kayshon Boutte","state":"TRADED","destination":"HOU","source":"NFL transactions"},
+    {"date":"2026-08-24","team":"NE","player":"Jaylen Reed","state":"TRADED","destination":"NE","source":"NFL transactions"}
+  ],
+  "teams": {
+    "ARI":"PENDING_FINAL_53","ATL":"PENDING_FINAL_53","BAL":"PENDING_FINAL_53","BUF":"PENDING_FINAL_53","CAR":"PENDING_FINAL_53","CHI":"PENDING_FINAL_53","CIN":"PENDING_FINAL_53","CLE":"PENDING_FINAL_53","DAL":"PENDING_FINAL_53","DEN":"PENDING_FINAL_53","DET":"PENDING_FINAL_53","GB":"PENDING_FINAL_53","HOU":"PENDING_FINAL_53","IND":"PENDING_FINAL_53","JAX":"PENDING_FINAL_53","KC":"PENDING_FINAL_53","LV":"PENDING_FINAL_53","LAC":"PENDING_FINAL_53","LAR":"PENDING_FINAL_53","MIA":"PENDING_FINAL_53","MIN":"PENDING_FINAL_53","NE":"PENDING_FINAL_53","NO":"PENDING_FINAL_53","NYG":"PENDING_FINAL_53","NYJ":"PENDING_FINAL_53","PHI":"PENDING_FINAL_53","PIT":"PENDING_FINAL_53","SEA":"PENDING_FINAL_53","SF":"PENDING_FINAL_53","TB":"PENDING_FINAL_53","TEN":"PENDING_FINAL_53","WAS":"PENDING_FINAL_53"
+  },
+  "post_deadline_requirements": [
+    "Resolve all 32 team statuses from PENDING_FINAL_53.",
+    "Re-run live Q/D/O/IR/SSPD status resolution.",
+    "Resolve all Active/PUP and Active/NFI cases to active, reserve, release/waiver, trade or other official final state.",
+    "Ingest waiver claims and immediate post-cutdown roster churn before Week 1 prior lock.",
+    "Rebuild adjusted team-prior artifact after roster reconciliation.",
+    "Run full Step 6.5B QA and hard Guardrail on the exact final head."
+  ]
+}
