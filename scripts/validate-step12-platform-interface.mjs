@@ -12,7 +12,8 @@ need(index.includes('083fca6edf212334c3a2bc8ef48f141cef94fe26/index.html'),'Veri
 need(index.includes('runtime-draft-opportunity-ui-2026.js'),'Player Board shell loads the season-long Opportunity runtime');
 need(runtime.includes('[data-view="profile"],[data-view="props"],a.opportunities'),'Profile, Props and Weekly Opportunities are removed from top-level navigation');
 need(runtime.includes("games.textContent='Games'"),'NFL Games top-level label is simplified to Games');
-for(const route of ['board','compare','weekly','games'])need(runtime.includes(route),`${route} remains part of the four-surface platform`);
+need(runtime.includes("document.getElementById('nav')"),'Player Board/Weekly/Games navigation is transformed from the verified base shell');
+need(compare.includes('runtime-comparison-ui-step3.js'),'Compare remains a dedicated primary platform surface');
 need(runtime.includes('gamesPropsMount'),'Props are nested under Games instead of remaining a top-level route');
 need(runtime.includes('weekly-opportunities.html'),'Weekly Opportunities remain reachable from the Weekly surface');
 need(runtime.includes('opportunityFilter'),'Player Board exposes draft-opportunity filtering');
