@@ -1,0 +1,39 @@
+name: UI Responsive Step 6
+
+on:
+  push:
+    branches:
+      - ui/responsive-step6
+  pull_request:
+    branches:
+      - ui/permissions-step5
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  responsive-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Revalidate Step 5 permissions
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Validate Step 6 responsive closure
+        run: node scripts/validate-ui-responsive-step6.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload Step 6 closure report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-responsive-step6-closure
+          path: guardrails/ui-responsive-step6-closure.json
+          if-no-files-found: warn
