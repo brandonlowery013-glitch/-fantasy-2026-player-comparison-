@@ -65,6 +65,15 @@ jobs:
           node scripts/validate-ui-step3a-feature-rules.mjs
           node scripts/validate-ui-permissions-step5.mjs
           node scripts/validate-ui-responsive-step6.mjs
+      - name: Validate weekly production lifecycle across Weeks 1-17
+        run: |
+          node scripts/validate-step27-week1-state-transition.mjs
+          node scripts/validate-step28-week1-context-activation.mjs
+          node scripts/validate-step29-first-valid-week1-forecast-freeze.mjs --self-test
+          node scripts/validate-weekly-production-orchestration-contract.mjs
+          node scripts/check-weekly-pipeline-health.mjs --self-test
+          node scripts/build-production-readiness-status.mjs --self-test
+          node scripts/validate-final-production-signoff.mjs
       - name: Revalidate Step 6.5 contracts
         run: |
           node scripts/validate-step6-5a-football-game-intelligence.mjs
@@ -97,5 +106,9 @@ jobs:
             guardrails/full-backward-audit-report-2026.json
             guardrails/step3b-rookie-history-contamination-audit.json
             guardrails/step3b-shadow-projection-context-162.json
+            guardrails/step27-weekly-state-transition-report.json
+            guardrails/step28-weekly-context-activation-report.json
+            guardrails/step29-weekly-forecast-freeze-report.json
+            guardrails/final-production-signoff-report.json
             data/probability/generated/step6-5g-full-universe-shadow.json
           if-no-files-found: warn
