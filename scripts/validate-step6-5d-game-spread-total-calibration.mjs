@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+const p='data/sources/step6-5d-game-spread-total-calibration-2026.json';
+const x=JSON.parse(fs.readFileSync(p,'utf8'));
+const fail=m=>{throw new Error(m)};
+if(x.schema_version!=='STEP6_5D_GAME_SPREAD_TOTAL_CALIBRATION_1.0.0')fail('schema');
+if(x.season!==2026||x.status!=='SHADOW_ONLY'||x.production_numeric_authority!==0)fail('season/status/authority');
+if(x.market_separation?.sportsbook_inputs_allowed_in_forecast!==false)fail('sportsbook contamination');
+for(const k of ['spread_line_allowed_as_feature','total_line_allowed_as_feature','odds_allowed_as_feature'])if(x.market_separation?.[k]!==false)fail(`market feature enabled: ${k}`);
+for(const y of [2021,2022,2023,2024,2025])if(!x.historical_seasons.includes(y))fail(`missing historical ${y}`);
+for(const y of [2024,2025])if(!x.held_out_test_seasons.includes(y))fail(`missing holdout ${y}`);
+for(const k of ['projected_home_score','projected_away_score','fair_spread','fair_total','home_win_probability','margin_distribution','total_distribution','uncertainty'])if(!x.forecast_outputs.includes(k))fail(`missing output ${k}`);
+if(x.walk_forward?.target_week_leakage_allowed!==false||x.walk_forward?.target_season_parameter_selection_allowed!==false)fail('leakage allowed');
+if(x.promotion_gate?.automatic_promotion!==false)fail('automatic promotion');
+if(!/prior season/i.test(x.prior_decay?.rule||'')||!/weeded out/i.test(x.prior_decay?.rule||''))fail('prior decay rule');
+if(!/unknown/i.test(x.missing_data_rule||''))fail('missing-data rule');
+if(!/double count/i.test(x.double_count_rule||''))fail('double-count rule');
+if(!/residual/i.test(x.distribution_rule||''))fail('distribution calibration rule');
+console.log(JSON.stringify({result:'PASS',schema:x.schema_version,authority:x.production_numeric_authority,holdouts:x.held_out_test_seasons,sportsbook_inputs_allowed:x.market_separation.sportsbook_inputs_allowed_in_forecast}));
