@@ -1,0 +1,68 @@
+{
+  "schema_version": "STEP6_5B_EXHAUSTIVE_INJURY_BACKFILL_1.0.0",
+  "season": 2026,
+  "status": "IN_PROGRESS",
+  "captured_through": "2026-08-29",
+  "scope_rule": "Do not build the injury ledger from notable-player headlines. Enumerate every fantasy-relevant QB/RB/WR/TE/K plus projected fantasy DST-relevant defensive starters and materially important offensive linemen from each team's camp-opening roster, then resolve every injury/PUP/NFI/IR/recovery/practice-return/preseason-injury event chronologically through Week 1 lock.",
+  "current_state_rule": "Latest verified state controls current model availability/context; prior states remain retained for chronology and explainability.",
+  "required_population": {
+    "fantasy_positions": ["QB","RB","WR","TE","K"],
+    "team_units": ["DST"],
+    "supporting_personnel": ["starting_or_competing_OL","starting_or_rotational_defensive_front","starting_or_rotational_secondary","key_return_specialists"],
+    "all_32_teams": true
+  },
+  "known_missed_case_corrections": [
+    {
+      "subject": "Alec Pierce",
+      "team": "IND",
+      "position": "WR",
+      "status": "POSSIBLY_MATERIAL",
+      "chronology": [
+        {
+          "date": "2026-03",
+          "state": "ANKLE_HEEL_SURGERY",
+          "detail": "Underwent a cleanup procedure after a PRP injection did not resolve an ankle/heel issue that had affected him during the 2025 season."
+        },
+        {
+          "date": "2026-06-10",
+          "state": "MISSED_OTAS_AND_MINICAMP_REHAB",
+          "detail": "Colts said he had not participated in OTAs/minicamp and was expected back at some point in training camp."
+        },
+        {
+          "date": "2026-07-27",
+          "state": "ACTIVE_PUP_AT_CAMP",
+          "detail": "Placed on Active/PUP at training camp."
+        },
+        {
+          "date": "2026-08-27",
+          "state": "ACTIVATED_FROM_PUP_LIMITED_RAMP",
+          "detail": "Removed from Active/PUP and returned to practice; initial work was limited and the club said a ramp-up period was required."
+        },
+        {
+          "date": "2026-08-29",
+          "state": "PREGAME_WORK_NO_PRESEASON_GAME_ACTION",
+          "detail": "Went through pregame work but did not play in the preseason finale; Week 1 remains the target, so current state is improving but not yet a verified full-game workload."
+        }
+      ],
+      "current_state": "RAMPING_TOWARD_WEEK1_AFTER_CAMP_LONG_PUP_STINT",
+      "affected_engines": ["WR","QB","TEAM_OFFENSE","SPREAD","TOTAL","PLAYER_PROPS"],
+      "projection_authority": 0,
+      "source_urls": [
+        "https://www.colts.com/news/alec-pierce-ankle-surgery-recovery-timeline-training-camp-will-he-play-2026-regular-season",
+        "https://www.colts.com/news/cj-allen-alec-pierce-pup-list-injury-updates-status-2026-training-camp",
+        "https://www.colts.com/news/colts-remove-wr-alec-pierce-from-active-physically-unable-to-perform-list",
+        "https://www.colts.com/news/wr-alec-pierce-returns-to-practice-after-pup-stint",
+        "https://www.fantasypros.com/nfl/news/604649/alec-pierce-goes-through-pregame-not-playing.php"
+      ]
+    }
+  ],
+  "closure_gate": [
+    "Every fantasy-relevant player on the camp-opening roster is marked REVIEWED even if no injury occurred.",
+    "Every PUP/NFI/IR designation at camp opening is captured.",
+    "Every injury sustained during camp or preseason is captured.",
+    "Every return-to-practice, activation, setback and Week 1 status update is captured.",
+    "Every material OL and defensive-starter injury that can affect team offense, team defense, DST, spreads or totals is captured.",
+    "No team may be marked complete from a handful of notable headlines.",
+    "Alec Pierce chronology must remain present as a regression case proving pre-camp injury carryover is included."
+  ]
+}
