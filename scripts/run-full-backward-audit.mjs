@@ -42,7 +42,8 @@ check('step6_5g_weekly_to_season_bridge_absent', g.season_long_bridge_policy?.va
 check('legacy_hand_tuned_recalibration_quarantined', g.legacy_recalibration_policy?.status === 'QUARANTINED_FROM_6_5G_AUTHORITY', g.legacy_recalibration_policy?.status || 'missing');
 check('step6_5h_authority_zero', Number(h.production_numeric_authority ?? h.numeric_authority ?? 0) === 0, String(h.production_numeric_authority ?? h.numeric_authority ?? 0));
 check('market_downstream_only_contract', /downstream/i.test(hText) && /sportsbook/i.test(hText) && !/sportsbook_inputs_allowed_for_football_projection"\s*:\s*true/i.test(hText), 'Step 6.5H market directionality');
-check('double_count_guard_contract', /(double.?count|single numeric use|same canonical evidence)/i.test(hText), 'Step 6.5H duplicate-use protection');
+const hLockedRules = Array.isArray(h.locked_rules) ? h.locked_rules : [];
+check('double_count_guard_contract', hLockedRules.some(rule => /canonical evidence key/i.test(rule) && /at most one layer/i.test(rule) && /non-overlapping effects/i.test(rule)), 'Structured Step 6.5H single-numeric-use rule present');
 check('failed_modules_not_promoted', /REJECT_NUMERIC_AUTHORITY/.test(gText) && /broad_team_defense_modifier/.test(gText) && /granular_matchup_TE/.test(gText) && /kicker_rich_model/.test(gText), 'Rejected module list retained');
 
 // Legacy hand-tuned workflow is allowed to exist only because it is quarantined.
@@ -84,11 +85,13 @@ check('prior_decay_governed', /(half.?life|decay|shrink)/i.test(decay + step3b),
 check('rookie_history_quarantine', /(rookie|no.history)/i.test(rookie) && /(quarant|synthetic|do not|must not)/i.test(rookie), 'Rookie/no-history integrity present');
 
 // Projection -> distribution -> market/EV ordering and math contracts.
-const distributionPolicy = text('data/probability/stat-distribution-policy.json');
+const distributionPolicy = read('data/probability/stat-distribution-policy.json');
 const fairMarket = text('data/sources/fair-market-probability-2026.json');
+const exactTailObj = read('data/sources/exact-tail-math-2026.json');
 const exactTail = text('data/sources/exact-tail-math-2026.json');
 const corr = text('data/sources/correlation-modeling-2026.json');
-check('projection_precedes_distribution', /(projection|mean)/i.test(distributionPolicy) && /(distribution)/i.test(distributionPolicy), 'Distribution contract consumes projection state');
+const exactTailNotes = Array.isArray(exactTailObj.notes) ? exactTailObj.notes : [];
+check('projection_precedes_distribution', distributionPolicy.status === 'SHADOW_ONLY' && exactTailNotes.some(note => /converts player projections/i.test(note) && /does not create or replace player projections/i.test(note)), 'Exact-tail contract consumes player projections and cannot replace them');
 check('market_after_model_probability', /(market|de.?vig)/i.test(fairMarket) && /(model|probability)/i.test(fairMarket), 'Market probability layer is separate/downstream');
 check('exact_tail_push_contract', /(push|integer|tail)/i.test(exactTail), 'Exact tail/push contract present');
 check('correlation_integrity_contract', /(correlation|dependence)/i.test(corr) && /(marginal|bound|matrix|PSD|positive semi)/i.test(corr), 'Correlation constraints present');
