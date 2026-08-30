@@ -49,6 +49,17 @@ jobs:
         with:
           name: step6-5b-2026-adjusted-team-priors
           path: data/probability/generated/step6-5b-2026-adjusted-team-priors.json
+      - name: Validate shared defensive intelligence contract
+        run: node scripts/validate-step6-5b-shared-defensive-intelligence.mjs
+      - name: Test shared defensive intelligence builder
+        run: node scripts/build-step6-5b-shared-defensive-intelligence.mjs --self-test
+      - name: Build 2025 shared defensive component baseline
+        run: node scripts/build-step6-5b-shared-defensive-intelligence.mjs
+      - name: Upload shared defensive intelligence audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5b-shared-defensive-intelligence
+          path: data/probability/generated/step6-5b-shared-defensive-intelligence-2026.json
       - name: Revalidate Step 5 permissions
         run: node scripts/validate-ui-permissions-step5.mjs
       - name: Run hard Guardrail QA
