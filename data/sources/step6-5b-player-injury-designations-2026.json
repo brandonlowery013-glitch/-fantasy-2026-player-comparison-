@@ -1,5 +1,5 @@
 {
-  "schema_version": "STEP6_5B_PLAYER_INJURY_DESIGNATIONS_1.0.0",
+  "schema_version": "STEP6_5B_PLAYER_INJURY_DESIGNATIONS_1.1.0",
   "season": 2026,
   "captured_through": "2026-08-29",
   "status": "IN_PROGRESS",
@@ -7,7 +7,8 @@
     "Q": "Questionable / current availability or workload uncertainty",
     "D": "Doubtful / currently unlikely to play or carry normal workload",
     "O": "Out / verified expected absence for the relevant game or opening period",
-    "IR": "Injured Reserve / verified reserve-injured roster status"
+    "IR": "Injured Reserve / verified reserve-injured roster status",
+    "SSPD": "Suspended / unavailable due to league or team suspension"
   },
   "rules": [
     "The label represents the latest resolved current state, not the most severe historical injury state.",
@@ -15,9 +16,12 @@
     "O may be assigned from verified expected unavailability even before an official game-status report exists; this is a Chuck The Duke current-availability label, not a claim that the club has issued an official NFL game designation.",
     "D is used when credible current evidence makes participation or a normal workload unlikely but absence is not yet resolved as out.",
     "Q is used when an active injury/recovery issue creates meaningful participation or workload uncertainty.",
+    "SSPD is reserved for verified suspension and is not treated as an injury or IR-eligible status.",
+    "SSPD forces weekly expected_active false for games covered by the suspension and must clear automatically after the final suspended game unless a new status applies.",
     "A player who has fully cleared the relevant injury receives no injury label; stale Q/D/O tags are prohibited.",
+    "A player whose suspension has ended receives no SSPD label unless a separate current suspension remains.",
     "PUP/NFI are retained as roster-state details in the chronology. They do not display as IR unless the player is actually placed on reserve/injured.",
-    "Every displayed label must link to a current injury-review record and captured_at date."
+    "Every displayed label must link to a current status-review record and captured_at date."
   ],
   "players": {
     "Ja'Marr Chase": {"tag":"Q","reason":"Left Aug. 25 practice after landing awkwardly on his left knee; current participation/workload must be re-verified before clearing the tag.","captured_at":"2026-08-29"},
