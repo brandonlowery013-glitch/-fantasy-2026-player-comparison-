@@ -1,0 +1,32 @@
+name: Draft Opportunity UI
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'compare.html'
+      - 'runtime-draft-opportunity-ui-2026.js'
+      - 'runtime-comparison-opportunity-ui-2026.js'
+      - 'data/market/draft-opportunity-qa-2026.json'
+      - 'scripts/validate-draft-opportunity-ui.mjs'
+      - '.github/workflows/draft-opportunity-ui.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'compare.html'
+      - 'runtime-draft-opportunity-ui-2026.js'
+      - 'runtime-comparison-opportunity-ui-2026.js'
+      - 'data/market/draft-opportunity-qa-2026.json'
+      - 'scripts/validate-draft-opportunity-ui.mjs'
+jobs:
+  draft-opportunity-ui:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate season-long Opportunity UI isolation
+        run: node scripts/validate-draft-opportunity-ui.mjs
