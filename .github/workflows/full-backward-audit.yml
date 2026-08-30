@@ -28,11 +28,20 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - name: Validate Step 3B closure and rookie integrity
+          node-version: '22'
+      - name: Validate Step 3B closure
+        run: node scripts/validate-step3b-closure.mjs
+      - name: Rebuild and validate Step 3B rookie-history quarantine
         run: |
-          node scripts/validate-step3b-closure.mjs
+          node scripts/audit-step3b-rookie-history-contamination.mjs
+          cp historicalStats2026.json /tmp/historicalStats2026.original.json
+          cp guardrails/step3b-sanitized-historicalStats2026.json historicalStats2026.json
+          node scripts/build-step3b-162-shadow-recalculation.mjs
+          cp /tmp/historicalStats2026.original.json historicalStats2026.json
           node scripts/validate-step3b-rookie-history-quarantine.mjs
+          git diff --exit-code -- historicalStats2026.json
+          node scripts/build-rookie-no-history-priors.mjs
+          node scripts/validate-rookie-no-history-priors.mjs
       - name: Validate full Step 3 and Step 4 integrity
         run: |
           node scripts/validate-step3h-full-step3-qa.mjs
@@ -80,10 +89,13 @@ jobs:
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
       - name: Upload backward audit report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: full-backward-audit-2026
           path: |
             guardrails/full-backward-audit-report-2026.json
+            guardrails/step3b-rookie-history-contamination-audit.json
+            guardrails/step3b-shadow-projection-context-162.json
             data/probability/generated/step6-5g-full-universe-shadow.json
-          if-no-files-found: error
+          if-no-files-found: warn
