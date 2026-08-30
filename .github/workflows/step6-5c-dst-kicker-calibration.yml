@@ -1,0 +1,40 @@
+name: Step 6.5C DST and Kicker Calibration
+
+on:
+  push:
+    branches: [model/step6-5c-dst-kicker-calibration]
+  pull_request:
+    branches: [model/step6-5c-granular-matchup-interactions]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dst-kicker-calibration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Revalidate granular matchup base contract
+        run: node scripts/validate-step6-5c-granular-matchup-interactions.mjs
+      - name: Validate DST and kicker contract
+        run: node scripts/validate-step6-5c-dst-kicker-calibration.mjs
+      - name: Test DST/K scoring and decay math
+        run: node scripts/backtest-step6-5c-dst-kicker-calibration.mjs --self-test
+      - name: Run historical DST and kicker calibration
+        run: node scripts/backtest-step6-5c-dst-kicker-calibration.mjs
+      - name: Upload DST/K calibration artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5c-dst-kicker-calibration
+          path: data/probability/generated/step6-5c-dst-kicker-calibration.json
+          if-no-files-found: error
+      - name: Revalidate Step 5 permissions
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
