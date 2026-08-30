@@ -1,8 +1,8 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "season": 2026,
   "step": 29,
-  "status": "FIRST_VALID_WEEK1_FORECAST_FREEZE_LOCKED",
+  "status": "WEEKLY_FORECAST_FREEZE_LOCKED",
   "mode": "SHADOW_ONLY",
   "actionable": false,
   "allowed_states": ["WAITING_FOR_SOURCE","WAITING_FOR_CONTEXT","WAITING_FOR_DISTRIBUTIONS","WAITING_FOR_FREEZE","FROZEN","BLOCKED"],
@@ -13,10 +13,13 @@
     "ledger": "data/calibration/weekly-forecast-capture-2026.json"
   },
   "rules": {
-    "week": 1,
+    "week_scope": [1,17],
+    "active_week_from_verified_schedule": true,
     "verified_event_required": true,
     "context_week_must_match_schedule": true,
     "distribution_week_must_match_context": true,
+    "forecast_week_must_match_active_week": true,
+    "stale_week_cannot_satisfy_readiness": true,
     "sportsbook_inputs_allowed": false,
     "missing_is_zero": false,
     "expected_active_must_be_explicit": true,
