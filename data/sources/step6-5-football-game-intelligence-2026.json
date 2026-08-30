@@ -1,0 +1,123 @@
+{
+  "schema_version": "STEP6_5_FOOTBALL_GAME_INTELLIGENCE_1.0.0",
+  "season": 2026,
+  "status": "STEP6_5A_SOURCE_AND_MODEL_CONTRACT_LOCKED",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "live_projection_weight": 0,
+  "live_rank_weight": 0,
+  "sportsbook_inputs_allowed_in_football_projection": false,
+  "baseline_policy": {
+    "preseason_prior": "2025 full-season football performance is the primary current-team prior, with older seasons retained only through validated recency/shrinkage logic.",
+    "rolling_2026_update": "2026 football evidence gains authority progressively as valid current-season sample accumulates; no abrupt replacement of the 2025 prior.",
+    "small_sample_rule": "Early 2026 observations are shrunk toward the 2025 prior and may not receive arbitrary fixed authority.",
+    "promotion_rule": "Any 2026-vs-2025 blend, matchup coefficient, situational coefficient, or defensive weight must be selected by leakage-safe historical walk-forward validation before live promotion."
+  },
+  "primary_data_backbone": {
+    "source": "nflverse / nflreadr / nflfastR",
+    "required_feeds": [
+      "play_by_play",
+      "team_stats",
+      "player_stats",
+      "schedules",
+      "weekly_rosters",
+      "depth_charts",
+      "snap_counts",
+      "pfr_advanced_stats",
+      "next_gen_stats"
+    ],
+    "historical_market_fields": ["spread_line", "total_line"],
+    "game_context_fields": ["home_rest", "away_rest", "roof", "surface", "weather"],
+    "play_state_fields": ["qtr", "game_seconds_remaining", "score_differential", "posteam", "defteam"],
+    "rule": "Use football/event data for forecasting. Historical spread/total fields are permitted only for ATS/total backtesting and market-evaluation targets, never as football-prior features."
+  },
+  "current_injury_source": {
+    "primary": "NFL.com official injury/practice/game-status reporting",
+    "fallback": "FantasyPros injury/news",
+    "rule": "Do not depend on nflverse injury data for 2025+ current injury status because that feed is not currently available."
+  },
+  "validation_sources": [
+    "nflverse PFR advanced defensive stats",
+    "Pro Football Reference public team defense/advanced defense pages",
+    "NFL Savant historical advanced verification"
+  ],
+  "team_defense_feature_families": [
+    "opponent_adjusted_epa_per_play_allowed",
+    "pass_epa_per_dropback_allowed",
+    "rush_epa_per_carry_allowed",
+    "pass_and_rush_success_rate_allowed",
+    "explosive_pass_and_run_rate_allowed",
+    "pressure_sack_hit_hurry_context",
+    "red_zone_td_rate_allowed",
+    "third_down_conversion_allowed",
+    "turnover_generation_with_regression_control",
+    "pace_and_play_volume_context",
+    "defensive_personnel_availability",
+    "schedule_strength_normalization"
+  ],
+  "player_matchup_feature_families": {
+    "QB": ["pressure", "sack_rate", "coverage_efficiency", "explosive_pass_prevention", "qb_rush_containment"],
+    "RB": ["rush_efficiency_allowed", "stuff_rate", "explosive_run_prevention", "rb_receiving_allowed", "red_zone_rush_defense"],
+    "WR": ["outside_slot_role_context", "target_and_yard_efficiency_allowed", "explosive_pass_prevention", "pressure_effect_on_qb"],
+    "TE": ["te_target_yard_td_context", "middle_field_coverage_context", "pressure_effect_on_qb"]
+  },
+  "game_model_outputs": [
+    "projected_home_score",
+    "projected_away_score",
+    "fair_spread",
+    "fair_total",
+    "win_probability",
+    "margin_distribution",
+    "total_distribution",
+    "uncertainty"
+  ],
+  "situational_intelligence_families": [
+    "prior_game_fourth_quarter_comeback_or_collapse",
+    "overtime_previous_game",
+    "short_rest",
+    "extended_rest",
+    "home_road_sequence",
+    "travel_and_time_zone",
+    "international_game_recovery",
+    "division_rematch",
+    "turnover_outlier",
+    "scoring_outlier",
+    "prior_game_snap_or_workload_stress"
+  ],
+  "situational_validation_outputs": [
+    "sample_size",
+    "ats_win_rate",
+    "average_ats_margin",
+    "over_rate",
+    "under_rate",
+    "average_total_margin",
+    "season_stability",
+    "out_of_sample_result",
+    "promotion_status"
+  ],
+  "explainability_contract": {
+    "required_for_preferred_games": true,
+    "reason_fields": ["code", "category", "direction", "magnitude", "authority", "evidence_window", "sample_size", "confidence"],
+    "must_surface_contradicting_evidence": true,
+    "rule": "Reasons must be generated from model inputs/validated indicators; the UI may display them but may not invent post-hoc explanations."
+  },
+  "implementation_sequence": [
+    "6.5A source/quarantine audit and data contracts",
+    "6.5B team defensive ratings and 2025 priors",
+    "6.5C player-by-defense weekly matchup calibration",
+    "6.5D spread/total game model upgrade",
+    "6.5E historical situational ATS/total engine",
+    "6.5F game preference reason-stack/explainability",
+    "6.5G leakage-safe walk-forward calibration and ablation QA",
+    "6.5H integration, no-market-contamination audit, Guardrail QA and promotion decision"
+  ],
+  "locked_rules": [
+    "No guessed defensive, matchup, situational, or 2025/2026 blend weights may be promoted.",
+    "One-game opponent effects adjust weekly fantasy forecasts and uncertainty; they do not permanently rewrite season-long player quality solely because of that opponent.",
+    "Football forecasts are generated before market comparison.",
+    "Sportsbook lines may be used as evaluation targets and to compute downstream edge/EV only.",
+    "Missing fields are unknown, not zero.",
+    "All new Step 6.5 outputs remain shadow-only until historical and prospective governance approves promotion.",
+    "PR #74 remains HOLD / DO NOT MERGE and Step 7 visual work remains frozen while Step 6.5 backend work is validated."
+  ]
+}
