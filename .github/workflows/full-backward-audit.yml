@@ -3,9 +3,14 @@ on:
   pull_request:
     branches:
       - model/step6-5h-integration-contamination-qa
+      - audit/full-backward-audit-step6-5
     paths:
       - 'data/sources/full-backward-audit-2026.json'
       - 'data/sources/step6-5b-current-evidence-ledger-2026.json'
+      - 'data/sources/market-repair-2026-08-30.json'
+      - 'guardrails/step3e-approved-changes-2026-08-30.json'
+      - 'current162patch-2026-08-24.json'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
       - 'scripts/run-full-backward-audit.mjs'
       - '.github/workflows/full-backward-audit.yml'
       - 'data/sources/**'
@@ -119,6 +124,9 @@ jobs:
           name: full-backward-audit-2026
           path: |
             guardrails/full-backward-audit-report-2026.json
+            guardrails/step3e-approved-changes-2026-08-30.json
+            guardrails/step3e-application-audit.json
+            data/sources/market-repair-2026-08-30.json
             guardrails/step3b-rookie-history-contamination-audit.json
             guardrails/step3b-shadow-projection-context-162.json
             guardrails/step3c-shadow-recalculation-162.json
