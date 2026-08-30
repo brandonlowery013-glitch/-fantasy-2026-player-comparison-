@@ -1,0 +1,124 @@
+name: Final Betting Pipeline Step 4
+
+on:
+  pull_request:
+    paths:
+      - 'data/sources/final-betting-live-pipeline-2026.json'
+      - 'data/market/parlay-recommendations-2026.json'
+      - 'data/market/final-betting-ui-feed-2026.json'
+      - 'scripts/build-weekly-parlay-recommendations.mjs'
+      - 'scripts/build-final-betting-ui-feed.mjs'
+      - 'scripts/validate-final-betting-pipeline-step4.mjs'
+      - 'runtime-final-betting-pipeline-2026.js'
+      - 'index.html'
+      - '.github/workflows/final-betting-pipeline-step4.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/sources/final-betting-live-pipeline-2026.json'
+      - 'data/market/parlay-recommendations-2026.json'
+      - 'data/market/final-betting-ui-feed-2026.json'
+      - 'scripts/build-weekly-parlay-recommendations.mjs'
+      - 'scripts/build-final-betting-ui-feed.mjs'
+      - 'scripts/validate-final-betting-pipeline-step4.mjs'
+      - 'runtime-final-betting-pipeline-2026.js'
+      - 'index.html'
+      - '.github/workflows/final-betting-pipeline-step4.yml'
+  workflow_run:
+    workflows: ['Step 24 Weekly Production Orchestration']
+    types: [completed]
+    branches: [main]
+  schedule:
+    - cron: '25 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+concurrency:
+  group: final-betting-pipeline-step4
+  cancel-in-progress: false
+
+jobs:
+  step4-qa:
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Revalidate Step 2 sportsbook contract
+        run: node scripts/validate-final-betting-data-step2.mjs
+      - name: Revalidate Step 3 parlay internals
+        run: node scripts/validate-final-parlay-step3.mjs
+      - name: Test week-aware parlay rollover
+        run: node scripts/build-weekly-parlay-recommendations.mjs --self-test
+      - name: Test week-aware final UI feed
+        run: node scripts/build-final-betting-ui-feed.mjs --self-test
+      - name: Validate Step 4 contract
+        run: node scripts/validate-final-betting-pipeline-step4.mjs
+
+  live-week-sync:
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build current-week parlay recommendations
+        run: node scripts/build-weekly-parlay-recommendations.mjs
+      - name: Build current-week final betting UI feed
+        run: node scripts/build-final-betting-ui-feed.mjs
+      - name: Validate current-week Step 4 output
+        run: node scripts/validate-final-betting-pipeline-step4.mjs
+      - name: Persist only current-week downstream betting state
+        id: persist
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          branch="production/betting-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$branch"
+          git commit -m "Refresh current-week betting and parlay UI state"
+          git push origin "HEAD:$branch"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+      - name: Open guarded current-week betting state PR
+        id: state_pr
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          pr_url=$(gh pr create --base main --head "${{ steps.persist.outputs.branch }}" --title "Production: current-week betting UI state" --body "Automated Step 4 downstream betting state for the active verified schedule week. Prior-week outputs are blocked by contract. Required Guardrail QA must pass before merge.")
+          echo "url=$pr_url" >> "$GITHUB_OUTPUT"
+      - name: Wait for guardrail and merge current-week betting state
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.state_pr.outputs.url }}
+        shell: bash
+        run: |
+          found=false
+          for i in $(seq 1 60); do
+            if gh pr checks "$PR_URL" --required 2>&1 | grep -q "guardrail-qa"; then found=true; break; fi
+            sleep 10
+          done
+          if [ "$found" != "true" ]; then
+            echo "Required guardrail-qa check did not appear."
+            exit 1
+          fi
+          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
+          gh pr merge "$PR_URL" --merge --delete-branch

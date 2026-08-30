@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "step": "FINAL_INTERFACE_STEP_4",
+  "status": "LOCKED",
+  "authority": "DOWNSTREAM_BETTING_PRESENTATION_ONLY",
+  "purpose": "Connect the verified weekly schedule, sportsbook market snapshots, game recommendations, player-prop recommendations, parlay analytics, and Games UI through one week-aware production path that automatically rolls from Week 1 through the regular season without carrying stale prior-week recommendations forward.",
+  "active_week_contract": {
+    "authoritative_source": "data/calibration/weekly-event-schedule-2026.json",
+    "supported_regular_season_weeks": {"minimum": 1, "maximum": 18},
+    "week_is_never_hard_coded": true,
+    "week_1_is_first_activation_only": true,
+    "later_weeks_use_same_pipeline": true,
+    "prior_week_recommendations_may_display_as_current": false,
+    "week_mismatch_result": "WAITING_FOR_CURRENT_WEEK_OUTPUTS"
+  },
+  "input_order": [
+    "data/calibration/weekly-event-schedule-2026.json",
+    "data/market/weekly-matchup-market-snapshots-2026.json",
+    "data/market/player-prop-market-snapshots-2026.json",
+    "data/market/weekly-game-market-recommendations-2026.json",
+    "data/market/player-prop-recommendations-2026.json",
+    "data/market/parlay-recommendations-2026.json"
+  ],
+  "output_contract": {
+    "parlay_output": "data/market/parlay-recommendations-2026.json",
+    "ui_feed": "data/market/final-betting-ui-feed-2026.json",
+    "browser_runtime": "runtime-final-betting-pipeline-2026.js",
+    "refresh_seconds": 60,
+    "controlled_waiting_states": true,
+    "placeholder_prices_forbidden": true
+  },
+  "ui_surfaces": {
+    "live_board": ["score_status", "spread", "total", "model_edge"],
+    "game_detail": ["market", "model_picks", "win_probability", "brief_summary", "pivotal_offense", "pivotal_defense", "injuries_context", "prop_edges", "parlay_candidates", "live_player_stats_when_source_available"],
+    "games_tabs": ["BETS", "PROPS", "PARLAYS"]
+  },
+  "rollover_guardrails": {
+    "schedule_week_must_match_game_recommendation_week": true,
+    "schedule_week_must_match_player_prop_week": true,
+    "schedule_week_must_match_parlay_week": true,
+    "mismatched_output_is_not_rendered": true,
+    "old_week_market_price_is_not_relabelled_current": true,
+    "old_week_model_pick_is_not_relabelled_current": true,
+    "missing_current_week_output_shows_waiting_state": true
+  },
+  "separation_guardrails": {
+    "ui_feed_may_mutate_football_projection": false,
+    "ui_feed_may_mutate_player_projection": false,
+    "ui_feed_may_mutate_true_value": false,
+    "ui_feed_may_mutate_overall_rank": false,
+    "ui_feed_may_mutate_market_value": false,
+    "ui_feed_may_mutate_opportunity_label": false,
+    "ui_feed_may_mutate_comparison_better_player": false,
+    "sportsbook_price_may_enter_football_probability_model": false,
+    "automatic_wagering": false,
+    "stake_sizing": false
+  }
+}
