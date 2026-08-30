@@ -27,10 +27,12 @@ if(!opp.includes(STYLE)) opp=opp.replace('</head>',`${STYLE}</head>`);
 writeIfChanged('weekly-opportunities.html',opp);
 
 let compare=fs.readFileSync('compare.html','utf8');
-const visualLink='<link rel="stylesheet" href="ui-step7-chuck-duke.css?v=20260829-step7">';
-if(!compare.includes(visualLink)){
-  compare=compare.replace("const RESPONSIVE=`<style id=\"step6-responsive-contract\">",`const VISUAL='${visualLink}';const RESPONSIVE=\`<style id=\"step6-responsive-contract\">`);
-  compare=compare.replace("h=h.replace(headMarker,RESPONSIVE+headMarker);","h=h.replace(headMarker,VISUAL+RESPONSIVE+headMarker);");
+const legacyVisual="const VISUAL='<link rel=\"stylesheet\" href=\"ui-step7-chuck-duke.css?v=20260829-step7\">';";
+compare=compare.replace(legacyVisual,'');
+compare=compare.replace('h=h.replace(headMarker,VISUAL+RESPONSIVE+headMarker);','h=h.replace(headMarker,RESPONSIVE+headMarker);');
+if(!compare.includes("h=h.replace(headMarker,STYLE+headMarker);")){
+  compare=compare.replace("const RESPONSIVE=`<style id=\"step6-responsive-contract\">",`const STYLE='${STYLE}';const RESPONSIVE=\`<style id=\"step6-responsive-contract\">`);
+  compare=compare.replace('h=h.replace(headMarker,RESPONSIVE+headMarker);','h=h.replace(headMarker,STYLE+headMarker);h=h.replace(headMarker,RESPONSIVE+headMarker);');
 }
 writeIfChanged('compare.html',compare);
 
