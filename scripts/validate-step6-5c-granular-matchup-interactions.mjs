@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+const p='data/sources/step6-5c-granular-matchup-interactions-2026.json';
+const c=JSON.parse(fs.readFileSync(p,'utf8'));
+const need=(v,m)=>{if(!v)throw new Error(`STEP6.5C INTERACTION FAIL: ${m}`)};
+need(c.schema_version==='STEP6_5C_GRANULAR_MATCHUP_INTERACTIONS_1.0.0','schema');
+need(c.mode==='SHADOW_ONLY'&&c.production_numeric_authority===0,'zero authority');
+need(c.sportsbook_inputs_allowed===false,'sportsbook contamination');
+for(const t of ['QB','RB','WR','TE','DST_PROXY']) need(Array.isArray(c.position_interactions?.[t])&&c.position_interactions[t].length>0,`missing ${t} interactions`);
+need(c.data_rules?.pregame_only===true&&c.data_rules?.target_week_excluded_from_features===true,'pregame leakage guard');
+need(c.data_rules?.missing_is_unknown===true,'missing-as-unknown');
+need(c.calibration?.promotion_gate?.includes('every held-out season'),'robust promotion gate');
+need(c.locked_rules.some(x=>x.includes('applied again')),'double-counting guard');
+console.log(JSON.stringify({result:'PASS',schema:c.schema_version,targets:Object.keys(c.position_interactions),authority:c.production_numeric_authority},null,2));
