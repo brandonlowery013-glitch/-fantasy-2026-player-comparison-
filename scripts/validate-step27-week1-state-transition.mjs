@@ -27,17 +27,18 @@ for(const s of scenarios){
   const base=fixture(s.week,s.games);
   const scheduleOnly=evaluate(base);
   if(scheduleOnly.overall_status!=='WAITING_FOR_CONTEXT')blocked.push(`week ${s.week} schedule-only expected WAITING_FOR_CONTEXT got ${scheduleOnly.overall_status}`);
-  if(scheduleOnly.weeks?.[0]?.schedule_ready!==true||scheduleOnly.weeks?.[0]?.context_ready!==false)blocked.push(`week ${s.week} schedule/context readiness flags are not separated`);
+  if(scheduleOnly.weeks?.find(x=>x.week===s.week)?.schedule_ready!==true||scheduleOnly.weeks?.find(x=>x.week===s.week)?.context_ready!==false)blocked.push(`week ${s.week} schedule/context readiness flags are not separated`);
   const withContext=evaluate({...base,context:{...base.context,players:{'Josh Allen':{}}}});
   if(withContext.overall_status!=='WAITING_FOR_FORECAST')blocked.push(`week ${s.week} context-ready expected WAITING_FOR_FORECAST got ${withContext.overall_status}`);
   const withForecast=evaluate({...base,context:{...base.context,players:{'Josh Allen':{}}},forecasts:{forecasts:[{week:s.week}]}});
   if(withForecast.overall_status!=='WAITING_FOR_FINAL')blocked.push(`week ${s.week} forecast-ready expected WAITING_FOR_FINAL got ${withForecast.overall_status}`);
   const staleWeek=s.week===1?2:s.week-1;
   const staleForecast=evaluate({...base,context:{...base.context,players:{'Josh Allen':{}}},forecasts:{forecasts:[{week:staleWeek}]}});
-  if(staleForecast.overall_status!=='WAITING_FOR_FORECAST')blocked.push(`week ${s.week} accepted stale-week forecast state`);
+  const activeStaleRow=staleForecast.weeks?.find(x=>x.week===s.week);
+  if(activeStaleRow?.status!=='WAITING_FOR_FORECAST'||activeStaleRow?.forecast_ready!==false)blocked.push(`week ${s.week} accepted stale-week forecast state`);
   const contaminated=evaluate({...base,context:{...base.context,players:{'Josh Allen':{}},sportsbook_inputs_used:true}});
   if(contaminated.overall_status!=='BLOCKED')blocked.push(`week ${s.week} sportsbook contamination must block live activation`);
-  scenarioResults.push({week:s.week,games:s.games,schedule_only:scheduleOnly.overall_status,context_ready:withContext.overall_status,forecast_ready:withForecast.overall_status,stale_forecast:staleForecast.overall_status,contaminated:contaminated.overall_status});
+  scenarioResults.push({week:s.week,games:s.games,schedule_only:scheduleOnly.overall_status,context_ready:withContext.overall_status,forecast_ready:withForecast.overall_status,stale_forecast_overall:staleForecast.overall_status,active_week_with_stale_forecast:activeStaleRow?.status||null,contaminated:contaminated.overall_status});
 }
 
 let activeWeek=null;let activeGames=null;
