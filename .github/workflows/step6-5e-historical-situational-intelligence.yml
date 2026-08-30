@@ -1,0 +1,39 @@
+name: Step 6.5E Historical Situational Intelligence
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  situational-calibration:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate current Step 6.5 process policy
+        run: node scripts/validate-step6-5d-process-policy.mjs
+      - name: Revalidate Step 6.5D game model contract
+        run: node scripts/validate-step6-5d-game-spread-total-calibration.mjs
+      - name: Validate Step 6.5E situational contract
+        run: node scripts/validate-step6-5e-historical-situational-intelligence.mjs
+      - name: Test Step 6.5E math
+        run: node scripts/backtest-step6-5e-historical-situational-intelligence.mjs --self-test
+      - name: Run historical Step 6.5E situational calibration
+        run: node scripts/backtest-step6-5e-historical-situational-intelligence.mjs
+      - name: Upload Step 6.5E artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5e-historical-situational-intelligence
+          path: data/probability/generated/step6-5e-historical-situational-intelligence.json
+          if-no-files-found: error
+      - name: Revalidate Step 5 permissions
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
