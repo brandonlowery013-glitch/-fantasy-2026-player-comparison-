@@ -1,0 +1,45 @@
+{
+  "schema_version": "STEP6_5F_UNIFIED_REASON_STACK_1.0.0",
+  "status": "SHADOW_ONLY",
+  "production_numeric_authority": 0,
+  "automatic_promotion": false,
+  "purpose": "Explain already-computed football, fantasy and downstream market conclusions without changing them.",
+  "supported_surfaces": ["FANTASY", "GAME", "PLAYER_PROP", "DST", "K"],
+  "reason_classes": ["AVAILABILITY", "ROLE", "USAGE", "OFFENSE", "DEFENSE", "MATCHUP", "GAME_ENVIRONMENT", "SITUATION", "UNCERTAINTY", "MARKET_COMPARISON"],
+  "source_layers": ["CANONICAL_FOOTBALL_STATE", "CALIBRATED_MODEL_OUTPUT", "DOWNSTREAM_MARKET_COMPARISON"],
+  "rules": {
+    "read_only_explanation_layer": true,
+    "may_change_projection": false,
+    "may_change_probability": false,
+    "may_change_true_value": false,
+    "may_change_market_verdict": false,
+    "may_create_bet_signal": false,
+    "sportsbook_may_explain_downstream_edge_only": true,
+    "sportsbook_may_explain_football_forecast": false,
+    "missing_reason_is_unknown_not_zero": true,
+    "duplicate_evidence_key_must_collapse": true,
+    "same_evidence_cannot_support_multiple_independent_signal_counts": true,
+    "unvalidated_numeric_effect_cannot_be_stated_as_causal": true,
+    "quarantined_or_zero_authority_evidence_may_be_context_only": true
+  },
+  "reason_record_required_fields": ["surface", "subject_id", "evidence_key", "reason_class", "source_layer", "text", "authority"],
+  "allowed_authority": ["MATERIAL", "CONTEXT_ONLY", "QUARANTINED", "UNKNOWN"],
+  "ordering": ["MATERIAL", "CONTEXT_ONLY", "QUARANTINED", "UNKNOWN"],
+  "deduplication": {
+    "key": "evidence_key",
+    "precedence": ["CANONICAL_FOOTBALL_STATE", "CALIBRATED_MODEL_OUTPUT", "DOWNSTREAM_MARKET_COMPARISON"],
+    "rule": "Keep one canonical explanation per evidence key. A downstream market comparison may append market context but may not duplicate football support or become upstream forecast evidence."
+  },
+  "output_contract": {
+    "numeric_fields_allowed": ["confidence"],
+    "projection_fields_prohibited": ["projection", "probability", "true_value", "fair_spread", "fair_total", "edge", "ev", "price"],
+    "required_metadata": ["surface", "subject_id", "reasons", "reason_count", "independent_evidence_count", "sportsbook_inputs_used_for_forecast", "mode"]
+  },
+  "governance": {
+    "mode": "SHADOW_ONLY",
+    "sportsbook_inputs_used_for_forecast": false,
+    "full_backward_audit_required_before_promotion_or_merge": true,
+    "step7_visual_system_frozen": true,
+    "pr74_hold": true
+  }
+}
