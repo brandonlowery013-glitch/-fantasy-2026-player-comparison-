@@ -1,0 +1,20 @@
+import fs from 'node:fs';
+
+const c=JSON.parse(fs.readFileSync('data/sources/step6-5c-player-defense-dst-calibration-2026.json','utf8'));
+const fail=m=>{console.error(`STEP6.5C FAIL: ${m}`);process.exitCode=1;};
+const need=(x,m)=>{if(!x)fail(m)};
+need(c.schema_version==='STEP6_5C_PLAYER_DEFENSE_DST_CALIBRATION_1.0.0','schema');
+need(c.mode==='SHADOW_ONLY'&&c.production_numeric_authority===0&&c.automatic_promotion===false,'authority');
+need(c.sportsbook_inputs_allowed===false,'market contamination');
+for(const p of ['QB','RB','WR','TE','DST_PROXY'])need(c.targets?.[p],`target ${p}`);
+for(const f of ['points_allowed_mean','overall_epa_allowed_per_play','pass_epa_allowed_per_dropback','rush_epa_allowed_per_carry','sack_rate','interception_rate'])need(c.defensive_features?.includes(f),`feature ${f}`);
+need(c.walk_forward?.held_out_test_seasons?.join(',')==='2024,2025','held-out seasons');
+need(c.walk_forward?.target_week_leakage_prohibited===true,'target leakage rule');
+need(/both MAE and RMSE/i.test(c.promotion_rule?.per_target||''),'promotion metrics');
+need(c.promotion_rule?.cross_position_blanket_weight_prohibited===true,'no blanket position weight');
+need(/weekly/i.test(c.season_long_rule||''),'weekly matchup rule');
+need(/may not be applied again/i.test(c.anti_double_count_rule||''),'anti-double-count');
+need(/unknown, not zero/i.test(c.missing_data_rule||''),'unknown not zero');
+need(c.dst_proxy_scoring?.defensive_or_special_teams_td===null,'DST TD must remain unknown');
+if(process.exitCode)process.exit(process.exitCode);
+console.log(JSON.stringify({result:'PASS',schema:c.schema_version,targets:Object.keys(c.targets),authority:c.production_numeric_authority,sportsbook_inputs_allowed:c.sportsbook_inputs_allowed},null,2));
