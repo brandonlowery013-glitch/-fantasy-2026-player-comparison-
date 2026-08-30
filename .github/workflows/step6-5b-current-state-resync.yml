@@ -38,6 +38,8 @@ jobs:
         run: node scripts/poll-live-injury-changes.mjs --self-test
       - name: Test injury change cadence override
         run: node scripts/production-cadence-gate.mjs --self-test
+      - name: Validate roster cutdown reconciliation gate
+        run: node scripts/validate-step6-5b-roster-cutdown-reconciliation.mjs
       - name: Test adjusted-team-prior builder
         run: node scripts/build-step6-5b-2026-adjusted-team-priors.mjs --self-test
       - name: Build 2025 scoring baseline and attach verified 2026 adjustment features
