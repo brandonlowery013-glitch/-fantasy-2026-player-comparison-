@@ -1,0 +1,39 @@
+name: Step 6.5H Integration Contamination QA
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration-contamination-qa:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate current Step 6.5 process policy
+        run: node scripts/validate-step6-5d-process-policy.mjs
+      - name: Revalidate Step 6.5G full-universe contract
+        run: node scripts/validate-step6-5g-calibration-ablation-full-universe.mjs
+      - name: Rebuild Step 6.5G full-universe shadow
+        run: node scripts/build-step6-5g-full-universe-shadow.mjs
+      - name: Validate Step 6.5H integration contract
+        run: node scripts/validate-step6-5h-integration-contamination-qa.mjs
+      - name: Run Step 6.5H contamination and double-count tests
+        run: node scripts/test-step6-5h-integration-contamination-qa.mjs
+      - name: Upload Step 6.5H integration report
+        uses: actions/upload-artifact@v4
+        with:
+          name: step6-5h-integration-contamination-qa
+          path: guardrails/step6-5h-integration-contamination-report.json
+          if-no-files-found: error
+      - name: Revalidate Step 5 permissions
+        run: node scripts/validate-ui-permissions-step5.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
