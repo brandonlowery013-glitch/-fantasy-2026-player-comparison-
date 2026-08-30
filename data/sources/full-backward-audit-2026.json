@@ -1,0 +1,38 @@
+{
+  "schema_version": "FULL_BACKWARD_AUDIT_1.0.0",
+  "season": 2026,
+  "status": "PROMOTION_GATE",
+  "base_step": "STEP6_5H_INTEGRATION_CONTAMINATION_QA_1.0.0",
+  "automatic_promotion": false,
+  "purpose": "Re-run the older platform invariants against the complete Step 6.5A-H stack before any promotion or merge, while distinguishing audit execution from promotion eligibility.",
+  "required_invariants": [
+    "authoritative_player_universe_is_exactly_162_unique",
+    "overall_ranks_are_unique_and_complete",
+    "sportsbook_adp_ecr_market_inputs_are_downstream_only",
+    "missing_or_unknown_evidence_is_not_coerced_to_zero",
+    "canonical_evidence_is_not_applied_twice_numerically_without_documented_decomposition",
+    "current_resolved_injury_status_supersedes_stale_worst_history",
+    "no_unvalidated_or_hand_set_coefficients_receive_step6_5_authority",
+    "walk_forward_and_holdout_calibration_prevents_target_week_or_holdout_leakage",
+    "historical_prior_decay_and_shrinkage_remain_governed",
+    "rookie_no_history_records_remain_quarantined_from_fake_veteran_history",
+    "football_projection_precedes_distribution_probability_market_and_ev_layers",
+    "exact_tail_and_push_math_remain_valid",
+    "correlation_layer_preserves_marginals_and_valid_dependence_bounds",
+    "public_ui_remains_read_only_and_least_privilege",
+    "step6_5_module_scope_decisions_remain_enforced",
+    "legacy_hand_tuned_projection_recalibration_remains_quarantined",
+    "step6_5b_current_roster_injury_reconciliation_must_be_complete_before_promotion",
+    "step7_visual_system_remains_outside_this_audit_and_no_merge_occurs"
+  ],
+  "promotion_policy": {
+    "rule": "Audit machinery may PASS while promotion remains BLOCKED. Any unresolved current-state completeness gate blocks promotion even when structural/model invariants pass.",
+    "known_required_current_state_gate": "STEP6_5B_ROSTER_DRIVEN_INJURY_REVIEW_COMPLETE",
+    "production_numeric_authority_before_promotion": 0
+  },
+  "known_audit_repair": {
+    "item": "Atwell/Hunter late-August trade direction",
+    "correct_state": "Tutu Atwell Miami to Los Angeles Rams; Jarquez Hunter Los Angeles Rams to Miami",
+    "numeric_effect": "NONE"
+  }
+}
