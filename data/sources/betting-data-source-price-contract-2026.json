@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "step": "FINAL_INTERFACE_STEP_2",
+  "status": "LOCKED",
+  "authority": "DOWNSTREAM_MARKET_DECISION_ONLY",
+  "purpose": "Define authoritative sportsbook-source, price-selection, provenance, freshness, and failure-state rules for Chuck The Duke betting surfaces without allowing market data to create or mutate football projections.",
+  "source_hierarchy": {
+    "primary_live_aggregator": {
+      "name": "The Odds API",
+      "api_version": "v4",
+      "contract": "data/sources/live-market-ingestion-2026.json",
+      "credential_env": "ODDS_API_KEY",
+      "odds_format": "american",
+      "regions": ["us"],
+      "use": ["PREGAME_GAME_MARKETS", "WEEKLY_PLAYER_PROPS"]
+    },
+    "secondary_verified_manual": {
+      "allowed": true,
+      "use_only_when": "A primary-feed market is unavailable and the observation has explicit sportsbook, timestamp, market identity, threshold, and side-price provenance.",
+      "automatic_promotion": false,
+      "may_override_fresher_primary_price": false
+    },
+    "legacy_archival": {
+      "source": "vegasOdds2026.json",
+      "use": "SEASON_PROP_HISTORY_AND_CALIBRATION_ONLY",
+      "eligible_as_current_weekly_price": false,
+      "eligible_as_live_price": false
+    },
+    "prohibited_fallbacks": [
+      "UNSOURCED_WEB_SCRAPE",
+      "INFERRED_OR_SYNTHETIC_ODDS",
+      "STALE_PRICE_RELABELED_CURRENT",
+      "MISSING_PRICE_TREATED_AS_ZERO",
+      "CONSENSUS_LINE_WITHOUT_BOOK_LEVEL_PROVENANCE"
+    ]
+  },
+  "market_scope": {
+    "game_markets": ["moneyline", "spread", "total"],
+    "weekly_player_prop_stats": ["passing_yards", "passing_tds", "rushing_yards", "rushing_tds", "receiving_yards", "receiving_tds", "receptions"],
+    "season_player_prop_stats": ["passing_yards", "passing_tds", "rushing_yards", "rushing_tds", "receiving_yards", "receiving_tds", "receptions"],
+    "team_win_totals": false,
+    "in_game_live_betting_recommendations": false
+  },
+  "market_identity": {
+    "required_fields": ["event_id", "market_type", "sportsbook", "observed_at", "commence_time"],
+    "threshold_required_for": ["spread", "total", "player_prop"],
+    "player_prop_additional_fields": ["player_id_or_canonical_name", "stat", "period"],
+    "same_market_requires_same_threshold": true,
+    "different_thresholds_are_distinct_markets": true,
+    "different_books_are_distinct_quotes": true
+  },
+  "price_contract": {
+    "stored_odds_format": "AMERICAN",
+    "raw_price_is_immutable": true,
+    "retain_book_level_quote": true,
+    "retain_both_sides_when_available": true,
+    "best_execution_price": {
+      "definition": "Best fresh offered price for the exact same event, market, side, and threshold across eligible sportsbooks.",
+      "may_compare_across_books": true,
+      "may_splice_two_sided_market_across_books_for_devig": false,
+      "tie_breakers": ["FRESHER_OBSERVATION", "COMPLETE_TWO_SIDED_MARKET", "STABLE_BOOK_IDENTIFIER"]
+    },
+    "reference_market_price": {
+      "definition": "A same-threshold market reference built only from eligible book-level observations; raw quotes remain preserved.",
+      "different_thresholds_may_be_averaged": false,
+      "synthetic_consensus_odds_allowed": false,
+      "book_count_must_be_exposed": true
+    },
+    "probability_conversion": {
+      "raw_implied_probability_is_derived_downstream": true,
+      "fair_probability_method": "PROPORTIONAL_TWO_WAY",
+      "devig_requires_complete_same_book_two_sided_price": true,
+      "raw_odds_never_overwritten_by_fair_probability": true
+    }
+  },
+  "freshness_contract": {
+    "pregame_weekly_stale_after_minutes": 150,
+    "season_market_stale_after_minutes": 1440,
+    "price_must_predate_kickoff_for_pregame_recommendation": true,
+    "latest_fresh_quote_wins_within_same_book_market": true,
+    "stale_quote_display": "STALE",
+    "stale_quote_recommendation_eligibility": false,
+    "post_kickoff_price_usage": "DISPLAY_OR_ARCHIVE_ONLY_UNLESS_A_SEPARATELY_REVIEWED_LIVE_BETTING_CONTRACT_EXISTS",
+    "close_price_usage": "CLV_AND_BACKTEST_ONLY"
+  },
+  "recommendation_gate": {
+    "football_distribution_must_exist_first": true,
+    "market_quote_must_be_fresh": true,
+    "required_price_provenance": true,
+    "required_same_book_two_sided_price_for_market_probability": true,
+    "missing_or_partial_market_result": "INSUFFICIENT_DATA",
+    "provider_outage_result": "MARKET_UNAVAILABLE",
+    "stale_market_result": "STALE_MARKET",
+    "never_fabricate_replacement_price": true,
+    "game_recommendation_contract": "data/sources/game-market-recommendation-layer-2026.json",
+    "player_prop_recommendation_contract": "data/sources/player-prop-recommendation-layer-2026.json"
+  },
+  "parlay_contract": {
+    "market_feed_may_create_parlay_leg": false,
+    "eligible_leg_source": "ALREADY_APPROVED_DOWNSTREAM_RECOMMENDATION",
+    "each_leg_retains_original_book_line_price_and_timestamp": true,
+    "cross_book_prices_may_not_be_presented_as_one_executable_parlay": true,
+    "automatic_wagering": false,
+    "stake_sizing": false
+  },
+  "separation_guardrails": {
+    "sportsbook_data_may_mutate_season_projection": false,
+    "sportsbook_data_may_mutate_weekly_football_projection": false,
+    "sportsbook_data_may_mutate_true_value": false,
+    "sportsbook_data_may_mutate_overall_rank": false,
+    "sportsbook_data_may_mutate_market_value_label": false,
+    "sportsbook_data_may_mutate_season_opportunity_label": false,
+    "sportsbook_data_may_mutate_comparison_better_player": false,
+    "sportsbook_data_may_be_used_for_review_or_separately_governed_calibration": true,
+    "calibration_requires_explicit_reviewed_contract": true
+  },
+  "ui_failure_states": {
+    "no_feed": "MARKET UNAVAILABLE",
+    "partial_two_sided_price": "PRICE INCOMPLETE",
+    "stale_price": "STALE",
+    "no_model_distribution": "MODEL WAITING",
+    "no_eligible_recommendation": "PASS",
+    "never_show_placeholder_as_real_price": true
+  }
+}
