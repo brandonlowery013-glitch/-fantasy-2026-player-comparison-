@@ -1,0 +1,81 @@
+{
+  "schema_version": "STEP6_5C_DST_KICKER_CALIBRATION_1.0.0",
+  "season": 2026,
+  "status": "SHADOW_ONLY",
+  "production_numeric_authority": 0,
+  "sportsbook_inputs_allowed": false,
+  "source": "nflverse play-by-play and schedules",
+  "historical_seasons": [2021, 2022, 2023, 2024, 2025],
+  "held_out_test_seasons": [2024, 2025],
+  "dst": {
+    "scoring_outputs": [
+      "sacks",
+      "interceptions",
+      "fumble_recoveries",
+      "defensive_or_special_teams_touchdowns",
+      "points_allowed_bucket"
+    ],
+    "scoring": {
+      "sack": 1,
+      "interception": 2,
+      "fumble_recovery": 2,
+      "defensive_or_special_teams_touchdown": 6,
+      "points_allowed_buckets": {
+        "0": 10,
+        "1-6": 7,
+        "7-13": 4,
+        "14-20": 1,
+        "21-27": 0,
+        "28-34": -1,
+        "35+": -4
+      }
+    },
+    "baseline": "Prior-season plus current-season-to-date DST fantasy points allowed/produced with leakage-safe decay.",
+    "candidate_inputs": [
+      "defensive_sack_rate",
+      "defensive_interception_rate",
+      "opponent_sack_susceptibility",
+      "opponent_interception_rate",
+      "opponent_fumble_lost_rate",
+      "points_allowed_environment"
+    ],
+    "touchdown_rule": "Count only touchdowns whose scoring team is the defense or return/special-teams team and is not the offensive possession team. Do not infer missing touchdown attribution as zero unless the source field is present and resolved."
+  },
+  "kicker": {
+    "scoring_outputs": ["field_goals_made_by_distance_bucket", "extra_points_made"],
+    "scoring": {
+      "field_goal_0_39": 3,
+      "field_goal_40_49": 4,
+      "field_goal_50_plus": 5,
+      "extra_point": 1
+    },
+    "baseline": "Prior-season plus current-season-to-date team-kicker fantasy points with leakage-safe decay.",
+    "candidate_inputs": [
+      "team_points_per_game",
+      "field_goal_attempts_per_game",
+      "red_zone_stall_rate",
+      "fourth_down_aggressiveness",
+      "kicker_make_rate_by_distance"
+    ],
+    "identity_rule": "Historical calibration may use the team kicker slot to avoid falsely carrying a departed kicker across seasons. Current 2026 player identity is attached only after verified roster/depth-chart reconciliation."
+  },
+  "walk_forward": {
+    "candidate_half_life_games": [1, 2, 4, 6, 8, 12, 17],
+    "ridge_lambda_grid": [0.1, 1, 10, 100],
+    "parameter_selection_rule": "For each held-out season, tune all decay and regularization only on earlier seasons; the held-out season cannot select its own parameters.",
+    "target_week_leakage_allowed": false
+  },
+  "promotion_gate": {
+    "automatic_promotion": false,
+    "requirements": [
+      "rich model improves MAE and RMSE in every held-out season",
+      "pooled MAE improves over the simple baseline",
+      "all scoring components are source-covered rather than imputed",
+      "no sportsbook or ADP feature contamination",
+      "anti-double-counting review passes"
+    ]
+  },
+  "shared_state_rule": "DST and kicker consume the same canonical football state used by fantasy/game/prop engines. A football effect may not be applied once in team scoring context and again as an independent DST/K adjustment without explicit decomposition.",
+  "missing_data_rule": "Missing source fields remain unknown. Missing defensive/special-teams touchdowns, kick distance, weather or roster identity may not be silently converted to zero.",
+  "next_step_after_validation": "6.5D spread/total game model upgrade using the same canonical football state."
+}
