@@ -32,6 +32,12 @@ jobs:
         run: node scripts/validate-step6-5b-roster-driven-injury-audit.mjs
       - name: Validate player profile injury designations
         run: node scripts/validate-step6-5b-injury-designations.mjs
+      - name: Validate automatic injury-to-weekly projection policy
+        run: node scripts/validate-step6-5b-automatic-injury-projection-policy.mjs
+      - name: Test hourly live injury change poll
+        run: node scripts/poll-live-injury-changes.mjs --self-test
+      - name: Test injury change cadence override
+        run: node scripts/production-cadence-gate.mjs --self-test
       - name: Revalidate Step 5 permissions
         run: node scripts/validate-ui-permissions-step5.mjs
       - name: Run hard Guardrail QA
