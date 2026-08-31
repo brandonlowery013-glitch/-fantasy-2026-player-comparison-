@@ -27,7 +27,7 @@ jobs:
         run: node scripts/validate-player-prop-market-snapshots.mjs --self-test
       - name: Validate Step 16 contract
         run: node scripts/validate-player-prop-recommendation-contract.mjs
-      - name: Test 162-player season and weekly PICK/PASS logic
+      - name: Test full-universe season and weekly PICK/PASS logic
         run: node scripts/build-player-prop-recommendations.mjs --self-test
       - name: Revalidate shared fair-market formula
         run: node scripts/test-ev-math.mjs
@@ -39,7 +39,7 @@ jobs:
     needs: step16-player-prop-qa
     runs-on: ubuntu-latest
     concurrency:
-      group: player-prop-recommendation-production
+      group: weekly-production-orchestration
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
