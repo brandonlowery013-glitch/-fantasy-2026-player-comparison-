@@ -28,9 +28,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Build read-only 162-player shadow recalculation
+      - name: Build read-only 163-player shadow recalculation
         run: node scripts/build-step3b-162-shadow-recalculation.mjs
-      - name: Audit 153-to-162 universe reconciliation
+      - name: Audit active 163-player universe reconciliation
         run: node scripts/audit-step3b-universe-reconciliation.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
@@ -41,7 +41,7 @@ jobs:
           name: step3b-universe-reconciliation
           path: |
             guardrails/step3b-universe-reconciliation-audit.json
-            guardrails/step3b-shadow-projection-context-162.json
-            guardrails/step3b-shadow-projection-downstream-162.json
-            guardrails/step3b-shadow-overall-review-queue-162.json
+            guardrails/step3b-shadow-projection-context-163.json
+            guardrails/step3b-shadow-projection-downstream-163.json
+            guardrails/step3b-shadow-overall-review-queue-163.json
           if-no-files-found: error
