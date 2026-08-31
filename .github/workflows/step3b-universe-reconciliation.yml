@@ -8,6 +8,8 @@ on:
       - 'projection-context-audit-2026.json'
       - 'projection-downstream-audit.json'
       - 'overall-rank-audit-decisions.json'
+      - 'guardrails/guardrails-config.json'
+      - 'guardrails/universe-change-manifest.json'
       - '.github/workflows/apply-overall-audit-and-cohesion.yml'
       - '.github/workflows/recalibrate-projections.yml'
       - '.github/workflows/propagate-projection-recalibration.yml'
@@ -28,9 +30,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Build read-only 163-player shadow recalculation
+      - name: Build read-only active-universe shadow recalculation
         run: node scripts/build-step3b-162-shadow-recalculation.mjs
-      - name: Audit active 163-player universe reconciliation
+      - name: Audit active-universe reconciliation
         run: node scripts/audit-step3b-universe-reconciliation.mjs
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
@@ -41,7 +43,7 @@ jobs:
           name: step3b-universe-reconciliation
           path: |
             guardrails/step3b-universe-reconciliation-audit.json
-            guardrails/step3b-shadow-projection-context-163.json
-            guardrails/step3b-shadow-projection-downstream-163.json
-            guardrails/step3b-shadow-overall-review-queue-163.json
+            guardrails/step3b-shadow-projection-context-*.json
+            guardrails/step3b-shadow-projection-downstream-*.json
+            guardrails/step3b-shadow-overall-review-queue-*.json
           if-no-files-found: error
