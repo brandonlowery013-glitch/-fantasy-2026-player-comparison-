@@ -36,8 +36,8 @@ add('3C_current_shadow_contract',c.step==='STEP_3C_FULL_SHADOW_RECALCULATION'&&c
 add('3C_full_authoritative_universe',c.universe_count===expected&&c.authoritative_player_count===expected&&Array.isArray(c.rows)&&c.rows.length===expected&&new Set(c.rows.map(x=>x.player)).size===expected,`universe=${c.universe_count}; authoritative=${c.authoritative_player_count}; rows=${c.rows?.length}`);
 add('3C_zero_live_movement',c.live_change_authority===0,'3C shadow has zero live-change authority');
 add('3C_market_separation',c.sportsbook_or_adp_used===false,'sportsbook/adp false');
-add('3C_shadow_rows_complete',c.rows.every(x=>Number.isFinite(Number(x.shadow_q10))&&Number.isFinite(Number(x.shadow_q50))&&Number.isFinite(Number(x.shadow_q90))),'all authoritative rows contain finite shadow distributions');
-add('3C_extreme_review_consistent',Number.isFinite(Number(c.extreme_disagreement_threshold_ppg))&&c.extreme_review_count===c.rows.filter(x=>x.extreme_review_required===true).length,`threshold=${c.extreme_disagreement_threshold_ppg}; declared=${c.extreme_review_count}`);
+add('3C_shadow_rows_complete',c.rows.every(x=>typeof x.player==='string'&&typeof x.position==='string'&&Number.isFinite(x.live_projection)&&Number.isFinite(x.shadow_projection)&&Number.isFinite(x.shadow_expected_production)&&Number.isFinite(x.shadow_true_value)&&typeof x.extreme_disagreement_review_required==='boolean'),'all authoritative rows satisfy the same complete shadow-row contract as Step 3C');
+add('3C_extreme_review_consistent',Number.isFinite(Number(c.extreme_disagreement_threshold_ppg))&&c.extreme_review_count===c.rows.filter(x=>x.extreme_disagreement_review_required===true).length,`threshold=${c.extreme_disagreement_threshold_ppg}; declared=${c.extreme_review_count}`);
 
 add('3D_historical_review_complete',d.status==='COMPLETE',`${d.status}; original review outcome preserved as history`);
 add('3D_market_separation',d.sportsbook_or_adp_used===false,'sportsbook/adp false');
