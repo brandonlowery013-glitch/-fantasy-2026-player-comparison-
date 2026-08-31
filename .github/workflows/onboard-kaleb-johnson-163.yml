@@ -1,4 +1,4 @@
-name: Onboard regular-season admissions; migrate universe to 165
+name: Onboard regular-season admissions; migrate universe to 166
 on:
   push:
     branches: [model/add-kaleb-johnson-163]
@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Run deterministic 162 to 165 migration and onboarding audits
+      - name: Run deterministic 162 to 166 migration and onboarding audits
         run: node scripts/migrate-universe-162-to-163.mjs
       - name: Validate generated canonical and effective player universe
         run: |
@@ -30,24 +30,24 @@ jobs:
           const patch=JSON.parse(fs.readFileSync('current162patch-2026-08-24.json'));
           const effective=p.map(x=>({...x,...(patch.players?.[x.n]||{})}));
           for(const [label,rows] of [['canonical',p],['effective',effective]]){
-            if(rows.length!==165) throw Error(`${label}: Expected 165 players, found ${rows.length}`);
-            if(new Set(rows.map(x=>x.n)).size!==165) throw Error(`${label}: Duplicate player names`);
+            if(rows.length!==166) throw Error(`${label}: Expected 166 players, found ${rows.length}`);
+            if(new Set(rows.map(x=>x.n)).size!==166) throw Error(`${label}: Duplicate player names`);
             for(const f of ['o','tr']) { const a=rows.map(x=>x[f]).sort((a,b)=>a-b); a.forEach((v,i)=>{if(v!==i+1)throw Error(`${label}: ${f} rank gap/collision at ${i+1}`)}); }
           }
-          for(const name of ['Kaleb Johnson','Corey Kiner','Tank Dell']){
+          for(const name of ['Kaleb Johnson','Jonnu Smith','Corey Kiner','Tank Dell']){
             const x=effective.find(p=>p.n===name); if(!x) throw Error(`${name} missing`);
             for(const f of ['pd','ce','r','e','a','rl','su','mp','m','cl','px','s7']) if(x[f]==null) throw Error(`${name} missing ${f}`);
           }
           const out={players:effective.length};
-          for(const name of ['Kaleb Johnson','Corey Kiner','Tank Dell']){const x=effective.find(p=>p.n===name);out[name]={o:x.o,tr:x.tr,pr:x.pr,tp:x.tp,mp:x.mp,px:x.px};}
+          for(const name of ['Kaleb Johnson','Jonnu Smith','Corey Kiner','Tank Dell']){const x=effective.find(p=>p.n===name);out[name]={o:x.o,tr:x.tr,pr:x.pr,tp:x.tp,mp:x.mp,px:x.px};}
           console.log(JSON.stringify(out,null,2));
           NODE
-      - name: Commit generated 165-player migration
+      - name: Commit generated 166-player migration
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git restore .github/workflows/final-162-qa-publish.yml || true
           git add players*.json current162patch-2026-08-24.json index-backup.html lockedRanks2026.json injuryOverrides2026.json comparison-sync-162-audit.json kaleb-johnson-163-onboarding-audit.json
           git diff --cached --quiet && exit 0
-          git commit -m "Migrate Fantasy 2026 universe from 162 to 165"
+          git commit -m "Migrate Fantasy 2026 universe from 162 to 166"
           git push origin HEAD:model/add-kaleb-johnson-163
