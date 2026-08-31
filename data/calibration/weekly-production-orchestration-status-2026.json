@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "SHADOW_ONLY",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "generated_at": "2026-08-31T03:12:23.335Z",
+  "concurrency_group": "weekly-production-orchestration",
+  "ordered_stages": [
+    "SOURCE_INGESTION",
+    "WEEKLY_PLAYER_MODEL",
+    "FORECAST_FREEZE",
+    "GAME_PROJECTIONS",
+    "MARKET_CAPTURE",
+    "MARKET_RECOMMENDATIONS",
+    "OPPORTUNITY_RANKING",
+    "POSTGAME_SETTLEMENT",
+    "LIVE_MARKET_CALIBRATION",
+    "CALIBRATION_GOVERNANCE",
+    "PIPELINE_HEALTH",
+    "REAL_SEASON_VALIDATION",
+    "ATOMIC_PERSIST"
+  ],
+  "stages": {
+    "SOURCE_INGESTION": {
+      "status": "READY",
+      "evidence": {
+        "schedule_games": 16,
+        "context_players": 0
+      }
+    },
+    "WEEKLY_PLAYER_MODEL": {
+      "status": "WAITING_FOR_MODEL",
+      "evidence": {
+        "week": null,
+        "players": 0
+      }
+    },
+    "FORECAST_FREEZE": {
+      "status": "WAITING_FOR_MODEL",
+      "evidence": {
+        "frozen_forecasts": 0
+      }
+    },
+    "GAME_PROJECTIONS": {
+      "status": "READY",
+      "evidence": {
+        "games": 16
+      }
+    },
+    "MARKET_CAPTURE": {
+      "status": "WAITING_FOR_VERIFIED_WEEKLY_SCHEDULE",
+      "evidence": {
+        "provider_status": "WAITING_FOR_VERIFIED_WEEKLY_SCHEDULE"
+      }
+    },
+    "MARKET_RECOMMENDATIONS": {
+      "status": "WAITING_FOR_MARKETS",
+      "evidence": {
+        "game_recommendation_games": 0,
+        "evaluated_player_markets": 0
+      }
+    },
+    "OPPORTUNITY_RANKING": {
+      "status": "AWAITING_WEEKLY_MARKET_ANALYSIS",
+      "evidence": {
+        "ranked_picks": 0,
+        "near_misses": 0
+      }
+    },
+    "POSTGAME_SETTLEMENT": {
+      "status": "WAITING_FOR_FINAL",
+      "evidence": {
+        "settled": 0
+      }
+    },
+    "LIVE_MARKET_CALIBRATION": {
+      "status": "REVIEW_REQUIRED",
+      "evidence": {}
+    },
+    "CALIBRATION_GOVERNANCE": {
+      "status": "HOLD",
+      "evidence": {
+        "promotion_eligible": false
+      }
+    },
+    "PIPELINE_HEALTH": {
+      "status": "WAITING_FOR_CONTEXT",
+      "evidence": {
+        "actionable": false
+      }
+    },
+    "REAL_SEASON_VALIDATION": {
+      "status": "WAITING_FOR_SOURCE",
+      "evidence": {
+        "actionable": false
+      }
+    },
+    "ATOMIC_PERSIST": {
+      "status": "PENDING_WORKFLOW_COMMIT",
+      "evidence": {}
+    }
+  }
+}
