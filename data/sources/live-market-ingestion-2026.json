@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "season": 2026,
   "step": 23,
   "mode": "MARKET_CONTEXT_ONLY",
@@ -44,6 +44,20 @@
     "near_kickoff_window_hours": 168,
     "player_prop_refresh_minutes": 180,
     "player_prop_window_hours": 48,
+    "legacy_player_prop_fetch_disabled_in_featured_workflow": true,
+    "early_prop_discovery_enabled": true,
+    "early_prop_discovery_minutes": 360,
+    "early_prop_discovery_uses_event_markets_endpoint": true,
+    "early_prop_capture_then_pause_until_hours": 48,
+    "player_prop_adaptive_bands": [
+      {"maximum_minutes_to_kickoff": 60, "refresh_minutes": 15, "label": "FINAL_1_HOUR"},
+      {"maximum_minutes_to_kickoff": 360, "refresh_minutes": 30, "label": "6_TO_1_HOURS"},
+      {"maximum_minutes_to_kickoff": 1440, "refresh_minutes": 90, "label": "24_TO_6_HOURS"},
+      {"maximum_minutes_to_kickoff": 2880, "refresh_minutes": 180, "label": "48_TO_24_HOURS"}
+    ],
+    "prop_quota_soft_reserve_credits": 4000,
+    "prop_quota_hard_reserve_credits": 2000,
+    "prop_quota_critical_reserve_credits": 1000,
     "max_prop_events_per_run": 4,
     "max_provider_market_credits_per_run": 32
   },
