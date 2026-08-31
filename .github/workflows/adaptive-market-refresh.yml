@@ -57,11 +57,13 @@ jobs:
       - name: Determine time-to-kickoff market cadence
         id: cadence
         run: node scripts/adaptive-market-refresh-gate.mjs
-      - name: Capture current sportsbook markets when due
+      - name: Capture current featured sportsbook markets when due
         if: steps.cadence.outputs.run == 'true'
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-          MARKET_MAX_PROP_EVENTS: ${{ vars.MARKET_MAX_PROP_EVENTS }}
+          # Player props now run in adaptive-player-prop-refresh.yml so the
+          # featured-market loop cannot duplicate prop requests/credits.
+          MARKET_MAX_PROP_EVENTS: '0'
         run: node scripts/ingest-live-market-snapshots.mjs
       - name: Validate current market snapshots
         if: steps.cadence.outputs.run == 'true'

@@ -1,0 +1,108 @@
+name: Adaptive Player Prop Refresh
+
+on:
+  pull_request:
+    paths:
+      - 'data/sources/live-market-ingestion-2026.json'
+      - 'scripts/adaptive-player-prop-refresh.mjs'
+      - '.github/workflows/adaptive-player-prop-refresh.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/sources/live-market-ingestion-2026.json'
+      - 'scripts/adaptive-player-prop-refresh.mjs'
+      - '.github/workflows/adaptive-player-prop-refresh.yml'
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+concurrency:
+  group: adaptive-player-prop-refresh
+  cancel-in-progress: false
+
+jobs:
+  prop-cadence-qa:
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate adaptive player prop cadence
+        run: node scripts/adaptive-player-prop-refresh.mjs --self-test
+      - name: Validate live market ingestion contract
+        run: node scripts/validate-live-market-ingestion-contract.mjs
+      - name: Validate player prop snapshot contract
+        run: node scripts/validate-player-prop-market-snapshots.mjs
+
+  adaptive-player-prop-refresh:
+    if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Discover or refresh player props when due
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: node scripts/adaptive-player-prop-refresh.mjs
+      - name: Validate player prop snapshots
+        run: node scripts/validate-player-prop-market-snapshots.mjs
+      - name: Persist adaptive player prop state through guarded PR
+        id: persist
+        shell: bash
+        run: |
+          paths=(
+            data/market/player-prop-market-snapshots-2026.json
+            data/market/adaptive-player-prop-refresh-status-2026.json
+          )
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${paths[@]}"
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          branch="production/adaptive-props-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$branch"
+          git commit -m "Refresh adaptive player prop state"
+          git push origin "HEAD:$branch"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+      - name: Open guarded player prop PR
+        id: state_pr
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          pr_url=$(gh pr create --base main --head "${{ steps.persist.outputs.branch }}" --title "Production: adaptive player prop refresh" --body "Automated player-prop discovery and refresh. Before T-48h, event-market availability is checked every six hours until the first prop snapshot is captured, then the game sleeps until T-48h. Active refresh is per-game kickoff: 3h at 48-24h, 90m at 24-6h, 30m at 6-1h, and 15m in the final hour. Market data remains downstream-only. Required Guardrail QA must pass before merge.")
+          echo "url=$pr_url" >> "$GITHUB_OUTPUT"
+      - name: Wait for guardrail and merge player prop state
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.state_pr.outputs.url }}
+        shell: bash
+        run: |
+          found=false
+          for i in $(seq 1 60); do
+            if gh pr checks "$PR_URL" --required 2>&1 | grep -q "guardrail-qa"; then found=true; break; fi
+            sleep 10
+          done
+          if [ "$found" != "true" ]; then
+            echo "Required guardrail-qa check did not appear."
+            exit 1
+          fi
+          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
+          gh pr merge "$PR_URL" --merge --delete-branch
