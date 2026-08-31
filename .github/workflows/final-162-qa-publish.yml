@@ -1,9 +1,16 @@
-name: Final 162-player QA and publish sync
+name: Final 166-player QA and publish sync
 on:
   push:
     branches: [main]
     paths:
       - '.trigger-final-162-qa-publish'
+      - 'players*.json'
+      - 'injuryOverrides2026.json'
+      - 'lockedRanks2026.json'
+      - 'data/sources/season-phase-2026.json'
+      - 'scripts/build-rank-movement-context.mjs'
+      - 'scripts/validate-season-phase-transition.mjs'
+      - 'runtime-rank-movement-context-2026.js'
   workflow_dispatch:
 permissions:
   contents: write
@@ -12,80 +19,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply August 24 injury and recovery sync
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate season phase contract
+        run: node scripts/validate-season-phase-transition.mjs
+      - name: Build rank movement and news context from prior published state
+        run: |
+          git rev-parse HEAD^ >/dev/null
+          node scripts/build-rank-movement-context.mjs HEAD HEAD^
+      - name: Apply current injury, phase and UI sync
         run: |
           python - <<'PY'
           import json, re
           from pathlib import Path
-
           p=Path('injuryOverrides2026.json')
           d=json.loads(p.read_text())
-          d['updated']='2026-08-24'
-          players=d.setdefault('players',{})
-
-          players['Ashton Jeanty'].update({
-            'a':8.2,
-            'st':'ANKLE SPRAIN — WEEK 1/2 AVAILABILITY WATCH',
-            'ns':'2026-08-24 CURRENT INJURY UPDATE',
-            'nm':'The injury is now believed to be a sprained right ankle rather than a major knee injury. It is not considered long-term, but the exact grade and return timetable remain unknown.',
-            'na':'Reduce short-term availability and do not pay above the current fair price until the return timetable is clearer. No major season-long projection cut without evidence of a high-grade sprain.',
-            'px':'FAIR',
-            's7':'ACCEPTABLE',
-            'current_recommendation':'HOLD / FAIR — ankle sprain is not considered long-term, but do not reach until the timetable is clearer'
-          })
-          players['Mike Washington Jr.'].update({
-            'st':'JEANTY ANKLE-SPRAIN / SHORT-TERM ROLE-EXPANSION WATCH',
-            'ns':'2026-08-24 CURRENT ROLE UPDATE',
-            'nm':'Jeanty is believed to have an ankle sprain that is not considered long-term. Washington remains the contingency back with short-term lead-role upside if Jeanty misses early games.',
-            'na':'Keep the late-round contingency premium, but do not price in a long Jeanty absence.'
-          })
-          players['Makai Lemon'].update({
-            'a':8.2,
-            'st':'HAMSTRING — FULL PRACTICE / RECURRENCE WATCH',
-            'ns':'2026-08-24 FULL-PRACTICE UPDATE',
-            'nm':'Lemon returned to full practice and participated in team drills with the starting offense. This clears the first major recovery benchmark after the recurring hamstring issue.',
-            'na':'Partially restore availability, but retain a recurrence and rookie role-readiness discount until full work is sustained across consecutive practices.'
-          })
-          players['TreVeyon Henderson']={
-            'a':8.2,
-            'st':'RIGHT FOOT/ANKLE — PRACTICE-EXIT WATCH',
-            'ns':'2026-08-24 CURRENT INJURY UPDATE',
-            'nm':'Henderson slipped while cutting during 11-on-11 work, had his right foot/ankle examined and did not return. The field was notably slick and there is not yet a diagnosis.',
-            'na':'Apply a small temporary availability discount only. Do not make a major rank or season-projection cut unless follow-up practice or imaging shows a multi-week injury.'
-          }
-          if 'DeVonta Smith' in players:
-            players['DeVonta Smith'].update({
-              'a':8.8,
-              'st':'HAMSTRING — FULL PRACTICE RETURN',
-              'ns':'2026-08-24 FULL-PRACTICE UPDATE',
-              'nm':'Smith returned to full practice after the hamstring absence.',
-              'na':'Remove the temporary limited-practice penalty; retain only normal soft-tissue recurrence awareness.'
-            })
-          if 'Christian McCaffrey' in players:
-            players['Christian McCaffrey'].update({
-              'st':'FULL TEAM WORK — BASE DURABILITY DISCOUNT ONLY',
-              'ns':'2026-08-24 RETURN-TO-TEAM-WORK UPDATE',
-              'nm':'McCaffrey returned to 11-on-11 team work and said the prior practice absence was part of the planned workload cycle.',
-              'na':'Remove any extra camp-only penalty. Retain the existing age/workload/durability discount.'
-            })
-          players['George Kittle']={
-            'a':6.8,
-            'st':'ACHILLES RECOVERY — OFF PUP / INDIVIDUAL WORK',
-            'ns':'2026-08-24 RECOVERY UPDATE',
-            'nm':'Kittle was activated from Active/PUP and returned to practice in individual work, improving the chance he avoids an automatic four-game absence.',
-            'na':'Increase Week 1 availability probability, but retain the post-Achilles explosiveness, YAC and workload discount until team work is sustained.'
-          }
+          d['updated']='2026-08-31'
           p.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\n')
 
-          # Cache-bust all runtime data references without altering the UI structure.
-          stamp='20260824-1920'
+          stamp='20260831-166-phase'
           ib=Path('index-backup.html')
           s=ib.read_text()
           s=re.sub(r'players\$\{i\}\.json\?v=[^`\"\']+',f'players${{i}}.json?v={stamp}',s)
           s=re.sub(r'injuryOverrides2026\.json\?v=[^\"\']+',f'injuryOverrides2026.json?v={stamp}',s)
           s=re.sub(r'market2026\.json\?v=[^\"\']+',f'market2026.json?v={stamp}',s)
+          movement='<script src="runtime-rank-movement-context-2026.js?v=20260908-phase"></script>'
+          if 'runtime-rank-movement-context-2026.js' not in s:
+            s=s.replace('</body>',movement+'\n</body>')
           ib.write_text(s)
-
           idx=Path('index.html')
           s=idx.read_text()
           s=re.sub(r'index-backup\.html\?v=[^\"\']+',f'index-backup.html?v={stamp}',s,1)
@@ -94,23 +58,23 @@ jobs:
       - name: Run cross-board QA
         run: |
           python - <<'PY'
-          import json,re
+          import json
           from pathlib import Path
           from collections import Counter,defaultdict
 
           parts=[]
-          for i in range(13):
+          for i in range(14):
             x=json.loads(Path(f'players{i}.json').read_text())
             if not isinstance(x,list): raise SystemExit(f'players{i}.json is not a list')
             parts.extend(x)
-          if len(parts)!=162: raise SystemExit(f'Expected 162 active players, found {len(parts)}')
+          if len(parts)!=166: raise SystemExit(f'Expected 166 active players, found {len(parts)}')
           names=[p.get('n') for p in parts]
           dup=[n for n,c in Counter(names).items() if c>1]
           if dup: raise SystemExit(f'Duplicate player names: {dup}')
 
           ov=json.loads(Path('injuryOverrides2026.json').read_text())
           missing_override=[n for n in ov.get('players',{}) if n not in set(names)]
-          if missing_override: raise SystemExit(f'Injury override names missing from 162-player pool: {missing_override}')
+          if missing_override: raise SystemExit(f'Injury override names missing from 166-player pool: {missing_override}')
 
           P=[dict(p) for p in parts]
           by={p['n']:p for p in P}
@@ -126,83 +90,69 @@ jobs:
             if not names:return
             ordered=sorted(P,key=lambda p:p.get(field,9999))
             picked={p['n']:p for p in ordered if p['n'] in names}
-            moved=set(names)
-            slots=[None]*len(ordered)
+            moved=set(names); slots=[None]*len(ordered)
             for n in names:
               if n in picked:
                 t=max(1,min(len(ordered),round(moves[n])))
                 if slots[t-1] is not None: raise SystemExit(f'Rank collision at {field} {t}')
                 slots[t-1]=picked[n]
-            rest=[p for p in ordered if p['n'] not in moved]
-            j=0
+            rest=[p for p in ordered if p['n'] not in moved]; j=0
             for i in range(len(slots)):
-              if slots[i] is None:
-                slots[i]=rest[j];j+=1
+              if slots[i] is None: slots[i]=rest[j];j+=1
             for i,p in enumerate(slots,1):p[field]=i
 
           rm=ov.get('rankMoves',{})
           apply('o',rm.get('overall',{})); apply('tr',rm.get('trueValue',{}))
-          if sorted(p['o'] for p in P)!=list(range(1,163)): raise SystemExit('Overall ranks are not unique 1-162')
-          if sorted(p['tr'] for p in P)!=list(range(1,163)): raise SystemExit('Player Quality ranks are not unique 1-162')
+          if sorted(p['o'] for p in P)!=list(range(1,167)): raise SystemExit('Overall ranks are not unique 1-166')
+          if sorted(p['tr'] for p in P)!=list(range(1,167)): raise SystemExit('Player Quality ranks are not unique 1-166')
 
           pos_counts=defaultdict(int)
           for p in P: pos_counts[p['p']]+=1
-          expected={'QB','RB','WR','TE'}
-          if set(pos_counts)!=expected: raise SystemExit(f'Unexpected positions: {dict(pos_counts)}')
+          if set(pos_counts)!={'QB','RB','WR','TE'}: raise SystemExit(f'Unexpected positions: {dict(pos_counts)}')
 
           html=Path('index-backup.html').read_text()
-          if 'Array.from({length:13}' not in html: raise SystemExit('Runtime loader is not configured for 13 shards')
+          if 'Array.from({length:14}' not in html: raise SystemExit('Runtime loader is not configured for 14 shards')
           if 'Player Quality Rank' not in html: raise SystemExit('Player Quality Rank label missing')
           if 'Expected Fantasy Production' not in html: raise SystemExit('Projection comparison UI missing')
+          if 'runtime-rank-movement-context-2026.js' not in html: raise SystemExit('Rank movement runtime is not mounted')
 
-          checks={n:{k:by[n].get(k) for k in ['p','o','tr','a','st','px','s7']} for n in ['Ashton Jeanty','TreVeyon Henderson','Makai Lemon','Christian McCaffrey','DeVonta Smith','George Kittle']}
+          movement=json.loads(Path('rankMovement2026.json').read_text())
+          if movement.get('active_players')!=166: raise SystemExit('Rank movement context is not built against all 166 players')
+
           qa={
-            'updated':'2026-08-24',
-            'model':'single 162-player active model',
-            'passed':True,
-            'active_players':len(P),
-            'unique_players':len(set(names)),
-            'player_shards':13,
-            'positions':dict(pos_counts),
-            'missing_required':[],
-            'duplicate_names':[],
-            'missing_override_players':[],
+            'updated':'2026-08-31','model':'single 166-player active model','passed':True,
+            'active_players':len(P),'unique_players':len(set(names)),'player_shards':14,
+            'positions':dict(pos_counts),'missing_required':[],'duplicate_names':[],'missing_override_players':[],
             'overall_rank_range':[min(p['o'] for p in P),max(p['o'] for p in P)],
             'player_quality_rank_range':[min(p['tr'] for p in P),max(p['tr'] for p in P)],
-            'runtime_checks':{
-              'loader_13_shards':True,
-              'player_quality_label':True,
-              'projection_comparison_present':True,
-              'cache_bust':'20260824-1920'
-            },
-            'material_updates':checks
+            'runtime_checks':{'loader_14_shards':True,'player_quality_label':True,'projection_comparison_present':True,'rank_movement_context_present':True,'season_phase_contract_present':True,'cache_bust':stamp if False else '20260831-166-phase'},
+            'admissions':{n:{k:by[n].get(k) for k in ['p','o','tr','a','st','px','s7','mp']} for n in ['Kaleb Johnson','Corey Kiner','Tank Dell','Jonnu Smith']}
           }
           Path('final-cross-board-qa-2026-08-24.json').write_text(json.dumps(qa,indent=2,ensure_ascii=False)+'\n')
 
           a=Path('comparison-sync-162-audit.json')
-          old=json.loads(a.read_text())
-          old['updated']='2026-08-24'
-          old['active_players']=162
-          old['unique_normalized']=162
-          old['missing_required']=[]
-          old['alias_duplicates']=[]
-          old['runtime']={'cross_board_qa_passed':True,'player_loader_shards':13,'active_players':162,'cache_bust':'20260824-1920'}
+          old=json.loads(a.read_text()); old['updated']='2026-08-31'; old['active_players']=166; old['unique_normalized']=166
+          old['missing_required']=[]; old['alias_duplicates']=[]
+          old['runtime']={'cross_board_qa_passed':True,'player_loader_shards':14,'active_players':166,'rank_movement_context':True,'season_phase_contract':True,'cache_bust':'20260831-166-phase'}
           a.write_text(json.dumps(old,indent=2,ensure_ascii=False)+'\n')
           PY
       - name: Validate JavaScript syntax
         run: |
+          node --check runtime-rank-movement-context-2026.js
+          node --check scripts/build-rank-movement-context.mjs
+          node --check scripts/validate-season-phase-transition.mjs
           python - <<'PY'
           from pathlib import Path
           import re
-          s=Path('index-backup.html').read_text()
-          scripts=re.findall(r'<script>([\s\S]*?)</script>',s)
+          s=Path('index-backup.html').read_text(); scripts=re.findall(r'<script>([\s\S]*?)</script>',s)
           Path('/tmp/app.js').write_text(scripts[-1])
           PY
           node --check /tmp/app.js
-      - name: Commit final 162-player QA sync
+      - name: Commit final 166-player QA and context sync
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add injuryOverrides2026.json index.html index-backup.html comparison-sync-162-audit.json final-cross-board-qa-2026-08-24.json
-          git commit -m "Finalize single 162-player board and pass cross-board QA"
+          git add injuryOverrides2026.json index.html index-backup.html rankMovement2026.json comparison-sync-162-audit.json final-cross-board-qa-2026-08-24.json guardrails/season-phase-transition-report.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish 166-player rank movement and regular-season phase context"
           git push

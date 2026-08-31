@@ -1,8 +1,10 @@
 import fs from 'node:fs';
 
+const universeCfg=JSON.parse(fs.readFileSync('guardrails/guardrails-config.json','utf8'));
+const expectedPlayerCount=Number(universeCfg.authoritative_player_count);
 const shardFiles=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
 const players=shardFiles.flatMap(f=>JSON.parse(fs.readFileSync(f,'utf8')));
-if(players.length!==162) throw new Error(`Expected 162 active players; found ${players.length}`);
+if(players.length!==expectedPlayerCount) throw new Error(`Expected ${expectedPlayerCount} active players; found ${players.length}`);
 const posByName=Object.fromEntries(players.map(p=>[p.n,p.p]));
 const histDoc=JSON.parse(fs.readFileSync('historicalStats2026.json','utf8'));
 const hist=histDoc.players||{};
@@ -95,6 +97,7 @@ const best=testRows.map(r=>({...r,baseline_abs_error:Math.abs(r.baseline-r.y),ba
 
 const report={
   generated_at:new Date().toISOString(),step:'STEP_3B_BAYESIAN_WALKFORWARD_PHASE1',status:'SHADOW_ONLY',live_weight:0,live_projection_movement:0,live_rank_movement:0,
+  active_player_count:players.length,authoritative_player_count:expectedPlayerCount,
   hypothesis:'Empirical-Bayes shrinkage of player history toward a position prior can improve held-out next-season PPR-per-game prediction versus player-history-only forecasting.',
   leakage_controls:{training_target:2024,holdout_target:2025,prior_rows_must_precede_target_season:true,sportsbook_used:false,adp_used:false,current_2026_outcomes_used:false},
   candidate_formula:'posterior_mean = (prior_games * player_history_mean + k * position_prior_mean) / (prior_games + k)',
@@ -108,4 +111,4 @@ const report={
 };
 fs.mkdirSync('guardrails',{recursive:true});
 fs.writeFileSync('guardrails/step3b-bayesian-walkforward-backtest.json',JSON.stringify(report,null,2)+'\n');
-console.log(JSON.stringify({conclusion:phaseConclusion,selectedK,trainN:train.length,testN:testRows.length,baseline,bayes,maeImprovementPct,rmseImprovementPct,rankDelta},null,2));
+console.log(JSON.stringify({conclusion:phaseConclusion,activePlayerCount:players.length,authoritativePlayerCount:expectedPlayerCount,selectedK,trainN:train.length,testN:testRows.length,baseline,bayes,maeImprovementPct,rmseImprovementPct,rankDelta},null,2));

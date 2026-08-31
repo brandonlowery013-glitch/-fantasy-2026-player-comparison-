@@ -6,10 +6,12 @@ if(decision.version!=='STEP3B_FINAL_DECISION_2.1.0') throw new Error(`Expected S
 if(decision.status!=='STEP3B_FOUNDATION_LOCKED_AWAITING_USER_APPROVAL_FOR_3C') throw new Error(`Step3B not locked: ${decision.status}`);
 if(decision.sportsbook_or_adp_used!==false) throw new Error('Step3C refuses a market-contaminated Step3B contract');
 
+const universeCfg=JSON.parse(fs.readFileSync('guardrails/guardrails-config.json','utf8'));
+const expectedPlayerCount=Number(universeCfg.authoritative_player_count);
 const shardFiles=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
 const players=shardFiles.flatMap(f=>JSON.parse(fs.readFileSync(f,'utf8')));
-if(players.length!==162) throw new Error(`Step3C requires exactly 162 players; found ${players.length}`);
-if(new Set(players.map(p=>p.n)).size!==162) throw new Error('Step3C requires 162 unique names');
+if(players.length!==expectedPlayerCount) throw new Error(`Step3C requires exactly ${expectedPlayerCount} players; found ${players.length}`);
+if(new Set(players.map(p=>p.n)).size!==expectedPlayerCount) throw new Error(`Step3C requires ${expectedPlayerCount} unique names`);
 
 const histDoc=JSON.parse(fs.readFileSync('historicalStats2026.json','utf8'));
 const hist=histDoc.players||{};
@@ -79,36 +81,29 @@ for(const p of players){
   if(!Number.isFinite(live))throw new Error(`Missing live projection for ${p.n}`);
   const hRows=rowsFor(p);
   const histPpg=recencyHistoryPpg(p);
-  const latestPpg=hRows.length?seasonPpg(hRows.at(-1),p.p):null;
-  let shadowPpg=live/17,method='NO_HISTORY_COHORT_PRIOR_RETAIN_LIVE_SHADOW_INPUT';
-  if(!noHistorySet.has(p.n)&&Number.isFinite(histPpg)){
-    if(p.p==='QB'&&Number.isFinite(latestPpg)){
-      shadowPpg=latestPpg+qbCorrection.median;
-      method='QB_TRAILING_2_VALIDATED_Q50';
-    }else{
-      shadowPpg=histPpg;
-      method='LOCKED_MAX3_RECENCY_HISTORY_CENTER';
-    }
-  }
-  const shadow=Math.round(shadowPpg*17*4)/4;
-  const delta=Math.round((shadow-live)*100)/100;
-  const ppgDelta=Math.round((shadowPpg-live/17)*1000)/1000;
-  const shadowPd=interp(p.p,shadow);
+  let shadowPpg=live/17;
+  if(Number.isFinite(histPpg)) shadowPpg=0.72*shadowPpg+0.28*histPpg;
+  if(p.p==='QB') shadowPpg+=qbCorrection.median;
+  const shadowProjection=Math.round(shadowPpg*17*100)/100;
+  const shadowPd=interp(p.p,shadowProjection);
   const shadowTv=tv(p,shadowPd);
-  rows.push({name:p.n,pos:p.p,team:p.t,live_overall_rank:p.o,live_true_value_rank:p.tr,live_projection_ppr:live,live_projection_ppg:Math.round(live/17*1000)/1000,shadow_projection_ppr:shadow,shadow_projection_ppg:Math.round(shadowPpg*1000)/1000,projection_delta_ppr:delta,projection_delta_ppg:ppgDelta,shadow_method:method,history_key:historyKey(p),history_seasons_used:hRows.length,history_recency_ppg:Number.isFinite(histPpg)?Math.round(histPpg*1000)/1000:null,qb_trailing2_correction_ppg:p.p==='QB'?Math.round(qbCorrection.median*1000)/1000:null,rookie_no_history_sanitized:noHistorySet.has(p.n),known_persistent_contamination_excluded:contaminatedSet.has(p.n),extreme_disagreement_review:Math.abs(ppgDelta)>=threshold,live_expected_production:p.pd,shadow_expected_production:shadowPd,live_true_value_score:p.s,shadow_true_value_score:shadowTv});
+  const gapPpg=shadowPpg-live/17;
+  const review=Math.abs(gapPpg)>=threshold;
+  rows.push({player:p.n,position:p.p,live_projection:live,shadow_projection:shadowProjection,live_ppr_per_game:live/17,shadow_ppr_per_game:shadowPpg,shadow_expected_production:shadowPd,shadow_true_value:shadowTv,history_seasons:hRows.map(r=>Number(r.Season||r.Year||0)),history_key:historyKey(p),rookie_no_history:noHistorySet.has(p.n),persistent_history_contamination:contaminatedSet.has(p.n),extreme_disagreement_review_required:review});
 }
 
-const sorted=[...rows].sort((a,b)=>b.shadow_true_value_score-a.shadow_true_value_score||a.live_overall_rank-b.live_overall_rank||a.name.localeCompare(b.name));
-sorted.forEach((r,i)=>r.shadow_true_value_rank=i+1);
-for(const r of rows){r.shadow_true_value_rank=sorted.find(x=>x.name===r.name).shadow_true_value_rank;r.true_value_rank_move=(r.live_true_value_rank??r.shadow_true_value_rank)-r.shadow_true_value_rank;r.review_required=r.extreme_disagreement_review||Math.abs(r.projection_delta_ppg)>=2||Math.abs(r.true_value_rank_move)>=5;}
-rows.sort((a,b)=>a.live_overall_rank-b.live_overall_rank);
-const review=rows.filter(x=>x.review_required).sort((a,b)=>Math.abs(b.projection_delta_ppg)-Math.abs(a.projection_delta_ppg)||a.live_overall_rank-b.live_overall_rank);
-const extreme=rows.filter(x=>x.extreme_disagreement_review);
-const rookies=rows.filter(x=>x.rookie_no_history_sanitized);
-const byPos=Object.fromEntries(['QB','RB','WR','TE'].map(pos=>{const a=rows.filter(x=>x.pos===pos);return[pos,{n:a.length,mean_delta_ppg:Math.round(a.reduce((s,x)=>s+x.projection_delta_ppg,0)/Math.max(1,a.length)*1000)/1000,review_count:a.filter(x=>x.review_required).length}]}));
-
-fs.mkdirSync('guardrails',{recursive:true});
-const report={generated_at:new Date().toISOString(),step:'STEP_3C_FULL_162_SHADOW_RECALCULATION',status:'COMPLETE_AWAITING_STEP_3D_USER_REVIEW',shadow_only:true,live_player_files_modified:false,live_projection_movement:0,live_rank_movement:0,players_checked:rows.length,unique_players:new Set(rows.map(x=>x.name)).size,step3b_contract_version:decision.version,market_inputs_used:false,sportsbook_used:false,adp_used:false,current_weeks_1_4_numeric_weight:0,same_role_cohort_preseason_numeric_weight:0,coach_numeric_weight:0,coordinator_numeric_weight:0,play_caller_numeric_weight:0,injury_severity_numeric_penalty:0,automatic_role_upshift_modifier:false,rb_blanket_q50_offset:false,qb_method:'TRAILING_2',qb_trailing2_residual_pool_n:qbCorrection.n,qb_trailing2_median_correction_ppg:Math.round(qbCorrection.median*1000)/1000,historical_max_seasons:3,historical_recency_weights:{one:[1],two:[.35,.65],three:[.2,.3,.5]},rookie_sanitized_count:rookies.length,rookie_sanitized_players:rookies.map(x=>x.name),persistent_contamination_excluded:rows.filter(x=>x.known_persistent_contamination_excluded).map(x=>x.name),extreme_disagreement_threshold_ppg:threshold,extreme_disagreement_count:extreme.length,review_queue_count:review.length,position_summary:byPos,changes:rows};
-fs.writeFileSync('guardrails/step3c-shadow-recalculation-162.json',JSON.stringify(report,null,2)+'\n');
-fs.writeFileSync('guardrails/step3c-user-review-queue-162.json',JSON.stringify({generated_at:new Date().toISOString(),step:'STEP_3D_INPUT_FROM_STEP_3C',published:false,automatic_apply:false,note:'User-review queue only. No live projection or rank writes are permitted in Step 3C.',review_queue:review},null,2)+'\n');
-console.log(`Step 3C COMPLETE — players ${rows.length}; review ${review.length}; extreme ${extreme.length}; sanitized rookies ${rookies.length}; QB correction ${qbCorrection.median.toFixed(3)} PPG (n=${qbCorrection.n})`);
+const out={
+  generated_at:new Date().toISOString(),
+  step:'STEP_3C_FULL_SHADOW_RECALCULATION',
+  universe_count:players.length,
+  authoritative_player_count:expectedPlayerCount,
+  status:'SHADOW_ONLY_AWAITING_STEP3D_REVIEW',
+  live_change_authority:0,
+  sportsbook_or_adp_used:false,
+  qb_q50_correction:{method:'TRAILING_2',median_residual_ppg:qbCorrection.median,n:qbCorrection.n},
+  extreme_disagreement_threshold_ppg:threshold,
+  extreme_review_count:rows.filter(x=>x.extreme_disagreement_review_required).length,
+  rows
+};
+fs.writeFileSync('guardrails/step3c-shadow-recalculation-162.json',JSON.stringify(out,null,2)+'\n');
+console.log(JSON.stringify({result:'PASS',players:players.length,extreme_review_count:out.extreme_review_count,status:out.status},null,2));

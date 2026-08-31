@@ -15,6 +15,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Validate September 8 draft-to-regular-season phase contract
+        run: node scripts/validate-season-phase-transition.mjs
       - name: Validate Week 1 live state transitions
         run: node scripts/validate-step27-week1-state-transition.mjs
       - name: Revalidate pipeline health states
@@ -31,7 +33,9 @@ jobs:
         with:
           name: step27-week1-state-transition-audit
           path: |
+            guardrails/season-phase-transition-report.json
             guardrails/step27-week1-state-transition-report.json
+            guardrails/step27-weekly-state-transition-report.json
             guardrails/weekly-pipeline-health-report.json
             guardrails/production-readiness-dry-run-report.json
           if-no-files-found: warn

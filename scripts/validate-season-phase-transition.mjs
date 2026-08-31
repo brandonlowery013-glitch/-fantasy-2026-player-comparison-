@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+const cfg=JSON.parse(fs.readFileSync('data/sources/season-phase-2026.json','utf8'));
+const blocked=[];
+if(cfg.season!==2026)blocked.push('season must be 2026');
+if(cfg.timezone!=='America/Indiana/Indianapolis')blocked.push('timezone must match draft-period operating timezone');
+if(cfg.draft_period_ends_at!=='2026-09-08T23:59:59-04:00')blocked.push('draft period must end after September 8');
+if(cfg.regular_season_mode_starts_at!=='2026-09-09T00:00:00-04:00')blocked.push('regular-season mode must begin September 9');
+const regular=new Set(cfg.regular_season_mode?.promote||[]);
+for(const k of ['weekly_projection','actual_usage','snaps_routes_targets_touches','availability','rank_movement','news_context','waiver_roster_value'])if(!regular.has(k))blocked.push(`regular-season mode missing ${k}`);
+const de=new Set(cfg.regular_season_mode?.deemphasize_but_preserve||[]);
+for(const k of ['current_adp','preferred_draft_range','draft_round'])if(!de.has(k))blocked.push(`post-draft de-emphasis missing ${k}`);
+if(cfg.rules?.rank_arrow_requires_actual_saved_rank_change!==true)blocked.push('rank arrows must require an actual saved rank change');
+if(cfg.rules?.news_without_rank_change_shows_news_badge_only!==true)blocked.push('HOLD news must not create a false arrow');
+const result={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',season:2026,draft_period_ends_at:cfg.draft_period_ends_at,regular_season_mode_starts_at:cfg.regular_season_mode_starts_at,blocked};
+fs.mkdirSync('guardrails',{recursive:true});
+fs.writeFileSync('guardrails/season-phase-transition-report.json',JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify(result,null,2));
+if(blocked.length)process.exit(1);

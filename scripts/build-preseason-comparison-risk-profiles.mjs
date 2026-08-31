@@ -5,6 +5,9 @@ const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const contract=read('data/sources/preseason-comparison-risk-2026.json');
 const weekly=read('data/sources/risk-profile-2026.json');
+const sourceOfTruth=read('MODEL_SOURCE_OF_TRUTH.json');
+const authoritativePlayerCount=Number(sourceOfTruth.active_player_model);
+const runtimePlayerShards=Number(sourceOfTruth.runtime_player_shards);
 fs.mkdirSync(path.join(root,'guardrails'),{recursive:true});
 fs.mkdirSync(path.join(root,'data/probability/generated'),{recursive:true});
 
@@ -14,8 +17,10 @@ const round=(x,d=6)=>Number(Number(x).toFixed(d));
 const bands=weekly.risk_bands;
 const bandFor=s=>(bands.find(b=>s>=Number(b.min)&&s<Number(b.max_exclusive))||bands.at(-1)).label;
 
+if(!Number.isInteger(authoritativePlayerCount)||authoritativePlayerCount<=0)throw new Error(`invalid authoritative player count ${sourceOfTruth.active_player_model}`);
+if(!Number.isInteger(runtimePlayerShards)||runtimePlayerShards<=0)throw new Error(`invalid runtime shard count ${sourceOfTruth.runtime_player_shards}`);
 const players=[];
-for(let i=0;i<13;i++){
+for(let i=0;i<runtimePlayerShards;i++){
   const shard=`players${i}.json`;
   if(!fs.existsSync(path.join(root,shard))) throw new Error(`missing runtime shard ${shard}`);
   players.push(...read(shard));
@@ -45,15 +50,15 @@ for(const p of players){
   if(Math.abs(mutatedRisk-risk)>1e-12) mutationChanges.push(p.n);
 }
 
-if(players.length!==162) blocked.push(`expected 162 players, found ${players.length}`);
-if(seen.size!==162) blocked.push(`expected 162 unique players, found ${seen.size}`);
-if(profiles.length!==162) blocked.push(`expected 162 risk profiles, built ${profiles.length}`);
+if(players.length!==authoritativePlayerCount) blocked.push(`expected ${authoritativePlayerCount} players, found ${players.length}`);
+if(seen.size!==authoritativePlayerCount) blocked.push(`expected ${authoritativePlayerCount} unique players, found ${seen.size}`);
+if(profiles.length!==authoritativePlayerCount) blocked.push(`expected ${authoritativePlayerCount} risk profiles, built ${profiles.length}`);
 if(mutationChanges.length) blocked.push(`${mutationChanges.length} risk scores changed after market/status mutation`);
 
 const scores=profiles.map(x=>x.risk_score);
 const counts=Object.fromEntries(bands.map(b=>[b.label,profiles.filter(x=>x.risk_band===b.label).length]));
-const output={schema_version:'1.0.0',season:2026,status:'PRODUCTION_READY_PRESEASON',player_count:profiles.length,step_4_weekly_replacement:false,resolution_rule:contract.relationship_to_step_4.production_resolution_rule,profiles};
-const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',player_count:players.length,unique_player_count:seen.size,profile_count:profiles.length,min_risk:round(Math.min(...scores)),max_risk:round(Math.max(...scores)),mean_risk:round(scores.reduce((s,x)=>s+x,0)/scores.length),risk_band_counts:counts,market_and_status_mutation_changes:mutationChanges.length,step_4_weekly_replacement:false,blocked};
+const output={schema_version:'1.0.1',season:2026,status:'PRODUCTION_READY_PRESEASON',authoritative_player_count:authoritativePlayerCount,runtime_player_shards:runtimePlayerShards,player_count:profiles.length,step_4_weekly_replacement:false,resolution_rule:contract.relationship_to_step_4.production_resolution_rule,profiles};
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',authoritative_player_count:authoritativePlayerCount,runtime_player_shards:runtimePlayerShards,player_count:players.length,unique_player_count:seen.size,profile_count:profiles.length,min_risk:scores.length?round(Math.min(...scores)):null,max_risk:scores.length?round(Math.max(...scores)):null,mean_risk:scores.length?round(scores.reduce((s,x)=>s+x,0)/scores.length):null,risk_band_counts:counts,market_and_status_mutation_changes:mutationChanges.length,step_4_weekly_replacement:false,blocked};
 fs.writeFileSync(path.join(root,'data/probability/generated/preseason-comparison-risk-profiles-2026.json'),JSON.stringify(output,null,2)+'\n');
 fs.writeFileSync(path.join(root,'guardrails/preseason-comparison-risk-profile-report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));
