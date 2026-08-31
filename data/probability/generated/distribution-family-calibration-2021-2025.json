@@ -1,6 +1,6 @@
 {
-  "schema_version": "1.0.0",
-  "generated_at": "2026-08-31T05:19:48.741Z",
+  "schema_version": "1.0.1",
+  "generated_at": "2026-08-31T16:53:25.626Z",
   "mode": "SHADOW_ONLY",
   "actionable": false,
   "history_window": [
@@ -18,6 +18,7 @@
     2025
   ],
   "sportsbook_inputs_used": false,
+  "authoritative_player_universe": 166,
   "selection_rule": "Choose distribution family by holdout calibration and predictive scoring, not visual fit alone. Prefer simpler families when performance is materially equivalent.",
   "selected_families": {
     "QB": {
@@ -1071,6 +1072,7 @@
     "Student-t degrees of freedom are selected only inside the tuning window.",
     "Negative-binomial and zero-inflated models use only prior football outcomes to estimate dispersion/zero inflation.",
     "Receptions conditional models use targets from the same observed player-game only for distribution-family diagnostic scoring; this is not yet a deployable pregame receptions model because future targets must themselves be forecast.",
-    "Sportsbook lines and prices are excluded from fitting and selection."
+    "Sportsbook lines and prices are excluded from fitting and selection.",
+    "Live-universe integrity is checked against the authoritative guardrail count and MODEL_SOURCE_OF_TRUTH; an undeclared or unsynchronized universe change still blocks calibration."
   ]
 }
