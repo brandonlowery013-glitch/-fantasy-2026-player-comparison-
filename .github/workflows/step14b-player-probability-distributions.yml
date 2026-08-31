@@ -19,6 +19,7 @@ concurrency:
 jobs:
   build-player-distributions:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,6 +28,45 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Build historical player reference population
+        run: node scripts/build-historical-reference-population.mjs
+      - name: Build observed pass-play participation history
+        run: node scripts/backfill-historical-route-participation.mjs
+      - name: Build role cohort priors
+        run: node scripts/build-role-cohort-priors.mjs
+      - name: Build rookie no-history priors
+        run: node scripts/build-rookie-no-history-priors.mjs
+      - name: Build historical uncertainty priors
+        run: node scripts/build-historical-uncertainty-calibration.mjs
+      - name: Build historical projection-error model
+        run: node scripts/build-historical-projection-error-model.mjs
+      - name: Calibrate player stat distribution families
+        run: node scripts/calibrate-distribution-families.mjs
+      - name: Build catch-rate priors
+        run: node scripts/build-catch-rate-priors.mjs
+      - name: Validate historical probability prerequisites
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const files=[
+            'historical-reference-population-2021-2025.json',
+            'historical-pass-play-participation-2021-2025.json',
+            'role-cohort-priors-2021-2025.json',
+            'rookie-no-history-priors-2016-2025.json',
+            'historical-uncertainty-priors-2021-2025.json',
+            'historical-projection-error-model-2021-2025.json',
+            'distribution-family-calibration-2021-2025.json',
+            'catch-rate-priors-2021-2025.json'
+          ];
+          for(const f of files){
+            const p=`data/probability/generated/${f}`;
+            if(!fs.existsSync(p)) throw new Error(`missing prerequisite ${p}`);
+            const x=JSON.parse(fs.readFileSync(p,'utf8'));
+            if(x.sportsbook_inputs_used!==false) throw new Error(`sportsbook contamination in ${f}`);
+          }
+          console.log(JSON.stringify({result:'PASS',prerequisites:files.length,sportsbook_inputs_used:false},null,2));
+          NODE
       - name: Resolve Week 1 football source schedule
         run: node scripts/ingest-weekly-football-data.mjs
       - name: Collect current football-only player context
@@ -46,16 +86,26 @@ jobs:
           const fs=require('fs');
           const p='data/probability/generated/weekly-probability-distributions-2026.json';
           const x=JSON.parse(fs.readFileSync(p,'utf8'));
+          const q=JSON.parse(fs.readFileSync('guardrails/weekly-probability-engine-report.json','utf8'));
           if(x.sportsbook_inputs_used!==false) throw new Error('sportsbook contamination');
           if(Number(x.week)!==1) throw new Error(`expected Week 1, got ${x.week}`);
           const players=Object.keys(x.distributions||{});
           if(!players.length) throw new Error('no player distributions generated');
+          if(q.result!=='PASS') throw new Error(`probability engine guardrail ${q.result}`);
           console.log(JSON.stringify({result:'PASS',week:x.week,players:players.length,mode:x.mode},null,2));
           NODE
       - name: Persist generated player-probability state to guarded branch
         shell: bash
         run: |
           paths=(
+            data/probability/generated/historical-reference-population-2021-2025.json
+            data/probability/generated/historical-pass-play-participation-2021-2025.json
+            data/probability/generated/role-cohort-priors-2021-2025.json
+            data/probability/generated/rookie-no-history-priors-2016-2025.json
+            data/probability/generated/historical-uncertainty-priors-2021-2025.json
+            data/probability/generated/historical-projection-error-model-2021-2025.json
+            data/probability/generated/distribution-family-calibration-2021-2025.json
+            data/probability/generated/catch-rate-priors-2021-2025.json
             data/ingestion/weekly-football-source-snapshots-2026.json
             data/probability/weekly-football-context-raw-2026.json
             data/probability/weekly-football-context-inputs-2026.json
