@@ -2,7 +2,10 @@ import fs from 'node:fs';
 
 const shardFiles=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
 const players=shardFiles.flatMap(f=>JSON.parse(fs.readFileSync(f,'utf8')));
-if(players.length!==162||new Set(players.map(p=>p.n)).size!==162) throw new Error(`Step 3F requires 162 unique players; found ${players.length}/${new Set(players.map(p=>p.n)).size}`);
+const universeCfg=JSON.parse(fs.readFileSync('guardrails/guardrails-config.json','utf8'));
+const expectedPlayerCount=Number(universeCfg.authoritative_player_count);
+const uniquePlayerCount=new Set(players.map(p=>p.n)).size;
+if(players.length!==expectedPlayerCount||uniquePlayerCount!==expectedPlayerCount) throw new Error(`Step 3F requires ${expectedPlayerCount} unique players; found ${players.length}/${uniquePlayerCount}`);
 const byName=new Map(players.map(p=>[p.n,p]));
 const contract=JSON.parse(fs.readFileSync('data/sources/step3f-daily-evidence-model-2026.json','utf8'));
 const overrides=JSON.parse(fs.readFileSync('injuryOverrides2026.json','utf8'));
@@ -49,10 +52,10 @@ const evidenceNames=new Set(records.map(r=>r.player));
 const universe=players.map(p=>({player:p.n,pos:p.p,team:p.t,has_current_evidence:evidenceNames.has(p.n),live_projection:Number.isFinite(Number(p.mp))?Number(p.mp):null}));
 const categoryCounts={};const completenessCounts={};const sourceCounts={};for(const r of records){categoryCounts[r.evidence_category]=(categoryCounts[r.evidence_category]||0)+1;completenessCounts[r.evidence_completeness]=(completenessCounts[r.evidence_completeness]||0)+1;sourceCounts[r.evidence_source_kind]=(sourceCounts[r.evidence_source_kind]||0)+1;}
 const report={generated_at:new Date().toISOString(),step:'STEP_3F_DAILY_EVIDENCE_TO_MODEL_AUTOMATION',status:'READY_FOR_REVIEW',contract_version:contract.version,
-  players_checked:162,evidence_records:records.length,players_with_evidence:evidenceNames.size,unknown_players:[],sportsbook_or_adp_used:false,market_inputs_used:false,
+  players_checked:expectedPlayerCount,authoritative_player_count:expectedPlayerCount,evidence_records:records.length,players_with_evidence:evidenceNames.size,unknown_players:[],sportsbook_or_adp_used:false,market_inputs_used:false,
   source_feed_status:{current_overrides:{updated:overrides.updated??null,records:Object.keys(overrides.players||{}).length},weekly_snapshots:{status:snapshots.status??null,records:(snapshots.snapshots||[]).length},weekly_raw:{status:rawWeekly.status??null,week:rawWeekly.week??null,players:Object.keys(rawWeekly.players||{}).length}},
   automatic_live_write:false,approval_required:true,live_projection_movement:0,live_rank_movement:0,
   numeric_authority_policy:'All currently unvalidated preseason injury severity, role-upshift, coach identity and generic-news effects remain zero. Source-provided stat adjustments are preserved as evidence only and receive zero automatic authority here.',
   category_counts:categoryCounts,evidence_completeness_counts:completenessCounts,source_counts:sourceCounts,review_queue:records,player_universe:universe};
 fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/step3f-daily-evidence-queue.json',JSON.stringify(report,null,2)+'\n');
-console.log(JSON.stringify({status:report.status,players:162,evidence:records.length,players_with_evidence:evidenceNames.size,sources:sourceCounts,categories:categoryCounts,feed_status:report.source_feed_status,live_movement:0},null,2));
+console.log(JSON.stringify({status:report.status,players:expectedPlayerCount,evidence:records.length,players_with_evidence:evidenceNames.size,sources:sourceCounts,categories:categoryCounts,feed_status:report.source_feed_status,live_movement:0},null,2));
