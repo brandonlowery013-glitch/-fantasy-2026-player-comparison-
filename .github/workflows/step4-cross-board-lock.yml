@@ -1,0 +1,38 @@
+name: Step 4 Cross-Board Verification Lock
+
+on:
+  pull_request:
+    paths:
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'current162patch-2026-08-24.json'
+      - 'data/market/draft-edge-opportunity-screen-166.json'
+      - 'data/market/market-value-board-2026.json'
+      - 'data/sources/season-phase-2026.json'
+      - 'scripts/build-market-value-board-2026.mjs'
+      - 'scripts/validate-cross-board-lock-2026.mjs'
+      - '.github/workflows/step4-cross-board-lock.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'current162patch-2026-08-24.json'
+      - 'data/market/draft-edge-opportunity-screen-166.json'
+      - 'data/market/market-value-board-2026.json'
+      - 'data/sources/season-phase-2026.json'
+      - 'scripts/build-market-value-board-2026.mjs'
+      - 'scripts/validate-cross-board-lock-2026.mjs'
+      - '.github/workflows/step4-cross-board-lock.yml'
+  workflow_dispatch:
+
+jobs:
+  cross-board-lock:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate 166-player cross-board lock
+        run: node scripts/validate-cross-board-lock-2026.mjs
