@@ -2,7 +2,26 @@ name: Step 14 Weekly Game Projections
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '20 11 * * *'
+  push:
+    branches:
+      - main
+    paths:
+      - 'data/calibration/weekly-event-schedule-2026.json'
+      - 'data/sources/weekly-game-projection-engine-2026.json'
+      - 'scripts/build-game-team-scoring-priors.mjs'
+      - 'scripts/build-weekly-game-projections.mjs'
+      - 'scripts/validate-weekly-game-projection-contract.mjs'
+      - '.github/workflows/step14-weekly-game-projections.yml'
   pull_request:
+    paths:
+      - 'data/calibration/weekly-event-schedule-2026.json'
+      - 'data/sources/weekly-game-projection-engine-2026.json'
+      - 'scripts/build-game-team-scoring-priors.mjs'
+      - 'scripts/build-weekly-game-projections.mjs'
+      - 'scripts/validate-weekly-game-projection-contract.mjs'
+      - '.github/workflows/step14-weekly-game-projections.yml'
 
 permissions:
   contents: write
@@ -23,9 +42,11 @@ jobs:
         run: node scripts/build-weekly-game-projections.mjs --self-test
       - name: Revalidate fair-market independence
         run: node scripts/validate-fair-market-probability-contract.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
 
-  manual-game-projections:
-    if: github.event_name == 'workflow_dispatch'
+  production-game-projections:
+    if: github.event_name != 'pull_request'
     needs: step14-game-projection-qa
     runs-on: ubuntu-latest
     concurrency:
@@ -35,6 +56,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -42,14 +64,21 @@ jobs:
         run: node scripts/build-game-team-scoring-priors.mjs
       - name: Build weekly NFL game projections
         run: node scripts/build-weekly-game-projections.mjs
-      - name: Commit updated football-only game projections
+      - name: Validate generated football-only projections
+        run: |
+          node scripts/validate-weekly-game-projection-contract.mjs
+          node scripts/run-guardrail-qa.mjs
+      - name: Publish validated output to protected production branch
         run: |
           if git diff --quiet -- data/probability/generated/game-team-scoring-priors-2023-2025.json data/probability/generated/weekly-game-projections-2026.json; then
             echo "No game projection changes"
             exit 0
           fi
+          branch="production/weekly-game-projections"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/probability/generated/game-team-scoring-priors-2023-2025.json data/probability/generated/weekly-game-projections-2026.json
-          git commit -m "Update weekly football-only game projections"
-          git push origin HEAD:main
+          git checkout -B "$branch"
+          git add data/probability/generated/game-team-scoring-priors-2023-2025.json data/probability/generated/weekly-game-projections-2026.json guardrails/game-team-scoring-priors-report.json guardrails/weekly-game-projection-report.json
+          git commit -m "Production: update weekly football-only projections"
+          git push origin HEAD:refs/heads/$branch --force
+          echo "Validated output published to $branch. Merge to main only through a guardrail-checked PR."
