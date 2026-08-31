@@ -3,6 +3,12 @@ name: Step 16 Player Prop Recommendations
 on:
   workflow_dispatch:
   pull_request:
+  push:
+    branches: [main]
+    paths:
+      - 'data/probability/generated/weekly-probability-distributions-2026.json'
+      - 'data/market/player-prop-market-snapshots-2026.json'
+      - '.github/workflows/step16-player-prop-recommendations.yml'
 
 permissions:
   contents: write
@@ -26,12 +32,12 @@ jobs:
       - name: Revalidate game recommendation thresholds
         run: node scripts/validate-game-market-recommendation-contract.mjs
 
-  manual-player-prop-recommendations:
-    if: github.event_name == 'workflow_dispatch'
+  build-player-prop-recommendations:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     needs: step16-player-prop-qa
     runs-on: ubuntu-latest
     concurrency:
-      group: weekly-production-orchestration
+      group: player-prop-recommendation-production
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
@@ -41,24 +47,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Normalize weekly football context
-        run: node scripts/normalize-weekly-football-context.mjs
-      - name: Build weekly player projections
-        run: node scripts/build-weekly-projection-generator.mjs
-      - name: Build exact weekly player distributions
+      - name: Validate current football distributions
         run: node scripts/build-weekly-probability-engine.mjs
       - name: Validate stored player prop snapshots
         run: node scripts/validate-player-prop-market-snapshots.mjs
       - name: Build player prop recommendations
         run: node scripts/build-player-prop-recommendations.mjs
-      - name: Commit recommendation refresh
+      - name: Persist recommendation state to guarded branch
         run: |
-          if git diff --quiet -- data/market/player-prop-recommendations-2026.json; then
+          BRANCH="production/player-prop-recs-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git add data/market/player-prop-recommendations-2026.json guardrails/player-prop-market-snapshot-report.json
+          if git diff --cached --quiet; then
             echo "No player prop recommendation changes"
             exit 0
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/market/player-prop-recommendations-2026.json
-          git commit -m "Refresh player prop recommendations"
-          git push origin HEAD:main
+          git commit -m "Production: refresh player prop recommendations"
+          git push origin "$BRANCH"
+          echo "production_branch=$BRANCH" >> "$GITHUB_STEP_SUMMARY"
