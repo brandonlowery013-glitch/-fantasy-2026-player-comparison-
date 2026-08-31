@@ -37,7 +37,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add players*.json index-backup.html lockedRanks2026.json injuryOverrides2026.json comparison-sync-162-audit.json .github/workflows/final-162-qa-publish.yml kaleb-johnson-163-onboarding-audit.json
+          git restore .github/workflows/final-162-qa-publish.yml
+          git add players*.json index-backup.html lockedRanks2026.json injuryOverrides2026.json comparison-sync-162-audit.json kaleb-johnson-163-onboarding-audit.json
           git diff --cached --quiet && exit 0
           git commit -m "Migrate Fantasy 2026 universe from 162 to 163"
           git push origin HEAD:model/add-kaleb-johnson-163
