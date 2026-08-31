@@ -1,0 +1,43 @@
+name: Onboard Kaleb Johnson and migrate universe to 163
+on:
+  push:
+    branches: [model/add-kaleb-johnson-163]
+    paths:
+      - 'players13.json'
+      - 'scripts/migrate-universe-162-to-163.mjs'
+      - '.github/workflows/onboard-kaleb-johnson-163.yml'
+permissions:
+  contents: write
+jobs:
+  migrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: model/add-kaleb-johnson-163
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run 162 to 163 migration and onboarding audits
+        run: node scripts/migrate-universe-162-to-163.mjs
+      - name: Validate generated player universe
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          let p=[]; for(let i=0;i<14;i++) p=p.concat(JSON.parse(fs.readFileSync(`players${i}.json`)));
+          if(p.length!==163) throw Error(`Expected 163 players, found ${p.length}`);
+          if(new Set(p.map(x=>x.n)).size!==163) throw Error('Duplicate player names');
+          const k=p.find(x=>x.n==='Kaleb Johnson'); if(!k) throw Error('Kaleb Johnson missing');
+          for(const f of ['pd','ce','r','e','a','rl','su','mp','m','cl','px','s7']) if(k[f]==null) throw Error(`Kaleb missing ${f}`);
+          for(const f of ['o','tr']) { const a=p.map(x=>x[f]).sort((a,b)=>a-b); a.forEach((v,i)=>{if(v!==i+1)throw Error(`${f} rank gap/collision at ${i+1}`)}); }
+          console.log(JSON.stringify({players:p.length,kaleb:{o:k.o,tr:k.tr,pr:k.pr,tp:k.tp,mp:k.mp,px:k.px}},null,2));
+          NODE
+      - name: Commit generated 163-player migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add players*.json index-backup.html lockedRanks2026.json injuryOverrides2026.json comparison-sync-162-audit.json .github/workflows/final-162-qa-publish.yml kaleb-johnson-163-onboarding-audit.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Migrate Fantasy 2026 universe from 162 to 163"
+          git push origin HEAD:model/add-kaleb-johnson-163
