@@ -4,6 +4,13 @@ on:
     branches: [main]
     paths:
       - '.trigger-final-162-qa-publish'
+      - 'players*.json'
+      - 'injuryOverrides2026.json'
+      - 'lockedRanks2026.json'
+      - 'data/sources/season-phase-2026.json'
+      - 'scripts/build-rank-movement-context.mjs'
+      - 'scripts/validate-season-phase-transition.mjs'
+      - 'runtime-rank-movement-context-2026.js'
   workflow_dispatch:
 permissions:
   contents: write
@@ -12,24 +19,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply current injury and recovery sync
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate season phase contract
+        run: node scripts/validate-season-phase-transition.mjs
+      - name: Build rank movement and news context from prior published state
+        run: |
+          git rev-parse HEAD^ >/dev/null
+          node scripts/build-rank-movement-context.mjs HEAD HEAD^
+      - name: Apply current injury, phase and UI sync
         run: |
           python - <<'PY'
           import json, re
           from pathlib import Path
           p=Path('injuryOverrides2026.json')
           d=json.loads(p.read_text())
-          # Preserve the current authoritative override content. This workflow is a
-          # cross-board QA/publish gate, not a place to replay stale injuries.
           d['updated']='2026-08-31'
           p.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\n')
 
-          stamp='20260831-166'
+          stamp='20260831-166-phase'
           ib=Path('index-backup.html')
           s=ib.read_text()
           s=re.sub(r'players\$\{i\}\.json\?v=[^`\"\']+',f'players${{i}}.json?v={stamp}',s)
           s=re.sub(r'injuryOverrides2026\.json\?v=[^\"\']+',f'injuryOverrides2026.json?v={stamp}',s)
           s=re.sub(r'market2026\.json\?v=[^\"\']+',f'market2026.json?v={stamp}',s)
+          movement='<script src="runtime-rank-movement-context-2026.js?v=20260908-phase"></script>'
+          if 'runtime-rank-movement-context-2026.js' not in s:
+            s=s.replace('</body>',movement+'\n</body>')
           ib.write_text(s)
           idx=Path('index.html')
           s=idx.read_text()
@@ -95,6 +114,10 @@ jobs:
           if 'Array.from({length:14}' not in html: raise SystemExit('Runtime loader is not configured for 14 shards')
           if 'Player Quality Rank' not in html: raise SystemExit('Player Quality Rank label missing')
           if 'Expected Fantasy Production' not in html: raise SystemExit('Projection comparison UI missing')
+          if 'runtime-rank-movement-context-2026.js' not in html: raise SystemExit('Rank movement runtime is not mounted')
+
+          movement=json.loads(Path('rankMovement2026.json').read_text())
+          if movement.get('active_players')!=166: raise SystemExit('Rank movement context is not built against all 166 players')
 
           qa={
             'updated':'2026-08-31','model':'single 166-player active model','passed':True,
@@ -102,7 +125,7 @@ jobs:
             'positions':dict(pos_counts),'missing_required':[],'duplicate_names':[],'missing_override_players':[],
             'overall_rank_range':[min(p['o'] for p in P),max(p['o'] for p in P)],
             'player_quality_rank_range':[min(p['tr'] for p in P),max(p['tr'] for p in P)],
-            'runtime_checks':{'loader_14_shards':True,'player_quality_label':True,'projection_comparison_present':True,'cache_bust':'20260831-166'},
+            'runtime_checks':{'loader_14_shards':True,'player_quality_label':True,'projection_comparison_present':True,'rank_movement_context_present':True,'season_phase_contract_present':True,'cache_bust':stamp if False else '20260831-166-phase'},
             'admissions':{n:{k:by[n].get(k) for k in ['p','o','tr','a','st','px','s7','mp']} for n in ['Kaleb Johnson','Corey Kiner','Tank Dell','Jonnu Smith']}
           }
           Path('final-cross-board-qa-2026-08-24.json').write_text(json.dumps(qa,indent=2,ensure_ascii=False)+'\n')
@@ -110,11 +133,14 @@ jobs:
           a=Path('comparison-sync-162-audit.json')
           old=json.loads(a.read_text()); old['updated']='2026-08-31'; old['active_players']=166; old['unique_normalized']=166
           old['missing_required']=[]; old['alias_duplicates']=[]
-          old['runtime']={'cross_board_qa_passed':True,'player_loader_shards':14,'active_players':166,'cache_bust':'20260831-166'}
+          old['runtime']={'cross_board_qa_passed':True,'player_loader_shards':14,'active_players':166,'rank_movement_context':True,'season_phase_contract':True,'cache_bust':'20260831-166-phase'}
           a.write_text(json.dumps(old,indent=2,ensure_ascii=False)+'\n')
           PY
       - name: Validate JavaScript syntax
         run: |
+          node --check runtime-rank-movement-context-2026.js
+          node --check scripts/build-rank-movement-context.mjs
+          node --check scripts/validate-season-phase-transition.mjs
           python - <<'PY'
           from pathlib import Path
           import re
@@ -122,11 +148,11 @@ jobs:
           Path('/tmp/app.js').write_text(scripts[-1])
           PY
           node --check /tmp/app.js
-      - name: Commit final 166-player QA sync
+      - name: Commit final 166-player QA and context sync
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add injuryOverrides2026.json index.html index-backup.html comparison-sync-162-audit.json final-cross-board-qa-2026-08-24.json
+          git add injuryOverrides2026.json index.html index-backup.html rankMovement2026.json comparison-sync-162-audit.json final-cross-board-qa-2026-08-24.json guardrails/season-phase-transition-report.json
           git diff --cached --quiet && exit 0
-          git commit -m "Finalize single 166-player board and pass cross-board QA"
+          git commit -m "Publish 166-player rank movement and regular-season phase context"
           git push
