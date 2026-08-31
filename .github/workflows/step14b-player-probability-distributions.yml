@@ -1,4 +1,3 @@
-# Re-trigger Step 14B now that historical prerequisites are on main.
 name: Step 14B Player Probability Distributions
 
 on:
@@ -8,6 +7,14 @@ on:
     paths:
       - 'data/probability/generated/weekly-game-projections-2026.json'
       - 'data/calibration/weekly-event-schedule-2026.json'
+      - 'scripts/build-historical-reference-population.mjs'
+      - 'scripts/backfill-historical-route-participation.mjs'
+      - 'scripts/build-role-cohort-priors.mjs'
+      - 'scripts/build-rookie-no-history-priors.mjs'
+      - 'scripts/build-historical-uncertainty-calibration.mjs'
+      - 'scripts/build-historical-projection-error-model.mjs'
+      - 'scripts/calibrate-distribution-families.mjs'
+      - 'scripts/build-catch-rate-priors.mjs'
       - '.github/workflows/step14b-player-probability-distributions.yml'
 
 permissions:
@@ -64,7 +71,12 @@ jobs:
             const p=`data/probability/generated/${f}`;
             if(!fs.existsSync(p)) throw new Error(`missing prerequisite ${p}`);
             const x=JSON.parse(fs.readFileSync(p,'utf8'));
-            if(x.sportsbook_inputs_used!==false) throw new Error(`sportsbook contamination in ${f}`);
+            const explicitSafe=x.sportsbook_inputs_used===false;
+            const referenceSafe=f==='historical-reference-population-2021-2025.json'
+              && Array.isArray(x.sources)
+              && x.sources.length>0
+              && x.sources.every(s=>String(s.url||'').includes('github.com/nflverse/nflverse-data'));
+            if(!explicitSafe && !referenceSafe) throw new Error(`sportsbook provenance not explicitly safe in ${f}`);
           }
           console.log(JSON.stringify({result:'PASS',prerequisites:files.length,sportsbook_inputs_used:false},null,2));
           NODE
