@@ -32,8 +32,6 @@ const oldPatch=(baseline.authoritative_files?.[patchFile])
   : {players:{}};
 const newPatch=fs.existsSync(path.join(root,patchFile))?read(patchFile):{players:{}};
 
-// Guardrail the effective runtime state, not the physical storage layer. A field copied
-// from a shard into the overlay is not drift if the effective value is unchanged.
 const applyOverlay=(rows,patch)=>rows.map(p=>({...p,...(patch.players?.[p.n]||{})}));
 const baselineEffective=applyOverlay(baselinePlayers,oldPatch);
 const currentEffective=applyOverlay(currentPlayers,newPatch);
@@ -51,9 +49,42 @@ for(const d of validUniverseDeclarations){
   if(d.to_count!=null&&d.to_count!==currentEffective.length) populationDeclarationErrors.push({player:d.player,error:'TO_COUNT_MISMATCH',declared:d.to_count,actual:currentEffective.length});
 }
 if(cfg.authoritative_player_count!==currentEffective.length) populationDeclarationErrors.push({error:'CONFIG_CURRENT_COUNT_MISMATCH',declared:cfg.authoritative_player_count,actual:currentEffective.length});
+
+// A declared ADD may deterministically shift only ranking coordinates. Normalize those
+// shifts back out before comparing existing-player core state to the frozen baseline.
+// Any projection/score change, or any rank movement not exactly explained by insertion,
+// still requires the normal player-level change manifest.
+const admittedPlayers=added.filter(n=>declaredAdds.has(n)).map(n=>newMap.get(n)).filter(Boolean);
+const numericRankFields={o:'o',tr:'tr'};
+const positionalRankFields={pr:{rank:'o',pos:'p'},tp:{rank:'tr',pos:'p'}};
+const normalizeAdmissionReflow=(player,field,value)=>{
+  if(value==null) return value;
+  if(numericRankFields[field]){
+    let v=Number(value);
+    for(const a of admittedPlayers){
+      const insertion=Number(a[numericRankFields[field]]);
+      if(Number.isFinite(insertion)&&v>insertion) v-=1;
+    }
+    return v;
+  }
+  const spec=positionalRankFields[field];
+  if(spec&&typeof value==='string'){
+    const m=value.match(/^([A-Z]+)(\d+)$/); if(!m) return value;
+    let v=Number(m[2]);
+    for(const a of admittedPlayers){
+      if(a[spec.pos]!==player[spec.pos]) continue;
+      const insertionLabel=a[field];
+      const im=typeof insertionLabel==='string'?insertionLabel.match(/^([A-Z]+)(\d+)$/):null;
+      if(im&&v>Number(im[2])) v-=1;
+    }
+    return `${m[1]}${v}`;
+  }
+  return value;
+};
+
 const coreChanges=[];
 const unauthorized=[];
-
+const admissionReflow=[];
 const declarationCovers=(name,fields)=>{
   const d=declared.get(name);
   const declaredFields=new Set(Array.isArray(d?.changed_fields)?d.changed_fields:[]);
@@ -68,8 +99,11 @@ for(const [name,p] of newMap){
   const old=oldMap.get(name); if(!old) continue;
   const changed=[];
   for(const f of coreFields){
-    const a=old[f]??null,b=p[f]??null;
-    if(JSON.stringify(a)!==JSON.stringify(b)) changed.push({field:f,before:a,after:b});
+    const a=old[f]??null;
+    const raw=p[f]??null;
+    const normalized=normalizeAdmissionReflow(p,f,raw);
+    if(JSON.stringify(raw)!==JSON.stringify(normalized)) admissionReflow.push({player:name,field:f,current:raw,pre_admission_coordinate:normalized});
+    if(JSON.stringify(a)!==JSON.stringify(normalized)) changed.push({field:f,before:a,after:normalized,current_after_admission:raw});
   }
   if(changed.length){
     const item={player:name,changed_fields:changed};
@@ -78,8 +112,6 @@ for(const [name,p] of newMap){
   }
 }
 
-// Preserve a storage-layer audit for visibility, but do not block on values that merely
-// duplicate shard state. Only effective protected-field changes above require declarations.
 const patchStorageChanges=[];
 const oldPatchPlayers=oldPatch.players||{};
 const newPatchPlayers=newPatch.players||{};
@@ -135,7 +167,7 @@ const report={
   baseline_id:baseline.baseline_id,
   baseline_commit:baseline.baseline_commit,
   current_head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),
-  comparison_scope:'EFFECTIVE_RUNTIME_STATE_SHARDS_PLUS_OVERLAY',
+  comparison_scope:'EFFECTIVE_RUNTIME_STATE_WITH_MANIFEST_DECLARED_UNIVERSE_REFLOW_NORMALIZED',
   result:blocked.length?'BLOCKED':'PASS',
   player_count:{baseline:baselineEffective.length,current:currentEffective.length},
   added_players:added,
@@ -146,6 +178,7 @@ const report={
   undeclared_removed_players:undeclaredRemoved,
   universe_change_manifest:universeManifestFile,
   population_declaration_errors:populationDeclarationErrors,
+  deterministic_admission_rank_reflow:admissionReflow,
   declared_core_changes:coreChanges.length-unauthorized.length,
   undeclared_core_changes:unauthorized.length,
   core_changes:coreChanges,
