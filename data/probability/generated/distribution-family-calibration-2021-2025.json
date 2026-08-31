@@ -1,0 +1,1076 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-31T05:19:48.741Z",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "history_window": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "tuning_window": [
+    2023,
+    2024
+  ],
+  "evaluation_window": [
+    2025
+  ],
+  "sportsbook_inputs_used": false,
+  "selection_rule": "Choose distribution family by holdout calibration and predictive scoring, not visual fit alone. Prefer simpler families when performance is materially equivalent.",
+  "selected_families": {
+    "QB": {
+      "pass_attempts": {
+        "family": "student_t",
+        "df": 30,
+        "ll": -5259.099362239436,
+        "n": 1362,
+        "mean_log_score": -3.861306433362288
+      },
+      "pass_yards": {
+        "family": "normal",
+        "ll": -8086.278662217852,
+        "n": 1362,
+        "mean_log_score": -5.937062160218687
+      },
+      "pass_tds": {
+        "family": "negative_binomial",
+        "ll": -1830.8259041891022,
+        "n": 1362,
+        "mean_log_score": -1.3442187255426594
+      },
+      "rush_attempts": {
+        "family": "negative_binomial",
+        "ll": -2889.6232984903995,
+        "n": 1362,
+        "mean_log_score": -2.1216030091706313
+      },
+      "rush_yards": {
+        "family": "lognormal_shifted",
+        "ll": -5065.729019171279,
+        "n": 1280,
+        "mean_log_score": -3.957600796227562
+      },
+      "rush_tds": {
+        "family": "poisson",
+        "ll": -569.8551045453019,
+        "n": 1362,
+        "mean_log_score": -0.4183958183151996
+      }
+    },
+    "RB": {
+      "rush_attempts": {
+        "family": "negative_binomial",
+        "ll": -8643.652304087389,
+        "n": 3214,
+        "mean_log_score": -2.6893753279674515
+      },
+      "rush_yards": {
+        "family": "lognormal_shifted",
+        "ll": -13774.979025205637,
+        "n": 3096,
+        "mean_log_score": -4.449282630880374
+      },
+      "rush_tds": {
+        "family": "poisson",
+        "ll": -1685.0118625061955,
+        "n": 3214,
+        "mean_log_score": -0.5242725147810191
+      },
+      "targets": {
+        "family": "negative_binomial",
+        "ll": -5399.485731925234,
+        "n": 3214,
+        "mean_log_score": -1.6799893378734394
+      },
+      "receptions": {
+        "family": "beta_binomial",
+        "ll": -2622.8536564102155,
+        "n": 3214,
+        "mean_log_score": -0.8160714550125127
+      },
+      "receiving_yards": {
+        "family": "lognormal_shifted",
+        "ll": -10942.901879809851,
+        "n": 3143,
+        "mean_log_score": -3.481674158386844
+      },
+      "receiving_tds": {
+        "family": "poisson",
+        "ll": -656.7632550481843,
+        "n": 3214,
+        "mean_log_score": -0.20434450997143258
+      }
+    },
+    "WR": {
+      "targets": {
+        "family": "negative_binomial",
+        "ll": -11860.40653195066,
+        "n": 5539,
+        "mean_log_score": -2.1412541130078826
+      },
+      "receptions": {
+        "family": "beta_binomial",
+        "ll": -7038.408710140395,
+        "n": 5539,
+        "mean_log_score": -1.2707002545839312
+      },
+      "receiving_yards": {
+        "family": "student_t",
+        "df": 8,
+        "ll": -25980.758779161333,
+        "n": 5539,
+        "mean_log_score": -4.690514312901486
+      },
+      "receiving_tds": {
+        "family": "poisson",
+        "ll": -2603.8827629514485,
+        "n": 5539,
+        "mean_log_score": -0.4700997947195249
+      }
+    },
+    "TE": {
+      "targets": {
+        "family": "negative_binomial",
+        "ll": -5707.782925242137,
+        "n": 3276,
+        "mean_log_score": -1.7423024802326426
+      },
+      "receptions": {
+        "family": "beta_binomial",
+        "ll": -2979.9393356661694,
+        "n": 3276,
+        "mean_log_score": -0.90962739183949
+      },
+      "receiving_yards": {
+        "family": "lognormal_shifted",
+        "ll": -12550.436236820866,
+        "n": 3238,
+        "mean_log_score": -3.875984013842145
+      },
+      "receiving_tds": {
+        "family": "poisson",
+        "ll": -1074.988194843886,
+        "n": 3276,
+        "mean_log_score": -0.3281404746165708
+      }
+    }
+  },
+  "tuning_scores": {
+    "QB": {
+      "pass_attempts": [
+        {
+          "family": "student_t",
+          "df": 30,
+          "ll": -5259.099362239436,
+          "n": 1362,
+          "mean_log_score": -3.861306433362288
+        },
+        {
+          "family": "normal",
+          "ll": -5259.946456535508,
+          "n": 1362,
+          "mean_log_score": -3.861928382184661
+        },
+        {
+          "family": "student_t",
+          "df": 15,
+          "ll": -5261.22752357724,
+          "n": 1362,
+          "mean_log_score": -3.8628689600420265
+        },
+        {
+          "family": "student_t",
+          "df": 8,
+          "ll": -5270.93566952211,
+          "n": 1362,
+          "mean_log_score": -3.8699968205008153
+        },
+        {
+          "family": "student_t",
+          "df": 5,
+          "ll": -5295.810499472797,
+          "n": 1362,
+          "mean_log_score": -3.8882602786143887
+        },
+        {
+          "family": "student_t",
+          "df": 3,
+          "ll": -5410.808378539745,
+          "n": 1362,
+          "mean_log_score": -3.9726933763140564
+        }
+      ],
+      "pass_yards": [
+        {
+          "family": "normal",
+          "ll": -8086.278662217852,
+          "n": 1362,
+          "mean_log_score": -5.937062160218687
+        },
+        {
+          "family": "student_t",
+          "df": 30,
+          "ll": -8091.209563481935,
+          "n": 1362,
+          "mean_log_score": -5.9406824988854146
+        },
+        {
+          "family": "student_t",
+          "df": 15,
+          "ll": -8098.465410326344,
+          "n": 1362,
+          "mean_log_score": -5.946009846054584
+        },
+        {
+          "family": "student_t",
+          "df": 8,
+          "ll": -8116.5815943842945,
+          "n": 1362,
+          "mean_log_score": -5.959311009092727
+        },
+        {
+          "family": "student_t",
+          "df": 5,
+          "ll": -8152.609523074058,
+          "n": 1362,
+          "mean_log_score": -5.985763232800337
+        },
+        {
+          "family": "student_t",
+          "df": 3,
+          "ll": -8294.1947934783,
+          "n": 1362,
+          "mean_log_score": -6.089717175828414
+        },
+        {
+          "family": "lognormal_shifted",
+          "ll": -10534.905816352219,
+          "n": 1279,
+          "mean_log_score": -8.23683019261315
+        }
+      ],
+      "pass_tds": [
+        {
+          "family": "negative_binomial",
+          "ll": -1830.8259041891022,
+          "n": 1362,
+          "mean_log_score": -1.3442187255426594
+        },
+        {
+          "family": "poisson",
+          "ll": -1833.4682387089476,
+          "n": 1362,
+          "mean_log_score": -1.3461587655719145
+        },
+        {
+          "family": "zero_inflated_negative_binomial",
+          "ll": -1845.208468723374,
+          "n": 1362,
+          "mean_log_score": -1.3547786113974845
+        }
+      ],
+      "rush_attempts": [
+        {
+          "family": "negative_binomial",
+          "ll": -2889.6232984903995,
+          "n": 1362,
+          "mean_log_score": -2.1216030091706313
+        },
+        {
+          "family": "student_t",
+          "df": 8,
+          "ll": -3042.9470016639775,
+          "n": 1362,
+          "mean_log_score": -2.2341754784610703
+        },
+        {
+          "family": "student_t",
+          "df": 15,
+          "ll": -3045.442777996946,
+          "n": 1362,
+          "mean_log_score": -2.2360079133604596
+        },
+        {
+          "family": "student_t",
+          "df": 5,
+          "ll": -3050.6004304440758,
+          "n": 1362,
+          "mean_log_score": -2.239794736008866
+        },
+        {
+          "family": "student_t",
+          "df": 30,
+          "ll": -3051.0504074370524,
+          "n": 1362,
+          "mean_log_score": -2.2401251155925497
+        },
+        {
+          "family": "normal",
+          "ll": -3063.91663677548,
+          "n": 1362,
+          "mean_log_score": -2.2495716863256097
+        },
+        {
+          "family": "student_t",
+          "df": 3,
+          "ll": -3122.9564564989505,
+          "n": 1362,
+          "mean_log_score": -2.2929195715851325
+        }
+      ],
+      "rush_yards": [
+        {
+          "family": "lognormal_shifted",
+          "ll": -5065.729019171279,
+          "n": 1280,
+          "mean_log_score": -3.957600796227562
+        },
+        {
+          "family": "student_t",
+          "df": 5,
+          "ll": -5548.874589183456,
+          "n": 1362,
+          "mean_log_score": -4.074063575024564
+        },
+        {
+          "family": "student_t",
+          "df": 8,
+          "ll": -5556.169920366173,
+          "n": 1362,
+          "mean_log_score": -4.0794199121631225
+        },
+        {
+          "family": "student_t",
+          "df": 15,
+          "ll": -5569.7819900679215,
+          "n": 1362,
+          "mean_log_score": -4.089414089624024
+        },
+        {
+          "family": "student_t",
+          "df": 30,
+          "ll": -5581.46370527874,
+          "n": 1362,
+          "mean_log_score": -4.097990973038723
+        },
+        {
+          "family": "student_t",
+          "df": 3,
+          "ll": -5590.181043606436,
+          "n": 1362,
+          "mean_log_score": -4.104391368286664
+        },
+        {
+          "family": "normal",
+          "ll": -5598.126680204577,
+          "n": 1362,
+          "mean_log_score": -4.110225169019513
+        }
+      ],
+      "rush_tds": [
+        {
+          "family": "poisson",
+          "ll": -569.8551045453019,
+          "n": 1362,
+          "mean_log_score": -0.4183958183151996
+        },
+        {
+          "family": "negative_binomial",
+          "ll": -572.5805099891855,
+          "n": 1362,
+          "mean_log_score": -0.4203968502123242
+        },
+        {
+          "family": "zero_inflated_negative_binomial",
+          "ll": -605.4484218921202,
+          "n": 1362,
+          "mean_log_score": -0.4445289441204994
+        }
+      ]
+    },
+    "RB": {
+      "rush_attempts": [
+        {
+          "family": "negative_binomial",
+          "ll": -8643.652304087389,
+          "n": 3214,
+          "mean_log_score": -2.6893753279674515
+        },
+        {
+          "family": "student_t",
+          "df": 8,
+          "ll": -9665.903712415582,
+          "n": 3214,
+          "mean_log_score": -3.0074373716289924
+        },
+        {
+          "family": "student_t",
+          "df": 15,
+          "ll": -9673.099184249526,
+          "n": 3214,
+          "mean_log_score": -3.0096761618697965
+        },
+        {
+          "family": "student_t",
+          "df": 5,
+          "ll": -9684.477009513515,
+          "n": 3214,
+          "mean_log_score": -3.0132162444037074
+        },
+        {
+          "family": "student_t",
+          "df": 30,
+          "ll": -9687.279344614959,
+          "n": 3214,
+          "mean_log_score": -3.0140881594943867
+        },
+        {
+          "family": "normal",
+          "ll": -9715.865414136482,
+          "n": 3214,
+          "mean_log_score": -3.022982393944145
+        },
+        {
+          "family": "student_t",
+          "df": 3,
+          "ll": -9869.816530198594,
+          "n": 3214,
+          "mean_log_score": -3.0708825545110745
+        }
+      ],
+      "rush_yards": [
+        {
+          "family": "lognormal_shifted",
+          "ll": -13774.979025205637,
+          "n": 3096,
+          "mean_log_score": -4.449282630880374
+        },
+        {
+          "family": "student_t",
+          "df": 5,
+          "ll": -14939.97847393874,
+          "n": 3214,
+          "mean_log_score": -4.648406494691581
+        },
+        {
+          "family": "student_t",
+          "df": 8,
+          "ll": -14954.989783315972,
+          "n": 3214,
+          "mean_log_score": -4.653077094995635
+        },
+        {
+          "family": "student_t",
+          "df": 15,
+          "ll": -14991.176099605722,
+          "n": 3214,
+          "mean_log_score": -4.664336060860523
+        },
+        {
+          "family": "student_t",
+          "df": 30,
+          "ll": -15027.082919359167,
+          "n": 3214,
+          "mean_log_score": -4.675508064517476
+        },
+        {
+          "family": "student_t",
+          "df": 3,
+          "ll": -15055.211560445669,
+          "n": 3214,
+          "mean_log_score": -4.6842599752475635
+        },
+        {
+          "family": "normal",
+          "ll": -15092.433078869795,
+          "n": 3214,
+          "mean_log_score": -4.695841032629059
+        }
+      ],
+      "rush_tds": [
+        {
+          "family": "poisson",
+          "ll": -1685.0118625061955,
+          "n": 3214,
+          "mean_log_score": -0.5242725147810191
+        },
+        {
+          "family": "negative_binomial",
+          "ll": -1686.6378252052855,
+          "n": 3214,
+          "mean_log_score": -0.5247784148118498
+        },
+        {
+          "family": "zero_inflated_negative_binomial",
+          "ll": -1757.2404010146458,
+          "n": 3214,
+          "mean_log_score": -0.5467456132590685
+        }
+      ],
+      "targets": [
+        {
+          "family": "negative_binomial",
+          "ll": -5399.485731925234,
+          "n": 3214,
+          "mean_log_score": -1.6799893378734394
+        },
+        {
+          "family": "student_t",
+          "df": 8,
+          "ll": -6193.508051974772,
+          "n": 3214,
+          "mean_log_score": -1.9270404642111922
+        },
+        {
+          "family": "student_t",
+          "df": 5,
+          "ll": -6198.806400914186,
+          "n": 3214,
+          "mean_log_score": -1.9286889859720555
+        },
+        {
+          "family": "student_t",
+          "df": 15,
+          "ll": -6210.61389068084,
+          "n": 3214,
+          "mean_log_score": -1.9323627537899315
+        },
+        {
+          "family": "student_t",
+          "df": 30,
+          "ll": -6230.472522207229,
+          "n": 3214,
+          "mean_log_score": -1.9385415439350433
+        },
+        {
+          "family": "normal",
+          "ll": -6264.518275799617,
+          "n": 3214,
+          "mean_log_score": -1.9491344977596818
+        },
+        {
+          "family": "student_t",
+          "df": 3,
+          "ll": -6357.120922830248,
+          "n": 3214,
+          "mean_log_score": -1.977946771260189
+        }
+      ],
+      "receptions": [
+        {
+          "family": "beta_binomial",
+          "ll": -2622.8536564102155,
+          "n": 3214,
+          "mean_log_score": -0.8160714550125127
+        },
+        {
+          "family": "binomial_conditional_on_targets",
+          "ll": -2786.0528684867113,
+          "n": 3214,
+          "mean_log_score": -0.8668490567786905
+        },
+        {
+          "family": "negative_binomial",
+          "ll": -4848.974536573646,
+          "n": 3214,
+          "mean_log_score": -1.5087039628418315
+        }
+      ],
+      "receiving_yards": [
+        {
+          "family": "lognormal_shifted",
+          "ll": -10942.901879809851,
+          "n": 3143,
+          "mean_log_score": -3.481674158386844
+        },
+        {
+          "family": "student_t",
+          "df": 5,
+          "ll": -12691.678973750977,
+          "n": 3214,
+          "mean_log_score": -3.94887335835438
+        },
+        {
+          "family": "student_t",
+          "df": 3,
+          "ll": -12708.12317528052,
+          "n": 3214,
+          "mean_log_score": -3.9539897869572247
+        },
+        {
+          "family": "student_t",
+          "df": 8,
+          "ll": -12751.839868642635,
+          "n": 3214,
+          "mean_log_score": -3.967591745066159
+        },
+        {
+          "family": "student_t",
+          "df": 15,
+          "ll": -12825.838803638815,
+          "n": 3214,
+          "mean_log_score": -3.990615682526078
+        },
+        {
+          "family": "student_t",
+          "df": 30,
+          "ll": -12889.410219345453,
+          "n": 3214,
+          "mean_log_score": -4.010395214482095
+        },
+        {
+          "family": "normal",
+          "ll": -13002.815119971989,
+          "n": 3214,
+          "mean_log_score": -4.045679875535777
+        }
+      ],
+      "receiving_tds": [
+        {
+          "family": "poisson",
+          "ll": -656.7632550481843,
+          "n": 3214,
+          "mean_log_score": -0.20434450997143258
+        },
+        {
+          "family": "negative_binomial",
+          "ll": -657.6507407762024,
+          "n": 3214,
+          "mean_log_score": -0.2046206411873685
+        },
+        {
+          "family": "zero_inflated_negative_binomial",
+          "ll": -723.6301682757012,
+          "n": 3214,
+          "mean_log_score": -0.22514939896568176
+        }
+      ]
+    },
+    "WR": {
+      "targets": [
+        {
+          "family": "negative_binomial",
+          "ll": -11860.40653195066,
+          "n": 5539,
+          "mean_log_score": -2.1412541130078826
+        },
+        {
+          "family": "student_t",
+          "df": 15,
+          "ll": -13122.725641118357,
+          "n": 5539,
+          "mean_log_score": -2.3691506844409385
+        },
+        {
+          "family": "student_t",
+          "df": 30,
+          "ll": -13127.653511795448,
+          "n": 5539,
+          "mean_log_score": -2.370040352373253
+        },
+        {
+          "family": "student_t",
+          "df": 8,
+          "ll": -13136.823033108354,
+          "n": 5539,
+          "mean_log_score": -2.3716957994418406
+        },
+        {
+          "family": "normal",
+          "ll": -13145.297002334228,
+          "n": 5539,
+          "mean_log_score": -2.373225672925479
+        },
+        {
+          "family": "student_t",
+          "df": 5,
+          "ll": -13201.252889732506,
+          "n": 5539,
+          "mean_log_score": -2.383327837106428
+        },
+        {
+          "family": "student_t",
+          "df": 3,
+          "ll": -13597.760958292882,
+          "n": 5539,
+          "mean_log_score": -2.4549126120767073
+        }
+      ],
+      "receptions": [
+        {
+          "family": "beta_binomial",
+          "ll": -7038.408710140395,
+          "n": 5539,
+          "mean_log_score": -1.2707002545839312
+        },
+        {
+          "family": "binomial_conditional_on_targets",
+          "ll": -7204.71882843731,
+          "n": 5539,
+          "mean_log_score": -1.3007255512614748
+        },
+        {
+          "family": "negative_binomial",
+          "ll": -9958.29953375909,
+          "n": 5539,
+          "mean_log_score": -1.7978515135871256
+        }
+      ],
+      "receiving_yards": [
+        {
+          "family": "student_t",
+          "df": 8,
+          "ll": -25980.758779161333,
+          "n": 5539,
+          "mean_log_score": -4.690514312901486
+        },
+        {
+          "family": "student_t",
+          "df": 5,
+          "ll": -25983.013487926542,
+          "n": 5539,
+          "mean_log_score": -4.690921373519867
+        },
+        {
+          "family": "student_t",
+          "df": 15,
+          "ll": -26020.85380534659,
+          "n": 5539,
+          "mean_log_score": -4.697752988869216
+        },
+        {
+          "family": "student_t",
+          "df": 30,
+          "ll": -26066.488554831387,
+          "n": 5539,
+          "mean_log_score": -4.705991795420001
+        },
+        {
+          "family": "normal",
+          "ll": -26152.61001357386,
+          "n": 5539,
+          "mean_log_score": -4.721539991618317
+        },
+        {
+          "family": "student_t",
+          "df": 3,
+          "ll": -26254.00977619723,
+          "n": 5539,
+          "mean_log_score": -4.739846502292332
+        },
+        {
+          "family": "lognormal_shifted",
+          "ll": -25892.22815180577,
+          "n": 5398,
+          "mean_log_score": -4.796633596110739
+        }
+      ],
+      "receiving_tds": [
+        {
+          "family": "poisson",
+          "ll": -2603.8827629514485,
+          "n": 5539,
+          "mean_log_score": -0.4700997947195249
+        },
+        {
+          "family": "negative_binomial",
+          "ll": -2610.6884936791444,
+          "n": 5539,
+          "mean_log_score": -0.47132848775575814
+        },
+        {
+          "family": "zero_inflated_negative_binomial",
+          "ll": -2725.3381117687327,
+          "n": 5539,
+          "mean_log_score": -0.49202710087899126
+        }
+      ]
+    },
+    "TE": {
+      "targets": [
+        {
+          "family": "negative_binomial",
+          "ll": -5707.782925242137,
+          "n": 3276,
+          "mean_log_score": -1.7423024802326426
+        },
+        {
+          "family": "student_t",
+          "df": 5,
+          "ll": -6578.774984833605,
+          "n": 3276,
+          "mean_log_score": -2.0081730722935305
+        },
+        {
+          "family": "student_t",
+          "df": 8,
+          "ll": -6580.249469560561,
+          "n": 3276,
+          "mean_log_score": -2.0086231592065205
+        },
+        {
+          "family": "student_t",
+          "df": 15,
+          "ll": -6605.470877002999,
+          "n": 3276,
+          "mean_log_score": -2.016322001527167
+        },
+        {
+          "family": "student_t",
+          "df": 30,
+          "ll": -6633.163480742023,
+          "n": 3276,
+          "mean_log_score": -2.02477517727168
+        },
+        {
+          "family": "normal",
+          "ll": -6682.941960102139,
+          "n": 3276,
+          "mean_log_score": -2.039970073291251
+        },
+        {
+          "family": "student_t",
+          "df": 3,
+          "ll": -6727.26992546975,
+          "n": 3276,
+          "mean_log_score": -2.0535011982508395
+        }
+      ],
+      "receptions": [
+        {
+          "family": "beta_binomial",
+          "ll": -2979.9393356661694,
+          "n": 3276,
+          "mean_log_score": -0.90962739183949
+        },
+        {
+          "family": "binomial_conditional_on_targets",
+          "ll": -2983.7959221740107,
+          "n": 3276,
+          "mean_log_score": -0.9108046160482328
+        },
+        {
+          "family": "negative_binomial",
+          "ll": -4975.622221738124,
+          "n": 3276,
+          "mean_log_score": -1.5188102019957643
+        }
+      ],
+      "receiving_yards": [
+        {
+          "family": "lognormal_shifted",
+          "ll": -12550.436236820866,
+          "n": 3238,
+          "mean_log_score": -3.875984013842145
+        },
+        {
+          "family": "student_t",
+          "df": 5,
+          "ll": -13706.265243504506,
+          "n": 3276,
+          "mean_log_score": -4.1838416494213995
+        },
+        {
+          "family": "student_t",
+          "df": 8,
+          "ll": -13737.927604537024,
+          "n": 3276,
+          "mean_log_score": -4.193506594791521
+        },
+        {
+          "family": "student_t",
+          "df": 3,
+          "ll": -13779.289471791873,
+          "n": 3276,
+          "mean_log_score": -4.206132317396786
+        },
+        {
+          "family": "student_t",
+          "df": 15,
+          "ll": -13782.71903867338,
+          "n": 3276,
+          "mean_log_score": -4.207179193734243
+        },
+        {
+          "family": "student_t",
+          "df": 30,
+          "ll": -13819.404751651487,
+          "n": 3276,
+          "mean_log_score": -4.2183775188191355
+        },
+        {
+          "family": "normal",
+          "ll": -13872.057372886447,
+          "n": 3276,
+          "mean_log_score": -4.234449747523335
+        }
+      ],
+      "receiving_tds": [
+        {
+          "family": "poisson",
+          "ll": -1074.988194843886,
+          "n": 3276,
+          "mean_log_score": -0.3281404746165708
+        },
+        {
+          "family": "negative_binomial",
+          "ll": -1078.4991177154825,
+          "n": 3276,
+          "mean_log_score": -0.32921218489483595
+        },
+        {
+          "family": "zero_inflated_negative_binomial",
+          "ll": -1146.6503697379915,
+          "n": 3276,
+          "mean_log_score": -0.3500153753778973
+        }
+      ]
+    }
+  },
+  "holdout_scores": {
+    "QB": {
+      "pass_attempts": {
+        "family": "student_t",
+        "df": 30,
+        "sample": 674,
+        "mean_log_score": -3.8636966825203047
+      },
+      "pass_yards": {
+        "family": "normal",
+        "df": null,
+        "sample": 674,
+        "mean_log_score": -5.951003844493152
+      },
+      "pass_tds": {
+        "family": "negative_binomial",
+        "df": null,
+        "sample": 674,
+        "mean_log_score": -1.3937843035737587
+      },
+      "rush_attempts": {
+        "family": "negative_binomial",
+        "df": null,
+        "sample": 674,
+        "mean_log_score": -2.117358264426094
+      },
+      "rush_yards": {
+        "family": "lognormal_shifted",
+        "df": null,
+        "sample": 643,
+        "mean_log_score": -3.9196521528762625
+      },
+      "rush_tds": {
+        "family": "poisson",
+        "df": null,
+        "sample": 674,
+        "mean_log_score": -0.42959803055996315
+      }
+    },
+    "RB": {
+      "rush_attempts": {
+        "family": "negative_binomial",
+        "df": null,
+        "sample": 1641,
+        "mean_log_score": -2.6204405960421773
+      },
+      "rush_yards": {
+        "family": "lognormal_shifted",
+        "df": null,
+        "sample": 1586,
+        "mean_log_score": -4.420529285849801
+      },
+      "rush_tds": {
+        "family": "poisson",
+        "df": null,
+        "sample": 1641,
+        "mean_log_score": -0.5397711469427469
+      },
+      "targets": {
+        "family": "negative_binomial",
+        "df": null,
+        "sample": 1641,
+        "mean_log_score": -1.5911088247050886
+      },
+      "receptions": {
+        "family": "beta_binomial",
+        "df": null,
+        "sample": 1641,
+        "mean_log_score": -0.8492645840439129
+      },
+      "receiving_yards": {
+        "family": "lognormal_shifted",
+        "df": null,
+        "sample": 1602,
+        "mean_log_score": -3.388246740377057
+      },
+      "receiving_tds": {
+        "family": "poisson",
+        "df": null,
+        "sample": 1641,
+        "mean_log_score": -0.22328392663106764
+      }
+    },
+    "WR": {
+      "targets": {
+        "family": "negative_binomial",
+        "df": null,
+        "sample": 2777,
+        "mean_log_score": -2.082117382089903
+      },
+      "receptions": {
+        "family": "beta_binomial",
+        "df": null,
+        "sample": 2777,
+        "mean_log_score": -1.2043598962672901
+      },
+      "receiving_yards": {
+        "family": "student_t",
+        "df": 8,
+        "sample": 2777,
+        "mean_log_score": -4.6554253504318375
+      },
+      "receiving_tds": {
+        "family": "poisson",
+        "df": null,
+        "sample": 2777,
+        "mean_log_score": -0.4518357419989551
+      }
+    },
+    "TE": {
+      "targets": {
+        "family": "negative_binomial",
+        "df": null,
+        "sample": 1679,
+        "mean_log_score": -1.7481949135701205
+      },
+      "receptions": {
+        "family": "beta_binomial",
+        "df": null,
+        "sample": 1679,
+        "mean_log_score": -0.920520868305556
+      },
+      "receiving_yards": {
+        "family": "lognormal_shifted",
+        "df": null,
+        "sample": 1649,
+        "mean_log_score": -3.8500028439661165
+      },
+      "receiving_tds": {
+        "family": "poisson",
+        "df": null,
+        "sample": 1679,
+        "mean_log_score": -0.3903541049929671
+      }
+    }
+  },
+  "notes": [
+    "Candidate family is selected on 2023-2024 walk-forward log score and then frozen for 2025 evaluation.",
+    "Every prediction uses only games with an earlier season/week key.",
+    "Student-t degrees of freedom are selected only inside the tuning window.",
+    "Negative-binomial and zero-inflated models use only prior football outcomes to estimate dispersion/zero inflation.",
+    "Receptions conditional models use targets from the same observed player-game only for distribution-family diagnostic scoring; this is not yet a deployable pregame receptions model because future targets must themselves be forecast.",
+    "Sportsbook lines and prices are excluded from fitting and selection."
+  ]
+}
