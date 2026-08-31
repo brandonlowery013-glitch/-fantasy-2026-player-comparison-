@@ -11,6 +11,11 @@ const declared=new Map((manifest.changes||[]).map(x=>[x.player,x]));
 const structuralManifestFile='guardrails/structural-change-manifest.json';
 const structuralManifest=fs.existsSync(path.join(root,structuralManifestFile))?read(structuralManifestFile):{changes:[]};
 const declaredStructural=new Map((structuralManifest.changes||[]).map(x=>[x.file,x]));
+const universeManifestFile=cfg.drift.universe_change_manifest_file||'guardrails/universe-change-manifest.json';
+const universeManifest=fs.existsSync(path.join(root,universeManifestFile))?read(universeManifestFile):{changes:[]};
+const validUniverseDeclarations=(universeManifest.changes||[]).filter(x=>x&&x.player&&x.action&&x.reason&&x.source);
+const declaredAdds=new Set(validUniverseDeclarations.filter(x=>x.action==='ADD').map(x=>x.player));
+const declaredRemoves=new Set(validUniverseDeclarations.filter(x=>x.action==='REMOVE').map(x=>x.player));
 const coreFields=['o','tr','tp','pr','s','pd','ce','r','e','a','rl','su','mp'];
 
 const baselinePlayers=[];
@@ -19,7 +24,7 @@ for(let i=0;i<baseline.model_contract.authoritative_player_shards;i++){
   baselinePlayers.push(...JSON.parse(txt));
 }
 const currentPlayers=[];
-for(let i=0;i<baseline.model_contract.authoritative_player_shards;i++) currentPlayers.push(...read(`players${i}.json`));
+for(let i=0;i<cfg.authoritative_player_shards;i++) currentPlayers.push(...read(`players${i}.json`));
 
 const patchFile='current162patch-2026-08-24.json';
 const oldPatch=(baseline.authoritative_files?.[patchFile])
@@ -36,6 +41,16 @@ const oldMap=new Map(baselineEffective.map(p=>[p.n,p]));
 const newMap=new Map(currentEffective.map(p=>[p.n,p]));
 const added=[...newMap.keys()].filter(n=>!oldMap.has(n));
 const removed=[...oldMap.keys()].filter(n=>!newMap.has(n));
+const undeclaredAdded=added.filter(n=>!declaredAdds.has(n));
+const undeclaredRemoved=removed.filter(n=>!declaredRemoves.has(n));
+const staleDeclaredAdds=[...declaredAdds].filter(n=>!added.includes(n));
+const staleDeclaredRemoves=[...declaredRemoves].filter(n=>!removed.includes(n));
+const populationDeclarationErrors=[];
+for(const d of validUniverseDeclarations){
+  if(d.from_count!=null&&d.from_count!==baselineEffective.length) populationDeclarationErrors.push({player:d.player,error:'FROM_COUNT_MISMATCH',declared:d.from_count,actual:baselineEffective.length});
+  if(d.to_count!=null&&d.to_count!==currentEffective.length) populationDeclarationErrors.push({player:d.player,error:'TO_COUNT_MISMATCH',declared:d.to_count,actual:currentEffective.length});
+}
+if(cfg.authoritative_player_count!==currentEffective.length) populationDeclarationErrors.push({error:'CONFIG_CURRENT_COUNT_MISMATCH',declared:cfg.authoritative_player_count,actual:currentEffective.length});
 const coreChanges=[];
 const unauthorized=[];
 
@@ -109,7 +124,9 @@ for(const f of marketFiles){
 }
 
 const blocked=[];
-if(added.length||removed.length) blocked.push({type:'PLAYER_POPULATION_DRIFT',added,removed});
+if(undeclaredAdded.length||undeclaredRemoved.length||populationDeclarationErrors.length||staleDeclaredAdds.length||staleDeclaredRemoves.length){
+  blocked.push({type:'PLAYER_POPULATION_DRIFT',added,removed,undeclared_added:undeclaredAdded,undeclared_removed:undeclaredRemoved,stale_declared_adds:staleDeclaredAdds,stale_declared_removes:staleDeclaredRemoves,declaration_errors:populationDeclarationErrors});
+}
 if(unauthorized.length) blocked.push({type:'UNDECLARED_EFFECTIVE_CORE_DRIFT',players:unauthorized});
 if(unauthorizedStructural.length) blocked.push({type:'UNDECLARED_PROTECTED_STRUCTURAL_DRIFT',files:unauthorizedStructural});
 
@@ -123,6 +140,12 @@ const report={
   player_count:{baseline:baselineEffective.length,current:currentEffective.length},
   added_players:added,
   removed_players:removed,
+  declared_added_players:added.filter(n=>declaredAdds.has(n)),
+  declared_removed_players:removed.filter(n=>declaredRemoves.has(n)),
+  undeclared_added_players:undeclaredAdded,
+  undeclared_removed_players:undeclaredRemoved,
+  universe_change_manifest:universeManifestFile,
+  population_declaration_errors:populationDeclarationErrors,
   declared_core_changes:coreChanges.length-unauthorized.length,
   undeclared_core_changes:unauthorized.length,
   core_changes:coreChanges,
