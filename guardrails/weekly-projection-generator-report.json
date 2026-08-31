@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-08-31T05:19:54.089Z",
+  "result": "PASS",
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "input_status": "BASELINE_ONLY_AVAILABILITY_UNRESOLVED",
+  "projected_stats": 542,
+  "target_projections": 138,
+  "review_required": 162,
+  "insufficient_data": 0,
+  "context_adjustments_applied": 0,
+  "excluded_noncurrent_adjustments": 0,
+  "projections_with_positive_projection_error_sd": 44,
+  "baseline_source_counts": {
+    "player_shrunk_prior": 482,
+    "rookie_draft_tier_prior": 35,
+    "rookie_position_prior": 0,
+    "role_cohort_prior": 0,
+    "position_prior": 25
+  },
+  "sportsbook_inputs_used": false,
+  "blocked": [],
+  "safeguards": [
+    "Baseline priority remains player-specific history, then verified rookie prior, then current role cohort, then generic position fallback.",
+    "Weekly mean is unchanged by Step 2H projection-error calibration; historical bias remains diagnostic only.",
+    "Performance SD is preserved separately from projection-error SD.",
+    "Final weekly SD is combined by quadrature: sqrt(performance_sd^2 + projection_error_sd^2).",
+    "Projection-error SD is frozen from 2023-2024 walk-forward reconstruction and 2025 remains holdout evaluation.",
+    "Reconstructed historical projections are not mislabeled as exact archived model outputs.",
+    "No sportsbook input is used in the uncertainty model or weekly projection generator.",
+    "This remains SHADOW_ONLY pending live 2026 operation and betting validation."
+  ]
+}
