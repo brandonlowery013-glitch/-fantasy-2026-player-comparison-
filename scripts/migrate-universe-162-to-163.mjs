@@ -6,14 +6,23 @@ const write=(p,x)=>fs.writeFileSync(p,JSON.stringify(x,null,2)+'\n');
 const gitJson=(ref,p)=>JSON.parse(execFileSync('git',['show',`${ref}:${p}`],{encoding:'utf8'}));
 const OVERALL_TARGET=147, TRUE_TARGET=150, NAME='Kaleb Johnson', BASE='origin/main';
 
-// Always rebuild from current main so reruns cannot double-shift an already migrated branch.
+// Always rebuild from the EFFECTIVE current-main board so reruns cannot double-shift
+// and raw shard coordinates cannot overwrite already-approved overlay ranking decisions.
 try{execFileSync('git',['fetch','origin','main','--depth=1'],{stdio:'ignore'});}catch{}
 const add=read('players13.json');
 if(add.length!==1||add[0].n!==NAME) throw new Error('players13.json must contain Kaleb Johnson only');
 const kaleb={...add[0]};
 const baseShards=[];
 for(let i=0;i<13;i++) baseShards.push(gitJson(BASE,`players${i}.json`));
-const existing=baseShards.flat().map(p=>({...p}));
+let basePatch={players:{}};
+try{basePatch=gitJson(BASE,'current162patch-2026-08-24.json');}catch{}
+basePatch.players=basePatch.players||{};
+const existing=baseShards.flat().map(p=>{
+  const x=basePatch.players[p.n]||{};
+  // Only ranking coordinates are promoted from the runtime overlay into canonical data here.
+  // All projection/evaluation fields remain the current-main shard values.
+  return {...p,o:x.o??p.o,tr:x.tr??p.tr,pr:x.pr??p.pr,tp:x.tp??p.tp};
+});
 if(existing.length!==162||existing.some(p=>p.n===NAME)) throw new Error('Expected 162-player main universe without Kaleb Johnson');
 
 for(const p of existing){if(Number(p.o)>=OVERALL_TARGET)p.o=Number(p.o)+1;if(Number(p.tr)>=TRUE_TARGET)p.tr=Number(p.tr)+1;}
@@ -31,8 +40,7 @@ for(let i=0;i<13;i++){const n=baseShards[i].length;write(`players${i}.json`,exis
 write('players13.json',[kaleb]);
 
 // Migrate the compatibility overlay too. It participates in effective runtime state and must not restore 162-era ranks.
-let patch;
-try{patch=gitJson(BASE,'current162patch-2026-08-24.json');}catch{patch={players:{}};}
+const patch=structuredClone(basePatch);
 patch.players=patch.players||{};
 for(const [name,x] of Object.entries(patch.players)){
   const p=byName.get(name); if(!p) continue;
@@ -93,5 +101,5 @@ const effective=all.map(p=>({...p,...(patch.players[p.n]||{})}));
 validate(effective,'effective overlay');
 const k=byName.get(NAME);
 for(const f of ['pd','ce','r','e','a','rl','su','mp','m','cl','px','s7'])if(k[f]==null)throw new Error(`Kaleb missing ${f}`);
-write('kaleb-johnson-163-onboarding-audit.json',{updated:'2026-08-30',passed:true,active_players:163,unique_players:163,effective_overlay_players:163,player:NAME,overall_rank:k.o,true_value_rank:k.tr,overall_pos:k.pr,true_value_pos:k.tp,projected_ppr:k.mp,market_value:k.px,status:k.st,guardrails:['transaction/availability trigger reviewed','connected-player effect documented','projection populated','all seven True-Value components populated','canonical Overall and True-Value ranks contiguous 1-163','effective overlay Overall and True-Value ranks contiguous 1-163','positional ranks regenerated','runtime loader migrated to 14 shards','compatibility overlay migrated to 163','legacy 162-count QA migrated to 163']});
-console.log('PASS: deterministically rebuilt 163-player canonical + effective runtime universe with Kaleb Johnson');
+write('kaleb-johnson-163-onboarding-audit.json',{updated:'2026-08-30',passed:true,active_players:163,unique_players:163,effective_overlay_players:163,player:NAME,overall_rank:k.o,true_value_rank:k.tr,overall_pos:k.pr,true_value_pos:k.tp,projected_ppr:k.mp,market_value:k.px,status:k.st,guardrails:['transaction/availability trigger reviewed','connected-player effect documented','projection populated','all seven True-Value components populated','effective current-main rankings preserved before insertion','canonical Overall and True-Value ranks contiguous 1-163','effective overlay Overall and True-Value ranks contiguous 1-163','positional ranks regenerated','runtime loader migrated to 14 shards','compatibility overlay migrated to 163','legacy 162-count QA migrated to 163']});
+console.log('PASS: deterministically rebuilt 163-player canonical + effective runtime universe from effective current-main rankings');
