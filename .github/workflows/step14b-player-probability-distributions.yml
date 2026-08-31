@@ -1,0 +1,78 @@
+name: Step 14B Player Probability Distributions
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'data/probability/generated/weekly-game-projections-2026.json'
+      - 'data/calibration/weekly-event-schedule-2026.json'
+      - '.github/workflows/step14b-player-probability-distributions.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: player-probability-production
+  cancel-in-progress: false
+
+jobs:
+  build-player-distributions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Resolve Week 1 football source schedule
+        run: node scripts/ingest-weekly-football-data.mjs
+      - name: Collect current football-only player context
+        run: node scripts/collect-automatic-football-context.mjs
+      - name: Rebuild source and raw context
+        run: node scripts/ingest-weekly-football-data.mjs
+      - name: Normalize weekly football context
+        run: node scripts/normalize-weekly-football-context.mjs
+      - name: Build weekly player projections
+        run: node scripts/build-weekly-projection-generator.mjs
+      - name: Build exact player probability distributions
+        run: node scripts/build-weekly-probability-engine.mjs
+      - name: Validate no sportsbook contamination and distribution output
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='data/probability/generated/weekly-probability-distributions-2026.json';
+          const x=JSON.parse(fs.readFileSync(p,'utf8'));
+          if(x.sportsbook_inputs_used!==false) throw new Error('sportsbook contamination');
+          if(Number(x.week)!==1) throw new Error(`expected Week 1, got ${x.week}`);
+          const players=Object.keys(x.distributions||{});
+          if(!players.length) throw new Error('no player distributions generated');
+          console.log(JSON.stringify({result:'PASS',week:x.week,players:players.length,mode:x.mode},null,2));
+          NODE
+      - name: Persist generated player-probability state to guarded branch
+        shell: bash
+        run: |
+          paths=(
+            data/ingestion/weekly-football-source-snapshots-2026.json
+            data/probability/weekly-football-context-raw-2026.json
+            data/probability/weekly-football-context-inputs-2026.json
+            data/probability/weekly-projection-inputs-2026.json
+            data/probability/generated/weekly-probability-distributions-2026.json
+            guardrails/weekly-projection-generator-report.json
+            guardrails/weekly-probability-engine-report.json
+          )
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for p in "${paths[@]}"; do if [ -e "$p" ]; then git add "$p"; fi; done
+          if git diff --cached --quiet; then
+            echo "No player probability state changes."
+            exit 0
+          fi
+          branch="production/player-distributions-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$branch"
+          git commit -m "Build Week 1 player probability distributions"
+          git push origin "HEAD:$branch"
+          echo "Generated state pushed to $branch"
