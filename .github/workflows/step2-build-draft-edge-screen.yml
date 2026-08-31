@@ -4,6 +4,7 @@ on:
     branches: [model/step2-166-edge-opportunity-screen]
     paths:
       - 'scripts/build-draft-edge-opportunity-screen.mjs'
+      - 'scripts/refine-draft-edge-opportunity-screen.mjs'
       - '.trigger-step2-edge-screen'
 permissions:
   contents: write
@@ -19,15 +20,20 @@ jobs:
         with:
           node-version: 22
       - name: Build 166-player edge screen
-        run: node scripts/build-draft-edge-opportunity-screen.mjs
+        run: |
+          node scripts/build-draft-edge-opportunity-screen.mjs
+          node scripts/refine-draft-edge-opportunity-screen.mjs
       - name: Validate screen
         run: |
           node - <<'NODE'
           const fs=require('fs');const x=JSON.parse(fs.readFileSync('data/market/draft-edge-opportunity-screen-166.json','utf8'));
           if(x.universe!==166||x.players.length!==166||new Set(x.players.map(p=>p.player)).size!==166)throw Error('166-player coverage failed');
           if(x.authority!=='COMPANION_ONLY_NO_INTRINSIC_RANK_MUTATION')throw Error('authority contract failed');
-          if(x.price_pending.length!==4)throw Error(`expected 4 price-pending admissions, got ${x.price_pending.length}`);
-          console.log({universe:x.universe,price_coverage:x.price_coverage,counts:x.counts,price_pending:x.price_pending});
+          if(x.price_pending.length!==10)throw Error(`expected 10 directly unpriced players from market2026, got ${x.price_pending.length}`);
+          if(x.data_quality.unpriced_new_admissions.length!==4)throw Error('new-admission pending-price contract failed');
+          if(x.data_quality.unpriced_existing.length!==6)throw Error('existing-player price coverage discrepancy not isolated');
+          if(x.players.some(p=>Number(p.overall_rank)<1||Number(p.true_value_rank)<1))throw Error('invalid core rank reference');
+          console.log({universe:x.universe,price_coverage:x.price_coverage,counts:x.counts,price_pending:x.price_pending,data_quality:x.data_quality});
           NODE
       - name: Commit generated screen
         run: |
