@@ -31,7 +31,7 @@ An admitted player must complete the same pipeline as every existing player befo
 6. Place on Overall/Actionable ranking with contiguous re-numbering.
 7. Assign Market Value BUY/FAIR/REACH/FADE and preferred draft range using current market data when available; if market data is unavailable, explicitly mark price discovery pending rather than fabricating ADP/ECR.
 8. Populate comparison-model inputs and player write-up.
-9. Run connected-player reconciliation for every materially affected teammate and opponent in the opportunity tree.
+9. Run connected-player reconciliation for every materially affected teammate in the opportunity tree.
 10. Run all applicable historical, projection, ceiling/bust, role, offensive-environment, durability/availability, market-value, Vegas/prop, comparison, cross-board, and synchronization audits that existing players are required to pass.
 11. Update locked ranks, player shards/loaders, active-universe metadata, site runtime, exports, and QA expectations.
 12. Verify no duplicate names, no rank collisions/gaps, required fields complete, position ranks contiguous, and site/current Excel export synchronized to the new universe count.
@@ -41,6 +41,13 @@ A monitoring pass may not conclude `no material change` until:
 - all new transactions/availability events have been reconciled against tracked depth charts;
 - all untracked players implicated by those events have an ADMIT/HOLD OUT/WAIT disposition;
 - every ADMIT player has either completed onboarding or is explicitly marked as a blocking unsynchronized model change.
+
+## Permanent automation requirement
+This process must not rely on memory or a manual prompt reminder. The regular-season monitor must execute the transaction/depth-chart sweep and universe-admission test before closing a monitoring cycle.
+
+When an ADMIT occurs, model maintenance must generate or require the onboarding artifacts and fail synchronization/closure checks until the new player is represented across the canonical universe, projections, rankings, comparison inputs, audits, site, and current export.
+
+Any workflow, script, or QA artifact that hard-codes the active universe count is a migration dependency whenever the universe expands. A successful admission therefore requires a repository-wide count/loader/QA search, not just modification of the player shard containing the new player.
 
 ## Regression case
 2026-08-30: Green Bay acquired Kaleb Johnson after Josh Jacobs was placed on the Commissioner's Exempt List. This event should have automatically triggered both connected-player review (Jacobs/Lloyd/Johnson) and a universe-admission review. Johnson was subsequently admitted as player 163. Future analogous cases must trigger automatically.
