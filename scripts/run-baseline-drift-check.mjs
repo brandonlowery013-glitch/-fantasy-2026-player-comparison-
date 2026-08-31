@@ -62,16 +62,40 @@ for(const d of universeChanges){
 }
 if(cfg.authoritative_player_count!==currentPlayers.length)populationDeclarationErrors.push({error:'CONFIG_CURRENT_COUNT_MISMATCH',declared:cfg.authoritative_player_count,actual:currentPlayers.length});
 
-// Rebuild the declared admission state from main using the original onboarding ranks, not today's post-news ranks.
+// Rebuild the declared 166-player admission state from main. All admissions are placed simultaneously at their locked onboarding ranks so declaration order cannot create off-by-one drift.
 const expected=new Map(mainPlayers.map(p=>[p.n,{...p}]));
-for(const d of universeChanges.filter(x=>x.action==='ADD')){
-  const a=currentMap.get(d.player);if(!a)continue;
-  const addO=Number(d.initial_overall_rank??a.o),addT=Number(d.initial_true_value_rank??a.tr);
-  for(const p of expected.values()){
-    if(Number(p.o)>=addO)p.o=Number(p.o)+1;
-    if(Number(p.tr)>=addT)p.tr=Number(p.tr)+1;
+const admissionDeclarations=universeChanges.filter(x=>x.action==='ADD');
+for(const d of admissionDeclarations){
+  const a=currentMap.get(d.player);
+  if(!a){populationDeclarationErrors.push({player:d.player,error:'DECLARED_ADMISSION_MISSING_FROM_CURRENT'});continue;}
+  expected.set(d.player,{...a});
+}
+function applyAdmissionRankLayout(field,manifestField){
+  const targets=new Map();
+  for(const d of admissionDeclarations){
+    const target=Number(d[manifestField]);
+    if(!Number.isInteger(target)||target<1||target>expected.size){populationDeclarationErrors.push({player:d.player,error:'INVALID_INITIAL_ADMISSION_RANK',field,target});continue;}
+    if(targets.has(target)){populationDeclarationErrors.push({player:d.player,error:'INITIAL_ADMISSION_RANK_COLLISION',field,target,other:targets.get(target)});continue;}
+    targets.set(target,d.player);
   }
-  expected.set(d.player,{...a,o:addO,tr:addT});
+  const admittedNames=new Set(admissionDeclarations.map(d=>d.player));
+  const orderedMain=[...mainMap.values()].sort((a,b)=>Number(a[field])-Number(b[field]));
+  const slots=Array(expected.size).fill(null);
+  for(const [target,name] of targets)slots[target-1]=expected.get(name);
+  let j=0;
+  for(let i=0;i<slots.length;i++){
+    if(slots[i])continue;
+    while(j<orderedMain.length&&admittedNames.has(orderedMain[j]?.n))j++;
+    slots[i]=orderedMain[j++];
+  }
+  if(slots.some(x=>!x)){populationDeclarationErrors.push({error:'ADMISSION_LAYOUT_INCOMPLETE',field});return;}
+  slots.forEach((p,i)=>p[field]=i+1);
+}
+applyAdmissionRankLayout('o','initial_overall_rank');
+applyAdmissionRankLayout('tr','initial_true_value_rank');
+for(const pos of ['QB','RB','WR','TE']){
+  [...expected.values()].filter(p=>p.p===pos).sort((a,b)=>Number(a.o)-Number(b.o)).forEach((p,i)=>p.pr=`${pos}${i+1}`);
+  [...expected.values()].filter(p=>p.p===pos).sort((a,b)=>Number(a.tr)-Number(b.tr)).forEach((p,i)=>p.tp=`${pos}${i+1}`);
 }
 
 // Every evidence-driven model change is exact-value declared. A typo, stale value, or unrelated change still blocks.
@@ -90,7 +114,7 @@ for(const d of declaredCurrentChanges){
   for(const f of scalarCoreFields)if(Object.prototype.hasOwnProperty.call(d.expected_values,f))p[f]=d.expected_values[f];
 }
 
-// Reproduce rank consequences deterministically. Only explicit o/tr targets are fixed; everyone else preserves relative order.
+// Reproduce rank consequences deterministically. Only explicit o/tr targets are fixed; everyone else preserves the simultaneously reconstructed 166-player relative order.
 function applyDeclaredRankReflow(field){
   const targets=new Map();
   for(const d of declaredCurrentChanges){if(Object.prototype.hasOwnProperty.call(d.expected_values,field))targets.set(d.player,Number(d.expected_values[field]));}
@@ -139,7 +163,7 @@ if(unauthorizedStructural.length)blocked.push({type:'UNDECLARED_PROTECTED_STRUCT
 const report={
   generated_at:new Date().toISOString(),baseline_id:baseline.baseline_id,baseline_commit:baseline.baseline_commit,
   main_ref:mainRef,main_head:execFileSync('git',['rev-parse',mainRef],{encoding:'utf8'}).trim(),current_head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),
-  comparison_scope:'FROZEN_BASELINE_TO_MAIN_PLUS_DECLARED_ADMISSIONS_PLUS_EXACT_EVIDENCE_MODEL_CHANGES',result:blocked.length?'BLOCKED':'PASS',
+  comparison_scope:'FROZEN_BASELINE_TO_MAIN_PLUS_SIMULTANEOUS_DECLARED_ADMISSIONS_PLUS_EXACT_EVIDENCE_MODEL_CHANGES',result:blocked.length?'BLOCKED':'PASS',
   player_count:{baseline:frozenPlayers.length,main:mainPlayers.length,current:currentPlayers.length},baseline_to_main:{changes:baselineToMainChanges.length,undeclared:unauthorizedBaselineToMain.length},
   added_players:added,removed_players:removed,declared_added_players:added.filter(n=>declaredAdds.has(n)),declared_removed_players:removed.filter(n=>declaredRemoves.has(n)),
   undeclared_added_players:undeclaredAdded,undeclared_removed_players:undeclaredRemoved,universe_change_manifest:universeManifestFile,population_declaration_errors:populationDeclarationErrors,
