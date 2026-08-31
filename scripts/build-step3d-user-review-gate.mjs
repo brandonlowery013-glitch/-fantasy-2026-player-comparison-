@@ -2,11 +2,26 @@ import fs from 'node:fs';
 
 const recalPath='guardrails/step3c-shadow-recalculation-162.json';
 const queuePath='guardrails/step3c-user-review-queue-162.json';
-if(!fs.existsSync(recalPath)||!fs.existsSync(queuePath)){
-  throw new Error('Step 3D requires Step 3C shadow outputs in guardrails/');
+if(!fs.existsSync(recalPath)){
+  throw new Error('Step 3D requires Step 3C shadow output in guardrails/');
 }
 const recal=JSON.parse(fs.readFileSync(recalPath,'utf8'));
-const queue=JSON.parse(fs.readFileSync(queuePath,'utf8')).review_queue||[];
+const authoritative=Number(recal.authoritative_player_count||recal.universe_count||0);
+let queue=[];
+if(fs.existsSync(queuePath)){
+  queue=JSON.parse(fs.readFileSync(queuePath,'utf8')).review_queue||[];
+}else if(Array.isArray(recal.rows)){
+  queue=recal.rows.filter(r=>r.extreme_disagreement_review_required).map(r=>({
+    name:r.player,
+    pos:r.position,
+    live_projection:r.live_projection,
+    shadow_projection:r.shadow_projection,
+    projection_delta_ppg:Number(r.shadow_ppr_per_game)-Number(r.live_ppr_per_game),
+    extreme_disagreement_review:true
+  }));
+}else{
+  throw new Error('Step 3D requires Step 3C rows or a review queue');
+}
 const threshold=Number(recal.extreme_disagreement_threshold_ppg||9.498105203619907);
 
 function bucket(r){
@@ -24,8 +39,9 @@ const report={
   generated_at:new Date().toISOString(),
   step:'STEP_3D_USER_REVIEW_GATE',
   status:'READY_FOR_USER_DECISION',
-  source_step:'STEP_3C_FULL_162_SHADOW_RECALCULATION',
-  players_checked:recal.players_checked,
+  source_step:'STEP_3C_FULL_SHADOW_RECALCULATION',
+  authoritative_player_count:authoritative,
+  players_checked:recal.universe_count||recal.players_checked,
   flagged_rows:rows.length,
   extreme_threshold_ppg:threshold,
   buckets:counts,
@@ -43,4 +59,4 @@ const report={
   rows:sorted
 };
 fs.writeFileSync('guardrails/step3d-user-review-gate.json',JSON.stringify(report,null,2)+'\n');
-console.log(JSON.stringify({status:report.status,flagged:rows.length,buckets:counts,top:sorted.slice(0,10).map(x=>({name:x.name,pos:x.pos,delta_ppg:x.projection_delta_ppg,bucket:x.step3d_bucket}))},null,2));
+console.log(JSON.stringify({status:report.status,authoritative_player_count:authoritative,flagged:rows.length,buckets:counts,top:sorted.slice(0,10).map(x=>({name:x.name,pos:x.pos,delta_ppg:x.projection_delta_ppg,bucket:x.step3d_bucket}))},null,2));
