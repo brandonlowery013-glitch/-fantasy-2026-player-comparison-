@@ -2,9 +2,9 @@ import fs from 'node:fs';
 
 const shardFiles=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
 const players=shardFiles.flatMap(f=>JSON.parse(fs.readFileSync(f,'utf8')));
-if(players.length!==162) throw new Error(`Shadow recalculation requires exactly 162 players; found ${players.length}`);
+if(players.length!==163) throw new Error(`Shadow recalculation requires exactly 163 players; found ${players.length}`);
 const names=players.map(p=>p.n);
-if(new Set(names).size!==162) throw new Error('Shadow recalculation requires 162 unique player names');
+if(new Set(names).size!==163) throw new Error('Shadow recalculation requires 163 unique player names');
 
 const histDoc=JSON.parse(fs.readFileSync('historicalStats2026.json','utf8'));
 const hist=histDoc.players||{};
@@ -110,25 +110,25 @@ const material=rows.filter(r=>r.material_legacy_history_change).sort((a,b)=>Math
 const review=rows.filter(r=>r.shadow_overall_review).sort((a,b)=>a.live_overall_rank-b.live_overall_rank);
 
 fs.mkdirSync('guardrails',{recursive:true});
-fs.writeFileSync('guardrails/step3b-shadow-projection-context-162.json',JSON.stringify({
-  generated_at:new Date().toISOString(),step:'STEP_3B_2_162_SHADOW_RECALCULATION',shadow_only:true,
-  live_player_files_modified:false,overall_rank_published:false,players_checked:162,
-  players_with_direct_history:162-noHistory.length,players_without_direct_history:noHistory.length,no_direct_history_players:noHistory,
+fs.writeFileSync('guardrails/step3b-shadow-projection-context-163.json',JSON.stringify({
+  generated_at:new Date().toISOString(),step:'STEP_3B_2_163_SHADOW_RECALCULATION',shadow_only:true,
+  live_player_files_modified:false,overall_rank_published:false,players_checked:163,
+  players_with_direct_history:163-noHistory.length,players_without_direct_history:noHistory.length,no_direct_history_players:noHistory,
   history_aliases_used:aliasesUsed,
-  method:'Read-only reproduction of the existing historical-context projection recalibration across the current 162-player universe. Rank impact is isolated by comparing baseline-formula rank with shadow-formula rank; live rank differences are diagnostic only. This is a reconciliation baseline, not the final Bayesian model.',
+  method:'Read-only reproduction of the existing historical-context projection recalibration across the current 163-player universe. Rank impact is isolated by comparing baseline-formula rank with shadow-formula rank; live rank differences are diagnostic only. This is a reconciliation baseline, not the final Bayesian model.',
   changes:rows
 },null,2)+'\n');
-fs.writeFileSync('guardrails/step3b-shadow-projection-downstream-162.json',JSON.stringify({
-  generated_at:new Date().toISOString(),shadow_only:true,live_player_files_modified:false,players_checked:162,
+fs.writeFileSync('guardrails/step3b-shadow-projection-downstream-163.json',JSON.stringify({
+  generated_at:new Date().toISOString(),shadow_only:true,live_player_files_modified:false,players_checked:163,
   material_changes:material.length,overall_rank_review_count:review.length,
   rank_comparison_basis:'baseline formula rank vs shadow formula rank only; existing live rank gap is diagnostic and cannot trigger review',
   true_value_formula:'0.35 Expected Production + 0.20 Ceiling + 0.15 Role + 0.10 Environment + 0.10 Availability + 0.05 Reliability + 0.05 Sustainability',
   changes:material
 },null,2)+'\n');
-fs.writeFileSync('guardrails/step3b-shadow-overall-review-queue-162.json',JSON.stringify({
-  generated_at:new Date().toISOString(),shadow_only:true,published:false,players_checked:162,
+fs.writeFileSync('guardrails/step3b-shadow-overall-review-queue-163.json',JSON.stringify({
+  generated_at:new Date().toISOString(),shadow_only:true,published:false,players_checked:163,
   note:'Proposal queue only. Overall ranks remain unchanged until the user review gate and explicit approval. Rank flags measure only incremental shadow recalibration impact.',
   review_queue:review
 },null,2)+'\n');
 
-console.log(`162 shadow recalculation PASS — direct history ${162-noHistory.length}, no direct history ${noHistory.length}, aliases ${aliasesUsed.length}, material ${material.length}, Overall review ${review.length}`);
+console.log(`163 shadow recalculation PASS — direct history ${163-noHistory.length}, no direct history ${noHistory.length}, aliases ${aliasesUsed.length}, material ${material.length}, Overall review ${review.length}`);
