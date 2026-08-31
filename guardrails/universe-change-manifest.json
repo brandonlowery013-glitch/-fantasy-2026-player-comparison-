@@ -1,6 +1,6 @@
 {
-  "version": "1.1.1",
-  "purpose": "Explicit declarations for intentional Fantasy 2026 player-universe admissions/removals relative to the frozen guardrail baseline.",
+  "version": "1.2.0",
+  "purpose": "Explicit declarations for intentional Fantasy 2026 player-universe admissions/removals and evidence-driven model changes relative to current main. Model changes require exact expected values so the comparator can deterministically reproduce downstream rank reflow without allowing unrelated drift.",
   "changes": [
     {
       "action": "ADD",
@@ -33,6 +33,64 @@
       "to_count": 166,
       "reason": "Green Bay signed Jonnu Smith while Luke Musgrave opens on PUP, creating a plausible TE2/H-back standalone and contingent receiving role behind Tucker Kraft.",
       "source": "2026-08-31 Green Bay signing/PUP depth-chart evidence + player 166 onboarding in PR #128"
+    }
+  ],
+  "model_changes": [
+    {
+      "player": "Josh Jacobs",
+      "reason": "NFL Commissioner Exempt placement is a material regular-season availability event. The model reduces full-season opportunity while retaining uncertainty around the estimated late-September return date.",
+      "source": "2026-08-31 NFL Commissioner Exempt transaction + Packers roster + ESPN estimated return context",
+      "expected_values": {
+        "o": 75,
+        "tr": 76,
+        "s": 7.485,
+        "pd": 7.7,
+        "ce": 7.4,
+        "r": 7.8,
+        "e": 8.8,
+        "a": 4.8,
+        "rl": 8.0,
+        "su": 7.6,
+        "mp": 202.0
+      }
+    },
+    {
+      "player": "MarShawn Lloyd",
+      "reason": "Connected-player propagation from Jacobs' Commissioner Exempt placement creates an immediate early lead-back opportunity. Lloyd is upgraded without assuming a monopoly and retains a durability discount.",
+      "source": "2026-08-31 Packers active backfield roster + Jacobs Commissioner Exempt evidence",
+      "expected_values": {
+        "o": 105,
+        "tr": 112,
+        "s": 7.68,
+        "pd": 7.4,
+        "ce": 8.2,
+        "r": 8.2,
+        "e": 8.8,
+        "a": 6.4,
+        "rl": 6.8,
+        "su": 7.2,
+        "mp": 142.0
+      }
+    }
+  ],
+  "admission_updates": [
+    {
+      "player": "Kaleb Johnson",
+      "reason": "Second-pass connected-player propagation after Jacobs' Commissioner Exempt placement increases Johnson's rotation/power-role opportunity while keeping him behind Lloyd pending regular-season usage.",
+      "source": "2026-08-31 Packers active backfield roster + Jacobs Commissioner Exempt evidence",
+      "expected_values": {
+        "o": 132,
+        "tr": 143,
+        "s": 7.035,
+        "pd": 6.6,
+        "ce": 7.5,
+        "r": 7.3,
+        "e": 8.8,
+        "a": 9.0,
+        "rl": 6.1,
+        "su": 7.0,
+        "mp": 108.0
+      }
     }
   ]
 }
