@@ -1,4 +1,4 @@
-name: Final 163-player QA and publish sync
+name: Final 166-player QA and publish sync
 on:
   push:
     branches: [main]
@@ -20,11 +20,11 @@ jobs:
           p=Path('injuryOverrides2026.json')
           d=json.loads(p.read_text())
           # Preserve the current authoritative override content. This workflow is a
-          # cross-board QA/publish gate, not a place to replay stale Aug. 24 injuries.
-          d['updated']=d.get('updated','2026-08-30')
+          # cross-board QA/publish gate, not a place to replay stale injuries.
+          d['updated']='2026-08-31'
           p.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\n')
 
-          stamp='20260830-163'
+          stamp='20260831-166'
           ib=Path('index-backup.html')
           s=ib.read_text()
           s=re.sub(r'players\$\{i\}\.json\?v=[^`\"\']+',f'players${{i}}.json?v={stamp}',s)
@@ -48,14 +48,14 @@ jobs:
             x=json.loads(Path(f'players{i}.json').read_text())
             if not isinstance(x,list): raise SystemExit(f'players{i}.json is not a list')
             parts.extend(x)
-          if len(parts)!=163: raise SystemExit(f'Expected 163 active players, found {len(parts)}')
+          if len(parts)!=166: raise SystemExit(f'Expected 166 active players, found {len(parts)}')
           names=[p.get('n') for p in parts]
           dup=[n for n,c in Counter(names).items() if c>1]
           if dup: raise SystemExit(f'Duplicate player names: {dup}')
 
           ov=json.loads(Path('injuryOverrides2026.json').read_text())
           missing_override=[n for n in ov.get('players',{}) if n not in set(names)]
-          if missing_override: raise SystemExit(f'Injury override names missing from 163-player pool: {missing_override}')
+          if missing_override: raise SystemExit(f'Injury override names missing from 166-player pool: {missing_override}')
 
           P=[dict(p) for p in parts]
           by={p['n']:p for p in P}
@@ -84,8 +84,8 @@ jobs:
 
           rm=ov.get('rankMoves',{})
           apply('o',rm.get('overall',{})); apply('tr',rm.get('trueValue',{}))
-          if sorted(p['o'] for p in P)!=list(range(1,164)): raise SystemExit('Overall ranks are not unique 1-163')
-          if sorted(p['tr'] for p in P)!=list(range(1,164)): raise SystemExit('Player Quality ranks are not unique 1-163')
+          if sorted(p['o'] for p in P)!=list(range(1,167)): raise SystemExit('Overall ranks are not unique 1-166')
+          if sorted(p['tr'] for p in P)!=list(range(1,167)): raise SystemExit('Player Quality ranks are not unique 1-166')
 
           pos_counts=defaultdict(int)
           for p in P: pos_counts[p['p']]+=1
@@ -97,20 +97,20 @@ jobs:
           if 'Expected Fantasy Production' not in html: raise SystemExit('Projection comparison UI missing')
 
           qa={
-            'updated':'2026-08-30','model':'single 163-player active model','passed':True,
+            'updated':'2026-08-31','model':'single 166-player active model','passed':True,
             'active_players':len(P),'unique_players':len(set(names)),'player_shards':14,
             'positions':dict(pos_counts),'missing_required':[],'duplicate_names':[],'missing_override_players':[],
             'overall_rank_range':[min(p['o'] for p in P),max(p['o'] for p in P)],
             'player_quality_rank_range':[min(p['tr'] for p in P),max(p['tr'] for p in P)],
-            'runtime_checks':{'loader_14_shards':True,'player_quality_label':True,'projection_comparison_present':True,'cache_bust':'20260830-163'},
-            'kaleb_johnson':{k:by['Kaleb Johnson'].get(k) for k in ['p','o','tr','a','st','px','s7','mp']}
+            'runtime_checks':{'loader_14_shards':True,'player_quality_label':True,'projection_comparison_present':True,'cache_bust':'20260831-166'},
+            'admissions':{n:{k:by[n].get(k) for k in ['p','o','tr','a','st','px','s7','mp']} for n in ['Kaleb Johnson','Corey Kiner','Tank Dell','Jonnu Smith']}
           }
           Path('final-cross-board-qa-2026-08-24.json').write_text(json.dumps(qa,indent=2,ensure_ascii=False)+'\n')
 
           a=Path('comparison-sync-162-audit.json')
-          old=json.loads(a.read_text()); old['updated']='2026-08-30'; old['active_players']=163; old['unique_normalized']=163
+          old=json.loads(a.read_text()); old['updated']='2026-08-31'; old['active_players']=166; old['unique_normalized']=166
           old['missing_required']=[]; old['alias_duplicates']=[]
-          old['runtime']={'cross_board_qa_passed':True,'player_loader_shards':14,'active_players':163,'cache_bust':'20260830-163'}
+          old['runtime']={'cross_board_qa_passed':True,'player_loader_shards':14,'active_players':166,'cache_bust':'20260831-166'}
           a.write_text(json.dumps(old,indent=2,ensure_ascii=False)+'\n')
           PY
       - name: Validate JavaScript syntax
@@ -122,11 +122,11 @@ jobs:
           Path('/tmp/app.js').write_text(scripts[-1])
           PY
           node --check /tmp/app.js
-      - name: Commit final 163-player QA sync
+      - name: Commit final 166-player QA sync
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add injuryOverrides2026.json index.html index-backup.html comparison-sync-162-audit.json final-cross-board-qa-2026-08-24.json
           git diff --cached --quiet && exit 0
-          git commit -m "Finalize single 163-player board and pass cross-board QA"
+          git commit -m "Finalize single 166-player board and pass cross-board QA"
           git push
