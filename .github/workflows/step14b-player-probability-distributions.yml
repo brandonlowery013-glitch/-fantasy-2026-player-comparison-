@@ -15,6 +15,7 @@ on:
       - 'scripts/build-historical-projection-error-model.mjs'
       - 'scripts/calibrate-distribution-families.mjs'
       - 'scripts/build-catch-rate-priors.mjs'
+      - 'scripts/seed-weekly-baseline-context.mjs'
       - '.github/workflows/step14b-player-probability-distributions.yml'
 
 permissions:
@@ -88,6 +89,8 @@ jobs:
         run: node scripts/ingest-weekly-football-data.mjs
       - name: Normalize weekly football context
         run: node scripts/normalize-weekly-football-context.mjs
+      - name: Seed safe baseline context when live context is empty
+        run: node scripts/seed-weekly-baseline-context.mjs
       - name: Build weekly player projections
         run: node scripts/build-weekly-projection-generator.mjs
       - name: Build exact player probability distributions
@@ -124,6 +127,7 @@ jobs:
             data/probability/weekly-football-context-inputs-2026.json
             data/probability/weekly-projection-inputs-2026.json
             data/probability/generated/weekly-probability-distributions-2026.json
+            guardrails/weekly-baseline-context-fallback-report.json
             guardrails/weekly-projection-generator-report.json
             guardrails/weekly-probability-engine-report.json
           )
