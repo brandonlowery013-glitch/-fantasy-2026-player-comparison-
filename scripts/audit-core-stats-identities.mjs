@@ -7,9 +7,17 @@ if(!fs.existsSync(corePath)) throw new Error('Run ingest-historical-core.mjs fir
 const data=JSON.parse(fs.readFileSync(corePath,'utf8'));
 const rows=data.rows||[];
 
-const players=[];
-for(let i=0;i<13;i++) players.push(...JSON.parse(fs.readFileSync(path.join(root,`players${i}.json`),'utf8')));
+const config=JSON.parse(fs.readFileSync(path.join(root,'guardrails/guardrails-config.json'),'utf8'));
+const expectedCount=Number(config.authoritative_player_count);
+const expectedShards=Number(config.authoritative_player_shards);
+const shardFiles=fs.readdirSync(root)
+  .filter(f=>/^players\d+\.json$/.test(f))
+  .sort((a,b)=>Number(a.match(/\d+/)[0])-Number(b.match(/\d+/)[0]));
+if(shardFiles.length!==expectedShards) throw new Error(`Expected ${expectedShards} player shards, found ${shardFiles.length}`);
+const players=shardFiles.flatMap(f=>JSON.parse(fs.readFileSync(path.join(root,f),'utf8')));
+if(players.length!==expectedCount) throw new Error(`Expected ${expectedCount} active players, found ${players.length}`);
 const universe=new Map(players.map(p=>[p.n,p.p]));
+if(universe.size!==expectedCount) throw new Error(`Expected ${expectedCount} unique active player identities, found ${universe.size}`);
 
 const candidates={
   QB:['Josh Allen','Joe Burrow','Lamar Jackson','Jalen Hurts','Baker Mayfield','Justin Herbert','Dak Prescott','Brock Purdy','Jordan Love','Sam Darnold','Caleb Williams','Jayden Daniels'],
@@ -113,12 +121,14 @@ for(const [pos,names] of Object.entries(sample)){
 
 const report={
   generated_at:new Date().toISOString(),season:2024,external_source:'ESPN NFL athlete gamelog API',
+  authoritative_player_count:expectedCount,authoritative_player_shards:expectedShards,
   sample_players:Object.values(sample).flat().length,sample_by_position:Object.fromEntries(Object.entries(sample).map(([k,v])=>[k,v.length])),sample,
   historical_rows_checked:rows.length,structural_identity_failures:structural.length,external_identity_failures:identityErrors.length,
   external_metric_comparisons:comparisons,exact_matches:exact,mismatches:mismatches.length,unavailable_metrics:unavailableMetrics,
   result:(structural.length||identityErrors.length||mismatches.length)?'BLOCKED':'PASS',
   structural_failure_details:structural.slice(0,100),identity_failure_details:identityErrors,mismatch_details:mismatches,external_checks:external,
   safeguards:[
+    `Structural identity validation is performed against all ${expectedCount} active players loaded from all ${expectedShards} authoritative runtime shards.`,
     'ESPN is used only as an independent verification source; nflverse remains the historical ingestion source.',
     'ESPN athlete search is normalized for suffixes and disambiguated by the player current-at-2024 team from our historical row.',
     'ESPN athlete IDs must be unique across the fixed audit sample.',

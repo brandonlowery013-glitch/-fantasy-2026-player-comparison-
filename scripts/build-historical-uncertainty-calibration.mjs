@@ -5,6 +5,9 @@ const root=process.cwd();
 const input=path.join(root,'data/probability/generated/historical-reference-population-2021-2025.json');
 if(!fs.existsSync(input)) throw new Error('Run build-historical-reference-population.mjs first');
 const data=JSON.parse(fs.readFileSync(input,'utf8'));
+const sourceOfTruth=JSON.parse(fs.readFileSync(path.join(root,'MODEL_SOURCE_OF_TRUTH.json'),'utf8'));
+const activeCount=Number(sourceOfTruth.active_player_model);
+if(!Number.isInteger(activeCount)||activeCount<1) throw new Error('MODEL_SOURCE_OF_TRUTH active_player_model missing');
 const rows=data.rows.filter(r=>r.played!==false);
 const outDir=path.join(root,'data/probability/generated');
 fs.mkdirSync(outDir,{recursive:true});
@@ -103,14 +106,14 @@ for(const [pos,stats] of Object.entries(statsByPos)){
 
 const generatedAt=new Date().toISOString();
 const limitations=['This is a distribution-calibration baseline, not a historical sportsbook backtest.','No archived sportsbook line or price is used here.','Historical projection snapshots are not yet available, so this tests a walk-forward football-history forecast rather than reconstruction of our exact historical projection model.','Gaussian likelihood is a baseline scoring family for tuning shrinkage; count-stat distribution families still require dedicated comparison.','Routes, broad-population injury detail, and broad-population red-zone context are not yet fully enriched.'];
-const output={schema_version:'1.1.0',generated_at:generatedAt,mode:'SHADOW_ONLY',actionable:false,purpose:'Football-only historical uncertainty priors and first walk-forward distribution calibration baseline.',history_window:[2021,2022,2023,2024,2025],tuning_window:[2023,2024],evaluation_window:[2025],sportsbook_inputs_used:false,reference_players:data.reference_unique_players,reference_player_games:data.row_count,stat_policy:statsByPos,tuning,position_priors:priorSummary,player_priors:playerPriors,holdout_calibration:calibration,limitations};
+const output={schema_version:'1.2.0',generated_at:generatedAt,mode:'SHADOW_ONLY',actionable:false,purpose:'Football-only historical uncertainty priors and first walk-forward distribution calibration baseline.',history_window:[2021,2022,2023,2024,2025],tuning_window:[2023,2024],evaluation_window:[2025],sportsbook_inputs_used:false,live_player_universe_count:data.live_player_universe_count,reference_players:data.reference_unique_players,reference_player_games:data.row_count,stat_policy:statsByPos,tuning,position_priors:priorSummary,player_priors:playerPriors,holdout_calibration:calibration,limitations};
 const blocked=[];
-if(data.live_player_universe_count!==162)blocked.push('live player universe changed');
+if(data.live_player_universe_count!==activeCount)blocked.push(`live player universe mismatch: expected ${activeCount}, found ${data.live_player_universe_count}`);
 if(data.reference_unique_players<500)blocked.push('reference population too small');
 if(totalEval<1000)blocked.push(`holdout sample too small: ${totalEval}`);
 for(const [pos,stats] of Object.entries(calibration))for(const [stat,r] of Object.entries(stats)){if(r.sample<100)blocked.push(`${pos} ${stat} holdout sample <100`);for(const q of Object.keys(z))if(r.quantile_coverage[q]==null)blocked.push(`${pos} ${stat} ${q} missing`)}
-const report={generated_at:generatedAt,result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,total_2025_holdout_predictions:totalEval,blocked,sportsbook_inputs_used:false,tuning_summary:Object.fromEntries(Object.entries(tuning).map(([pos,s])=>[pos,Object.fromEntries(Object.entries(s).map(([st,x])=>[st,x.selected_k]))])),calibration,limitations};
+const report={generated_at:generatedAt,result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,live_player_universe_count:data.live_player_universe_count,authoritative_live_player_count:activeCount,total_2025_holdout_predictions:totalEval,blocked,sportsbook_inputs_used:false,tuning_summary:Object.fromEntries(Object.entries(tuning).map(([pos,s])=>[pos,Object.fromEntries(Object.entries(s).map(([st,x])=>[st,x.selected_k]))])),calibration,limitations};
 fs.writeFileSync(path.join(outDir,'historical-uncertainty-priors-2021-2025.json'),JSON.stringify(output,null,2)+'\n');
 fs.writeFileSync(path.join(root,'guardrails/historical-uncertainty-calibration-report.json'),JSON.stringify(report,null,2)+'\n');
-console.log(JSON.stringify({result:report.result,total_2025_holdout_predictions:totalEval,selected_k:report.tuning_summary,blocked},null,2));
+console.log(JSON.stringify({result:report.result,live_player_universe_count:data.live_player_universe_count,total_2025_holdout_predictions:totalEval,selected_k:report.tuning_summary,blocked},null,2));
 if(blocked.length)process.exit(1);
