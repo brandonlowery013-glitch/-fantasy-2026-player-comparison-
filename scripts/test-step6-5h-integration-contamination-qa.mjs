@@ -1,10 +1,12 @@
 import fs from 'fs';
 const contract=JSON.parse(fs.readFileSync('data/sources/step6-5h-integration-contamination-qa-2026.json','utf8'));
+const universeCfg=JSON.parse(fs.readFileSync('guardrails/guardrails-config.json','utf8'));
+const expectedPlayerCount=Number(universeCfg.authoritative_player_count);
 const shards=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f));
 const players=shards.flatMap(f=>JSON.parse(fs.readFileSync(f,'utf8')));
 const names=players.map(p=>p.n);
-if(players.length!==162) throw new Error(`expected 162 players, got ${players.length}`);
-if(new Set(names).size!==162) throw new Error('duplicate players');
+if(players.length!==expectedPlayerCount) throw new Error(`expected ${expectedPlayerCount} players, got ${players.length}`);
+if(new Set(names).size!==expectedPlayerCount) throw new Error(`expected ${expectedPlayerCount} unique players`);
 const forbiddenUpstream=['sportsbook','odds','implied_probability','adp','ecr','market_price'];
 const footballScopes=['FANTASY_PROJECTION','GAME_PROJECTION','PLAYER_PROP_PROJECTION','DST_PROJECTION','K_PROJECTION'];
 for(const s of footballScopes){
@@ -27,7 +29,7 @@ const bad=[...synthetic,{evidence_key:'rest:B',layer:'fantasy_projection',numeri
 const badMap=new Map();
 for(const x of bad){if(!x.numeric)continue; badMap.set(x.evidence_key,(badMap.get(x.evidence_key)||0)+1);}
 if(![...badMap.values()].some(v=>v>1)) throw new Error('negative double-count test failed');
-const report={result:'PASS',players:players.length,unique_players:new Set(names).size,football_surfaces:footballScopes,market_downstream_only:true,rejected_numeric_modules:[...rejected],negative_tests:3,next_gate:contract.next_gate};
+const report={result:'PASS',players:players.length,authoritative_player_count:expectedPlayerCount,unique_players:new Set(names).size,football_surfaces:footballScopes,market_downstream_only:true,rejected_numeric_modules:[...rejected],negative_tests:3,next_gate:contract.next_gate};
 fs.mkdirSync('guardrails',{recursive:true});
 fs.writeFileSync('guardrails/step6-5h-integration-contamination-report.json',JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));
