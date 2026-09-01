@@ -1,0 +1,31 @@
+name: PFR Historical Reconciliation
+
+on:
+  pull_request:
+    paths:
+      - 'data/sources/pfr-historical-reconciliation-2026.json'
+      - 'data/sources/historical-game-trend-db-2026.json'
+      - 'scripts/reconcile-historical-games-with-pfr.mjs'
+      - '.github/workflows/pfr-historical-reconciliation.yml'
+  workflow_dispatch:
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Self-test reconciliation logic
+        run: node scripts/reconcile-historical-games-with-pfr.mjs --self-test
+      - name: Reconcile 2021-2025 nflverse games against Pro Football Reference
+        run: node scripts/reconcile-historical-games-with-pfr.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload reconciliation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pfr-historical-reconciliation-2021-2025
+          path: data/probability/generated/pfr-historical-reconciliation-2021-2025.json
+          if-no-files-found: error
