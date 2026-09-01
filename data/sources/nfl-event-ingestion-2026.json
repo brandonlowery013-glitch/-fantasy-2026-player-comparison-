@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_1_EVENT_INGESTION_SHADOW",
+  "mode": "TRIGGER_ONLY",
+  "actionable": false,
+  "purpose": "Convert external football-state changes into one normalized append-only event ledger that can trigger downstream connected-impact reassessment without directly setting ranks, projections or betting decisions.",
+  "source_hierarchy": {
+    "primary_automated": [
+      "ESPN public NFL team roster endpoint",
+      "ESPN public NFL team depth-chart endpoint",
+      "ESPN public NFL team injury endpoint"
+    ],
+    "authoritative_cross_check": [
+      "NFL.com official injury/practice/game-status reporting",
+      "NFL.com official transaction reporting"
+    ],
+    "market_source": "The Odds API v4 is excluded from football-event causation and remains downstream market comparison only"
+  },
+  "supported_event_types": [
+    "AVAILABILITY_CHANGE",
+    "RETURN_TO_ACTIVE",
+    "ROLE_CHANGE",
+    "STARTER_CHANGE",
+    "QB_CHANGE",
+    "ROSTER_ADD",
+    "ROSTER_REMOVE",
+    "TEAM_CHANGE",
+    "TRANSACTION_PENDING_CLASSIFICATION"
+  ],
+  "future_event_types_reserved": [
+    "PLAY_CALLER_CHANGE",
+    "KEY_OFFENSIVE_LINE_CHANGE",
+    "SCHEME_CHANGE",
+    "MATERIAL_PRACTICE_ROLE_CHANGE",
+    "WEATHER_CHANGE"
+  ],
+  "required_event_fields": [
+    "event_id",
+    "event_type",
+    "entity_type",
+    "entity_id_or_name",
+    "team",
+    "previous_state",
+    "new_state",
+    "materiality",
+    "source",
+    "captured_at",
+    "evidence_fingerprint",
+    "requires_connected_impact_review"
+  ],
+  "state_rules": {
+    "first_observation_is_baseline_not_event": true,
+    "source_failure_never_means_player_removed_or_active": true,
+    "out_to_active_is_event": true,
+    "active_to_out_is_event": true,
+    "questionable_or_limited_status_is_preserved": true,
+    "return_does_not_restore_prior_workload_automatically": true,
+    "backup_is_never_promoted_automatically": true,
+    "roster_join_or_exit_without_official_transaction_type": "TRANSACTION_PENDING_CLASSIFICATION",
+    "same_evidence_event_applied_once": true
+  },
+  "materiality": {
+    "CRITICAL": ["QB_CHANGE"],
+    "HIGH": ["AVAILABILITY_CHANGE", "RETURN_TO_ACTIVE", "STARTER_CHANGE", "TEAM_CHANGE"],
+    "MEDIUM": ["ROLE_CHANGE", "ROSTER_ADD", "ROSTER_REMOVE", "TRANSACTION_PENDING_CLASSIFICATION"],
+    "LOW": []
+  },
+  "outputs": {
+    "event_ledger": "data/ingestion/nfl-event-ledger-2026.json",
+    "current_state": "data/ingestion/nfl-event-state-2026.json"
+  },
+  "prohibitions": [
+    "Event ingestion may not write Overall rank, True-Value rank, season projection, weekly projection, market-value label or betting recommendation.",
+    "Sportsbook movement may not be classified as the cause of a football-state change.",
+    "Missing source rows may not be interpreted as ACTIVE, RELEASED or REMOVED.",
+    "A detected event may trigger downstream recalculation but may not dictate the downstream answer."
+  ]
+}
