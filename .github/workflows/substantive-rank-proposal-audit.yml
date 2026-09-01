@@ -6,7 +6,7 @@ on:
     paths:
       - 'scripts/build-substantive-component-recalculation.mjs'
       - 'scripts/build-substantive-rank-proposals.mjs'
-      - 'scripts/collect-automatic-football-context.mjs'
+      - 'scripts/collect-substantive-football-context.mjs'
       - 'scripts/ingest-weekly-football-data.mjs'
       - 'scripts/normalize-weekly-football-context.mjs'
       - 'scripts/build-weekly-projection-generator.mjs'
@@ -40,15 +40,9 @@ jobs:
             exit 0
           fi
           run_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/live-full-universe-football-review.yml/runs?status=success&per_page=20" --jq '.workflow_runs[] | .id' 2>/dev/null | head -n 1 || true)"
-          if [ -z "$run_id" ]; then
-            echo 'No successful live full-universe review run found; proposal builder will report review absent.'
-            exit 0
-          fi
+          test -n "$run_id"
           artifact_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts" --jq '.artifacts[] | select(.name=="live-full-universe-football-review" and .expired==false) | .id' 2>/dev/null | head -n 1 || true)"
-          if [ -z "$artifact_id" ]; then
-            echo "No live-review artifact found for run ${run_id}; proposal builder will report review absent."
-            exit 0
-          fi
+          test -n "$artifact_id"
           gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/live-review.zip
           rm -rf /tmp/live-review && mkdir -p /tmp/live-review
           unzip -q /tmp/live-review.zip -d /tmp/live-review
@@ -67,10 +61,26 @@ jobs:
           NODE
       - name: Refresh current structured football evidence
         run: |
-          node scripts/collect-automatic-football-context.mjs
+          node scripts/collect-substantive-football-context.mjs
           node scripts/ingest-weekly-football-data.mjs
           node scripts/normalize-weekly-football-context.mjs
           node scripts/build-weekly-projection-generator.mjs
+      - name: Enforce nonzero live evidence coverage
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const collect=JSON.parse(fs.readFileSync('guardrails/substantive-football-context-collection-report.json','utf8'));
+          const norm=JSON.parse(fs.readFileSync('guardrails/weekly-football-context-normalization-report.json','utf8'));
+          const proj=JSON.parse(fs.readFileSync('guardrails/weekly-projection-generator-report.json','utf8'));
+          if(collect.result!=='PASS') throw new Error('Substantive collector did not PASS');
+          if(Number(collect.total_depth_rows)<160) throw new Error(`Depth coverage too low: ${collect.total_depth_rows}`);
+          if(Number(collect.unique_tracked_players_with_signals)<80) throw new Error(`Tracked live signal coverage too low: ${collect.unique_tracked_players_with_signals}/${src.active_player_model}`);
+          if(Number(norm.players)<=0) throw new Error('Normalizer produced zero players');
+          if(Number(norm.current_signals)<=0) throw new Error('Normalizer produced zero current signals');
+          if(Number(proj.projected_stats)<=0) throw new Error('Projection generator produced zero projected stats');
+          console.log(JSON.stringify({collector_players:collect.unique_tracked_players_with_signals,normalized_players:norm.players,current_signals:norm.current_signals,projected_stats:proj.projected_stats},null,2));
+          NODE
       - name: Build evidence-gated component recalculation
         run: node scripts/build-substantive-component-recalculation.mjs
       - name: Build non-authoritative substantive proposals
@@ -83,6 +93,7 @@ jobs:
             exit 1
           fi
       - name: Upload proposal audit
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: substantive-rank-proposal-audit
@@ -91,6 +102,7 @@ jobs:
             analysis/substantive-component-recalculation-current.md
             analysis/substantive-rank-proposals-current.json
             analysis/substantive-rank-proposals-current.md
+            guardrails/substantive-football-context-collection-report.json
             guardrails/weekly-football-context-normalization-report.json
             guardrails/weekly-projection-generator-report.json
-          if-no-files-found: error
+          if-no-files-found: warn
