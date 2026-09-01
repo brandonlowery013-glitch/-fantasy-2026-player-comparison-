@@ -1,0 +1,39 @@
+name: Generic Matchup Tidbits
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  matchup-tidbits:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate generic matchup tidbit contract
+        run: node scripts/validate-matchup-tidbits.mjs
+      - name: Self-test generic matchup tidbits
+        run: node scripts/build-matchup-tidbits.mjs --self-test
+      - name: Build current matchup tidbits
+        run: node scripts/build-matchup-tidbits.mjs
+      - name: Validate generated matchup tidbits
+        run: node scripts/validate-matchup-tidbits.mjs --require-output
+      - name: Rebuild Step 4 historical context store
+        run: node scripts/build-historical-game-trend-db.mjs
+      - name: Validate Step 4 context-store separation
+        run: node scripts/validate-historical-game-trend-db.mjs --require-output
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload matchup tidbits
+        uses: actions/upload-artifact@v4
+        with:
+          name: matchup-tidbits-2026
+          path: data/probability/generated/matchup-tidbits-2026.json
+          if-no-files-found: error

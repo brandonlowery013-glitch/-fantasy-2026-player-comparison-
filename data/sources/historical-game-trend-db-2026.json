@@ -1,11 +1,11 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "season": 2026,
-  "status": "STEP_4_HISTORICAL_GAME_TREND_DB_SHADOW",
+  "status": "STEP_4_HISTORICAL_GAME_CONTEXT_STORE_SHADOW",
   "mode": "DESCRIPTIVE_CONTEXT_ONLY",
   "actionable": false,
   "production_numeric_authority": 0,
-  "purpose": "Build a normalized historical NFL team/game trend store for readable SU, ATS and O/U context without treating a historical record as a prediction or bet by itself.",
+  "purpose": "Maintain historical NFL team/game facts and convenience summaries for readable SU, ATS and O/U interface context. Example tidbits must not be interpreted as privileged model categories or user-requested predictive features.",
   "source": {
     "provider": "nflverse nfldata schedules/games.csv",
     "url": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
@@ -15,7 +15,7 @@
     "market_fields_when_available": ["spread_line","total_line"],
     "context_fields_when_available": ["home_rest","away_rest","div_game","surface","roof"]
   },
-  "trend_dimensions": [
+  "convenience_summary_dimensions": [
     "ALL",
     "HOME_ROAD",
     "FAVORITE_DOG_PICKEM",
@@ -26,6 +26,12 @@
     "SURFACE",
     "SAME_SEASON_REMATCH"
   ],
+  "dimension_policy": {
+    "predefined_dimensions_are_convenience_summaries_not_model_features": true,
+    "examples_do_not_define_user_intent": true,
+    "no_dimension_has_intrinsic_predictive_weight": true,
+    "generic_interface_tidbits_may_use_other_verifiable_game_facts": true
+  },
   "outcomes": {
     "SU": "straight-up result from final score",
     "ATS": "team margin versus historical spread_line; unavailable when spread_line is missing",
@@ -40,12 +46,13 @@
   "record_views": ["FULL_2021_2025","BY_SEASON","RECENT_LAST_5","RECENT_LAST_10"],
   "guardrails": [
     "Historical spread and total may describe past ATS/O-U results but may not rewrite the football projection.",
-    "A trend record is context, not causation and not a standalone BET/LEAN recommendation.",
+    "A historical tidbit is context, not causation and not a standalone BET/LEAN recommendation.",
     "Missing spread or total is unknown and excluded from that market record denominator, never treated as zero or a push.",
-    "Opponent .500+ classification must use the opponent record entering that game, never end-of-season record.",
-    "Do not mine arbitrary multi-condition combinations in Step 4; predefined dimensions are stored first and backtested separately in Step 5.",
-    "No trend receives weight until out-of-sample backtesting and promotion governance are complete."
+    "If opponent-record context is shown, it must use the opponent record entering that game, never end-of-season record.",
+    "Do not turn a user example into a privileged predictive category.",
+    "Do not mine arbitrary tiny-sample combinations merely because they create an extreme record.",
+    "No historical pattern receives predictive weight until separately backtested and promoted under model governance."
   ],
   "output": "data/probability/generated/historical-game-trend-db-2021-2025.json",
-  "next_step": "Backtest trend categories out of sample before current-game matching or numeric authority."
+  "next_step": "Generate generic current-matchup interface tidbits from verifiable historical facts; predictive weighting is a separate optional research path."
 }

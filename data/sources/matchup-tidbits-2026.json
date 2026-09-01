@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "GENERIC_MATCHUP_TIDBITS_SHADOW",
+  "mode": "DESCRIPTIVE_INTERFACE_CONTEXT_ONLY",
+  "actionable": false,
+  "production_numeric_authority": 0,
+  "purpose": "Generate concise betting-site-style historical matchup tidbits for the game interface without treating example tidbits as privileged predictive model categories.",
+  "source": {
+    "provider": "nflverse nfldata schedules/games.csv",
+    "url": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
+    "history_window": [2021, 2022, 2023, 2024, 2025],
+    "current_schedule_season": 2026
+  },
+  "interface_contract": {
+    "section_name": "MATCHUP_TIDBITS",
+    "max_default_tidbits_per_game": 8,
+    "required_fields": [
+      "tidbit_id",
+      "game_id",
+      "scope",
+      "subject",
+      "text",
+      "stat_type",
+      "sample_size",
+      "window",
+      "source",
+      "descriptive_only"
+    ]
+  },
+  "supported_fact_families": [
+    "RECENT_ATS",
+    "RECENT_OU",
+    "HOME_ROAD_ATS",
+    "HOME_ROAD_OU",
+    "RECENT_SCORING",
+    "RECENT_MARGIN",
+    "HEAD_TO_HEAD",
+    "HEAD_TO_HEAD_ATS",
+    "HEAD_TO_HEAD_OU",
+    "CURRENT_STREAK",
+    "RECENT_RECORD",
+    "MATCHUP_HISTORY"
+  ],
+  "selection_rules": {
+    "families_are_examples_not_model_features": true,
+    "no_fact_family_has_intrinsic_predictive_weight": true,
+    "prefer_readable_nonduplicate_tidbits": true,
+    "prefer_larger_samples_when_two_tidbits_say_the_same_thing": true,
+    "do_not_surface_missing_market_data_as_zero": true,
+    "allow_zero_tidbits_when_history_is_insufficient": true
+  },
+  "guardrails": [
+    "A displayed tidbit is descriptive context, not a BET, LEAN, PASS, projection adjustment, probability adjustment or model edge.",
+    "Do not convert an example such as performance versus .500-plus opponents into a privileged model category unless separately justified and approved.",
+    "Do not mine arbitrary tiny-sample combinations merely because they produce an extreme record.",
+    "Do not use future results to define a historical condition.",
+    "Market-history tidbits may describe historical ATS or O-U results but may not write football projections, True Value, Overall rank or betting recommendations.",
+    "The interface may show a generic fact even when that fact has zero predictive authority."
+  ],
+  "output": "data/probability/generated/matchup-tidbits-2026.json"
+}
