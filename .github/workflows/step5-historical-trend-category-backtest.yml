@@ -1,0 +1,41 @@
+name: Step 5 Historical Trend Category Backtest
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  historical-trend-category-backtest:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate Step 5 trend backtest contract
+        run: node scripts/validate-historical-trend-category-backtest.mjs
+      - name: Self-test Step 5 backtest math
+        run: node scripts/backtest-historical-trend-categories.mjs --self-test
+      - name: Rebuild Step 4 historical trend database
+        run: node scripts/build-historical-game-trend-db.mjs
+      - name: Validate Step 4 generated database
+        run: node scripts/validate-historical-game-trend-db.mjs --require-output
+      - name: Run 2024-2025 held-out trend category backtest
+        run: node scripts/backtest-historical-trend-categories.mjs
+      - name: Validate generated Step 5 backtest
+        run: node scripts/validate-historical-trend-category-backtest.mjs --require-output
+      - name: Revalidate sportsbook-free Step 6.5E separation
+        run: node scripts/validate-step6-5e-historical-situational-intelligence.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload Step 5 backtest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: historical-trend-category-backtest-2021-2025
+          path: data/probability/generated/historical-trend-category-backtest-2021-2025.json
+          if-no-files-found: error
