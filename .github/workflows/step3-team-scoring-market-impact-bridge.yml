@@ -1,0 +1,59 @@
+name: Step 3 Team Scoring Market Impact Bridge
+
+on:
+  workflow_dispatch:
+  pull_request:
+  workflow_run:
+    workflows:
+      - Step 2 Connected Impact Resolver
+      - Step 23 Live Market Ingestion
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate football-first bridge contract
+        run: node scripts/validate-team-scoring-market-impact-bridge.mjs
+      - name: Self-test team scoring and market comparison routing
+        run: node scripts/build-team-scoring-market-impact-bridge.mjs --self-test
+      - name: Revalidate connected-impact resolver contract
+        run: node scripts/validate-connected-impact-resolver.mjs
+      - name: Revalidate model foundation
+        run: node scripts/validate-model-foundation-contract.mjs
+
+  refresh:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    needs: validate
+    runs-on: ubuntu-latest
+    concurrency:
+      group: football-impact-bridge-refresh
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build team scoring and market impact bridge
+        run: node scripts/build-team-scoring-market-impact-bridge.mjs
+      - name: Commit bridge refresh
+        run: |
+          if git diff --quiet -- data/ingestion/team-scoring-market-impact-bridge-2026.json; then
+            echo "No bridge changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ingestion/team-scoring-market-impact-bridge-2026.json
+          git commit -m "Refresh team scoring market impact bridge"
+          git push origin HEAD:main
