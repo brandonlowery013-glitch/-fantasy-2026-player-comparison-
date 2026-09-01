@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_4_HISTORICAL_GAME_TREND_DB_SHADOW",
+  "mode": "DESCRIPTIVE_CONTEXT_ONLY",
+  "actionable": false,
+  "production_numeric_authority": 0,
+  "purpose": "Build a normalized historical NFL team/game trend store for readable SU, ATS and O/U context without treating a historical record as a prediction or bet by itself.",
+  "source": {
+    "provider": "nflverse nfldata schedules/games.csv",
+    "url": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
+    "history_window": [2021, 2022, 2023, 2024, 2025],
+    "game_type": "REG",
+    "required_fields": ["game_id","season","week","home_team","away_team","home_score","away_score"],
+    "market_fields_when_available": ["spread_line","total_line"],
+    "context_fields_when_available": ["home_rest","away_rest","div_game","surface","roof"]
+  },
+  "trend_dimensions": [
+    "ALL",
+    "HOME_ROAD",
+    "FAVORITE_DOG_PICKEM",
+    "OPPONENT_PREGAME_WINNING_500_PLUS_OR_BELOW",
+    "WEEK_1_OR_LATER",
+    "REST_BUCKET",
+    "DIVISION_OR_NON_DIVISION",
+    "SURFACE",
+    "SAME_SEASON_REMATCH"
+  ],
+  "outcomes": {
+    "SU": "straight-up result from final score",
+    "ATS": "team margin versus historical spread_line; unavailable when spread_line is missing",
+    "OU": "combined final score versus historical total_line; unavailable when total_line is missing"
+  },
+  "pregame_integrity": {
+    "opponent_record_uses_only_games_completed_before_current_game": true,
+    "week_1_opponent_record_is_unknown": true,
+    "same_season_rematch_uses_only_prior_same-season meeting": true,
+    "future_results_may_not_define_current_game_condition": true
+  },
+  "record_views": ["FULL_2021_2025","BY_SEASON","RECENT_LAST_5","RECENT_LAST_10"],
+  "guardrails": [
+    "Historical spread and total may describe past ATS/O-U results but may not rewrite the football projection.",
+    "A trend record is context, not causation and not a standalone BET/LEAN recommendation.",
+    "Missing spread or total is unknown and excluded from that market record denominator, never treated as zero or a push.",
+    "Opponent .500+ classification must use the opponent record entering that game, never end-of-season record.",
+    "Do not mine arbitrary multi-condition combinations in Step 4; predefined dimensions are stored first and backtested separately in Step 5.",
+    "No trend receives weight until out-of-sample backtesting and promotion governance are complete."
+  ],
+  "output": "data/probability/generated/historical-game-trend-db-2021-2025.json",
+  "next_step": "Backtest trend categories out of sample before current-game matching or numeric authority."
+}
