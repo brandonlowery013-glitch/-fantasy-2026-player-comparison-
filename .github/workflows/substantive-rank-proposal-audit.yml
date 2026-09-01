@@ -7,18 +7,14 @@ on:
       - 'scripts/build-substantive-component-recalculation.mjs'
       - 'scripts/build-substantive-rank-proposals.mjs'
       - 'scripts/collect-substantive-football-context.mjs'
+      - 'scripts/build-substantive-football-context-inputs.mjs'
       - 'scripts/test-substantive-football-context-parser.mjs'
-      - 'scripts/ingest-weekly-football-data.mjs'
-      - 'scripts/normalize-weekly-football-context.mjs'
-      - 'scripts/build-weekly-projection-generator.mjs'
       - '.github/workflows/substantive-rank-proposal-audit.yml'
       - '.github/workflows/build-overall-rank-audit-context.yml'
       - '.github/workflows/apply-overall-audit-and-cohesion.yml'
       - 'MODEL_SOURCE_OF_TRUTH.json'
       - 'players*.json'
       - 'guardrails/current-football-review.json'
-      - 'data/probability/weekly-football-context-inputs-2026.json'
-      - 'data/probability/weekly-projection-inputs-2026.json'
 
 permissions:
   contents: read
@@ -34,6 +30,8 @@ jobs:
           node-version: '20'
       - name: Test ESPN depth parser regression
         run: node scripts/test-substantive-football-context-parser.mjs
+      - name: Test substantive recalculation outcomes
+        run: node scripts/build-substantive-component-recalculation.mjs --self-test
       - name: Hydrate latest verified live football review when ledger is absent
         env:
           GH_TOKEN: ${{ github.token }}
@@ -62,27 +60,22 @@ jobs:
           if((review.players||[]).length!==Number(src.active_player_model)) throw new Error('Live review does not contain every active player');
           console.log(`Hydrated verified live review: ${review.active_player_count} players, completed ${review.sweep_completed_at}`);
           NODE
-      - name: Refresh current structured football evidence
+      - name: Refresh season-long substantive football evidence
         run: |
           node scripts/collect-substantive-football-context.mjs
-          node scripts/ingest-weekly-football-data.mjs
-          node scripts/normalize-weekly-football-context.mjs
-          node scripts/build-weekly-projection-generator.mjs
-      - name: Enforce nonzero live evidence coverage
+          node scripts/build-substantive-football-context-inputs.mjs
+      - name: Enforce live substantive evidence coverage
         run: |
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
           const collect=JSON.parse(fs.readFileSync('guardrails/substantive-football-context-collection-report.json','utf8'));
-          const norm=JSON.parse(fs.readFileSync('guardrails/weekly-football-context-normalization-report.json','utf8'));
-          const proj=JSON.parse(fs.readFileSync('guardrails/weekly-projection-generator-report.json','utf8'));
+          const ctx=JSON.parse(fs.readFileSync('guardrails/substantive-football-context-inputs-report.json','utf8'));
           if(collect.result!=='PASS') throw new Error('Substantive collector did not PASS');
           if(Number(collect.total_depth_rows)<160) throw new Error(`Depth coverage too low: ${collect.total_depth_rows}`);
           if(Number(collect.unique_tracked_players_with_signals)<80) throw new Error(`Tracked live signal coverage too low: ${collect.unique_tracked_players_with_signals}/${src.active_player_model}`);
-          if(Number(norm.players)<=0) throw new Error('Normalizer produced zero players');
-          if(Number(norm.current_signals)<=0) throw new Error('Normalizer produced zero current signals');
-          if(Number(proj.projected_stats)<=0) throw new Error('Projection generator produced zero projected stats');
-          console.log(JSON.stringify({collector_players:collect.unique_tracked_players_with_signals,normalized_players:norm.players,current_signals:norm.current_signals,projected_stats:proj.projected_stats},null,2));
+          if(ctx.result!=='PASS'||Number(ctx.players)<80||Number(ctx.signals)<80) throw new Error(`Structured substantive context insufficient: ${JSON.stringify(ctx)}`);
+          console.log(JSON.stringify({collector_players:collect.unique_tracked_players_with_signals,structured_players:ctx.players,structured_signals:ctx.signals,availability_resolved:ctx.availability_resolved,availability_unresolved:ctx.availability_unresolved},null,2));
           NODE
       - name: Build evidence-gated component recalculation
         run: node scripts/build-substantive-component-recalculation.mjs
@@ -106,6 +99,6 @@ jobs:
             analysis/substantive-rank-proposals-current.json
             analysis/substantive-rank-proposals-current.md
             guardrails/substantive-football-context-collection-report.json
-            guardrails/weekly-football-context-normalization-report.json
-            guardrails/weekly-projection-generator-report.json
+            guardrails/substantive-football-context-inputs-report.json
+            data/probability/substantive-football-context-inputs-2026.json
           if-no-files-found: warn
