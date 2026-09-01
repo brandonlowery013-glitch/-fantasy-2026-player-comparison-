@@ -29,21 +29,6 @@ async function teamDirectory(){
   for(const t of j.sports?.[0]?.leagues?.[0]?.teams||[]){const x=t.team||t,abbr=canon(x.abbreviation);if(abbr&&x.id)m.set(abbr,String(x.id));}
   return m;
 }
-function walkNames(payload){
-  const out=[];
-  const walk=x=>{
-    if(Array.isArray(x)){for(const y of x)walk(y);return;}
-    if(!x||typeof x!=='object')return;
-    const a=x.athlete||x.player||x;
-    const name=a.displayName||a.fullName||a.name;
-    const pos=String(a.position?.abbreviation||x.position?.abbreviation||x.position?.name||x.position||'').toUpperCase();
-    if(name&&['QB','RB','WR','TE'].includes(pos)) out.push({name,pos});
-    for(const [k,v] of Object.entries(x)) if(v&&typeof v==='object'&&!['athlete','player'].includes(k)) walk(v);
-  };
-  walk(payload);
-  const seen=new Set();
-  return out.filter(x=>{const k=`${norm(x.name)}|${x.pos}`;if(seen.has(k))return false;seen.add(k);return true;});
-}
 function parseDepth(payload){
   const rows=[];
   const walk=x=>{
@@ -89,12 +74,11 @@ const teamChecks=new Map();
 const failures=[];
 for(const [team,id] of teams){
   try{
-    const [rosterPayload,depthPayload,injuryPayload]=await Promise.all([
-      getJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${id}/roster`),
+    const [depthPayload,injuryPayload]=await Promise.all([
       getJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${id}/depthcharts`),
       getJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${id}/injuries`)
     ]);
-    teamChecks.set(team,{roster:walkNames(rosterPayload),depth:parseDepth(depthPayload),injuries:parseInjuries(injuryPayload),checked_at:new Date().toISOString()});
+    teamChecks.set(team,{depth:parseDepth(depthPayload),injuries:parseInjuries(injuryPayload),checked_at:new Date().toISOString()});
   }catch(e){failures.push(`${team}: ${e.message}`);}
 }
 if(failures.length) throw new Error(`live team-source failures: ${failures.join(' | ')}`);
@@ -105,15 +89,12 @@ for(const p of active){
   const team=teamMap[p.t];
   const check=teamChecks.get(team);
   if(!check) throw new Error(`${p.n} missing team check for ${p.t}/${team}`);
-  const rosterSet=new Set(check.roster.map(x=>norm(x.name)));
   const injury=check.injuries.find(x=>norm(x.name)===norm(p.n))||null;
   let status='REVIEWED_NO_CHANGE',reason=null,sourceSummary=null;
-  if(!rosterSet.has(norm(p.n))){
-    status='MATERIAL_CHANGE';reason=`Current ESPN ${team} roster check did not contain this tracked player; team/transaction status requires reconciliation.`;sourceSummary=`ESPN team roster endpoint checked ${check.checked_at}.`;
-  }else if(injury&&negativeAvailability(injury)&&!modelAlreadyReflectsUnavailable(p)){
+  if(injury&&negativeAvailability(injury)&&!modelAlreadyReflectsUnavailable(p)){
     status='MATERIAL_CHANGE';reason=`Current injury status indicates unavailability not clearly reflected in the canonical player status: ${injury.status}${injury.practice_status?` / ${injury.practice_status}`:''}.`;sourceSummary=`ESPN team injury endpoint checked ${check.checked_at}.`;
   }
-  const entry={player:p.n,status,reviewed_at:check.checked_at,categories_checked:['current_team_roster','depth_chart','injury_status','connected_depth_opportunity']};
+  const entry={player:p.n,status,reviewed_at:check.checked_at,categories_checked:['depth_chart','injury_status','connected_depth_opportunity']};
   if(status==='MATERIAL_CHANGE'){entry.reason=reason;entry.source_summary=sourceSummary;material.push({player:p.n,reason,team});}
   players.push(entry);
 }
@@ -129,7 +110,7 @@ for(const [team,check] of teamChecks){
 }
 
 const ledger={
-  schema_version:'1.0.0',
+  schema_version:'1.0.1',
   season:2026,
   phase:'REGULAR_SEASON',
   camp_preseason_mode:false,
@@ -138,10 +119,11 @@ const ledger={
   active_player_shards:activeShards,
   sweep_started_at:startedAt,
   sweep_completed_at:new Date().toISOString(),
-  source_method:'LIVE_ESPN_TEAM_ROSTER_DEPTH_INJURY_ENDPOINTS',
+  source_method:'LIVE_ESPN_TEAM_DEPTH_INJURY_ENDPOINTS',
+  source_limitations:['ESPN team roster endpoint was not used because it returned 404 during live validation; absence from a depth chart is not treated as transaction evidence.'],
   players,
   materially_implicated_untracked:[...untrackedMap.values()]
 };
 write('guardrails/current-football-review.json',ledger);
-write('guardrails/live-full-universe-review-summary.json',{generated_at:ledger.sweep_completed_at,tracked_reviewed:players.length,material_changes:material,material_change_count:material.length,untracked_candidates:ledger.materially_implicated_untracked,untracked_candidate_count:ledger.materially_implicated_untracked.length,team_checks:teamChecks.size,result:'BUILT'});
+write('guardrails/live-full-universe-review-summary.json',{generated_at:ledger.sweep_completed_at,tracked_reviewed:players.length,material_changes:material,material_change_count:material.length,untracked_candidates:ledger.materially_implicated_untracked,untracked_candidate_count:ledger.materially_implicated_untracked.length,team_checks:teamChecks.size,result:'BUILT',source_limitations:ledger.source_limitations});
 console.log(JSON.stringify({tracked_reviewed:players.length,material_change_count:material.length,untracked_candidate_count:ledger.materially_implicated_untracked.length,material_changes:material,untracked_candidates:ledger.materially_implicated_untracked},null,2));
