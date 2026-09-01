@@ -28,6 +28,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   canonical-sync:
@@ -69,15 +70,24 @@ jobs:
           NODE
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
-      - name: Persist canonical interface payloads on main
+      - name: Persist canonical interface payloads through PR
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if git diff --quiet -- data/probability/generated/matchup-tidbits-2026.json data/ingestion/interface-impact-payload-2026.json; then
             echo "Canonical interface payloads already current"
             exit 0
           fi
+          BRANCH="production/canonical-interface-sync-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
           git add data/probability/generated/matchup-tidbits-2026.json data/ingestion/interface-impact-payload-2026.json
           git commit -m "Refresh canonical interface payloads"
-          git push origin HEAD:main
+          git push origin "$BRANCH"
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Refresh canonical interface payloads" \
+            --body "Automated protected-branch persistence for the validated deployment payloads. Rebuilds the current matchup tidbits and interface impact payload; no football projection, rank, True Value, or market-authority changes. Source workflow run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
