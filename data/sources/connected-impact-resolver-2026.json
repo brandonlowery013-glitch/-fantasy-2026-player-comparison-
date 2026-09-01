@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_2_CONNECTED_IMPACT_RESOLVER_SHADOW",
+  "mode": "ROUTING_AND_REASSESSMENT",
+  "actionable": false,
+  "purpose": "Expand each material NFL event into every materially connected player, team, opponent, projection, scoring, market-comparison and decision domain that must be reassessed before the event is considered processed.",
+  "input_event_ledger": "data/ingestion/nfl-event-ledger-2026.json",
+  "authoritative_universe": "guardrails/guardrails-config.json",
+  "schedule": "data/calibration/weekly-event-schedule-2026.json",
+  "downstream_domains": [
+    "direct_player",
+    "connected_players",
+    "team_offense",
+    "opponent",
+    "weekly_projection",
+    "team_scoring",
+    "market_comparison",
+    "decision_outputs"
+  ],
+  "event_domain_rules": {
+    "QB_CHANGE": ["direct_player","connected_players","team_offense","opponent","weekly_projection","team_scoring","market_comparison","decision_outputs"],
+    "AVAILABILITY_CHANGE": ["direct_player","connected_players","team_offense","opponent","weekly_projection","team_scoring","market_comparison","decision_outputs"],
+    "RETURN_TO_ACTIVE": ["direct_player","connected_players","team_offense","opponent","weekly_projection","team_scoring","market_comparison","decision_outputs"],
+    "STARTER_CHANGE": ["direct_player","connected_players","team_offense","weekly_projection","team_scoring","market_comparison","decision_outputs"],
+    "ROLE_CHANGE": ["direct_player","connected_players","team_offense","weekly_projection","decision_outputs"],
+    "ROSTER_ADD": ["direct_player","connected_players","team_offense","weekly_projection","decision_outputs"],
+    "ROSTER_REMOVE": ["direct_player","connected_players","team_offense","weekly_projection","team_scoring","market_comparison","decision_outputs"],
+    "TEAM_CHANGE": ["direct_player","connected_players","team_offense","opponent","weekly_projection","team_scoring","market_comparison","decision_outputs"],
+    "TRANSACTION_PENDING_CLASSIFICATION": ["direct_player","connected_players","team_offense","weekly_projection","decision_outputs"]
+  },
+  "connection_rules": {
+    "same_team_qb_rb_wr_te_always_reviewed_for_critical_or_high_events": true,
+    "same_position_teammates_always_reviewed_for_role_availability_roster_events": true,
+    "scheduled_opponent_attached_when_current_week_game_exists": true,
+    "return_event_requires_reverse_reassessment": true,
+    "backup_promotion_is_never_assumed": true,
+    "market_movement_is_comparison_evidence_not_football_cause": true
+  },
+  "decision_contract": {
+    "allowed_system_decisions": ["CHANGE","HOLD","WAIT","ADMIT","HOLD_OUT"],
+    "routing_state_before_numeric_recalculation": "WAIT",
+    "no_event_or_nonmaterial_event": "HOLD",
+    "numeric_change_requires_existing_projection_or_decision_module": true,
+    "resolver_may_not_invent_projection_delta": true,
+    "resolver_may_not_invent_rank_delta": true,
+    "resolver_may_not_invent_team_point_delta": true
+  },
+  "completion_rule": "A material event is incomplete until every required downstream domain has an explicit reassessment state and no required domain is silently omitted.",
+  "output": "data/ingestion/connected-impact-queue-2026.json",
+  "prohibitions": [
+    "Do not automatically boost a backup solely because a starter is unavailable.",
+    "Do not automatically restore a returning player to his prior workload.",
+    "Do not let spread, total or sportsbook movement rewrite football assumptions.",
+    "Do not manufacture numeric effects before the appropriate existing football/scoring module recalculates them.",
+    "Do not mark an event processed if a required connected domain is missing."
+  ]
+}
