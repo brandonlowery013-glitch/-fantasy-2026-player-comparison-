@@ -7,6 +7,7 @@ on:
       - 'scripts/build-substantive-component-recalculation.mjs'
       - 'scripts/build-substantive-rank-proposals.mjs'
       - 'scripts/collect-substantive-football-context.mjs'
+      - 'scripts/test-substantive-football-context-parser.mjs'
       - 'scripts/ingest-weekly-football-data.mjs'
       - 'scripts/normalize-weekly-football-context.mjs'
       - 'scripts/build-weekly-projection-generator.mjs'
@@ -31,6 +32,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Test ESPN depth parser regression
+        run: node scripts/test-substantive-football-context-parser.mjs
       - name: Hydrate latest verified live football review when ledger is absent
         env:
           GH_TOKEN: ${{ github.token }}
