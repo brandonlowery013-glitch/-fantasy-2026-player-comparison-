@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "STEP_5_HISTORICAL_TREND_CATEGORY_BACKTEST_SHADOW",
+  "mode": "OUT_OF_SAMPLE_RESEARCH_ONLY",
+  "actionable": false,
+  "production_numeric_authority": 0,
+  "automatic_promotion": false,
+  "base_step": "STEP_4_HISTORICAL_GAME_TREND_DB_SHADOW",
+  "base_main_sha": "b097ab452fc04141972ecf901966f1d59277515c",
+  "source_contract": "data/sources/historical-game-trend-db-2026.json",
+  "history_window": [2021, 2022, 2023, 2024, 2025],
+  "held_out_test_seasons": [2024, 2025],
+  "markets": ["ATS", "OU"],
+  "dimensions": [
+    "ALL",
+    "HOME_ROAD",
+    "FAVORITE_DOG_PICKEM",
+    "OPPONENT_PREGAME_WINNING_500_PLUS_OR_BELOW",
+    "WEEK_1_OR_LATER",
+    "REST_BUCKET",
+    "DIVISION_OR_NON_DIVISION",
+    "SURFACE",
+    "SAME_SEASON_REMATCH"
+  ],
+  "signal_rule": {
+    "minimum_training_market_games": 8,
+    "upper_rate_threshold": 0.58,
+    "lower_rate_threshold": 0.42,
+    "description": "For each team + dimension value, use only seasons before the held-out test season. A historical directional signal exists only when at least 8 market-resolved training games are available and the training ATS win rate or O/U over rate is >=58% or <=42%. The held-out season never chooses the direction or threshold."
+  },
+  "evaluation": {
+    "benchmark_hit_rate": 0.5,
+    "research_candidate_min_pooled_n": 40,
+    "research_candidate_min_pooled_hit_rate": 0.525,
+    "research_candidate_min_each_fold_hit_rate": 0.48,
+    "robust_candidate_requires_wilson_95_lower_above": 0.5,
+    "pushes_excluded_from_directional_hit_rate": true
+  },
+  "guardrails": [
+    "No held-out result may select a team trend direction, threshold, category, or sample-size rule.",
+    "Each 2024 test uses only 2021-2023 history; each 2025 test uses only 2021-2024 history.",
+    "Opponent .500 status must remain pregame-only exactly as defined by Step 4.",
+    "Missing historical spread or total is unknown and excluded from that market test.",
+    "A research candidate is not a betting recommendation, model weight, projection adjustment, or production promotion.",
+    "No category receives production authority from Step 5 regardless of backtest result.",
+    "Do not combine multiple dimensions into mined conjunctions in this step.",
+    "Step 4 descriptive database and Step 6.5E sportsbook-free football calibration must remain logically separate."
+  ],
+  "output": "data/probability/generated/historical-trend-category-backtest-2021-2025.json",
+  "next_step": "Match only backtested trend categories to current-game conditions as contextual evidence, still without automatic betting authority."
+}
