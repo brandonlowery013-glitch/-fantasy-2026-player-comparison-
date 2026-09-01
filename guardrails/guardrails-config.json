@@ -1,5 +1,5 @@
 {
-  "version": "1.2.1",
+  "version": "1.3.0",
   "season": 2026,
   "authoritative_player_count": 166,
   "authoritative_player_shards": 14,
@@ -12,6 +12,20 @@
   "required_player_numeric_fields": ["o","tr","s","pd","ce","r","e","a","rl","su","mp"],
   "numeric_bounds": {
     "s": [0,10], "pd": [0,10], "ce": [0,10], "r": [0,10], "e": [0,10], "a": [0,10], "rl": [0,10], "su": [0,10]
+  },
+  "full_universe_review": {
+    "required": true,
+    "ledger_file": "guardrails/current-football-review.json",
+    "scope": "FULL_ACTIVE_UNIVERSE_PLUS_CONNECTED",
+    "tracked_statuses": ["NO_MATERIAL_CHANGE","MATERIAL_CHANGE","REVIEWED_NO_CHANGE"],
+    "untracked_decisions": ["ADMIT","HOLD_OUT","WAIT"],
+    "require_categories_checked": true,
+    "require_material_change_reason_and_source_summary": true,
+    "require_admit_onboarding_complete": true,
+    "block_missing_active_player": true,
+    "block_duplicate_review": true,
+    "block_unreviewed_status": true,
+    "regular_season_disables_camp_preseason_mode": true
   },
   "probability": {
     "minimum": 0,
