@@ -5,6 +5,9 @@ const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true});fs.writeFileSync(path.join(root,p),JSON.stringify(x,null,2)+'\n');};
 const contract=read('data/sources/weekly-football-ingestion-2026.json');
+const sourceOfTruth=read('MODEL_SOURCE_OF_TRUTH.json');
+const activeShards=Number(sourceOfTruth.runtime_player_shards);
+const activeCount=Number(sourceOfTruth.active_player_model);
 const snapshots=read('data/ingestion/weekly-football-source-snapshots-2026.json');
 const authoritativeSeedPath='data/sources/nfl-authoritative-week1-2026.json';
 const authoritativeSeed=fs.existsSync(path.join(root,authoritativeSeedPath))?read(authoritativeSeedPath):null;
@@ -20,10 +23,11 @@ const canonicalTeam=x=>espnAlias[String(x||'').toUpperCase()]||String(x||'').toU
 
 function loadPlayers(){
   const out=[];
-  for(let i=0;i<13;i++)for(const p of read(`players${i}.json`)){
+  for(let i=0;i<activeShards;i++)for(const p of read(`players${i}.json`)){
     const abbr=teamMap[p.t];if(!abbr)throw new Error(`Unknown team mapping for ${p.n}: ${p.t}`);
     out.push({name:p.n,position:String(p.p||'').toUpperCase(),team:abbr});
   }
+  if(out.length!==activeCount)throw new Error(`Active universe contract mismatch: expected ${activeCount}, found ${out.length}`);
   return out;
 }
 

@@ -6,6 +6,9 @@ const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true});fs.writeFileSync(path.join(root,p),JSON.stringify(x,null,2)+'\n');};
 const contract=read('data/sources/automatic-football-context-adapters-2026.json');
+const sourceOfTruth=read('MODEL_SOURCE_OF_TRUTH.json');
+const activeShards=Number(sourceOfTruth.runtime_player_shards);
+const activeCount=Number(sourceOfTruth.active_player_model);
 const ledgerPath='data/ingestion/weekly-football-source-snapshots-2026.json';
 const ledger=read(ledgerPath);
 const schedulePath='data/calibration/weekly-event-schedule-2026.json';
@@ -17,7 +20,7 @@ const canonTeam=x=>espnAlias[String(x||'').toUpperCase()]||String(x||'').toUpper
 const fullTeamToAbbr={'Arizona Cardinals':'ARI','Atlanta Falcons':'ATL','Baltimore Ravens':'BAL','Buffalo Bills':'BUF','Carolina Panthers':'CAR','Chicago Bears':'CHI','Cincinnati Bengals':'CIN','Cleveland Browns':'CLE','Dallas Cowboys':'DAL','Denver Broncos':'DEN','Detroit Lions':'DET','Green Bay Packers':'GB','Houston Texans':'HOU','Indianapolis Colts':'IND','Jacksonville Jaguars':'JAX','Kansas City Chiefs':'KC','Las Vegas Raiders':'LV','Los Angeles Chargers':'LAC','Los Angeles Rams':'LA','Miami Dolphins':'MIA','Minnesota Vikings':'MIN','New England Patriots':'NE','New Orleans Saints':'NO','New York Giants':'NYG','New York Jets':'NYJ','Philadelphia Eagles':'PHI','Pittsburgh Steelers':'PIT','San Francisco 49ers':'SF','Seattle Seahawks':'SEA','Tampa Bay Buccaneers':'TB','Tennessee Titans':'TEN','Washington Commanders':'WAS'};
 const sourceNames={role:contract.adapters.role.automated_source,injury:contract.adapters.injury.automated_source,team_environment:contract.adapters.team_environment.automated_source,opponent:contract.adapters.opponent.automated_source,qb_context:contract.adapters.qb_context.automated_source};
 
-function players(){const out=[];for(let i=0;i<13;i++)for(const p of read(`players${i}.json`)){const team=fullTeamToAbbr[p.t];if(!team)throw new Error(`Unknown team ${p.t}`);out.push({name:p.n,position:String(p.p||'').toUpperCase(),team});}return out;}
+function players(){const out=[];for(let i=0;i<activeShards;i++)for(const p of read(`players${i}.json`)){const team=fullTeamToAbbr[p.t];if(!team)throw new Error(`Unknown team ${p.t}`);out.push({name:p.n,position:String(p.p||'').toUpperCase(),team});}if(out.length!==activeCount)throw new Error(`Active universe contract mismatch: expected ${activeCount}, found ${out.length}`);return out;}
 function stable(x){if(Array.isArray(x))return x.map(stable);if(x&&typeof x==='object')return Object.fromEntries(Object.keys(x).sort().map(k=>[k,stable(x[k])]));return x;}
 function fingerprint(x){return crypto.createHash('sha256').update(JSON.stringify(stable(x))).digest('hex').slice(0,20);}
 function snapshotId(week,type,player,evidence){return `2026-W${week}-${type}-${norm(player)}-${fingerprint(evidence)}`;}
