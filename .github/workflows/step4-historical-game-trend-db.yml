@@ -1,0 +1,37 @@
+name: Step 4 Historical Game Trend Database
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  historical-game-trend-db:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate Step 4 trend database contract
+        run: node scripts/validate-historical-game-trend-db.mjs
+      - name: Self-test historical trend calculations
+        run: node scripts/build-historical-game-trend-db.mjs --self-test
+      - name: Build 2021-2025 historical game trend database
+        run: node scripts/build-historical-game-trend-db.mjs
+      - name: Validate generated trend database
+        run: node scripts/validate-historical-game-trend-db.mjs --require-output
+      - name: Revalidate existing historical situational intelligence separation
+        run: node scripts/validate-step6-5e-historical-situational-intelligence.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Upload generated historical trend database
+        uses: actions/upload-artifact@v4
+        with:
+          name: historical-game-trend-db-2021-2025
+          path: data/probability/generated/historical-game-trend-db-2021-2025.json
+          if-no-files-found: error
