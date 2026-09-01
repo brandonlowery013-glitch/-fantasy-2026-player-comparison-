@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "INTERFACE_IMPACT_PAYLOAD_SHADOW",
+  "mode": "READ_ONLY_ENGINE_VIEW",
+  "actionable": false,
+  "purpose": "Provide one normalized interface-facing view of material football events and their downstream reassessment state without moving business logic into the UI.",
+  "inputs": {
+    "events": "data/ingestion/nfl-event-ledger-2026.json",
+    "connected_impacts": "data/ingestion/connected-impact-queue-2026.json",
+    "team_scoring_market_bridge": "data/ingestion/team-scoring-market-impact-bridge-2026.json"
+  },
+  "output": "data/ingestion/interface-impact-payload-2026.json",
+  "required_fields": [
+    "impact_id",
+    "source_event_id",
+    "event_type",
+    "entity",
+    "team",
+    "captured_at",
+    "materiality",
+    "state",
+    "affected_players",
+    "team_scoring",
+    "market_comparison",
+    "projection_change",
+    "rank_change",
+    "decision",
+    "reason",
+    "confidence",
+    "source"
+  ],
+  "rules": {
+    "ui_is_read_only": true,
+    "no_projection_or_rank_math_in_ui": true,
+    "missing_numeric_change_is_null_not_zero": true,
+    "missing_decision_is_wait_not_fabricated_action": true,
+    "market_is_context_only": true,
+    "event_provenance_required": true,
+    "payload_may_not_invent_downstream_completion": true
+  },
+  "state_mapping": {
+    "PENDING_CONNECTED_IMPACT": "WAIT",
+    "PENDING_DOWNSTREAM_REASSESSMENT": "WAIT",
+    "PENDING_FOOTBALL_RECALCULATION": "WAIT",
+    "INSUFFICIENT_MARKET_DATA": "WAIT",
+    "READY_FOR_MARKET_COMPARISON": "HOLD",
+    "NO_CURRENT_GAME": "HOLD",
+    "NO_TEAM_SCORING_REVIEW_REQUIRED": "HOLD"
+  }
+}
