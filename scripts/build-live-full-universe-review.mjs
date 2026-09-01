@@ -39,21 +39,35 @@ async function teamDirectory(){
 }
 function parseDepth(payload){
   const rows=[];
-  const walk=x=>{
-    if(Array.isArray(x)){for(const y of x)walk(y);return;}
-    if(!x||typeof x!=='object')return;
-    const pos=posCanon(x.position?.abbreviation||x.position?.name||x.name||x.position||'');
-    const athletes=x.athletes||x.items;
-    if(Array.isArray(athletes)) for(const a0 of athletes){
-      const a=a0.athlete||a0;
-      const name=a.displayName||a.fullName||a.name;
-      const rank=Number(a0.rank??a.rank??0);
-      const p=posCanon(a.position?.abbreviation||a.position?.name||pos||'');
-      if(name&&rank&&['QB','RB','WR','TE'].includes(p)) rows.push({name,position:p,rank});
+  const charts=payload.depthCharts||payload.depthcharts||[];
+  for(const chart of charts){
+    for(const slot of Object.values(chart.positions||{})){
+      const pos=posCanon(slot?.position?.abbreviation||slot?.position?.name||slot?.name||'');
+      for(const a0 of slot?.athletes||[]){
+        const a=a0?.athlete||a0;
+        const name=a?.displayName||a?.fullName||a?.name;
+        const rank=Number(a0?.rank??a?.rank??0);
+        if(name&&rank&&['QB','RB','WR','TE'].includes(pos)) rows.push({name,position:pos,rank});
+      }
     }
-    for(const v of Object.values(x)) if(v&&typeof v==='object') walk(v);
-  };
-  walk(payload);
+  }
+  if(!rows.length){
+    const walk=x=>{
+      if(Array.isArray(x)){for(const y of x)walk(y);return;}
+      if(!x||typeof x!=='object')return;
+      const pos=posCanon(x.position?.abbreviation||x.position?.name||x.name||x.position||'');
+      const athletes=x.athletes||x.items;
+      if(Array.isArray(athletes)) for(const a0 of athletes){
+        const a=a0.athlete||a0;
+        const name=a.displayName||a.fullName||a.name;
+        const rank=Number(a0.rank??a.rank??0);
+        const p=posCanon(a.position?.abbreviation||a.position?.name||pos||'');
+        if(name&&rank&&['QB','RB','WR','TE'].includes(p)) rows.push({name,position:p,rank});
+      }
+      for(const v of Object.values(x)) if(v&&typeof v==='object') walk(v);
+    };
+    walk(payload);
+  }
   const seen=new Set();
   return rows.filter(r=>{const k=`${norm(r.name)}|${r.position}|${r.rank}`;if(seen.has(k))return false;seen.add(k);return true;});
 }
@@ -81,6 +95,7 @@ const teams=await teamDirectory();
 if(teams.size!==32) throw new Error(`team directory incomplete: expected 32, found ${teams.size}`);
 const teamChecks=new Map();
 const failures=[];
+let debugPrinted=false;
 for(const [team,id] of teams){
   try{
     const [depthPayload,injuryPayload]=await Promise.all([
@@ -88,7 +103,14 @@ for(const [team,id] of teams){
       getJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${id}/injuries`)
     ]);
     const depth=parseDepth(depthPayload),injuries=parseInjuries(injuryPayload);
-    if(depth.length<4) throw new Error(`depth parser/source returned only ${depth.length} fantasy-position rows`);
+    if(depth.length<4){
+      if(!debugPrinted){
+        debugPrinted=true;
+        const preview=JSON.stringify(depthPayload).slice(0,6000);
+        console.log(`DEPTH_DEBUG team=${team} id=${id} top_keys=${JSON.stringify(Object.keys(depthPayload||{}))} preview=${preview}`);
+      }
+      throw new Error(`depth parser/source returned only ${depth.length} fantasy-position rows`);
+    }
     teamChecks.set(team,{depth,injuries,checked_at:new Date().toISOString()});
   }catch(e){failures.push(`${team}: ${e.message}`);}
 }
@@ -126,7 +148,7 @@ for(const [team,check] of teamChecks){
 if(untrackedMap.size===0) throw new Error('connected-player source quality failure: zero untracked priority depth candidates is implausible for a 32-team sweep');
 
 const ledger={
-  schema_version:'1.0.2',
+  schema_version:'1.0.3',
   season:2026,
   phase:'REGULAR_SEASON',
   camp_preseason_mode:false,
