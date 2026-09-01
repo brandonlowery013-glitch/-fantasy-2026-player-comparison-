@@ -1,0 +1,41 @@
+name: Substantive Rank Proposal Audit
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/build-substantive-rank-proposals.mjs'
+      - '.github/workflows/substantive-rank-proposal-audit.yml'
+      - '.github/workflows/build-overall-rank-audit-context.yml'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'players*.json'
+      - 'guardrails/current-football-review.json'
+
+permissions:
+  contents: read
+
+jobs:
+  proposal-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build non-authoritative substantive proposals
+        run: node scripts/build-substantive-rank-proposals.mjs
+      - name: Prove proposal builder did not mutate canonical player shards
+        run: |
+          if ! git diff --quiet -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json; then
+            echo 'Proposal audit illegally mutated canonical model files.'
+            git diff -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json
+            exit 1
+          fi
+      - name: Upload proposal audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: substantive-rank-proposal-audit
+          path: |
+            analysis/substantive-rank-proposals-current.json
+            analysis/substantive-rank-proposals-current.md
+          if-no-files-found: error
