@@ -1,0 +1,62 @@
+name: Interface Impact Payload
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'data/sources/interface-impact-payload-2026.json'
+      - 'data/ingestion/interface-impact-payload-2026.json'
+      - 'scripts/build-interface-impact-payload.mjs'
+      - '.github/workflows/interface-impact-payload.yml'
+  workflow_run:
+    workflows:
+      - Step 2 Connected Impact Resolver
+      - Step 3 Team Scoring Market Impact Bridge
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Self-test interface payload
+        run: node scripts/build-interface-impact-payload.mjs --self-test
+      - name: Revalidate foundation
+        run: node scripts/validate-model-foundation-contract.mjs
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+
+  refresh:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    needs: validate
+    runs-on: ubuntu-latest
+    concurrency:
+      group: interface-impact-payload-refresh
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build interface payload
+        run: node scripts/build-interface-impact-payload.mjs
+      - name: Commit payload refresh
+        run: |
+          if git diff --quiet -- data/ingestion/interface-impact-payload-2026.json; then
+            echo "No interface impact payload changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ingestion/interface-impact-payload-2026.json
+          git commit -m "Refresh interface impact payload"
+          git push origin HEAD:main
