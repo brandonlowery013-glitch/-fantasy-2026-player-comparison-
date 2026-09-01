@@ -1,0 +1,24 @@
+name: Model Foundation Contract
+on:
+  pull_request:
+    paths:
+      - 'data/sources/model-foundation-contract-2026.json'
+      - 'data/sources/automatic-football-context-adapters-2026.json'
+      - 'data/sources/betting-data-source-price-contract-2026.json'
+      - 'data/sources/comparison-decision-2026.json'
+      - 'guardrails/guardrails-config.json'
+      - 'scripts/validate-model-foundation-contract.mjs'
+      - '.github/workflows/model-foundation-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate shared model foundation
+        run: node scripts/validate-model-foundation-contract.mjs
