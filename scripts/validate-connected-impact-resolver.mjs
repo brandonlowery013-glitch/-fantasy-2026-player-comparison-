@@ -15,7 +15,7 @@ if(contract.decision_contract?.resolver_may_not_invent_projection_delta!==true)b
 if(contract.decision_contract?.resolver_may_not_invent_rank_delta!==true)blocked.push('rank invention block missing');
 if(contract.decision_contract?.resolver_may_not_invent_team_point_delta!==true)blocked.push('team scoring invention block missing');
 if(Number(config.authoritative_player_count)!==166||Number(config.authoritative_player_shards)!==14)blocked.push('authoritative universe drifted from current 166/14 state');
-if(!foundation.foundation_layers?.dependency_graph?.connected_reassessment_required)blocked.push('foundation dependency graph does not require connected reassessment');
-if(!foundation.foundation_layers?.market?.may_directly_rewrite_core_football_projection===false)blocked.push('foundation market separation missing');
+if(foundation.foundation_layers?.dependency_graph?.connected_reassessment_required!==true)blocked.push('foundation dependency graph does not require connected reassessment');
+if(foundation.foundation_layers?.market?.may_directly_rewrite_core_football_projection!==false)blocked.push('foundation market separation missing');
 console.log(JSON.stringify({result:blocked.length?'BLOCKED':'PASS',status:contract.status,authoritative_player_count:config.authoritative_player_count,authoritative_player_shards:config.authoritative_player_shards,blocked},null,2));
 if(blocked.length)process.exit(1);
