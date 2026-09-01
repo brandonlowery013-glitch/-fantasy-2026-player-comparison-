@@ -1,0 +1,19 @@
+name: Full Universe News Review Guardrail
+
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+jobs:
+  full-universe-news-review-guardrail:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Prove incomplete sweeps block and complete 166-player sweeps pass
+        run: node scripts/test-full-universe-news-review.mjs
