@@ -12,6 +12,14 @@ const norm=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u0
 const teamMap={'Arizona Cardinals':'ARI','Atlanta Falcons':'ATL','Baltimore Ravens':'BAL','Buffalo Bills':'BUF','Carolina Panthers':'CAR','Chicago Bears':'CHI','Cincinnati Bengals':'CIN','Cleveland Browns':'CLE','Dallas Cowboys':'DAL','Denver Broncos':'DEN','Detroit Lions':'DET','Green Bay Packers':'GB','Houston Texans':'HOU','Indianapolis Colts':'IND','Jacksonville Jaguars':'JAX','Kansas City Chiefs':'KC','Las Vegas Raiders':'LV','Los Angeles Chargers':'LAC','Los Angeles Rams':'LA','Miami Dolphins':'MIA','Minnesota Vikings':'MIN','New England Patriots':'NE','New Orleans Saints':'NO','New York Giants':'NYG','New York Jets':'NYJ','Philadelphia Eagles':'PHI','Pittsburgh Steelers':'PIT','San Francisco 49ers':'SF','Seattle Seahawks':'SEA','Tampa Bay Buccaneers':'TB','Tennessee Titans':'TEN','Washington Commanders':'WAS'};
 const espnAlias={LAR:'LA',WSH:'WAS',JAC:'JAX'};
 const canon=x=>espnAlias[String(x||'').toUpperCase()]||String(x||'').toUpperCase();
+const posCanon=x=>{
+  const s=String(x||'').trim().toUpperCase().replace(/[_-]+/g,' ');
+  if(['QB','QUARTERBACK'].includes(s))return 'QB';
+  if(['RB','RUNNING BACK','HALFBACK'].includes(s))return 'RB';
+  if(['WR','WIDE RECEIVER'].includes(s))return 'WR';
+  if(['TE','TIGHT END'].includes(s))return 'TE';
+  return s;
+};
 
 let active=[];
 for(let i=0;i<activeShards;i++) active.push(...read(`players${i}.json`));
@@ -34,13 +42,13 @@ function parseDepth(payload){
   const walk=x=>{
     if(Array.isArray(x)){for(const y of x)walk(y);return;}
     if(!x||typeof x!=='object')return;
-    const pos=String(x.position?.abbreviation||x.position?.name||x.name||x.position||'').toUpperCase();
+    const pos=posCanon(x.position?.abbreviation||x.position?.name||x.name||x.position||'');
     const athletes=x.athletes||x.items;
     if(Array.isArray(athletes)) for(const a0 of athletes){
       const a=a0.athlete||a0;
       const name=a.displayName||a.fullName||a.name;
       const rank=Number(a0.rank??a.rank??0);
-      const p=String(a.position?.abbreviation||pos||'').toUpperCase();
+      const p=posCanon(a.position?.abbreviation||a.position?.name||pos||'');
       if(name&&rank&&['QB','RB','WR','TE'].includes(p)) rows.push({name,position:p,rank});
     }
     for(const v of Object.values(x)) if(v&&typeof v==='object') walk(v);
@@ -70,6 +78,7 @@ function modelAlreadyReflectsUnavailable(p){return /\b(out|\bir\b|pup|suspend|co
 function candidateThreshold(pos,rank){return (pos==='QB'&&rank===1)||(pos==='RB'&&rank<=2)||(pos==='WR'&&rank<=3)||(pos==='TE'&&rank<=2);}
 
 const teams=await teamDirectory();
+if(teams.size!==32) throw new Error(`team directory incomplete: expected 32, found ${teams.size}`);
 const teamChecks=new Map();
 const failures=[];
 for(const [team,id] of teams){
@@ -78,10 +87,16 @@ for(const [team,id] of teams){
       getJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${id}/depthcharts`),
       getJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${id}/injuries`)
     ]);
-    teamChecks.set(team,{depth:parseDepth(depthPayload),injuries:parseInjuries(injuryPayload),checked_at:new Date().toISOString()});
+    const depth=parseDepth(depthPayload),injuries=parseInjuries(injuryPayload);
+    if(depth.length<4) throw new Error(`depth parser/source returned only ${depth.length} fantasy-position rows`);
+    teamChecks.set(team,{depth,injuries,checked_at:new Date().toISOString()});
   }catch(e){failures.push(`${team}: ${e.message}`);}
 }
 if(failures.length) throw new Error(`live team-source failures: ${failures.join(' | ')}`);
+const totalDepthRows=[...teamChecks.values()].reduce((n,x)=>n+x.depth.length,0);
+const totalPriorityDepthRows=[...teamChecks.values()].reduce((n,x)=>n+x.depth.filter(d=>candidateThreshold(d.position,d.rank)).length,0);
+if(totalDepthRows<160) throw new Error(`depth source quality failure: only ${totalDepthRows} fantasy-position rows across 32 teams`);
+if(totalPriorityDepthRows<150) throw new Error(`priority depth source quality failure: only ${totalPriorityDepthRows} QB1/RB2/WR3/TE2 rows across 32 teams`);
 
 const players=[];
 const material=[];
@@ -108,9 +123,10 @@ for(const [team,check] of teamChecks){
     if(!untrackedMap.has(key)) untrackedMap.set(key,{player:d.name,decision:'WAIT',reason:`Untracked ${d.position} appears at ${team} depth rank ${d.rank}; surfaced by the live connected-player sweep and requires standalone/contingent fantasy-value judgment before admission.`,team,position:d.position,depth_rank:d.rank});
   }
 }
+if(untrackedMap.size===0) throw new Error('connected-player source quality failure: zero untracked priority depth candidates is implausible for a 32-team sweep');
 
 const ledger={
-  schema_version:'1.0.1',
+  schema_version:'1.0.2',
   season:2026,
   phase:'REGULAR_SEASON',
   camp_preseason_mode:false,
@@ -120,10 +136,11 @@ const ledger={
   sweep_started_at:startedAt,
   sweep_completed_at:new Date().toISOString(),
   source_method:'LIVE_ESPN_TEAM_DEPTH_INJURY_ENDPOINTS',
+  source_quality:{teams_checked:teamChecks.size,total_depth_rows:totalDepthRows,priority_depth_rows:totalPriorityDepthRows},
   source_limitations:['ESPN team roster endpoint was not used because it returned 404 during live validation; absence from a depth chart is not treated as transaction evidence.'],
   players,
   materially_implicated_untracked:[...untrackedMap.values()]
 };
 write('guardrails/current-football-review.json',ledger);
-write('guardrails/live-full-universe-review-summary.json',{generated_at:ledger.sweep_completed_at,tracked_reviewed:players.length,material_changes:material,material_change_count:material.length,untracked_candidates:ledger.materially_implicated_untracked,untracked_candidate_count:ledger.materially_implicated_untracked.length,team_checks:teamChecks.size,result:'BUILT',source_limitations:ledger.source_limitations});
-console.log(JSON.stringify({tracked_reviewed:players.length,material_change_count:material.length,untracked_candidate_count:ledger.materially_implicated_untracked.length,material_changes:material,untracked_candidates:ledger.materially_implicated_untracked},null,2));
+write('guardrails/live-full-universe-review-summary.json',{generated_at:ledger.sweep_completed_at,tracked_reviewed:players.length,material_changes:material,material_change_count:material.length,untracked_candidates:ledger.materially_implicated_untracked,untracked_candidate_count:ledger.materially_implicated_untracked.length,team_checks:teamChecks.size,total_depth_rows:totalDepthRows,priority_depth_rows:totalPriorityDepthRows,result:'BUILT',source_limitations:ledger.source_limitations});
+console.log(JSON.stringify({tracked_reviewed:players.length,material_change_count:material.length,untracked_candidate_count:ledger.materially_implicated_untracked.length,total_depth_rows:totalDepthRows,priority_depth_rows:totalPriorityDepthRows,material_changes:material,untracked_candidates:ledger.materially_implicated_untracked},null,2));
