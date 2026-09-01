@@ -3,9 +3,9 @@ on:
   push:
     branches: [main]
 permissions:
-  contents: write
+  contents: read
 jobs:
-  patch:
+  validate:
     if: github.event.head_commit.message == 'Run current news sync now'
     runs-on: ubuntu-latest
     steps:
@@ -17,26 +17,29 @@ jobs:
           node-version: '20'
       - name: Require complete full-universe football review
         run: node scripts/validate-full-universe-news-review.mjs
-      - name: Patch comparison engine loader
+      - name: Verify canonical active universe
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('index.html')
-          s=p.read_text()
-          old="""function resetForm(){['p1','p2','p3'].forEach(id=>document.getElementById(id).selectedIndex=0);document.querySelectorAll('.cb').forEach(x=>x.checked=true);results.style.display='none'}
-(async()=>{try{let [parts,market,injury]=await Promise.all([Promise.all(Array.from({length:13},(_,i)=>fetch(`players${i}.json?v=24`).then(r=>{if(!r.ok)throw Error(`players${i}.json`);return r.json()}))),fetch('market2026.json?v=20260822').then(r=>r.ok?r.json():({players:{}})),fetch('injuryOverrides2026.json?v=20260822').then(r=>r.ok?r.json():({players:{}}))]);P=parts.flat();let M=market.players||{},I=injury.players||{};P.forEach(p=>{let m=M[p.n];if(m){if(m.ecr!=null)p.cr=m.ecr;if(m.adp!=null)p.ad=m.adp}let i=I[p.n];if(i)Object.assign(p,i)});fill()}catch(e){document.querySelector('.sub').textContent='Player data failed to load. Refresh the page.';console.error(e)}})();"""
-          new="""function resetForm(){['p1','p2','p3'].forEach(id=>document.getElementById(id).selectedIndex=0);document.querySelectorAll('.cb').forEach(x=>x.checked=true);results.style.display='none'}
-function applyRankMoves(field,moves){let names=Object.keys(moves||{});if(!names.length)return;let sorted=[...P].sort((a,b)=>(a[field]??9999)-(b[field]??9999)),picked=new Map(),moved=new Set(names);sorted.forEach(p=>{if(moved.has(p.n))picked.set(p.n,p)});let slots=Array(sorted.length).fill(null);names.forEach(n=>{let p=picked.get(n),t=Math.max(1,Math.min(sorted.length,Math.round(moves[n])));if(p)slots[t-1]=p});let rest=sorted.filter(p=>!moved.has(p.n)),j=0;for(let i=0;i<slots.length;i++)if(!slots[i])slots[i]=rest[j++];slots.forEach((p,i)=>p[field]=i+1)}
-function refreshPositionRanks(){let c={QB:0,RB:0,WR:0,TE:0};[...P].sort((a,b)=>a.o-b.o).forEach(p=>{c[p.p]=(c[p.p]||0)+1;p.pr=`${p.p}${c[p.p]}`});c={QB:0,RB:0,WR:0,TE:0};[...P].sort((a,b)=>a.tr-b.tr).forEach(p=>{c[p.p]=(c[p.p]||0)+1;p.tp=`${p.p}${c[p.p]}`})}
-(async()=>{try{let [parts,market,injury]=await Promise.all([Promise.all(Array.from({length:13},(_,i)=>fetch(`players${i}.json?v=25`).then(r=>{if(!r.ok)throw Error(`players${i}.json`);return r.json()}))),fetch('market2026.json?v=20260822').then(r=>r.ok?r.json():({players:{}})),fetch('injuryOverrides2026.json?v=20260822b').then(r=>r.ok?r.json():({players:{}}))]);P=parts.flat();let M=market.players||{},I=injury.players||{};P.forEach(p=>{delete p.ns;delete p.nm;delete p.na;let m=M[p.n];if(m){if(m.ecr!=null)p.cr=m.ecr;if(m.adp!=null)p.ad=m.adp}let i=I[p.n];if(i)Object.assign(p,i);p.s=Number((p.pd*.35+p.ce*.20+p.r*.15+p.e*.10+p.a*.10+p.rl*.05+p.su*.05).toFixed(3))});let R=injury.rankMoves||{};applyRankMoves('o',R.overall||{});applyRankMoves('tr',R.trueValue||{});refreshPositionRanks();fill()}catch(e){document.querySelector('.sub').textContent='Player data failed to load. Refresh the page.';console.error(e)}})();"""
-          if old not in s:
-              raise SystemExit('Expected loader block not found')
-          p.write_text(s.replace(old,new))
-          PY
-      - name: Commit patched engine
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=require('./MODEL_SOURCE_OF_TRUTH.json');
+          const expected=Number(s.active_player_model);
+          const shards=Number(s.runtime_player_shards);
+          let names=[];
+          for(let i=0;i<shards;i++) names.push(...require(`./players${i}.json`).map(p=>p.n));
+          const unique=new Set(names);
+          if(names.length!==expected) throw new Error(`canonical player count mismatch: expected ${expected}, loaded ${names.length}`);
+          if(unique.size!==expected) throw new Error(`canonical unique player count mismatch: expected ${expected}, found ${unique.size}`);
+          console.log(JSON.stringify({players:expected,shards,status:'PASS'}));
+          NODE
+      - name: Verify current canonical runtime wiring
         run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add index.html
-          git commit -m 'Apply systemic current-news and injury rank sync [skip ci]'
-          git push
+          node - <<'NODE'
+          const fs=require('fs');
+          const html=fs.readFileSync('index.html','utf8');
+          const runtime=fs.readFileSync('runtime-interface-data-sync-2026.js','utf8');
+          for(const x of ['runtime-interface-data-sync-2026.js','runtime-final-interface-2026.js']) if(!html.includes(x)) throw new Error(`index missing ${x}`);
+          for(const x of ['matchup-tidbits-2026.json','interface-impact-payload-2026.json']) if(!runtime.includes(x)) throw new Error(`runtime missing ${x}`);
+          console.log(JSON.stringify({runtime:'canonical',status:'PASS'}));
+          NODE
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
