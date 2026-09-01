@@ -8,16 +8,27 @@ on:
     paths:
       - 'scripts/build-live-full-universe-review.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
+      - 'scripts/collect-substantive-football-context.mjs'
+      - 'scripts/build-substantive-football-context-inputs.mjs'
+      - 'scripts/build-substantive-component-recalculation.mjs'
+      - 'scripts/build-substantive-rank-proposals.mjs'
+      - 'scripts/test-substantive-football-context-parser.mjs'
       - '.github/workflows/live-full-universe-football-review.yml'
   push:
     branches: [main]
     paths:
       - 'scripts/build-live-full-universe-review.mjs'
+      - 'scripts/validate-full-universe-news-review.mjs'
+      - 'scripts/collect-substantive-football-context.mjs'
+      - 'scripts/build-substantive-football-context-inputs.mjs'
+      - 'scripts/build-substantive-component-recalculation.mjs'
+      - 'scripts/build-substantive-rank-proposals.mjs'
+      - 'scripts/test-substantive-football-context-parser.mjs'
       - '.github/workflows/live-full-universe-football-review.yml'
 
 permissions:
   contents: write
-  pull-requests: write
+  actions: read
   checks: read
 
 jobs:
@@ -31,68 +42,94 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+
       - name: Build live 166-player football review ledger
         run: node scripts/build-live-full-universe-review.mjs
+
       - name: Validate complete active universe plus connected triage
         run: node scripts/validate-full-universe-news-review.mjs
-      - name: Upload live review evidence
+
+      - name: Test substantive parser and outcome gates
+        run: |
+          node scripts/test-substantive-football-context-parser.mjs
+          node scripts/build-substantive-component-recalculation.mjs --self-test
+
+      - name: Build season-long substantive football context
+        run: |
+          node scripts/collect-substantive-football-context.mjs
+          node scripts/build-substantive-football-context-inputs.mjs
+
+      - name: Enforce substantive evidence coverage
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const collect=JSON.parse(fs.readFileSync('guardrails/substantive-football-context-collection-report.json','utf8'));
+          const ctx=JSON.parse(fs.readFileSync('guardrails/substantive-football-context-inputs-report.json','utf8'));
+          if(collect.result!=='PASS') throw new Error('Substantive collector did not PASS');
+          if(Number(collect.total_depth_rows)<160) throw new Error(`Depth coverage too low: ${collect.total_depth_rows}`);
+          if(Number(collect.unique_tracked_players_with_signals)<80) throw new Error(`Tracked live signal coverage too low: ${collect.unique_tracked_players_with_signals}/${src.active_player_model}`);
+          if(ctx.result!=='PASS'||Number(ctx.players)<80||Number(ctx.signals)<80) throw new Error(`Structured substantive context insufficient: ${JSON.stringify(ctx)}`);
+          console.log(JSON.stringify({collector_players:collect.unique_tracked_players_with_signals,structured_players:ctx.players,structured_signals:ctx.signals,availability_resolved:ctx.availability_resolved,availability_unresolved:ctx.availability_unresolved},null,2));
+          NODE
+
+      - name: Build evidence-gated substantive proposals
+        run: |
+          node scripts/build-substantive-component-recalculation.mjs
+          node scripts/build-substantive-rank-proposals.mjs
+
+      - name: Prove daily audit did not mutate canonical model files
+        run: |
+          if ! git diff --quiet -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json; then
+            echo 'Daily audit illegally mutated canonical model files.'
+            git diff -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json
+            exit 1
+          fi
+
+      - name: Upload live and substantive audit evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: live-full-universe-football-review
+          name: daily-full-universe-substantive-review
           path: |
             guardrails/current-football-review.json
             guardrails/live-full-universe-review-summary.json
             guardrails/full-universe-news-review-report.json
+            guardrails/substantive-football-context-collection-report.json
+            guardrails/substantive-football-context-inputs-report.json
+            data/probability/substantive-football-context-inputs-2026.json
+            analysis/substantive-component-recalculation-current.json
+            analysis/substantive-component-recalculation-current.md
+            analysis/substantive-rank-proposals-current.json
+            analysis/substantive-rank-proposals-current.md
           if-no-files-found: error
-      - name: Persist validated review through protected PR
-        id: persist
+
+      - name: Persist latest validated evidence to rolling branch
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
-        env:
-          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          REVIEW_FILES=(
+          EVIDENCE_FILES=(
             guardrails/current-football-review.json
             guardrails/live-full-universe-review-summary.json
             guardrails/full-universe-news-review-report.json
+            guardrails/substantive-football-context-collection-report.json
+            guardrails/substantive-football-context-inputs-report.json
+            data/probability/substantive-football-context-inputs-2026.json
+            analysis/substantive-component-recalculation-current.json
+            analysis/substantive-component-recalculation-current.md
+            analysis/substantive-rank-proposals-current.json
+            analysis/substantive-rank-proposals-current.md
           )
-          if [ -z "$(git status --porcelain -- "${REVIEW_FILES[@]}")" ]; then
-            echo "No review-state changes to persist."
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "Review-state changes detected:"
-          git status --short -- "${REVIEW_FILES[@]}"
-          BRANCH="production/live-full-universe-review-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          for f in "${EVIDENCE_FILES[@]}"; do test -f "$f"; done
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch -c "$BRANCH"
-          git add -- "${REVIEW_FILES[@]}"
+          BRANCH="production/live-full-universe-review-latest"
+          git switch -C "$BRANCH"
+          git add -- "${EVIDENCE_FILES[@]}"
           if git diff --cached --quiet; then
-            echo "Review files produced no staged diff after add; refusing a false persistence success."
-            exit 1
+            echo 'Validated evidence is unchanged; rolling branch already represents the latest state.'
+            exit 0
           fi
-          git commit -m "Persist daily 166-player football news review"
-          git push origin "$BRANCH"
-          PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Persist daily 166-player football news review" --body "Automated daily regular-season full-universe review generated from current live football sources. Includes exactly all canonical tracked players plus connected untracked top-depth-chart triage and live player-news signals. No ranking mutation is performed here. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
-      - name: Merge generated review after required checks
-        if: steps.persist.outputs.changed == 'true' && github.event_name == 'schedule'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_URL: ${{ steps.persist.outputs.pr_url }}
-        shell: bash
-        run: |
-          found=false
-          for i in $(seq 1 60); do
-            if gh pr checks "$PR_URL" --required 2>&1 | grep -q "guardrail-qa"; then found=true; break; fi
-            sleep 10
-          done
-          if [ "$found" != "true" ]; then
-            echo "Required guardrail-qa check did not appear; leaving PR open rather than bypassing protection."
-            exit 1
-          fi
-          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
-          gh pr merge "$PR_URL" --merge --delete-branch
+          git commit -m "Persist latest daily 166-player substantive review"
+          git push --force origin "HEAD:refs/heads/$BRANCH"
+          echo "Persisted validated daily evidence to $BRANCH."
