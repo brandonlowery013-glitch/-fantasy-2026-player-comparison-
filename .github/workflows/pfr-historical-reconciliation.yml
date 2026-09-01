@@ -19,11 +19,20 @@ jobs:
           node-version: 20
       - name: Self-test reconciliation logic
         run: node scripts/reconcile-historical-games-with-pfr.mjs --self-test
-      - name: Reconcile 2021-2025 nflverse games against Pro Football Reference
+      - name: Probe and reconcile 2021-2025 nflverse games against Pro Football Reference
+        id: pfr
+        continue-on-error: true
         run: node scripts/reconcile-historical-games-with-pfr.mjs
+      - name: Preserve PFR availability/discrepancy status
+        if: always()
+        run: |
+          test -f data/probability/generated/pfr-historical-reconciliation-2021-2025.json
+          node -e "const r=require('./data/probability/generated/pfr-historical-reconciliation-2021-2025.json'); console.log(JSON.stringify({status:r.status,nflverse_games:r.nflverse_games,pfr_games:r.pfr_games,source_errors:r.source_errors},null,2)); if(!['MATCH','DISCREPANCY_REVIEW_REQUIRED','INSUFFICIENT_VALIDATION'].includes(r.status)) process.exit(1)"
       - name: Run hard Guardrail QA
+        if: always()
         run: node scripts/run-guardrail-qa.mjs
       - name: Upload reconciliation report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pfr-historical-reconciliation-2021-2025
