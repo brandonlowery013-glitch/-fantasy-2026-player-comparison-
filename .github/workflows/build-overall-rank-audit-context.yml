@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - '.github/workflows/build-overall-rank-audit-context.yml'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'players*.json'
   workflow_dispatch:
 permissions:
   contents: write
@@ -18,17 +20,28 @@ jobs:
         run: |
           node <<'NODE'
           const fs=require('fs');
-          const files=fs.readdirSync('.').filter(f=>/^players\d+\.json$/.test(f));
-          const all=files.flatMap(f=>JSON.parse(fs.readFileSync(f,'utf8'))).sort((a,b)=>a.o-b.o);
+          const source=require('./MODEL_SOURCE_OF_TRUTH.json');
+          const expected=Number(source.active_player_model);
+          const shards=Number(source.runtime_player_shards);
+          let all=[];
+          for(let i=0;i<shards;i++){
+            const file=`players${i}.json`;
+            if(!fs.existsSync(file)) throw new Error(`missing canonical shard ${file}`);
+            all.push(...JSON.parse(fs.readFileSync(file,'utf8')));
+          }
+          if(all.length!==expected) throw new Error(`canonical universe mismatch: expected ${expected}, loaded ${all.length}`);
+          if(new Set(all.map(p=>p.n)).size!==expected) throw new Error('duplicate player names in canonical universe');
+          all.sort((a,b)=>a.o-b.o);
           const flagged=JSON.parse(fs.readFileSync('overall-rank-review-names.json','utf8'));
-          const names=new Set(flagged.map(x=>x.name));
           const slim=p=>({name:p.n,pos:p.p,overall:p.o,player_quality:p.tr,pos_quality:p.tp,score:p.s,ppr:p.mp,adp:p.ad,price:p.px,step6:p.s6,step7:p.s7,status:p.st,production:p.pd,ceiling:p.ce,role:p.r,environment:p.e,availability:p.a,reliability:p.rl,sustainability:p.su,fair:p.fw});
           const out=[];
           for(const f of flagged){
             const i=all.findIndex(p=>p.n===f.name);
+            if(i<0) throw new Error(`flagged player missing from canonical universe: ${f.name}`);
             out.push({flag:f,player:slim(all[i]),neighbors:all.slice(Math.max(0,i-3),Math.min(all.length,i+4)).filter(p=>p.n!==f.name).map(slim)});
           }
-          fs.writeFileSync('overall-rank-audit-context.json',JSON.stringify(out,null,2)+'\n');
+          fs.writeFileSync('overall-rank-audit-context.json',JSON.stringify({generated_at:new Date().toISOString(),universe_size:expected,runtime_player_shards:shards,rows:out},null,2)+'\n');
+          console.log(JSON.stringify({universe_size:expected,runtime_player_shards:shards,flagged:out.length,status:'PASS'}));
           NODE
       - name: Commit audit context
         run: |

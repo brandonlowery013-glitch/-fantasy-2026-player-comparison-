@@ -20,12 +20,22 @@ jobs:
           import json,re
           from pathlib import Path
 
-          shard_files=sorted(Path('.').glob('players*.json'),key=lambda p:int(re.search(r'(\d+)',p.stem).group(1)))
+          source=json.loads(Path('MODEL_SOURCE_OF_TRUTH.json').read_text())
+          expected_count=int(source['active_player_model'])
+          expected_shards=int(source['runtime_player_shards'])
+          shard_files=[Path(f'players{i}.json') for i in range(expected_shards)]
+          missing=[str(f) for f in shard_files if not f.exists()]
+          if missing:
+              raise SystemExit(f'APPLY BLOCKED: missing canonical shards: {missing}')
+          extras=sorted(str(p) for p in Path('.').glob('players*.json') if p not in set(shard_files))
+          if extras:
+              raise SystemExit(f'APPLY BLOCKED: unexpected player shards outside source of truth: {extras}')
+
           shards={f:json.loads(f.read_text()) for f in shard_files}
           players=[p for arr in shards.values() for p in arr]
           player_count=len(players)
-          if player_count != 162:
-              raise SystemExit(f'APPLY BLOCKED: expected current 162-player universe, got {player_count}')
+          if player_count != expected_count:
+              raise SystemExit(f'APPLY BLOCKED: source of truth expects {expected_count} players, loaded {player_count}')
           by_name={p['n']:p for p in players}
           if len(by_name) != player_count:
               raise SystemExit('APPLY BLOCKED: duplicate player names in active universe')
@@ -34,7 +44,7 @@ jobs:
           decision_universe=decision_doc.get('universe_size')
           approval_status=decision_doc.get('approval_status')
           if decision_universe != player_count:
-              raise SystemExit(f'APPLY BLOCKED: decision audit universe_size={decision_universe!r}; active universe={player_count}. Generate a fresh 162-player review set first.')
+              raise SystemExit(f'APPLY BLOCKED: decision audit universe_size={decision_universe!r}; active universe={player_count}. Generate a fresh {player_count}-player review set first.')
           if approval_status != 'APPROVED_FOR_APPLY':
               raise SystemExit(f'APPLY BLOCKED: approval_status={approval_status!r}; explicit approved review gate is required.')
 
@@ -124,5 +134,5 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add players*.json canonicalBoards2026.json final-cohesion-check-current.json
-          git diff --cached --quiet || git commit -m 'Apply approved 162-player Overall audit [skip ci]'
+          git diff --cached --quiet || git commit -m 'Apply approved current-universe Overall audit [skip ci]'
           git push
