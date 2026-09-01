@@ -49,45 +49,67 @@ for(const p of players){
 const reviewPath='guardrails/current-football-review.json';
 let review=null;
 if(exists(reviewPath)) review=readJson(reviewPath);
-const reviewByName=new Map((review?.players||[]).map(x=>[x.player,x]));
-const materialNames=new Set((review?.players||[]).filter(x=>x.status==='MATERIAL_CHANGE').map(x=>x.player));
+const reviewPlayers=review?.players||[];
+const reviewByName=new Map(reviewPlayers.map(x=>[x.player,x]));
+const statusMaterialNames=new Set(reviewPlayers.filter(x=>x.status==='MATERIAL_CHANGE').map(x=>x.player));
+const newsSignalNames=new Set(reviewPlayers.filter(x=>Array.isArray(x.material_news_signals)&&x.material_news_signals.length>0).map(x=>x.player));
+const substantiveTriggerNames=new Set([...statusMaterialNames,...newsSignalNames]);
+const connectedImpactCandidates=(review?.materially_implicated_untracked||[])
+  .filter(x=>Array.isArray(x.material_news_signals)&&x.material_news_signals.length>0)
+  .map(x=>({player:x.player,team:x.team||null,position:x.position||null,depth_rank:x.depth_rank??null,decision:x.decision||null,reason:x.reason||null,material_news_signals:x.material_news_signals}));
 
-// Proposal-only by design: verified material evidence creates an evaluation candidate,
-// never an invented component delta or automatic ranking mutation.
+// Proposal-only by design: verified material evidence OR a material-news signal creates
+// a substantive evaluation candidate. Neither creates an invented component delta or
+// automatic ranking mutation. News must be reconciled against projections, role,
+// environment, availability, priors and the rest of the evidence stack first.
 const proposals=[];
 const holds=[];
 for(const p of [...players].sort((a,b)=>a.o-b.o)){
   const r=reviewByName.get(p.n);
+  const materialNews=Array.isArray(r?.material_news_signals)?r.material_news_signals:[];
   const base={player:p.n,pos:p.p,current_true_value_rank:p.tr,current_overall_rank:p.o,current_score:p.s,projected_ppr:p.mp??null,components:{production:componentValue(p,'p'),ceiling:componentValue(p,'c'),role_volume:componentValue(p,'r'),offensive_environment:componentValue(p,'e'),availability:componentValue(p,'a'),weekly_reliability:componentValue(p,'w'),sustainability:componentValue(p,'s')}};
-  if(materialNames.has(p.n)){
-    proposals.push({...base,status:'REQUIRES_SUBSTANTIVE_EVALUATION',evidence_status:r.status,reason:r.reason||null,source_summary:r.source_summary||null,proposed_true_value_rank:null,proposed_overall_rank:null,proposed_components:null,approval_required:true});
+  if(substantiveTriggerNames.has(p.n)){
+    const triggerTypes=[];
+    if(statusMaterialNames.has(p.n)) triggerTypes.push('VERIFIED_MATERIAL_STATUS');
+    if(newsSignalNames.has(p.n)) triggerTypes.push('MATERIAL_NEWS_SIGNAL');
+    proposals.push({...base,status:'REQUIRES_SUBSTANTIVE_EVALUATION',trigger_types:triggerTypes,evidence_status:r?.status||null,reason:r?.reason||null,source_summary:r?.source_summary||null,material_news_signals:materialNews,proposed_true_value_rank:null,proposed_overall_rank:null,proposed_components:null,approval_required:true});
   } else {
-    holds.push({...base,status:'NO_VERIFIED_MATERIAL_TRIGGER',evidence_status:r?.status||'NO_CURRENT_REVIEW_RECORD'});
+    holds.push({...base,status:'NO_SUBSTANTIVE_TRIGGER',evidence_status:r?.status||'NO_CURRENT_REVIEW_RECORD'});
   }
 }
 
 const report={
-  schema_version:'1.0.0',generated_at:new Date().toISOString(),authoritative:false,
+  schema_version:'1.1.0',generated_at:new Date().toISOString(),authoritative:false,
   mutation_policy:'PROPOSAL_ONLY_NO_CANONICAL_WRITES',
   universe:{expected_players:expected,loaded_players:players.length,runtime_player_shards:shardCount,source_state:source.status||source.state||null},
-  evidence:{current_football_review_present:Boolean(review),review_scope:review?.review_scope||null,review_completed_at:review?.sweep_completed_at||null,material_tracked_players:materialNames.size},
+  evidence:{current_football_review_present:Boolean(review),review_scope:review?.review_scope||null,review_completed_at:review?.sweep_completed_at||null,verified_material_status_players:statusMaterialNames.size,tracked_material_news_signal_players:newsSignalNames.size,substantive_trigger_players:substantiveTriggerNames.size,connected_material_news_signal_players:connectedImpactCandidates.length},
   score_formula:{weights,integrity_issue_count:scoreIntegrity.length,integrity_issues:scoreIntegrity},
   rules:[
     'Market movement alone cannot change intrinsic True Value or Overall rank.',
-    'Verified football developments may trigger component/projection re-evaluation.',
+    'Verified football developments and material news signals trigger substantive component/projection re-evaluation.',
+    'A headline or keyword match is a trigger for evaluation, not proof of a rank move.',
     'This builder never infers arbitrary component deltas from a headline.',
-    'True-Value and Overall proposals remain null until explicit component/projection evidence is supplied.',
+    'True-Value and Overall proposals remain null until the trigger is reconciled against the full evidence stack.',
+    'Connected-player material news must be evaluated for downstream teammate impact even when the connected player remains outside the modeled universe.',
     'Any consequential existing-player rank change requires exact current-to-proposed review and approval before apply.'
   ],
-  proposals,proposal_count:proposals.length,holds_count:holds.length,holds
+  proposals,proposal_count:proposals.length,connected_impact_candidates:connectedImpactCandidates,connected_impact_candidate_count:connectedImpactCandidates.length,holds_count:holds.length,holds
 };
 writeJson('analysis/substantive-rank-proposals-current.json',report);
 
-const lines=['# Substantive Rank Proposal Audit','',`Generated: ${report.generated_at}`,`Universe: ${expected} players / ${shardCount} shards`,'Authoritative: NO — proposal-only; canonical boards are not written.',`Current football review present: ${report.evidence.current_football_review_present?'YES':'NO'}`,`Verified material tracked triggers: ${report.proposal_count}`,`Weighted-score integrity issues: ${report.score_formula.integrity_issue_count}`,''];
+const lines=['# Substantive Rank Proposal Audit','',`Generated: ${report.generated_at}`,`Universe: ${expected} players / ${shardCount} shards`,'Authoritative: NO — proposal-only; canonical boards are not written.',`Current football review present: ${report.evidence.current_football_review_present?'YES':'NO'}`,`Verified material-status players: ${report.evidence.verified_material_status_players}`,`Tracked material-news signal players: ${report.evidence.tracked_material_news_signal_players}`,`Substantive tracked-player triggers: ${report.proposal_count}`,`Connected-player material-news candidates: ${report.connected_impact_candidate_count}`,`Weighted-score integrity issues: ${report.score_formula.integrity_issue_count}`,''];
 if(proposals.length){
   lines.push('| Player | Current TV | Proposed TV | Current Overall | Proposed Overall | Trigger |','|---|---:|---:|---:|---:|---|');
-  for(const x of proposals) lines.push(`| ${x.player} | ${x.current_true_value_rank} | PENDING | ${x.current_overall_rank} | PENDING | ${(x.reason||'Material football evidence').replace(/\|/g,'/')} |`);
-}else lines.push('No verified material tracked-player trigger is present in the available current-football review, so this audit proposes **zero intrinsic rank changes**.');
-lines.push('','A future material trigger must first produce explicit component/projection changes; only then can this layer calculate and present exact current → proposed True-Value and Overall moves for approval.');
+  for(const x of proposals){
+    const news=x.material_news_signals?.[0];
+    const trigger=x.reason||news?.headline||x.trigger_types.join('+');
+    lines.push(`| ${x.player} | ${x.current_true_value_rank} | PENDING | ${x.current_overall_rank} | PENDING | ${String(trigger).replace(/\|/g,'/')} |`);
+  }
+}else lines.push('No tracked player has a verified material-status change or material-news signal in the available current-football review.');
+if(connectedImpactCandidates.length){
+  lines.push('','## Connected-player impact candidates','', '| Connected player | Team | Pos | Depth | Trigger |','|---|---|---|---:|---|');
+  for(const x of connectedImpactCandidates){const news=x.material_news_signals?.[0];lines.push(`| ${x.player} | ${x.team||''} | ${x.position||''} | ${x.depth_rank??''} | ${String(news?.headline||x.reason||'Material connected-player news').replace(/\|/g,'/')} |`);}
+}
+lines.push('','Every trigger above still requires a full football-evidence reconciliation before any component, projection, True-Value rank or Overall rank can change.');
 fs.writeFileSync(path.join(root,'analysis/substantive-rank-proposals-current.md'),lines.join('\n')+'\n');
-console.log(JSON.stringify({players:expected,shards:shardCount,review_present:Boolean(review),material_triggers:proposals.length,score_integrity_issues:scoreIntegrity.length,canonical_writes:false},null,2));
+console.log(JSON.stringify({players:expected,shards:shardCount,review_present:Boolean(review),verified_material_status_players:statusMaterialNames.size,tracked_material_news_signal_players:newsSignalNames.size,substantive_triggers:proposals.length,connected_impact_candidates:connectedImpactCandidates.length,score_integrity_issues:scoreIntegrity.length,canonical_writes:false},null,2));
