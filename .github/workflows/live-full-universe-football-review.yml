@@ -2,6 +2,8 @@ name: Live Full Universe Football Review
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '35 12 * * *'
   pull_request:
     paths:
       - 'scripts/build-live-full-universe-review.mjs'
@@ -16,6 +18,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  checks: read
 
 jobs:
   live-166-review:
@@ -23,6 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event_name == 'schedule' && 'main' || github.ref }}
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
@@ -42,16 +46,42 @@ jobs:
             guardrails/full-universe-news-review-report.json
           if-no-files-found: error
       - name: Persist validated review through protected PR
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        id: persist
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
+          if git diff --quiet -- guardrails/current-football-review.json guardrails/live-full-universe-review-summary.json guardrails/full-universe-news-review-report.json; then
+            echo "No review-state changes to persist."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           BRANCH="production/live-full-universe-review-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$BRANCH"
           git add guardrails/current-football-review.json guardrails/live-full-universe-review-summary.json guardrails/full-universe-news-review-report.json
-          git commit -m "Persist live 166-player football review"
+          git commit -m "Persist daily 166-player football news review"
           git push origin "$BRANCH"
-          gh pr create --base main --head "$BRANCH" --title "Persist live 166-player football review" --body "Live regular-season full-universe review generated from current ESPN team roster, depth-chart and injury endpoints. Includes exactly all canonical tracked players plus connected untracked top-depth-chart triage, and must pass the full-universe review validator and required Guardrail QA before merge. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+          PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Persist daily 166-player football news review" --body "Automated daily regular-season full-universe review generated from current live football sources. Includes exactly all canonical tracked players plus connected untracked top-depth-chart triage and live player-news signals. No ranking mutation is performed here. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+      - name: Merge generated review after required checks
+        if: steps.persist.outputs.changed == 'true' && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.persist.outputs.pr_url }}
+        shell: bash
+        run: |
+          found=false
+          for i in $(seq 1 60); do
+            if gh pr checks "$PR_URL" --required 2>&1 | grep -q "guardrail-qa"; then found=true; break; fi
+            sleep 10
+          done
+          if [ "$found" != "true" ]; then
+            echo "Required guardrail-qa check did not appear; leaving PR open rather than bypassing protection."
+            exit 1
+          fi
+          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
+          gh pr merge "$PR_URL" --merge --delete-branch
