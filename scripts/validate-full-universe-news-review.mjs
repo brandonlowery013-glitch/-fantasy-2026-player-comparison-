@@ -5,9 +5,9 @@ const root = process.cwd();
 const read = p => JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const exists = p => fs.existsSync(path.join(root,p));
 const cfg = read('guardrails/guardrails-config.json');
-const ledgerPath = cfg.full_universe_review?.ledger_file || 'guardrails/current-football-review.json';
-const allowedTracked = new Set(['NO_MATERIAL_CHANGE','MATERIAL_CHANGE','REVIEWED_NO_CHANGE']);
-const allowedUntracked = new Set(['ADMIT','HOLD_OUT','WAIT']);
+const ledgerPath = process.env.FULL_UNIVERSE_REVIEW_LEDGER || cfg.full_universe_review?.ledger_file || 'guardrails/current-football-review.json';
+const allowedTracked = new Set(cfg.full_universe_review?.tracked_statuses || ['NO_MATERIAL_CHANGE','MATERIAL_CHANGE','REVIEWED_NO_CHANGE']);
+const allowedUntracked = new Set(cfg.full_universe_review?.untracked_decisions || ['ADMIT','HOLD_OUT','WAIT']);
 const errors=[];
 
 let players=[];
