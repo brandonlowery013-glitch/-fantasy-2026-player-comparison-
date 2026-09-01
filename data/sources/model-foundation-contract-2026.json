@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "FOUNDATION_LOCKED_FOR_INTEGRATION",
+  "purpose": "Define the shared state, event, dependency, projection, market, history, decision and provenance contracts that all Fantasy 2026 modules must use so the system operates as one engine with compartmentalized responsibilities.",
+  "authoritative_universe": {
+    "player_count_source": "guardrails/guardrails-config.json:authoritative_player_count",
+    "player_shard_count_source": "guardrails/guardrails-config.json:authoritative_player_shards",
+    "single_canonical_identity_required": true,
+    "duplicate_player_state_across_modules_prohibited": true
+  },
+  "foundation_layers": {
+    "canonical_state": {
+      "authority": "SINGLE_SOURCE_OF_TRUTH",
+      "entities": ["player", "team", "game", "week", "availability", "role", "market", "event"],
+      "rules": [
+        "A player, team or game state change is written once and consumed by downstream modules.",
+        "Availability and role are state, not free-text news annotations.",
+        "Market state is stored separately from football state."
+      ]
+    },
+    "event_state_change": {
+      "authority": "TRIGGER_ONLY",
+      "required_event_fields": ["event_id", "event_type", "entity_type", "entity_id_or_name", "team", "previous_state", "new_state", "materiality", "source", "captured_at", "evidence_fingerprint"],
+      "material_event_examples": [
+        "ACTIVE_TO_OUT", "OUT_TO_ACTIVE", "IR_PUP_NFI_EXEMPT_SUSPENSION_CHANGE", "TRADE", "SIGNING", "RELEASE", "WAIVER", "STARTER_CHANGE", "QB_CHANGE", "MATERIAL_ROLE_CHANGE", "PLAY_CALLER_CHANGE", "KEY_OFFENSIVE_LINE_CHANGE"
+      ],
+      "dedupe_by_evidence_fingerprint": true,
+      "event_never_directly_sets_rank": true,
+      "event_never_directly_sets_projection": true
+    },
+    "dependency_graph": {
+      "authority": "IMPACT_EXPANSION",
+      "required_domains": ["direct_player", "connected_players", "team_offense", "opponent", "weekly_projection", "team_scoring", "market_comparison", "decision_outputs"],
+      "completion_rule": "A material event is not processed until every materially connected domain receives CHANGE, HOLD, WAIT, ADMIT or HOLD_OUT.",
+      "automatic_backup_promotion_prohibited": true,
+      "connected_reassessment_required": true
+    },
+    "football_projection": {
+      "authority": "NUMERIC_FOOTBALL_SOURCE",
+      "inputs": ["role", "volume", "efficiency", "offensive_environment", "opponent", "availability", "historical_performance", "uncertainty"],
+      "sportsbook_may_write_projection": false,
+      "event_may_trigger_recalculation": true
+    },
+    "market": {
+      "authority": "DOWNSTREAM_COMPARISON_ONLY",
+      "current_contracts": ["data/sources/live-market-ingestion-2026.json", "data/sources/betting-data-source-price-contract-2026.json"],
+      "markets": ["moneyline", "spread", "total", "implied_team_total", "weekly_player_props"],
+      "may_compare_against_football_model": true,
+      "may_directly_rewrite_core_football_projection": false,
+      "line_movement_is_evidence_not_cause": true
+    },
+    "historical_evidence": {
+      "authority": "EVIDENCE_ONLY_UNTIL_BACKTESTED",
+      "domains": ["player_history", "role_archetypes", "team_tendencies", "ATS", "over_under", "favorite_underdog", "home_road", "opponent_quality", "week", "rest", "surface"],
+      "raw_trend_may_create_bet": false,
+      "trend_weight_requires_backtest": true,
+      "causal_equation_requires_shadow_backtest_before_promotion": true
+    },
+    "decision": {
+      "authority": "ACTION_TRANSLATION",
+      "player_labels": ["START", "SIT", "SLEEPER", "BUY", "FAIR", "REACH", "FADE", "HOLD", "WAIT"],
+      "system_labels": ["CHANGE", "HOLD", "WAIT", "ADMIT", "HOLD_OUT"],
+      "betting_labels": ["BET", "LEAN", "PASS", "REVIEW_REQUIRED", "INSUFFICIENT_DATA"],
+      "required_decision_fields": ["decision", "reason", "confidence", "source_event_ids", "previous_value", "new_value"]
+    },
+    "audit_provenance": {
+      "authority": "MANDATORY",
+      "required_for_material_change": ["what_changed", "source", "captured_at", "previous_value", "new_value", "reason", "affected_entities", "qa_status"],
+      "unexplained_material_change": "BLOCK",
+      "double_count_same_event": "BLOCK",
+      "stale_state_override": "BLOCK"
+    }
+  },
+  "existing_system_mapping": {
+    "football_context_adapters": "data/sources/automatic-football-context-adapters-2026.json",
+    "football_context_snapshot_target": "data/ingestion/weekly-football-source-snapshots-2026.json",
+    "market_ingestion": "data/sources/live-market-ingestion-2026.json",
+    "market_price_contract": "data/sources/betting-data-source-price-contract-2026.json",
+    "comparison_decision": "data/sources/comparison-decision-2026.json",
+    "global_guardrails": "guardrails/guardrails-config.json"
+  },
+  "foundation_audit": {
+    "present": [
+      "authoritative universe/count guardrails",
+      "football-context adapters for role, injury, team environment, opponent and QB context",
+      "append-only evidence fingerprinting for football snapshots",
+      "market/football separation guardrails",
+      "production comparison decision layer",
+      "material-change manifests and unexplained-change blocking"
+    ],
+    "missing_or_incomplete": [
+      "autonomous transaction and breaking-personnel event discovery",
+      "normalized cross-source event ledger for all material state changes",
+      "system-wide dependency graph / connected-impact resolver",
+      "explicit team-scoring plus spread/total impact bridge after football events",
+      "historical game-trend database and backtested relevance layer",
+      "single interface-facing impact payload shared by all modules"
+    ]
+  },
+  "integration_order": [
+    "AUTOMATIC_EVENT_INGESTION",
+    "CONNECTED_IMPACT_RESOLVER",
+    "TEAM_SCORING_AND_MARKET_IMPACT_BRIDGE",
+    "HISTORICAL_GAME_TREND_DATABASE",
+    "TREND_BACKTEST_AND_RELEVANCE",
+    "INTERFACE_IMPACT_PAYLOAD",
+    "DEPLOYMENT_AND_CANONICAL_SYNC"
+  ],
+  "non_negotiable_rules": [
+    "One event is recorded once and propagated; downstream modules may not create independent conflicting versions of the same event.",
+    "OUT or inactive status triggers connected reassessment but never guarantees a backup promotion.",
+    "A returning player triggers the same dependency process in reverse and does not automatically restore the prior workload.",
+    "Football information may trigger market comparison; sportsbook movement may not silently become the football cause.",
+    "No new causal or trend-weight equation becomes actionable before holdout or walk-forward testing shows value.",
+    "Every material event must terminate in explicit downstream CHANGE, HOLD or WAIT decisions rather than disappearing after ingestion."
+  ]
+}
