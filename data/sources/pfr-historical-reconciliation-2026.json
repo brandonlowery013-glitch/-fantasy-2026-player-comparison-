@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "status": "PFR_HISTORICAL_RECONCILIATION_SHADOW",
+  "mode": "INDEPENDENT_VALIDATION_ONLY",
+  "actionable": false,
+  "production_numeric_authority": 0,
+  "primary_historical_source": "nflverse nfldata schedules/games.csv",
+  "validation_source": {
+    "provider": "Pro Football Reference",
+    "season_url_template": "https://www.pro-football-reference.com/years/{season}/games.htm",
+    "history_window": [2021, 2022, 2023, 2024, 2025],
+    "game_type": "REG"
+  },
+  "comparison_fields": ["season", "week", "teams", "final_score"],
+  "policy": {
+    "pfr_may_not_overwrite_nflverse": true,
+    "discrepancy_requires_review": true,
+    "unavailable_validation_source_is_not_a_match": true,
+    "matching_sources_increase_data_confidence_but_do_not_create_predictive_weight": true,
+    "market_lines_are_not_reconciled_from_pfr_in_this_layer": true
+  },
+  "outputs": {
+    "report": "data/probability/generated/pfr-historical-reconciliation-2021-2025.json"
+  },
+  "guardrails": [
+    "PFR is an independent validation source, not a silent fallback source.",
+    "A PFR disagreement must be surfaced with season/week/team/score context and cannot rewrite the historical store automatically.",
+    "A PFR fetch or parse failure must be reported as INSUFFICIENT_VALIDATION, never PASS.",
+    "This layer has zero authority over projections, rankings, probabilities, ATS/O-U calculations or betting decisions."
+  ]
+}
