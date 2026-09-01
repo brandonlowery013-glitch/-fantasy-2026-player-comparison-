@@ -1,0 +1,55 @@
+name: Step 2 Connected Impact Resolver
+
+on:
+  workflow_dispatch:
+  pull_request:
+  workflow_run:
+    workflows: ["Step 1 Automatic NFL Event Ingestion"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate resolver contract
+        run: node scripts/validate-connected-impact-resolver.mjs
+      - name: Self-test OUT and return propagation
+        run: node scripts/build-connected-impact-resolver.mjs --self-test
+      - name: Revalidate foundation contract
+        run: node scripts/validate-model-foundation-contract.mjs
+
+  resolve:
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    needs: validate
+    runs-on: ubuntu-latest
+    concurrency:
+      group: weekly-production-orchestration
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build connected-impact reassessment queue
+        run: node scripts/build-connected-impact-resolver.mjs
+      - name: Commit changed impact queue
+        run: |
+          if git diff --quiet -- data/ingestion/connected-impact-queue-2026.json; then
+            echo "No connected-impact queue changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ingestion/connected-impact-queue-2026.json
+          git commit -m "Refresh connected NFL impact queue"
+          git push origin HEAD:main
