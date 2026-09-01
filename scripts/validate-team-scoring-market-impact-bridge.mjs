@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
+const c=read('data/sources/team-scoring-market-impact-bridge-2026.json');
+const foundation=read('data/sources/model-foundation-contract-2026.json');
+const market=read('data/sources/live-market-ingestion-2026.json');
+const blocked=[];
+if(c.mode!=='FOOTBALL_FIRST_MARKET_COMPARISON')blocked.push('wrong bridge mode');
+if(c.actionable!==false)blocked.push('bridge must remain non-actionable');
+for(const k of ['football_projection_is_upstream','market_is_downstream_comparison_only','market_may_not_write_team_score_mean','market_may_not_write_model_spread','market_may_not_write_model_total','missing_market_is_insufficient_data_not_zero','missing_football_projection_blocks_numeric_comparison'])if(c.football_first_rules?.[k]!==true)blocked.push(`missing football-first rule ${k}`);
+if(c.decision_rules?.bridge_does_not_issue_bet!==true)blocked.push('bridge may not issue bets');
+if(c.decision_rules?.bridge_does_not_change_season_rank!==true)blocked.push('bridge may not change season rank');
+if(c.decision_rules?.bridge_does_not_change_true_value!==true)blocked.push('bridge may not change true value');
+if(foundation.foundation_layers?.market?.may_directly_rewrite_core_football_projection!==false)blocked.push('foundation market separation drift');
+if(market.guardrails?.sportsbook_inputs_may_mutate_football_projection!==false)blocked.push('live market contract allows football mutation');
+for(const s of ['PENDING_FOOTBALL_RECALCULATION','READY_FOR_MARKET_COMPARISON','INSUFFICIENT_MARKET_DATA','NO_CURRENT_GAME','NO_TEAM_SCORING_REVIEW_REQUIRED'])if(!c.reassessment_states?.[s])blocked.push(`missing state ${s}`);
+console.log(JSON.stringify({result:blocked.length?'BLOCKED':'PASS',status:c.status,blocked},null,2));
+if(blocked.length)process.exit(1);
