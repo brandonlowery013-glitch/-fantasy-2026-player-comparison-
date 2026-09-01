@@ -7,12 +7,14 @@ on:
       - 'scripts/build-substantive-rank-proposals.mjs'
       - '.github/workflows/substantive-rank-proposal-audit.yml'
       - '.github/workflows/build-overall-rank-audit-context.yml'
+      - '.github/workflows/apply-overall-audit-and-cohesion.yml'
       - 'MODEL_SOURCE_OF_TRUTH.json'
       - 'players*.json'
       - 'guardrails/current-football-review.json'
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   proposal-audit:
@@ -22,6 +24,43 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Hydrate latest verified live football review when ledger is absent
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -f guardrails/current-football-review.json ]; then
+            echo 'Using repository current-football-review ledger.'
+            exit 0
+          fi
+          run_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/live-full-universe-football-review.yml/runs?status=success&per_page=20" --jq '.workflow_runs[] | .id' 2>/dev/null | head -n 1 || true)"
+          if [ -z "$run_id" ]; then
+            echo 'No successful live full-universe review run found; proposal builder will report review absent.'
+            exit 0
+          fi
+          artifact_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts" --jq '.artifacts[] | select(.name=="live-full-universe-football-review" and .expired==false) | .id' 2>/dev/null | head -n 1 || true)"
+          if [ -z "$artifact_id" ]; then
+            echo "No live-review artifact found for run ${run_id}; proposal builder will report review absent."
+            exit 0
+          fi
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/live-review.zip
+          rm -rf /tmp/live-review && mkdir -p /tmp/live-review
+          unzip -q /tmp/live-review.zip -d /tmp/live-review
+          if [ ! -f /tmp/live-review/current-football-review.json ]; then
+            echo 'Live-review artifact is missing current-football-review.json.'
+            exit 1
+          fi
+          mkdir -p guardrails
+          cp /tmp/live-review/current-football-review.json guardrails/current-football-review.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
+          if(review.active_player_count!==Number(src.active_player_model)) throw new Error(`Live review player count ${review.active_player_count} != source of truth ${src.active_player_model}`);
+          if(review.active_player_shards!==Number(src.runtime_player_shards)) throw new Error(`Live review shard count ${review.active_player_shards} != source of truth ${src.runtime_player_shards}`);
+          if(review.review_scope!=='FULL_ACTIVE_UNIVERSE_PLUS_CONNECTED') throw new Error(`Unexpected live review scope ${review.review_scope}`);
+          if((review.players||[]).length!==Number(src.active_player_model)) throw new Error('Live review does not contain every active player');
+          console.log(`Hydrated verified live review: ${review.active_player_count} players, completed ${review.sweep_completed_at}`);
+          NODE
       - name: Build non-authoritative substantive proposals
         run: node scripts/build-substantive-rank-proposals.mjs
       - name: Prove proposal builder did not mutate canonical player shards
