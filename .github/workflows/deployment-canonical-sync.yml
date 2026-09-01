@@ -1,0 +1,83 @@
+name: Deployment Canonical Sync
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'runtime-interface-data-sync-2026.js'
+      - 'data/sources/matchup-tidbits-2026.json'
+      - 'scripts/build-matchup-tidbits.mjs'
+      - 'scripts/validate-matchup-tidbits.mjs'
+      - 'data/ingestion/interface-impact-payload-2026.json'
+      - 'data/ingestion/connected-impact-queue-2026.json'
+      - 'data/ingestion/team-scoring-market-impact-bridge-2026.json'
+      - 'guardrails/guardrails-config.json'
+      - '.github/workflows/deployment-canonical-sync.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'runtime-interface-data-sync-2026.js'
+      - 'data/sources/matchup-tidbits-2026.json'
+      - 'scripts/build-matchup-tidbits.mjs'
+      - 'scripts/validate-matchup-tidbits.mjs'
+      - 'data/ingestion/connected-impact-queue-2026.json'
+      - 'data/ingestion/team-scoring-market-impact-bridge-2026.json'
+      - 'guardrails/guardrails-config.json'
+
+permissions:
+  contents: write
+
+jobs:
+  canonical-sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Verify authoritative universe lock
+        run: |
+          node - <<'NODE'
+          const c=require('./guardrails/guardrails-config.json');
+          if(c.authoritative_player_count!==166) throw new Error(`authoritative_player_count=${c.authoritative_player_count}`);
+          if(c.authoritative_player_shards!==14) throw new Error(`authoritative_player_shards=${c.authoritative_player_shards}`);
+          console.log(JSON.stringify({players:c.authoritative_player_count,shards:c.authoritative_player_shards,status:'PASS'}));
+          NODE
+      - name: Build canonical matchup tidbits
+        run: node scripts/build-matchup-tidbits.mjs
+      - name: Validate canonical matchup tidbits
+        run: node scripts/validate-matchup-tidbits.mjs --require-output
+      - name: Build current interface impact payload
+        run: node scripts/build-interface-impact-payload.mjs
+      - name: Verify published entrypoint wiring
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const html=fs.readFileSync('index.html','utf8');
+          const runtime=fs.readFileSync('runtime-interface-data-sync-2026.js','utf8');
+          for(const x of ['runtime-interface-data-sync-2026.js','runtime-final-interface-2026.js']) if(!html.includes(x)) throw new Error(`index missing ${x}`);
+          for(const x of ['matchup-tidbits-2026.json','interface-impact-payload-2026.json']) if(!runtime.includes(x)) throw new Error(`runtime missing ${x}`);
+          const t=require('./data/probability/generated/matchup-tidbits-2026.json');
+          const i=require('./data/ingestion/interface-impact-payload-2026.json');
+          if(t.production_numeric_authority!==0||t.actionable!==false) throw new Error('tidbit authority contamination');
+          if(!Array.isArray(i.impacts)) throw new Error('impact payload malformed');
+          console.log(JSON.stringify({tidbit_games:Object.keys(t.games||{}).length,impact_rows:i.impacts.length,status:'PASS'}));
+          NODE
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Persist canonical interface payloads on main
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          if git diff --quiet -- data/probability/generated/matchup-tidbits-2026.json data/ingestion/interface-impact-payload-2026.json; then
+            echo "Canonical interface payloads already current"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/probability/generated/matchup-tidbits-2026.json data/ingestion/interface-impact-payload-2026.json
+          git commit -m "Refresh canonical interface payloads"
+          git push origin HEAD:main
