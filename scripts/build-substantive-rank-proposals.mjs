@@ -69,7 +69,7 @@ for(const p of [...players].sort((a,b)=>a.o-b.o)){
 const report={
   schema_version:'1.0.0',generated_at:new Date().toISOString(),authoritative:false,
   mutation_policy:'PROPOSAL_ONLY_NO_CANONICAL_WRITES',
-  universe:{expected_players:expected,loaded_players:players.length,runtime_player_shards:shardCount,source_state:source.state||null},
+  universe:{expected_players:expected,loaded_players:players.length,runtime_player_shards:shardCount,source_state:source.status||source.state||null},
   evidence:{current_football_review_present:Boolean(review),review_scope:review?.review_scope||null,review_completed_at:review?.sweep_completed_at||null,material_tracked_players:materialNames.size},
   score_formula:{weights,integrity_issue_count:scoreIntegrity.length,integrity_issues:scoreIntegrity},
   rules:[
