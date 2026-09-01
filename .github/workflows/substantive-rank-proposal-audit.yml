@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'scripts/build-substantive-component-recalculation.mjs'
       - 'scripts/build-substantive-rank-proposals.mjs'
       - '.github/workflows/substantive-rank-proposal-audit.yml'
       - '.github/workflows/build-overall-rank-audit-context.yml'
@@ -11,6 +12,8 @@ on:
       - 'MODEL_SOURCE_OF_TRUTH.json'
       - 'players*.json'
       - 'guardrails/current-football-review.json'
+      - 'data/probability/weekly-football-context-inputs-2026.json'
+      - 'data/probability/weekly-projection-inputs-2026.json'
 
 permissions:
   contents: read
@@ -45,10 +48,7 @@ jobs:
           gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/live-review.zip
           rm -rf /tmp/live-review && mkdir -p /tmp/live-review
           unzip -q /tmp/live-review.zip -d /tmp/live-review
-          if [ ! -f /tmp/live-review/current-football-review.json ]; then
-            echo 'Live-review artifact is missing current-football-review.json.'
-            exit 1
-          fi
+          test -f /tmp/live-review/current-football-review.json
           mkdir -p guardrails
           cp /tmp/live-review/current-football-review.json guardrails/current-football-review.json
           node - <<'NODE'
@@ -61,12 +61,14 @@ jobs:
           if((review.players||[]).length!==Number(src.active_player_model)) throw new Error('Live review does not contain every active player');
           console.log(`Hydrated verified live review: ${review.active_player_count} players, completed ${review.sweep_completed_at}`);
           NODE
+      - name: Build evidence-gated component recalculation
+        run: node scripts/build-substantive-component-recalculation.mjs
       - name: Build non-authoritative substantive proposals
         run: node scripts/build-substantive-rank-proposals.mjs
-      - name: Prove proposal builder did not mutate canonical player shards
+      - name: Prove substantive audit did not mutate canonical model files
         run: |
           if ! git diff --quiet -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json; then
-            echo 'Proposal audit illegally mutated canonical model files.'
+            echo 'Substantive audit illegally mutated canonical model files.'
             git diff -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json
             exit 1
           fi
@@ -75,6 +77,8 @@ jobs:
         with:
           name: substantive-rank-proposal-audit
           path: |
+            analysis/substantive-component-recalculation-current.json
+            analysis/substantive-component-recalculation-current.md
             analysis/substantive-rank-proposals-current.json
             analysis/substantive-rank-proposals-current.md
           if-no-files-found: error
