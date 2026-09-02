@@ -7,6 +7,9 @@ on:
   pull_request:
     paths:
       - 'scripts/build-live-full-universe-review.mjs'
+      - 'scripts/build-live-full-universe-review-v2.mjs'
+      - 'scripts/normalize-nfl-article-bodies.mjs'
+      - 'scripts/filter-live-review-materiality.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
       - 'scripts/collect-substantive-football-context.mjs'
       - 'scripts/build-substantive-football-context-inputs.mjs'
@@ -18,6 +21,9 @@ on:
     branches: [main]
     paths:
       - 'scripts/build-live-full-universe-review.mjs'
+      - 'scripts/build-live-full-universe-review-v2.mjs'
+      - 'scripts/normalize-nfl-article-bodies.mjs'
+      - 'scripts/filter-live-review-materiality.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
       - 'scripts/collect-substantive-football-context.mjs'
       - 'scripts/build-substantive-football-context-inputs.mjs'
@@ -44,7 +50,10 @@ jobs:
           node-version: '20'
 
       - name: Build live 166-player football review ledger
-        run: node scripts/build-live-full-universe-review.mjs
+        run: |
+          node scripts/build-live-full-universe-review-v2.mjs
+          node scripts/normalize-nfl-article-bodies.mjs
+          node scripts/filter-live-review-materiality.mjs
 
       - name: Validate complete active universe plus connected triage
         run: node scripts/validate-full-universe-news-review.mjs
@@ -64,13 +73,23 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
+          const summary=JSON.parse(fs.readFileSync('guardrails/live-full-universe-review-summary.json','utf8'));
           const collect=JSON.parse(fs.readFileSync('guardrails/substantive-football-context-collection-report.json','utf8'));
           const ctx=JSON.parse(fs.readFileSync('guardrails/substantive-football-context-inputs-report.json','utf8'));
+          if(review.source_method!=='NFL_COM_PRIMARY_PLUS_ESPN_PLAYER_LEVEL_FULL_UNIVERSE') throw new Error(`Wrong discovery method: ${review.source_method}`);
+          if(review.materiality_filter?.method!=='PLAYER_LOCAL_CONTEXT_PLUS_14_DAY_FRESHNESS_AND_NFL_FANOUT_GUARD') throw new Error(`Missing hardened player-local materiality filter: ${JSON.stringify(review.materiality_filter)}`);
+          if(Number(review.source_quality?.espn_player_news_calls)<150) throw new Error(`ESPN player-news coverage too low: ${review.source_quality?.espn_player_news_calls}`);
+          if(Number(review.source_quality?.espn_modeled_athlete_ids_resolved)<150) throw new Error(`Modeled ESPN athlete-ID coverage too low: ${review.source_quality?.espn_modeled_athlete_ids_resolved}/${src.active_player_model}`);
+          if(Number(review.source_quality?.nfl_com_articles_fetched)<10) throw new Error(`NFL.com article coverage too low: ${review.source_quality?.nfl_com_articles_fetched}`);
+          if(Number(review.source_quality?.nfl_unique_article_urls)<10) throw new Error(`NFL.com normalization coverage too low: ${review.source_quality?.nfl_unique_article_urls}`);
+          if(Number(review.source_quality?.nfl_structured_body_fetch_failures)>5) throw new Error(`NFL.com structured-body fetch failures too high: ${review.source_quality?.nfl_structured_body_fetch_failures}`);
+          if(Number(summary.tracked_material_news_signal_count)>Math.ceil(Number(src.active_player_model)*0.50)) throw new Error(`Material signal cardinality implausibly broad: ${summary.tracked_material_news_signal_count}/${src.active_player_model}`);
           if(collect.result!=='PASS') throw new Error('Substantive collector did not PASS');
           if(Number(collect.total_depth_rows)<160) throw new Error(`Depth coverage too low: ${collect.total_depth_rows}`);
           if(Number(collect.unique_tracked_players_with_signals)<80) throw new Error(`Tracked live signal coverage too low: ${collect.unique_tracked_players_with_signals}/${src.active_player_model}`);
           if(ctx.result!=='PASS'||Number(ctx.players)<80||Number(ctx.signals)<80) throw new Error(`Structured substantive context insufficient: ${JSON.stringify(ctx)}`);
-          console.log(JSON.stringify({collector_players:collect.unique_tracked_players_with_signals,structured_players:ctx.players,structured_signals:ctx.signals,availability_resolved:ctx.availability_resolved,availability_unresolved:ctx.availability_unresolved},null,2));
+          console.log(JSON.stringify({source_method:review.source_method,nfl_com_articles:review.source_quality.nfl_com_articles_fetched,nfl_structured_bodies:review.source_quality.nfl_structured_article_bodies,nfl_header_only:review.source_quality.nfl_header_description_only,espn_player_news_calls:review.source_quality.espn_player_news_calls,modeled_espn_ids:review.source_quality.espn_modeled_athlete_ids_resolved,material_players:summary.tracked_material_news_signal_count,material_mentions_before:review.materiality_filter.material_mentions_before,material_mentions_after:review.materiality_filter.material_mentions_after,collector_players:collect.unique_tracked_players_with_signals,structured_players:ctx.players,structured_signals:ctx.signals},null,2));
           NODE
 
       - name: Build evidence-gated substantive proposals
