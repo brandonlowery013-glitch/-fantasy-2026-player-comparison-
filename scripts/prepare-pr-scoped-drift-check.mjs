@@ -1,0 +1,9 @@
+import fs from 'node:fs';
+const file='scripts/run-baseline-drift-check.mjs';
+let s=fs.readFileSync(file,'utf8');
+const marker='const hasActivePrModelDeclarations=currentModelPayload!==mainModelPayload;';
+if(s.includes(marker)){console.log('PR-scoped exact model declaration lifecycle already present');process.exit(0);}
+const old=`// A consumed migration is historical evidence, not a standing authorization for a future PR.\n// Only an unconsumed manifest may authorize a current population/core delta.\nconst universeChanges=checkpoint?[]:historicalUniverseChanges;\nconst modelChanges=checkpoint?[]:historicalModelChanges;\nconst admissionUpdates=checkpoint?[]:historicalAdmissionUpdates;`;
+const replacement=`// A consumed population migration is historical evidence and never re-authorizes ADD/REMOVE.\n// Exact model-change declarations are PR-scoped: they are active only when this PR changes\n// the declaration payload relative to current main. Once merged, the same payload is inert.\nconst universeChanges=checkpoint?[]:historicalUniverseChanges;\nlet mainUniverseManifest={model_changes:[],admission_updates:[]};\ntry{mainUniverseManifest=gitJson(mainRef,universeManifestFile);}catch{}\nconst currentModelPayload=JSON.stringify({model_changes:universeManifest.model_changes||[],admission_updates:universeManifest.admission_updates||[]});\nconst mainModelPayload=JSON.stringify({model_changes:mainUniverseManifest.model_changes||[],admission_updates:mainUniverseManifest.admission_updates||[]});\nconst hasActivePrModelDeclarations=currentModelPayload!==mainModelPayload;\nconst modelChanges=hasActivePrModelDeclarations?historicalModelChanges:[];\nconst admissionUpdates=hasActivePrModelDeclarations?historicalAdmissionUpdates:[];`;
+if(!s.includes(old))throw new Error('Expected consumed-migration declaration block not found');
+s=s.replace(old,replacement);fs.writeFileSync(file,s);console.log('PR-scoped exact model declaration lifecycle activated');
