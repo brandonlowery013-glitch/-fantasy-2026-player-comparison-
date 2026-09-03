@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/build-aug10-news-reconciliation.mjs'
       - 'scripts/collect-official-team-news.mjs'
+      - 'scripts/seed-current-team-overrides.mjs'
       - '.github/workflows/aug10-news-reconciliation.yml'
 
 permissions:
@@ -24,6 +25,7 @@ jobs:
         run: |
           node scripts/build-live-full-universe-review-v2.mjs
           node scripts/normalize-nfl-article-bodies.mjs
+          node scripts/seed-current-team-overrides.mjs
           node scripts/collect-official-team-news.mjs
       - name: Expand materiality window to Aug 10 for this run only
         run: |
@@ -60,5 +62,3 @@ jobs:
             guardrails/current-football-review.json
             guardrails/live-full-universe-review-summary.json
           if-no-files-found: error
-
-# retrigger after historical-cardinality fix
