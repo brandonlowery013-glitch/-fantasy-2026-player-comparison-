@@ -9,8 +9,14 @@ const model_changes=inp.rows.map(x=>{const p=by.get(x.player);if(!p)throw new Er
 const historical_changes=(oldUniverse.changes||[]).filter(x=>x.action!=='MODEL_CHANGE');
 const compatibility_model_changes=model_changes.map(x=>({action:'MODEL_CHANGE',player:x.player,reason:x.reason,source:x.source,changed_fields:Object.keys(x.expected_values),expected_values:x.expected_values}));
 W('guardrails/universe-change-manifest.json',{version:'1.3.1',purpose:'Historical 162-to-166 admissions plus PR-scoped exact model-change declarations. Exact model changes are retained in model_changes and mirrored into changes with changed_fields for backward-compatible hard Guardrail QA; after merge they are inert until replaced by a new reviewed payload.',changes:[...historical_changes,...compatibility_model_changes],model_change_lifecycle:{status:'PR_SCOPED_EXACT_VALUES',as_of:inp.as_of,source_run:inp.source_run,source_artifact:inp.source_artifact,changed_players:model_changes.length},model_changes,admission_updates:[]});
+const canonical=R('canonicalBoards2026.json');
+if(canonical.active_players!==166||canonical.overall?.length!==166)throw new Error('spreadsheet sync canonical gate');
+const syncFields=['n','p','t','o','pr','tr','tp','s','pd','ce','r','e','a','rl','su','mp','px','fw','st','ad'];
+const esc=v=>String(v??'').replaceAll('\t',' ').replaceAll('\n',' ');
+const sync=[syncFields.join('\t'),...canonical.overall.map(p=>syncFields.map(k=>esc(p[k])).join('\t'))].join('\n')+'\n';
+fs.writeFileSync('analysis/sep3-v31-spreadsheet-sync.tsv',sync);
 const oldStructural=R('guardrails/structural-change-manifest.json');let keep=(oldStructural.changes||[]).filter(x=>!['MODEL_SOURCE_OF_TRUTH.json','canonicalBoards2026.json'].includes(x.file));
 keep.push({file:'MODEL_SOURCE_OF_TRUTH.json',reason:'Advance authoritative metadata to the user-approved Sep. 3 V3.1 35-player evidence reconciliation after exact-value and synchronization QA.',source:`2026-09-03 V3.1 run ${inp.source_run} + canonical apply QA`});
 keep.push({file:'canonicalBoards2026.json',reason:'Regenerate synchronized 166-player Overall, True-Value and position boards after the exact 35-player evidence changes and deterministic rank reflow.',source:`2026-09-03 V3.1 run ${inp.source_run} + canonical apply QA`});
 W('guardrails/structural-change-manifest.json',{version:'1.2.0',purpose:'Explicit declarations for intentional protected structural-file changes. Sep. 3 declarations cover the synchronized canonical model outputs produced by the exact V3.1 apply.',changes:keep});
-console.log(JSON.stringify({result:'PASS',exact_model_declarations:model_changes.length,compatibility_guardrail_declarations:compatibility_model_changes.length,structural_declarations:keep.map(x=>x.file)},null,2));
+console.log(JSON.stringify({result:'PASS',exact_model_declarations:model_changes.length,compatibility_guardrail_declarations:compatibility_model_changes.length,spreadsheet_sync_rows:canonical.overall.length,structural_declarations:keep.map(x=>x.file)},null,2));
