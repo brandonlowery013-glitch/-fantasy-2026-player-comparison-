@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+const R=p=>JSON.parse(fs.readFileSync(p,'utf8')),W=(p,x)=>fs.writeFileSync(p,JSON.stringify(x,null,2)+'\n');
+const src=R('MODEL_SOURCE_OF_TRUTH.json'),inp=R('analysis/sep3-v31-canonical-apply-input.json'),patch=R(src.current_update_layer);
+let players=[];for(let i=0;i<src.runtime_player_shards;i++)players.push(...R(`players${i}.json`));players=players.map(p=>({...p,...(patch.players?.[p.n]||{})}));
+if(players.length!==166||inp.rows.length!==35)throw new Error('declaration universe/input gate');
+const by=new Map(players.map(p=>[p.n,p])),core=['o','tr','tp','pr','s','pd','ce','r','e','a','rl','su','mp'];
+const oldUniverse=R('guardrails/universe-change-manifest.json');
+const model_changes=inp.rows.map(x=>{const p=by.get(x.player);if(!p)throw new Error(`missing ${x.player}`);return{player:x.player,reason:x.reason,source:`2026-09-03 V3.1 full-universe reconciliation run ${inp.source_run}; user-approved canonical apply`,expected_values:Object.fromEntries(core.map(k=>[k,p[k]??null]))}});
+W('guardrails/universe-change-manifest.json',{version:'1.3.0',purpose:'Historical 162-to-166 admissions plus PR-scoped exact model-change declarations. Model declarations are active only when this payload differs from current main; after merge they are inert until replaced by a new reviewed payload.',changes:oldUniverse.changes||[],model_change_lifecycle:{status:'PR_SCOPED_EXACT_VALUES',as_of:inp.as_of,source_run:inp.source_run,source_artifact:inp.source_artifact,changed_players:model_changes.length},model_changes,admission_updates:[]});
+const oldStructural=R('guardrails/structural-change-manifest.json');let keep=(oldStructural.changes||[]).filter(x=>!['MODEL_SOURCE_OF_TRUTH.json','canonicalBoards2026.json'].includes(x.file));
+keep.push({file:'MODEL_SOURCE_OF_TRUTH.json',reason:'Advance authoritative metadata to the user-approved Sep. 3 V3.1 35-player evidence reconciliation after exact-value and synchronization QA.',source:`2026-09-03 V3.1 run ${inp.source_run} + canonical apply QA`});
+keep.push({file:'canonicalBoards2026.json',reason:'Regenerate synchronized 166-player Overall, True-Value and position boards after the exact 35-player evidence changes and deterministic rank reflow.',source:`2026-09-03 V3.1 run ${inp.source_run} + canonical apply QA`});
+W('guardrails/structural-change-manifest.json',{version:'1.2.0',purpose:'Explicit declarations for intentional protected structural-file changes. Sep. 3 declarations cover the synchronized canonical model outputs produced by the exact V3.1 apply.',changes:keep});
+console.log(JSON.stringify({result:'PASS',exact_model_declarations:model_changes.length,structural_declarations:keep.map(x=>x.file)},null,2));
