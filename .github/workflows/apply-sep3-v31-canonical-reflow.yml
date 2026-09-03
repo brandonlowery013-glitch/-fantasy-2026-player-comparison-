@@ -35,10 +35,10 @@ jobs:
           node scripts/prepare-pr-scoped-drift-check.mjs
       - name: Prove baseline drift is exactly declared
         run: node scripts/run-baseline-drift-check.mjs
-      - name: Commit declarations only when changed
+      - name: Commit declarations and spreadsheet sync bridge only when changed
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add guardrails/universe-change-manifest.json guardrails/structural-change-manifest.json scripts/run-baseline-drift-check.mjs
+          git add guardrails/universe-change-manifest.json guardrails/structural-change-manifest.json scripts/run-baseline-drift-check.mjs analysis/sep3-v31-spreadsheet-sync.tsv
           git diff --cached --quiet || git commit -m 'Declare and verify Sep 3 V3.1 canonical reconciliation'
           git push origin HEAD:${{ github.event.pull_request.head.ref }}
