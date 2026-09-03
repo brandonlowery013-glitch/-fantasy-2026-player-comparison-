@@ -10,6 +10,7 @@ on:
       - 'scripts/build-live-full-universe-review-v2.mjs'
       - 'scripts/normalize-nfl-article-bodies.mjs'
       - 'scripts/collect-official-team-news.mjs'
+      - 'scripts/seed-current-team-overrides.mjs'
       - 'scripts/filter-live-review-materiality.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
       - 'scripts/collect-substantive-football-context.mjs'
@@ -25,6 +26,7 @@ on:
       - 'scripts/build-live-full-universe-review-v2.mjs'
       - 'scripts/normalize-nfl-article-bodies.mjs'
       - 'scripts/collect-official-team-news.mjs'
+      - 'scripts/seed-current-team-overrides.mjs'
       - 'scripts/filter-live-review-materiality.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
       - 'scripts/collect-substantive-football-context.mjs'
@@ -54,6 +56,7 @@ jobs:
         run: |
           node scripts/build-live-full-universe-review-v2.mjs
           node scripts/normalize-nfl-article-bodies.mjs
+          node scripts/seed-current-team-overrides.mjs
           node scripts/collect-official-team-news.mjs
           node scripts/filter-live-review-materiality.mjs
       - name: Validate complete active universe plus connected triage
@@ -78,6 +81,7 @@ jobs:
           if(review.source_method!=='NFL_COM_PRIMARY_PLUS_ESPN_PLAYER_LEVEL_FULL_UNIVERSE') throw new Error(`Wrong discovery method: ${review.source_method}`);
           if(review.source_quality?.official_team_site_ingestion!==true) throw new Error('Official team-site ingestion did not run');
           if(Number(review.source_quality?.official_team_sites_configured)!==32) throw new Error(`Official team-site registry incomplete: ${review.source_quality?.official_team_sites_configured}`);
+          if(Number(review.source_quality?.official_team_indexes_fetched)!==32) throw new Error(`Official team-site fetch incomplete: ${review.source_quality?.official_team_indexes_fetched}/32`);
           if(review.materiality_filter?.method!=='FULL_NAME_OR_ATHLETE_BOUND_CONTEXT_PLUS_14_DAY_FRESHNESS_AND_NFL_FANOUT_GUARD') throw new Error(`Missing hardened full-name/athlete-bound materiality filter: ${JSON.stringify(review.materiality_filter)}`);
           if(review.materiality_filter?.name_collision_regression_tests!==true||review.source_quality?.name_collision_regression_tests!==true) throw new Error('Name-collision regression guard did not run');
           if(Number(review.source_quality?.espn_player_news_calls)<150) throw new Error(`ESPN player-news coverage too low: ${review.source_quality?.espn_player_news_calls}`);
