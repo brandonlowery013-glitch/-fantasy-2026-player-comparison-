@@ -1,0 +1,82 @@
+{
+  "generated_at": "2026-09-03T03:16:00Z",
+  "scope": "Aug 10-current reconciliation corrections before exact component rescoring",
+  "governance": "PROPOSAL_ONLY_NO_CANONICAL_MUTATION",
+  "supersedes": "analysis/aug10-full-curated-166-ledger.json V1 where conflicts exist",
+  "status": "V2_CONTEXT_AUDIT_ACTIVE_PENDING_RUN24_EVIDENCE_VALIDATION",
+  "analysis_scope": {
+    "current_team": "ROSTER_ANCHOR_ONLY",
+    "mandatory_lanes": [
+      "DISCIPLINE_LEGAL",
+      "INJURY_AVAILABILITY",
+      "COACH_SCHEME_STRUCTURE",
+      "NEW_TEAMMATE_ACQUISITION",
+      "CHEMISTRY_INTEGRATION",
+      "ROLE_OPPORTUNITY",
+      "DEVELOPMENT_BREAKOUT",
+      "TRANSACTION_ROSTER",
+      "OFFENSIVE_ENVIRONMENT"
+    ],
+    "requirements": [
+      "Evaluate new head coaches, offensive coordinators, quarterback changes, scheme and structural changes.",
+      "Evaluate how traded/signed/new players are adapting to new teammates and the offense.",
+      "Evaluate chemistry, timing, trust and role integration.",
+      "Evaluate players showing credible year-over-year development or breakout/step-forward evidence.",
+      "Propagate every material change to connected teammates and opportunity competition.",
+      "Evaluate injuries and off-field/discipline/legal developments for availability, reliability and sustainability impact."
+    ]
+  },
+  "overrides": [
+    {
+      "player": "Puka Nacua",
+      "team": "LA",
+      "previous_v1": "HOLD_NO_NET_CHANGE",
+      "v2": "PROPOSE_DOWN",
+      "confidence": "HIGH_FOR_ACTIVE_RISK_WATCH_MEDIUM_FOR_FINAL_MAGNITUDE",
+      "lanes": ["INJURY_AVAILABILITY", "DISCIPLINE_LEGAL"],
+      "component_impacts": {
+        "availability": "DOWN",
+        "reliability": "DOWN",
+        "sustainability": "SLIGHT_DOWN",
+        "expected_production": "SMALL_DOWN_PENDING_DISCIPLINE_AND_FULL_PRACTICE_STATUS",
+        "role": "UNCHANGED",
+        "ceiling": "UNCHANGED",
+        "offense": "UNCHANGED"
+      },
+      "reason": "Psoas soreness persisted beyond the original expected return window, and separate off-field/legal/conduct developments create unresolved league-discipline risk. These are independent risk lanes and must not be collapsed into generic team context.",
+      "evidence": [
+        "Rams official Aug. 13/17/24 psoas updates",
+        "Reuters Mar. 26 lawsuit/conduct report",
+        "Los Angeles Times Apr-May/Jul rehab, lawsuit and stalled-extension reporting",
+        "Current Aug. 30 reporting that NFL review remains active"
+      ]
+    },
+    {
+      "player": "Ashton Jeanty",
+      "team": "LV",
+      "previous_v1": "HOLD_RECOVERY",
+      "v2": "MATERIAL_HOLD_ACTIVE_WATCH",
+      "confidence": "HIGH",
+      "lanes": ["INJURY_AVAILABILITY", "ROLE_OPPORTUNITY"],
+      "component_impacts": {
+        "availability": "EXISTING_SHORT_TERM_PENALTY_ONLY",
+        "expected_production": "EXISTING_WEEK1_2_RISK_ONLY",
+        "role": "UNCHANGED",
+        "ceiling": "UNCHANGED"
+      },
+      "connected_effects": ["Mike Washington Jr. short-term opportunity up while Jeanty is limited"],
+      "reason": "Important material hold: ankle situation must be surfaced even though the existing Week 1/2 availability watch already captures the proper penalty. Do not double-count it."
+    }
+  ],
+  "known_context_examples_that_must_surface": [
+    {"player":"A.J. Brown","lanes":["NEW_TEAMMATE_ACQUISITION","CHEMISTRY_INTEGRATION","OFFENSIVE_ENVIRONMENT"],"current_proposal":"UP_MINOR"},
+    {"player":"Jaylen Waddle","lanes":["NEW_TEAMMATE_ACQUISITION","CHEMISTRY_INTEGRATION","ROLE_OPPORTUNITY","OFFENSIVE_ENVIRONMENT"],"current_proposal":"UP_MINOR"},
+    {"player":"Marvin Harrison Jr.","lanes":["COACH_SCHEME_STRUCTURE","ROLE_OPPORTUNITY","OFFENSIVE_ENVIRONMENT"],"current_proposal":"UP_MINOR"},
+    {"player":"Trey McBride","lanes":["COACH_SCHEME_STRUCTURE","OFFENSIVE_ENVIRONMENT"],"current_proposal":"HOLD_POSITIVE"},
+    {"player":"Michael Wilson","lanes":["COACH_SCHEME_STRUCTURE","DEVELOPMENT_BREAKOUT","OFFENSIVE_ENVIRONMENT"],"current_proposal":"HOLD_POSITIVE"},
+    {"player":"Josh Jacobs","lanes":["DISCIPLINE_LEGAL","INJURY_AVAILABILITY","ROLE_OPPORTUNITY"],"current_proposal":"DOWN"},
+    {"player":"MarShawn Lloyd","lanes":["ROLE_OPPORTUNITY"],"current_proposal":"UP"},
+    {"player":"Kaleb Johnson","lanes":["NEW_TEAMMATE_ACQUISITION","ROLE_OPPORTUNITY"],"current_proposal":"UP_OPPORTUNITY_REVIEW"}
+  ],
+  "canonical_mutations": 0
+}
