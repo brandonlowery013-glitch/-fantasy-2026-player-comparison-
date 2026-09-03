@@ -1,9 +1,17 @@
 {
-  "generated_at": "2026-09-03T03:16:00Z",
+  "generated_at": "2026-09-03T03:26:00Z",
   "scope": "Aug 10-current reconciliation corrections before exact component rescoring",
   "governance": "PROPOSAL_ONLY_NO_CANONICAL_MUTATION",
   "supersedes": "analysis/aug10-full-curated-166-ledger.json V1 where conflicts exist",
-  "status": "V2_CONTEXT_AUDIT_ACTIVE_PENDING_RUN24_EVIDENCE_VALIDATION",
+  "status": "V2_CONTEXT_AUDIT_VALIDATED_RUN25",
+  "validation": {
+    "workflow_run_id": 33710535323,
+    "workflow_run_number": 25,
+    "artifact_id": 9876853637,
+    "head_sha": "017029170642883fab92f0f34c26fd58b10c2a90",
+    "conclusion": "success",
+    "players_reviewed": 166
+  },
   "analysis_scope": {
     "current_team": "ROSTER_ANCHOR_ONLY",
     "mandatory_lanes": [
@@ -26,6 +34,7 @@
       "Evaluate injuries and off-field/discipline/legal developments for availability, reliability and sustainability impact."
     ]
   },
+  "directional_proposal_count": 31,
   "overrides": [
     {
       "player": "Puka Nacua",
@@ -34,22 +43,8 @@
       "v2": "PROPOSE_DOWN",
       "confidence": "HIGH_FOR_ACTIVE_RISK_WATCH_MEDIUM_FOR_FINAL_MAGNITUDE",
       "lanes": ["INJURY_AVAILABILITY", "DISCIPLINE_LEGAL"],
-      "component_impacts": {
-        "availability": "DOWN",
-        "reliability": "DOWN",
-        "sustainability": "SLIGHT_DOWN",
-        "expected_production": "SMALL_DOWN_PENDING_DISCIPLINE_AND_FULL_PRACTICE_STATUS",
-        "role": "UNCHANGED",
-        "ceiling": "UNCHANGED",
-        "offense": "UNCHANGED"
-      },
-      "reason": "Psoas soreness persisted beyond the original expected return window, and separate off-field/legal/conduct developments create unresolved league-discipline risk. These are independent risk lanes and must not be collapsed into generic team context.",
-      "evidence": [
-        "Rams official Aug. 13/17/24 psoas updates",
-        "Reuters Mar. 26 lawsuit/conduct report",
-        "Los Angeles Times Apr-May/Jul rehab, lawsuit and stalled-extension reporting",
-        "Current Aug. 30 reporting that NFL review remains active"
-      ]
+      "component_impacts": {"availability":"DOWN","reliability":"DOWN","sustainability":"SLIGHT_DOWN","expected_production":"SMALL_DOWN_PENDING_DISCIPLINE_AND_FULL_PRACTICE_STATUS","role":"UNCHANGED","ceiling":"UNCHANGED","offense":"UNCHANGED"},
+      "reason": "Persistent psoas recovery and a separate unresolved off-field/league-review risk are independent fantasy-risk lanes."
     },
     {
       "player": "Ashton Jeanty",
@@ -58,15 +53,59 @@
       "v2": "MATERIAL_HOLD_ACTIVE_WATCH",
       "confidence": "HIGH",
       "lanes": ["INJURY_AVAILABILITY", "ROLE_OPPORTUNITY"],
-      "component_impacts": {
-        "availability": "EXISTING_SHORT_TERM_PENALTY_ONLY",
-        "expected_production": "EXISTING_WEEK1_2_RISK_ONLY",
-        "role": "UNCHANGED",
-        "ceiling": "UNCHANGED"
-      },
+      "component_impacts": {"availability":"EXISTING_SHORT_TERM_PENALTY_ONLY","expected_production":"EXISTING_WEEK1_2_RISK_ONLY","role":"UNCHANGED","ceiling":"UNCHANGED"},
       "connected_effects": ["Mike Washington Jr. short-term opportunity up while Jeanty is limited"],
-      "reason": "Important material hold: ankle situation must be surfaced even though the existing Week 1/2 availability watch already captures the proper penalty. Do not double-count it."
+      "reason": "Surface the ankle situation without double-counting the existing Week 1/2 penalty."
+    },
+    {
+      "player": "De'Von Achane",
+      "team": "MIA",
+      "previous_v1": "HOLD_NO_NET_CHANGE",
+      "v2": "PROPOSE_UP",
+      "confidence": "HIGH",
+      "lanes": ["ROLE_OPPORTUNITY", "COACH_SCHEME_STRUCTURE", "OFFENSIVE_ENVIRONMENT"],
+      "component_impacts": {"expected_production":"UP","role":"UP","ceiling":"SLIGHT_UP","availability":"UNCHANGED_EXISTING_DURABILITY_RISK"},
+      "reason": "Current Miami reporting identifies Achane as the clear offensive centerpiece with a larger workload after major personnel changes."
+    },
+    {
+      "player": "Kyler Murray",
+      "team": "MIN",
+      "previous_v1": "HOLD_NO_NET_CHANGE",
+      "v2": "PROPOSE_UP",
+      "confidence": "HIGH",
+      "lanes": ["ROLE_OPPORTUNITY", "NEW_TEAMMATE_ACQUISITION", "OFFENSIVE_ENVIRONMENT"],
+      "component_impacts": {"expected_production":"UP","role":"UP","offense":"UP","ceiling":"SLIGHT_UP"},
+      "connected_effects": ["Justin Jefferson and Jordan Addison receive a positive quarterback-environment review without automatic double-counting"],
+      "reason": "Minnesota officially named Murray the 2026 starting quarterback, resolving prior role uncertainty in a favorable Kevin O'Connell offense."
+    },
+    {
+      "player": "DJ Moore",
+      "team": "BUF",
+      "previous_v1": "HOLD_NO_NET_CHANGE",
+      "v2": "PROPOSE_UP_MINOR",
+      "confidence": "HIGH",
+      "lanes": ["NEW_TEAMMATE_ACQUISITION", "CHEMISTRY_INTEGRATION", "ROLE_OPPORTUNITY", "OFFENSIVE_ENVIRONMENT"],
+      "component_impacts": {"offense":"UP","role":"SLIGHT_UP","ceiling":"SLIGHT_UP","reliability":"SLIGHT_UP"},
+      "reason": "Bills camp evidence shows developing Josh Allen chemistry plus intermediate and red-zone usage in the new offense."
+    },
+    {
+      "player": "Rashee Rice",
+      "team": "KC",
+      "previous_v1": "HOLD_NO_NET_CHANGE",
+      "v2": "PROPOSE_UP_RISK_REMOVAL",
+      "confidence": "HIGH_FOR_DISCIPLINE_RESOLUTION",
+      "lanes": ["DISCIPLINE_LEGAL", "INJURY_AVAILABILITY", "ROLE_OPPORTUNITY"],
+      "component_impacts": {"availability":"UP_REMOVE_DISCIPLINE_PENALTY","reliability":"UP_REMOVE_DISCIPLINE_PENALTY","expected_production":"UP_IF_PRIOR_DISCIPLINE_GAMES_WERE_BAKED_IN","injury_risk":"RETAIN_KNEE_RECONDITIONING_WATCH"},
+      "reason": "The league investigation is closed with no further discipline expected; remove disciplinary risk while retaining the separate knee/reconditioning risk."
     }
+  ],
+  "explicit_holds": [
+    {"player":"Tucker Kraft","classification":"HOLD_ROLE_WATCH","reason":"Green Bay describes Jonnu Smith as reinforcement behind Kraft; do not invent a TE1 demotion."},
+    {"player":"Bucky Irving","classification":"HOLD_POSITIVE","reason":"New offensive structure is positive context, but not enough player-specific evidence for a numeric move."},
+    {"player":"TreVeyon Henderson","classification":"HOLD_SHARED_BACKFIELD","reason":"Current Patriots evidence supports a Stevenson-Henderson tandem rather than a clean standalone role expansion."},
+    {"player":"Rome Odunze","classification":"HOLD_NEEDS_PRIMARY_CORROBORATION","reason":"Breakout/editorial expectations alone do not clear the evidence gate."},
+    {"player":"Colston Loveland","classification":"HOLD_NEEDS_PRIMARY_CORROBORATION","reason":"Breakout/editorial expectations alone do not clear the evidence gate."},
+    {"player":"Luther Burden III","classification":"HOLD_NEEDS_PRIMARY_CORROBORATION","reason":"Breakout/editorial expectations alone do not clear the evidence gate."}
   ],
   "known_context_examples_that_must_surface": [
     {"player":"A.J. Brown","lanes":["NEW_TEAMMATE_ACQUISITION","CHEMISTRY_INTEGRATION","OFFENSIVE_ENVIRONMENT"],"current_proposal":"UP_MINOR"},
