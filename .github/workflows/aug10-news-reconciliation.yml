@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/build-aug10-news-reconciliation.mjs'
       - 'scripts/collect-official-team-news.mjs'
+      - 'scripts/collect-official-team-sitemaps.mjs'
       - 'scripts/seed-current-team-overrides.mjs'
       - '.github/workflows/aug10-news-reconciliation.yml'
 
@@ -36,6 +37,7 @@ jobs:
           console.log('Historical official-team crawl depth: 120 links/team');
           NODE
           node scripts/collect-official-team-news.mjs
+          OFFICIAL_TEAM_SITEMAP_START='2026-08-10T00:00:00Z' OFFICIAL_TEAM_SITEMAP_MAX_ARTICLES=200 OFFICIAL_TEAM_SITEMAP_MAX_CHILDREN=40 node scripts/collect-official-team-sitemaps.mjs
       - name: Expand materiality window to Aug 10 for this run only
         run: |
           node - <<'NODE'
