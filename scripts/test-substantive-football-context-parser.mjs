@@ -16,3 +16,5 @@ assert.equal(explicit.length,1);
 assert.equal(explicit[0].rank,3);
 
 console.log(JSON.stringify({result:'PASS',array_order_rank_fallback:true,singular_depthchart_supported:true,plural_depthcharts_supported:true,explicit_rank_preserved:true},null,2));
+
+// Verification-only no-op change to trigger a fresh live full-universe review from current main code.
