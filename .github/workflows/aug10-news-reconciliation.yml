@@ -26,6 +26,15 @@ jobs:
           node scripts/build-live-full-universe-review-v2.mjs
           node scripts/normalize-nfl-article-bodies.mjs
           node scripts/seed-current-team-overrides.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='scripts/collect-official-team-news.mjs';
+          let s=fs.readFileSync(p,'utf8');
+          if(!s.includes('slice(0,20)')) throw new Error('Expected official-team article limit not found');
+          s=s.replace('slice(0,20)','slice(0,120)');
+          fs.writeFileSync(p,s);
+          console.log('Historical official-team crawl depth: 120 links/team');
+          NODE
           node scripts/collect-official-team-news.mjs
       - name: Expand materiality window to Aug 10 for this run only
         run: |
