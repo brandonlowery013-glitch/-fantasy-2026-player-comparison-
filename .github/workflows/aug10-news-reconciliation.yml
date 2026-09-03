@@ -1,0 +1,59 @@
+name: Aug 10 News Reconciliation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/build-aug10-news-reconciliation.mjs'
+      - '.github/workflows/aug10-news-reconciliation.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build full-universe live ledger
+        run: |
+          node scripts/build-live-full-universe-review-v2.mjs
+          node scripts/normalize-nfl-article-bodies.mjs
+      - name: Expand materiality window to Aug 10 for this run only
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='scripts/filter-live-review-materiality.mjs';
+          let s=fs.readFileSync(p,'utf8');
+          const start=Date.parse('2026-08-10T00:00:00Z');
+          const days=Math.ceil((Date.now()-start)/(24*60*60*1000))+1;
+          s=s.replace('const now=Date.now(),maxAgeMs=14*24*60*60*1000;',`const now=Date.now(),maxAgeMs=${days}*24*60*60*1000;`);
+          fs.writeFileSync(p,s);
+          console.log(`Temporary reconciliation freshness window: ${days} days`);
+          NODE
+          node scripts/filter-live-review-materiality.mjs
+      - name: Reconstruct timelines and compare with current model state
+        env:
+          RECON_START: '2026-08-10T00:00:00Z'
+        run: node scripts/build-aug10-news-reconciliation.mjs
+      - name: Prove reconciliation did not mutate canonical model files
+        run: |
+          if ! git diff --quiet -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json current162patch-2026-08-24.json; then
+            echo 'Historical reconciliation illegally mutated canonical model files.'
+            git diff -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json current162patch-2026-08-24.json
+            exit 1
+          fi
+      - name: Upload reconciliation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: aug10-news-reconciliation
+          path: |
+            analysis/aug10-news-reconciliation.json
+            analysis/aug10-news-reconciliation.md
+            guardrails/current-football-review.json
+            guardrails/live-full-universe-review-summary.json
+          if-no-files-found: error
