@@ -5,6 +5,8 @@ on:
   pull_request:
     paths:
       - 'scripts/build-aug10-news-reconciliation.mjs'
+      - 'scripts/build-aug10-full-166-rescore-v3.mjs'
+      - 'analysis/aug10-v3-regression-overrides.json'
       - 'scripts/collect-official-team-news.mjs'
       - 'scripts/collect-official-team-sitemaps.mjs'
       - 'scripts/collect-player-news-rss.mjs'
@@ -62,6 +64,8 @@ jobs:
         env:
           RECON_START: '2026-08-10T00:00:00Z'
         run: node scripts/build-aug10-news-reconciliation.mjs
+      - name: Build full 166-player evidence-to-score rescore proposal
+        run: node scripts/build-aug10-full-166-rescore-v3.mjs
       - name: Prove reconciliation did not mutate canonical model files
         run: |
           if ! git diff --quiet -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json current162patch-2026-08-24.json; then
@@ -76,6 +80,8 @@ jobs:
           path: |
             analysis/aug10-news-reconciliation.json
             analysis/aug10-news-reconciliation.md
+            analysis/aug10-full-166-rescore-v3.json
+            analysis/aug10-full-166-rescore-v3.md
             guardrails/current-football-review.json
             guardrails/live-full-universe-review-summary.json
           if-no-files-found: error
