@@ -11,6 +11,8 @@ on:
       - 'scripts/normalize-nfl-article-bodies.mjs'
       - 'scripts/collect-official-team-news.mjs'
       - 'scripts/collect-official-team-sitemaps.mjs'
+      - 'scripts/collect-player-news-rss.mjs'
+      - 'scripts/enrich-football-context-lanes.mjs'
       - 'scripts/seed-current-team-overrides.mjs'
       - 'scripts/filter-live-review-materiality.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
@@ -28,6 +30,8 @@ on:
       - 'scripts/normalize-nfl-article-bodies.mjs'
       - 'scripts/collect-official-team-news.mjs'
       - 'scripts/collect-official-team-sitemaps.mjs'
+      - 'scripts/collect-player-news-rss.mjs'
+      - 'scripts/enrich-football-context-lanes.mjs'
       - 'scripts/seed-current-team-overrides.mjs'
       - 'scripts/filter-live-review-materiality.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
@@ -70,6 +74,8 @@ jobs:
           NODE
           node scripts/collect-official-team-news.mjs
           node scripts/collect-official-team-sitemaps.mjs
+          node scripts/collect-player-news-rss.mjs
+          node scripts/enrich-football-context-lanes.mjs
           node scripts/filter-live-review-materiality.mjs
       - name: Validate complete active universe plus connected triage
         run: node scripts/validate-full-universe-news-review.mjs
@@ -93,6 +99,8 @@ jobs:
           if(review.source_method!=='NFL_COM_PRIMARY_PLUS_ESPN_PLAYER_LEVEL_FULL_UNIVERSE') throw new Error(`Wrong discovery method: ${review.source_method}`);
           if(review.source_quality?.official_team_site_ingestion!==true) throw new Error('Official team-site ingestion did not run');
           if(review.source_quality?.official_team_sitemap_ingestion!==true) throw new Error('Official team sitemap/archive ingestion did not run');
+          if(review.source_quality?.player_external_news_rss!==true) throw new Error('External player-news discovery did not run');
+          if(String(review.context_lane_schema?.version||'')!=='1.2.0') throw new Error(`Wrong context lane schema: ${JSON.stringify(review.context_lane_schema)}`);
           if(Number(review.source_quality?.official_team_sites_configured)!==32) throw new Error(`Official team-site registry incomplete: ${review.source_quality?.official_team_sites_configured}`);
           if(Number(review.source_quality?.official_team_indexes_fetched)!==32) throw new Error(`Official team-site fetch incomplete: ${review.source_quality?.official_team_indexes_fetched}/32`);
           if(review.materiality_filter?.method!=='FULL_NAME_OR_ATHLETE_BOUND_CONTEXT_PLUS_14_DAY_FRESHNESS_AND_NFL_FANOUT_GUARD') throw new Error(`Missing hardened full-name/athlete-bound materiality filter: ${JSON.stringify(review.materiality_filter)}`);
@@ -104,7 +112,7 @@ jobs:
           if(Number(summary.tracked_material_news_signal_count)>Math.ceil(Number(src.active_player_model)*0.50)) throw new Error(`Material signal cardinality implausibly broad: ${summary.tracked_material_news_signal_count}/${src.active_player_model}`);
           if(collect.result!=='PASS') throw new Error('Substantive collector did not PASS');
           if(ctx.result!=='PASS') throw new Error('Structured substantive context did not PASS');
-          console.log(JSON.stringify({official_team_sites:review.source_quality.official_team_sites_configured,official_team_articles:review.source_quality.official_team_articles_fetched,official_team_mentions:review.source_quality.official_team_full_name_mentions,sitemap_articles:review.source_quality.official_team_sitemap_articles_fetched,sitemap_mentions:review.source_quality.official_team_sitemap_direct_mentions_added,material_players:summary.tracked_material_news_signal_count},null,2));
+          console.log(JSON.stringify({official_team_sites:review.source_quality.official_team_sites_configured,official_team_articles:review.source_quality.official_team_articles_fetched,official_team_mentions:review.source_quality.official_team_full_name_mentions,sitemap_articles:review.source_quality.official_team_sitemap_articles_fetched,sitemap_mentions:review.source_quality.official_team_sitemap_direct_mentions_added,external_news_mentions:review.source_quality.player_external_news_rss_mentions_added,context_lanes:review.context_lane_schema?.promoted_counts,material_players:summary.tracked_material_news_signal_count},null,2));
           NODE
       - name: Build evidence-gated substantive proposals
         run: |
