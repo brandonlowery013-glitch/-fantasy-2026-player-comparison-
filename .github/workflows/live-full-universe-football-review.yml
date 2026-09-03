@@ -57,6 +57,15 @@ jobs:
           node scripts/build-live-full-universe-review-v2.mjs
           node scripts/normalize-nfl-article-bodies.mjs
           node scripts/seed-current-team-overrides.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='scripts/collect-official-team-news.mjs';
+          let s=fs.readFileSync(p,'utf8');
+          if(!s.includes('slice(0,20)')) throw new Error('Expected official-team article limit not found');
+          s=s.replace('slice(0,20)','slice(0,40)');
+          fs.writeFileSync(p,s);
+          console.log('Live official-team crawl depth: 40 links/team');
+          NODE
           node scripts/collect-official-team-news.mjs
           node scripts/filter-live-review-materiality.mjs
       - name: Validate complete active universe plus connected triage
