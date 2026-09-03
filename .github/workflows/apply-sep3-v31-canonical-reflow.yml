@@ -1,8 +1,8 @@
 name: Apply Sep 3 V3.1 Canonical Reflow
 on:
-  push:
+  pull_request:
     branches:
-      - apply/sep3-v31-canonical-reflow
+      - main
     paths:
       - 'analysis/sep3-v31-canonical-apply-input.json'
       - 'scripts/apply-sep3-v31-canonical-reflow.mjs'
@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -30,10 +32,10 @@ jobs:
           if(s.active_player_model!==166||c.active_players!==166||c.overall.length!==166||c.trueValue.length!==166)throw new Error('166 sync failed');
           console.log('SEP3 V3.1 CANONICAL QA PASS');
           NODE
-      - name: Commit synchronized canonical model
+      - name: Commit synchronized canonical model to apply branch
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add MODEL_SOURCE_OF_TRUTH.json current162patch-2026-08-24.json players*.json canonicalBoards2026.json analysis/sep3-v31-canonical-apply-qa.json
           git diff --cached --quiet || git commit -m 'Apply Sep 3 V3.1 35-player canonical reconciliation [skip ci]'
-          git push
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
