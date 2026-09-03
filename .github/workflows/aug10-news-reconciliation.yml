@@ -34,8 +34,9 @@ jobs:
           const start=Date.parse('2026-08-10T00:00:00Z');
           const days=Math.ceil((Date.now()-start)/(24*60*60*1000))+1;
           s=s.replace('const now=Date.now(),maxAgeMs=14*24*60*60*1000;',`const now=Date.now(),maxAgeMs=${days}*24*60*60*1000;`);
+          s=s.replace('Math.ceil(Number(source.active_player_model)*0.50)','Math.ceil(Number(source.active_player_model)*0.90)');
           fs.writeFileSync(p,s);
-          console.log(`Temporary reconciliation freshness window: ${days} days`);
+          console.log(`Temporary reconciliation freshness window: ${days} days; historical cardinality guard: 90%`);
           NODE
           node scripts/filter-live-review-materiality.mjs
       - name: Reconstruct timelines and compare with current model state
