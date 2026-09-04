@@ -1,0 +1,87 @@
+name: Canonical Player Admissions
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_id:
+        description: Candidate ID from admissions/queue.json
+        required: false
+        type: string
+      apply:
+        description: Apply a fully validated calibrated package to this branch
+        required: false
+        default: false
+        type: boolean
+  pull_request:
+    paths:
+      - 'admissions/**'
+      - 'scripts/process-admissions.mjs'
+      - 'scripts/stage-admission-requests.mjs'
+      - 'scripts/validate-admission-state.mjs'
+      - 'scripts/test-admission-engine.mjs'
+      - 'scripts/validate-full-universe-news-review.mjs'
+      - 'players*.json'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'guardrails/universe-change-manifest.json'
+      - '.github/workflows/canonical-admissions.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'admissions/**'
+      - 'scripts/process-admissions.mjs'
+      - 'scripts/stage-admission-requests.mjs'
+      - 'scripts/validate-admission-state.mjs'
+      - 'scripts/test-admission-engine.mjs'
+      - 'players*.json'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'guardrails/universe-change-manifest.json'
+
+permissions:
+  contents: write
+
+jobs:
+  admission-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test admission engine contracts
+        run: node scripts/test-admission-engine.mjs
+      - name: Validate queue schema
+        run: node scripts/process-admissions.mjs --validate-queue
+      - name: Dry-run requested calibrated admission
+        if: github.event_name == 'workflow_dispatch' && inputs.candidate_id != ''
+        run: node scripts/process-admissions.mjs "${{ inputs.candidate_id }}"
+      - name: Apply requested calibrated admission
+        if: github.event_name == 'workflow_dispatch' && inputs.apply == true && inputs.candidate_id != ''
+        run: node scripts/process-admissions.mjs --apply "${{ inputs.candidate_id }}"
+      - name: Validate admission state
+        if: github.event_name != 'workflow_dispatch' || inputs.apply == true || inputs.candidate_id == ''
+        run: node scripts/validate-admission-state.mjs
+      - name: Run hard model guardrails after apply
+        if: github.event_name == 'workflow_dispatch' && inputs.apply == true && inputs.candidate_id != ''
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Commit validated applied admission
+        if: github.event_name == 'workflow_dispatch' && inputs.apply == true && inputs.candidate_id != ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admissions players*.json MODEL_SOURCE_OF_TRUTH.json guardrails/universe-change-manifest.json guardrails/admission-state-report.json guardrails/guardrail-report.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Complete canonical admission ${{ inputs.candidate_id }}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+      - name: Upload admission validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canonical-admission-report
+          path: |
+            admissions/queue.json
+            admissions/completed/*.json
+            guardrails/admission-state-report.json
+            guardrails/guardrail-report.json
+          if-no-files-found: warn
