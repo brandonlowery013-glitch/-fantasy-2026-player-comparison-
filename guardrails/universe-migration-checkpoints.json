@@ -1,16 +1,30 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "season": 2026,
   "active_checkpoint": {
     "status": "CONSUMED",
-    "migration": "162_TO_166",
-    "merged_pr": 128,
-    "commit": "0315e876a8f93d405275d591e85985237b32a9d9",
+    "migration": "SEP3_V31_CANONICAL_166",
+    "merged_pr": 181,
+    "commit": "382a5d9d67d3087bd4770f59561b706f91243900",
     "player_count": 166,
     "player_shards": 14,
-    "guardrail_run": 33414775019,
-    "guardrail_job": 99562687687,
+    "guardrail_run": 33831033529,
+    "guardrail_job": 100893895740,
     "guardrail_result": "success",
-    "reason": "PR #128 passed the required strict guardrail and merged the declared 162-to-166 migration. Future PRs must compare against this immutable consumed checkpoint rather than replaying the historical admission manifest."
-  }
+    "reason": "PR #181 passed the required Guardrail QA, including the hard guardrail, and merged the approved Sep. 3 V3.1 35-player canonical reconciliation. Future PRs compare from this immutable approved 166-player canonical checkpoint so already-merged model changes are not re-litigated while main-to-PR core drift remains strictly declaration-gated."
+  },
+  "superseded_checkpoints": [
+    {
+      "status": "CONSUMED",
+      "migration": "162_TO_166",
+      "merged_pr": 128,
+      "commit": "0315e876a8f93d405275d591e85985237b32a9d9",
+      "player_count": 166,
+      "player_shards": 14,
+      "guardrail_run": 33414775019,
+      "guardrail_job": 99562687687,
+      "guardrail_result": "success",
+      "reason": "Historical 162-to-166 admission checkpoint; superseded as the active comparison anchor by the later approved Sep. 3 V3.1 canonical checkpoint."
+    }
+  ]
 }

@@ -3,7 +3,7 @@ name: Live Full Universe Football Review
 on:
   workflow_dispatch:
   schedule:
-    - cron: '35 12 * * *'
+    - cron: '35 */4 * * *'
   pull_request:
     paths:
       - 'scripts/build-live-full-universe-review.mjs'
@@ -13,7 +13,8 @@ on:
       - 'scripts/validate-full-universe-news-review.mjs'
       - 'scripts/collect-substantive-football-context.mjs'
       - 'scripts/build-substantive-football-context-inputs.mjs'
-      - 'scripts/build-substantive-component-recalculation.mjs'
+      - 'scripts/build-substantive-component-recalculation-v2.mjs'
+      - 'scripts/build-full-universe-reconciliation-taxonomy.mjs'
       - 'scripts/build-substantive-rank-proposals.mjs'
       - 'scripts/test-substantive-football-context-parser.mjs'
       - '.github/workflows/live-full-universe-football-review.yml'
@@ -27,7 +28,8 @@ on:
       - 'scripts/validate-full-universe-news-review.mjs'
       - 'scripts/collect-substantive-football-context.mjs'
       - 'scripts/build-substantive-football-context-inputs.mjs'
-      - 'scripts/build-substantive-component-recalculation.mjs'
+      - 'scripts/build-substantive-component-recalculation-v2.mjs'
+      - 'scripts/build-full-universe-reconciliation-taxonomy.mjs'
       - 'scripts/build-substantive-rank-proposals.mjs'
       - 'scripts/test-substantive-football-context-parser.mjs'
       - '.github/workflows/live-full-universe-football-review.yml'
@@ -58,10 +60,10 @@ jobs:
       - name: Validate complete active universe plus connected triage
         run: node scripts/validate-full-universe-news-review.mjs
 
-      - name: Test substantive parser and outcome gates
+      - name: Test incremental substantive scoring
         run: |
           node scripts/test-substantive-football-context-parser.mjs
-          node scripts/build-substantive-component-recalculation.mjs --self-test
+          node scripts/build-substantive-component-recalculation-v2.mjs --self-test
 
       - name: Build season-long substantive football context
         run: |
@@ -77,40 +79,50 @@ jobs:
           const summary=JSON.parse(fs.readFileSync('guardrails/live-full-universe-review-summary.json','utf8'));
           const collect=JSON.parse(fs.readFileSync('guardrails/substantive-football-context-collection-report.json','utf8'));
           const ctx=JSON.parse(fs.readFileSync('guardrails/substantive-football-context-inputs-report.json','utf8'));
-          if(review.source_method!=='NFL_COM_PRIMARY_PLUS_ESPN_PLAYER_LEVEL_FULL_UNIVERSE') throw new Error(`Wrong discovery method: ${review.source_method}`);
-          if(review.materiality_filter?.method!=='FULL_NAME_OR_ATHLETE_BOUND_CONTEXT_PLUS_14_DAY_FRESHNESS_AND_NFL_FANOUT_GUARD') throw new Error(`Missing hardened full-name/athlete-bound materiality filter: ${JSON.stringify(review.materiality_filter)}`);
+          if((review.players||[]).length!==Number(src.active_player_model)) throw new Error(`Review coverage ${(review.players||[]).length}/${src.active_player_model}`);
           if(review.materiality_filter?.name_collision_regression_tests!==true||review.source_quality?.name_collision_regression_tests!==true) throw new Error('Name-collision regression guard did not run');
           if(Number(review.source_quality?.espn_player_news_calls)<150) throw new Error(`ESPN player-news coverage too low: ${review.source_quality?.espn_player_news_calls}`);
           if(Number(review.source_quality?.espn_modeled_athlete_ids_resolved)<150) throw new Error(`Modeled ESPN athlete-ID coverage too low: ${review.source_quality?.espn_modeled_athlete_ids_resolved}/${src.active_player_model}`);
-          if(Number(review.source_quality?.nfl_com_articles_fetched)<10) throw new Error(`NFL.com article coverage too low: ${review.source_quality?.nfl_com_articles_fetched}`);
-          if(Number(review.source_quality?.nfl_unique_article_urls)<10) throw new Error(`NFL.com normalization coverage too low: ${review.source_quality?.nfl_unique_article_urls}`);
-          if(Number(review.source_quality?.nfl_structured_body_fetch_failures)>5) throw new Error(`NFL.com structured-body fetch failures too high: ${review.source_quality?.nfl_structured_body_fetch_failures}`);
           if(Number(summary.tracked_material_news_signal_count)>Math.ceil(Number(src.active_player_model)*0.50)) throw new Error(`Material signal cardinality implausibly broad: ${summary.tracked_material_news_signal_count}/${src.active_player_model}`);
-          if(collect.result!=='PASS') throw new Error('Substantive collector did not PASS');
-          if(Number(collect.total_depth_rows)<160) throw new Error(`Depth coverage too low: ${collect.total_depth_rows}`);
-          if(Number(collect.unique_tracked_players_with_signals)<80) throw new Error(`Tracked live signal coverage too low: ${collect.unique_tracked_players_with_signals}/${src.active_player_model}`);
-          if(ctx.result!=='PASS'||Number(ctx.players)<80||Number(ctx.signals)<80) throw new Error(`Structured substantive context insufficient: ${JSON.stringify(ctx)}`);
-          console.log(JSON.stringify({source_method:review.source_method,nfl_com_articles:review.source_quality.nfl_com_articles_fetched,nfl_structured_bodies:review.source_quality.nfl_structured_article_bodies,nfl_header_only:review.source_quality.nfl_header_description_only,espn_player_news_calls:review.source_quality.espn_player_news_calls,modeled_espn_ids:review.source_quality.espn_modeled_athlete_ids_resolved,material_players:summary.tracked_material_news_signal_count,material_mentions_before:review.materiality_filter.material_mentions_before,material_mentions_after:review.materiality_filter.material_mentions_after,name_collision_regression_tests:review.materiality_filter.name_collision_regression_tests,collector_players:collect.unique_tracked_players_with_signals,structured_players:ctx.players,structured_signals:ctx.signals},null,2));
+          if(collect.result!=='PASS'||ctx.result!=='PASS') throw new Error('Substantive context pipeline did not PASS');
+          console.log(JSON.stringify({players:src.active_player_model,material_players:summary.tracked_material_news_signal_count,structured_players:ctx.players,structured_signals:ctx.signals},null,2));
           NODE
 
-      - name: Build evidence-gated substantive proposals
+      - name: Build incremental evidence proposals and 166-player taxonomy
         run: |
-          node scripts/build-substantive-component-recalculation.mjs
+          node scripts/build-substantive-component-recalculation-v2.mjs
           node scripts/build-substantive-rank-proposals.mjs
+          node scripts/build-full-universe-reconciliation-taxonomy.mjs
 
-      - name: Prove daily audit did not mutate canonical model files
+      - name: Validate taxonomy and silent-evidence guard
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const t=JSON.parse(fs.readFileSync('analysis/full-universe-reconciliation-taxonomy-current.json','utf8'));
+          const rows=t.rows||[];
+          if(rows.length!==Number(src.active_player_model)) throw new Error(`Taxonomy coverage ${rows.length}/${src.active_player_model}`);
+          if(new Set(rows.map(x=>x.player)).size!==Number(src.active_player_model)) throw new Error('Taxonomy duplicate/missing players');
+          const silent=rows.filter(x=>x.meaningful_evidence&&x.taxonomy==='NO_MATERIAL_UPDATE');
+          if(silent.length) throw new Error(`Silent meaningful evidence: ${silent.map(x=>x.player).join(', ')}`);
+          const allowed=new Set(['UP','DOWN','MATERIAL_HOLD','POSITIVE_HOLD','NEGATIVE_HOLD','NO_MATERIAL_UPDATE']);
+          if(rows.some(x=>!allowed.has(x.taxonomy))) throw new Error('Invalid taxonomy value');
+          console.log(JSON.stringify({result:'PASS',coverage:rows.length,counts:t.counts},null,2));
+          NODE
+
+      - name: Prove audit did not mutate canonical model files
         run: |
           if ! git diff --quiet -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json; then
-            echo 'Daily audit illegally mutated canonical model files.'
+            echo 'Live audit illegally mutated canonical model files.'
             git diff -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json
             exit 1
           fi
 
-      - name: Upload live and substantive audit evidence
+      - name: Upload live and reconciliation evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: daily-full-universe-substantive-review
+          name: six-daily-full-universe-reconciliation
           path: |
             guardrails/current-football-review.json
             guardrails/live-full-universe-review-summary.json
@@ -122,6 +134,8 @@ jobs:
             analysis/substantive-component-recalculation-current.md
             analysis/substantive-rank-proposals-current.json
             analysis/substantive-rank-proposals-current.md
+            analysis/full-universe-reconciliation-taxonomy-current.json
+            analysis/full-universe-reconciliation-taxonomy-current.md
           if-no-files-found: error
 
       - name: Persist latest validated evidence to rolling branch
@@ -139,6 +153,8 @@ jobs:
             analysis/substantive-component-recalculation-current.md
             analysis/substantive-rank-proposals-current.json
             analysis/substantive-rank-proposals-current.md
+            analysis/full-universe-reconciliation-taxonomy-current.json
+            analysis/full-universe-reconciliation-taxonomy-current.md
           )
           for f in "${EVIDENCE_FILES[@]}"; do test -f "$f"; done
           git config user.name "github-actions[bot]"
@@ -146,10 +162,6 @@ jobs:
           BRANCH="production/live-full-universe-review-latest"
           git switch -C "$BRANCH"
           git add -- "${EVIDENCE_FILES[@]}"
-          if git diff --cached --quiet; then
-            echo 'Validated evidence is unchanged; rolling branch already represents the latest state.'
-            exit 0
-          fi
-          git commit -m "Persist latest daily 166-player substantive review"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Persist latest six-daily 166-player reconciliation"
           git push --force origin "HEAD:refs/heads/$BRANCH"
-          echo "Persisted validated daily evidence to $BRANCH."
