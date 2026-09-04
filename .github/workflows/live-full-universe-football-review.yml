@@ -10,7 +10,9 @@ on:
       - 'scripts/build-live-full-universe-review-v2.mjs'
       - 'scripts/normalize-nfl-article-bodies.mjs'
       - 'scripts/filter-live-review-materiality.mjs'
+      - 'scripts/stage-admission-requests.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
+      - 'admissions/queue.json'
       - 'scripts/collect-substantive-football-context.mjs'
       - 'scripts/build-substantive-football-context-inputs.mjs'
       - 'scripts/build-substantive-component-recalculation-v2.mjs'
@@ -25,7 +27,9 @@ on:
       - 'scripts/build-live-full-universe-review-v2.mjs'
       - 'scripts/normalize-nfl-article-bodies.mjs'
       - 'scripts/filter-live-review-materiality.mjs'
+      - 'scripts/stage-admission-requests.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
+      - 'admissions/queue.json'
       - 'scripts/collect-substantive-football-context.mjs'
       - 'scripts/build-substantive-football-context-inputs.mjs'
       - 'scripts/build-substantive-component-recalculation-v2.mjs'
@@ -56,6 +60,9 @@ jobs:
           node scripts/build-live-full-universe-review-v2.mjs
           node scripts/normalize-nfl-article-bodies.mjs
           node scripts/filter-live-review-materiality.mjs
+
+      - name: Stage ADMIT decisions into canonical admission requests
+        run: node scripts/stage-admission-requests.mjs
 
       - name: Validate complete active universe plus connected triage
         run: node scripts/validate-full-universe-news-review.mjs
@@ -129,6 +136,7 @@ jobs:
             guardrails/full-universe-news-review-report.json
             guardrails/substantive-football-context-collection-report.json
             guardrails/substantive-football-context-inputs-report.json
+            admissions/queue.json
             data/probability/substantive-football-context-inputs-2026.json
             analysis/substantive-component-recalculation-current.json
             analysis/substantive-component-recalculation-current.md
