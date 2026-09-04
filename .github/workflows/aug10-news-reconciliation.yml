@@ -1,0 +1,88 @@
+name: Aug 10 News Reconciliation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/build-aug10-news-reconciliation.mjs'
+      - 'scripts/build-aug10-full-166-rescore-v3.mjs'
+      - 'analysis/aug10-v3-regression-overrides.json'
+      - 'scripts/collect-official-team-news.mjs'
+      - 'scripts/collect-official-team-sitemaps.mjs'
+      - 'scripts/collect-player-news-rss.mjs'
+      - 'scripts/enrich-football-context-lanes.mjs'
+      - 'scripts/seed-current-team-overrides.mjs'
+      - '.github/workflows/aug10-news-reconciliation.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build full-universe live ledger
+        run: |
+          node scripts/build-live-full-universe-review-v2.mjs
+          node scripts/normalize-nfl-article-bodies.mjs
+          node scripts/seed-current-team-overrides.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='scripts/collect-official-team-news.mjs';
+          let s=fs.readFileSync(p,'utf8');
+          if(!s.includes('slice(0,20)')) throw new Error('Expected official-team article limit not found');
+          s=s.replace('slice(0,20)','slice(0,120)');
+          fs.writeFileSync(p,s);
+          console.log('Historical official-team crawl depth: 120 links/team');
+          NODE
+          node scripts/collect-official-team-news.mjs
+          OFFICIAL_TEAM_SITEMAP_START='2026-08-10T00:00:00Z' OFFICIAL_TEAM_SITEMAP_MAX_ARTICLES=200 OFFICIAL_TEAM_SITEMAP_MAX_CHILDREN=40 node scripts/collect-official-team-sitemaps.mjs
+          PLAYER_NEWS_RSS_START='2026-08-10T00:00:00Z' PLAYER_NEWS_RSS_MAX=40 node scripts/collect-player-news-rss.mjs
+          node scripts/enrich-football-context-lanes.mjs
+      - name: Expand materiality window to Aug 10 for this run only
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const p='scripts/filter-live-review-materiality.mjs';
+          let s=fs.readFileSync(p,'utf8');
+          const start=Date.parse('2026-08-10T00:00:00Z');
+          const days=Math.ceil((Date.now()-start)/(24*60*60*1000))+1;
+          s=s.replace('const now=Date.now(),maxAgeMs=14*24*60*60*1000;',`const now=Date.now(),maxAgeMs=${days}*24*60*60*1000;`);
+          const guard=/if\(trackedSignals\.length>Math\.ceil\(Number\(source\.active_player_model\)\*0\.50\)\)throw new Error\(`Materiality relevance failure:[^\n]+\n/;
+          if(!guard.test(s)) throw new Error('Expected live materiality cardinality guard not found');
+          s=s.replace(guard,"// Historical backfill intentionally has no player-count cardinality stop; evidence-quality guards remain active.\n");
+          fs.writeFileSync(p,s);
+          console.log(`Temporary reconciliation freshness window: ${days} days; historical cardinality stop disabled`);
+          NODE
+          node scripts/filter-live-review-materiality.mjs
+      - name: Reconstruct timelines and compare with current model state
+        env:
+          RECON_START: '2026-08-10T00:00:00Z'
+        run: node scripts/build-aug10-news-reconciliation.mjs
+      - name: Build full 166-player evidence-to-score rescore proposal
+        run: node scripts/build-aug10-full-166-rescore-v3.mjs
+      - name: Prove reconciliation did not mutate canonical model files
+        run: |
+          if ! git diff --quiet -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json current162patch-2026-08-24.json; then
+            echo 'Historical reconciliation illegally mutated canonical model files.'
+            git diff -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json current162patch-2026-08-24.json
+            exit 1
+          fi
+      - name: Upload reconciliation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: aug10-news-reconciliation
+          path: |
+            analysis/aug10-news-reconciliation.json
+            analysis/aug10-news-reconciliation.md
+            analysis/aug10-full-166-rescore-v3.json
+            analysis/aug10-full-166-rescore-v3.md
+            analysis/aug10-v3-overall-review-names.json
+            guardrails/current-football-review.json
+            guardrails/live-full-universe-review-summary.json
+          if-no-files-found: error
