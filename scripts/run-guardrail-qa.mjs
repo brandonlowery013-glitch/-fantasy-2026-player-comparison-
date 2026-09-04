@@ -46,8 +46,10 @@ try{
     prior.push(...JSON.parse(txt));
   }
   const pm=new Map(prior.map(p=>[p.n,p]));
-  const manifest=exists(cfg.drift.change_manifest_file)?read(cfg.drift.change_manifest_file):{changes:[]};
-  const declared=new Map((manifest.changes||[]).map(x=>[x.player,x]));
+  const legacyManifest=exists(cfg.drift.change_manifest_file)?read(cfg.drift.change_manifest_file):{changes:[]};
+  const universeManifest=exists(cfg.drift.universe_change_manifest_file)?read(cfg.drift.universe_change_manifest_file):{changes:[]};
+  const manifestChanges=[...(legacyManifest.changes||[]),...(universeManifest.changes||[]).filter(x=>x.action==='MODEL_CHANGE')];
+  const declared=new Map(manifestChanges.map(x=>[x.player,x]));
   const material=[], unexplained=[];
   for(const p of players){
     const old=pm.get(p.n); if(!old) continue;
