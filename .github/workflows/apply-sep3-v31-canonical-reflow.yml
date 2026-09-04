@@ -1,0 +1,44 @@
+name: Apply Sep 3 V3.1 Canonical Reflow
+on:
+  pull_request:
+    branches:
+      - main
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apply approved 35-player V3.1 reconciliation idempotently
+        run: node scripts/apply-sep3-v31-canonical-reflow.mjs
+      - name: Verify canonical synchronization
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const q=JSON.parse(fs.readFileSync('analysis/sep3-v31-canonical-apply-qa.json','utf8'));
+          if(q.errors.length||!q.overall_unique||!q.true_value_unique||!q.projections_unchanged||q.changed!==35)throw new Error('canonical QA failed');
+          const s=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const c=JSON.parse(fs.readFileSync('canonicalBoards2026.json','utf8'));
+          if(s.active_player_model!==166||c.active_players!==166||c.overall.length!==166||c.trueValue.length!==166)throw new Error('166 sync failed');
+          console.log('SEP3 V3.1 CANONICAL QA PASS');
+          NODE
+      - name: Generate exact PR-scoped guardrail declarations
+        run: |
+          node scripts/generate-sep3-v31-guardrail-declarations.mjs
+          node scripts/prepare-pr-scoped-drift-check.mjs
+      - name: Prove baseline drift is exactly declared
+        run: node scripts/run-baseline-drift-check.mjs
+      - name: Commit declarations and spreadsheet sync bridge only when changed
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add guardrails/universe-change-manifest.json guardrails/structural-change-manifest.json scripts/run-baseline-drift-check.mjs analysis/sep3-v31-spreadsheet-sync.tsv
+          git diff --cached --quiet || git commit -m 'Declare and verify Sep 3 V3.1 canonical reconciliation'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}

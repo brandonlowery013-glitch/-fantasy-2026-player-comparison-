@@ -37,11 +37,17 @@ const historicalUniverseChanges=(universeManifest.changes||[]).filter(x=>x&&x.pl
 const historicalModelChanges=(universeManifest.model_changes||[]).filter(x=>x&&x.player&&x.reason&&x.source&&x.expected_values);
 const historicalAdmissionUpdates=(universeManifest.admission_updates||[]).filter(x=>x&&x.player&&x.reason&&x.source&&x.expected_values);
 
-// A consumed migration is historical evidence, not a standing authorization for a future PR.
-// Only an unconsumed manifest may authorize a current population/core delta.
+// A consumed population migration is historical evidence and never re-authorizes ADD/REMOVE.
+// Exact model-change declarations are PR-scoped: they are active only when this PR changes
+// the declaration payload relative to current main. Once merged, the same payload is inert.
 const universeChanges=checkpoint?[]:historicalUniverseChanges;
-const modelChanges=checkpoint?[]:historicalModelChanges;
-const admissionUpdates=checkpoint?[]:historicalAdmissionUpdates;
+let mainUniverseManifest={model_changes:[],admission_updates:[]};
+try{mainUniverseManifest=gitJson(mainRef,universeManifestFile);}catch{}
+const currentModelPayload=JSON.stringify({model_changes:universeManifest.model_changes||[],admission_updates:universeManifest.admission_updates||[]});
+const mainModelPayload=JSON.stringify({model_changes:mainUniverseManifest.model_changes||[],admission_updates:mainUniverseManifest.admission_updates||[]});
+const hasActivePrModelDeclarations=currentModelPayload!==mainModelPayload;
+const modelChanges=hasActivePrModelDeclarations?historicalModelChanges:[];
+const admissionUpdates=hasActivePrModelDeclarations?historicalAdmissionUpdates:[];
 const declaredAdds=new Set(universeChanges.filter(x=>x.action==='ADD').map(x=>x.player));
 const declaredRemoves=new Set(universeChanges.filter(x=>x.action==='REMOVE').map(x=>x.player));
 const declaredCurrentChanges=[...modelChanges,...admissionUpdates];
