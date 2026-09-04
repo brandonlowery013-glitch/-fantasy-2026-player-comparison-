@@ -40,7 +40,7 @@ permissions:
   checks: read
 
 jobs:
-  live-166-review:
+  live-universe-review:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,7 +51,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Build live 166-player football review ledger
+      - name: Build live canonical-universe football review ledger
         run: |
           node scripts/build-live-full-universe-review-v2.mjs
           node scripts/normalize-nfl-article-bodies.mjs
@@ -81,14 +81,14 @@ jobs:
           const ctx=JSON.parse(fs.readFileSync('guardrails/substantive-football-context-inputs-report.json','utf8'));
           if((review.players||[]).length!==Number(src.active_player_model)) throw new Error(`Review coverage ${(review.players||[]).length}/${src.active_player_model}`);
           if(review.materiality_filter?.name_collision_regression_tests!==true||review.source_quality?.name_collision_regression_tests!==true) throw new Error('Name-collision regression guard did not run');
-          if(Number(review.source_quality?.espn_player_news_calls)<150) throw new Error(`ESPN player-news coverage too low: ${review.source_quality?.espn_player_news_calls}`);
-          if(Number(review.source_quality?.espn_modeled_athlete_ids_resolved)<150) throw new Error(`Modeled ESPN athlete-ID coverage too low: ${review.source_quality?.espn_modeled_athlete_ids_resolved}/${src.active_player_model}`);
+          if(Number(review.source_quality?.espn_player_news_calls)<Math.min(150,Number(src.active_player_model))) throw new Error(`ESPN player-news coverage too low: ${review.source_quality?.espn_player_news_calls}`);
+          if(Number(review.source_quality?.espn_modeled_athlete_ids_resolved)<Math.min(150,Number(src.active_player_model))) throw new Error(`Modeled ESPN athlete-ID coverage too low: ${review.source_quality?.espn_modeled_athlete_ids_resolved}/${src.active_player_model}`);
           if(Number(summary.tracked_material_news_signal_count)>Math.ceil(Number(src.active_player_model)*0.50)) throw new Error(`Material signal cardinality implausibly broad: ${summary.tracked_material_news_signal_count}/${src.active_player_model}`);
           if(collect.result!=='PASS'||ctx.result!=='PASS') throw new Error('Substantive context pipeline did not PASS');
           console.log(JSON.stringify({players:src.active_player_model,material_players:summary.tracked_material_news_signal_count,structured_players:ctx.players,structured_signals:ctx.signals},null,2));
           NODE
 
-      - name: Build incremental evidence proposals and 166-player taxonomy
+      - name: Build incremental evidence proposals and canonical-universe taxonomy
         run: |
           node scripts/build-substantive-component-recalculation-v2.mjs
           node scripts/build-substantive-rank-proposals.mjs
@@ -163,5 +163,6 @@ jobs:
           git switch -C "$BRANCH"
           git add -- "${EVIDENCE_FILES[@]}"
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "Persist latest six-daily 166-player reconciliation"
+          COUNT=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').active_player_model")
+          git commit -m "Persist latest six-daily ${COUNT}-player reconciliation"
           git push --force origin "HEAD:refs/heads/$BRANCH"
