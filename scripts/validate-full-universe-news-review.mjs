@@ -15,6 +15,17 @@ const allowedTracked = new Set(cfg.full_universe_review?.tracked_statuses || ['N
 const allowedUntracked = new Set(cfg.full_universe_review?.untracked_decisions || ['ADMIT','HOLD_OUT','WAIT']);
 const errors=[];
 
+let admissionQueue={version:1,entries:[]};
+if(!exists('admissions/queue.json')) errors.push('missing admissions/queue.json');
+else{
+  admissionQueue=read('admissions/queue.json');
+  if(admissionQueue.version!==1||!Array.isArray(admissionQueue.entries)) errors.push('admissions/queue.json must be version 1 with entries[]');
+}
+const queueEntries=Array.isArray(admissionQueue.entries)?admissionQueue.entries:[];
+const queueIds=queueEntries.map(x=>x.candidate_id);
+if(new Set(queueIds).size!==queueIds.length) errors.push('duplicate candidate_id values in admissions/queue.json');
+const queueById=new Map(queueEntries.map(x=>[x.candidate_id,x]));
+
 let players=[];
 for(let i=0;i<authoritativePlayerShards;i++){
   const f=`players${i}.json`;
@@ -59,8 +70,21 @@ if(!exists(ledgerPath)){
     const admissionLevelRole=(pos==='QB'&&depth===1)||(pos==='RB'&&depth===1)||(pos==='WR'&&depth<=2)||(pos==='TE'&&depth===1);
     const materialContingentRole=materialSignals>0 && ((pos==='RB'&&depth<=2)||(pos==='WR'&&depth<=3)||(pos==='TE'&&depth<=2)||(pos==='QB'&&depth===1));
     if(u.decision==='WAIT' && (admissionLevelRole||materialContingentRole)) errors.push(`${u.player} is defaulted to WAIT despite admission-level standalone/contingent role evidence; disposition must be ADMIT or an explicit HOLD_OUT with evidence`);
-    if(u.decision==='ADMIT' && u.onboarding_complete!==true) errors.push(`${u.player} is ADMIT but onboarding_complete is not true`);
-    if(u.decision==='ADMIT' && !u.onboarding_manifest) errors.push(`${u.player} is ADMIT but onboarding_manifest is missing`);
+    if(u.decision==='ADMIT'){
+      if(!u.admission_request_id) errors.push(`${u.player} is ADMIT but admission_request_id is missing`);
+      if(!u.onboarding_manifest) errors.push(`${u.player} is ADMIT but onboarding_manifest is missing`);
+      const q=u.admission_request_id?queueById.get(u.admission_request_id):null;
+      if(!q) errors.push(`${u.player} is ADMIT but has no matching canonical admission queue entry`);
+      else{
+        if(q.player_name!==u.player) errors.push(`${u.player} admission queue identity mismatch`);
+        if(q.decision!=='ADMIT') errors.push(`${u.player} admission queue decision is not ADMIT`);
+        if(u.onboarding_manifest!==`admissions/queue.json#${q.candidate_id}`) errors.push(`${u.player} onboarding_manifest does not point to canonical queue entry`);
+        const completed=q.status==='COMPLETE'&&q.onboarding_complete===true;
+        if(u.onboarding_complete!==true||!completed) errors.push(`${u.player} is ADMIT but canonical onboarding is incomplete (${q.status||'UNKNOWN'})`);
+        if(completed&&!exists(`admissions/completed/${q.candidate_id}.json`)) errors.push(`${u.player} completed admission is missing immutable completion manifest`);
+        if(completed&&(!q.package_path||!exists(q.package_path))) errors.push(`${u.player} completed admission is missing calibrated package`);
+      }
+    }
   }
   if(!ledger.sweep_started_at || !ledger.sweep_completed_at) errors.push('ledger missing sweep_started_at/sweep_completed_at');
   if(Number(ledger.active_player_count)!==authoritativePlayerCount) errors.push(`ledger active_player_count ${ledger.active_player_count} != canonical ${authoritativePlayerCount}`);
@@ -69,7 +93,7 @@ if(!exists(ledgerPath)){
   if(ledger.camp_preseason_mode===true && ledger.phase==='REGULAR_SEASON') errors.push('camp_preseason_mode must be false once phase is REGULAR_SEASON');
 }
 
-const result={generated_at:new Date().toISOString(),ledger_file:ledgerPath,authoritative_player_count:authoritativePlayerCount,authoritative_player_shards:authoritativePlayerShards,canonical_source:'MODEL_SOURCE_OF_TRUTH.json',result:errors.length?'BLOCKED':'PASS',errors};
+const result={generated_at:new Date().toISOString(),ledger_file:ledgerPath,authoritative_player_count:authoritativePlayerCount,authoritative_player_shards:authoritativePlayerShards,canonical_source:'MODEL_SOURCE_OF_TRUTH.json',admission_queue_entries:queueEntries.length,result:errors.length?'BLOCKED':'PASS',errors};
 fs.writeFileSync(path.join(root,'guardrails/full-universe-news-review-report.json'),JSON.stringify(result,null,2)+'\n');
 console.log(JSON.stringify(result,null,2));
 if(errors.length) process.exit(1);
