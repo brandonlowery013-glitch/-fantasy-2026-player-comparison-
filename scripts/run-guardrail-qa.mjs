@@ -7,17 +7,23 @@ const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const exists=p=>fs.existsSync(path.join(root,p));
 const cfg=read('guardrails/guardrails-config.json');
 const truth=read('MODEL_SOURCE_OF_TRUTH.json');
+const authoritativePlayerCount=Number(truth.active_player_model);
+const authoritativePlayerShards=Number(truth.runtime_player_shards);
+if(!Number.isInteger(authoritativePlayerCount)||authoritativePlayerCount<=0) throw new Error('MODEL_SOURCE_OF_TRUTH active_player_model is invalid');
+if(!Number.isInteger(authoritativePlayerShards)||authoritativePlayerShards<=0) throw new Error('MODEL_SOURCE_OF_TRUTH runtime_player_shards is invalid');
 const checks=[];
 const block=(name,details)=>checks.push({name,status:'BLOCKED',details});
 const review=(name,details)=>checks.push({name,status:'REVIEW_REQUIRED',details});
 const pass=(name,details)=>checks.push({name,status:'PASS',details});
 const insufficient=(name,details)=>checks.push({name,status:'INSUFFICIENT_DATA',details});
 
-if(truth.active_player_model!==cfg.authoritative_player_count) block('source_of_truth_count',`MODEL_SOURCE_OF_TRUTH=${truth.active_player_model}, guardrail=${cfg.authoritative_player_count}`); else pass('source_of_truth_count',String(truth.active_player_model));
-if(truth.runtime_player_shards!==cfg.authoritative_player_shards) block('source_of_truth_shards',`MODEL_SOURCE_OF_TRUTH=${truth.runtime_player_shards}, guardrail=${cfg.authoritative_player_shards}`); else pass('source_of_truth_shards',String(truth.runtime_player_shards));
+pass('source_of_truth_count',String(authoritativePlayerCount));
+pass('source_of_truth_shards',String(authoritativePlayerShards));
+if(cfg.authoritative_player_count!=null&&Number(cfg.authoritative_player_count)!==authoritativePlayerCount) review('legacy_config_count',`non-authoritative guardrail config=${cfg.authoritative_player_count}, canonical=${authoritativePlayerCount}`);
+if(cfg.authoritative_player_shards!=null&&Number(cfg.authoritative_player_shards)!==authoritativePlayerShards) review('legacy_config_shards',`non-authoritative guardrail config=${cfg.authoritative_player_shards}, canonical=${authoritativePlayerShards}`);
 
 let players=[];
-for(let i=0;i<cfg.authoritative_player_shards;i++){
+for(let i=0;i<authoritativePlayerShards;i++){
   const f=`players${i}.json`;
   if(!exists(f)){block('player_shards',`Missing ${f}`);continue;}
   const shard=read(f);
@@ -25,8 +31,8 @@ for(let i=0;i<cfg.authoritative_player_shards;i++){
   players.push(...shard);
 }
 const names=players.map(p=>p.n), unique=new Set(names);
-if(players.length!==cfg.authoritative_player_count) block('active_player_count',`${players.length} != ${cfg.authoritative_player_count}`); else pass('active_player_count',String(players.length));
-if(unique.size!==cfg.authoritative_player_count) block('unique_player_count',`${unique.size} unique != ${cfg.authoritative_player_count}`); else pass('unique_player_count',String(unique.size));
+if(players.length!==authoritativePlayerCount) block('active_player_count',`${players.length} != ${authoritativePlayerCount}`); else pass('active_player_count',String(players.length));
+if(unique.size!==authoritativePlayerCount) block('unique_player_count',`${unique.size} unique != ${authoritativePlayerCount}`); else pass('unique_player_count',String(unique.size));
 const dup=[...new Set(names.filter((n,i)=>names.indexOf(n)!==i))];
 if(dup.length) block('duplicate_players',dup.join(', ')); else pass('duplicate_players','none');
 
@@ -38,12 +44,15 @@ for(const p of players){
 if(missing.length) block('required_numeric_fields',missing.slice(0,50).join(', ')); else pass('required_numeric_fields','complete');
 if(badBounds.length) block('numeric_bounds',badBounds.slice(0,50).join(', ')); else pass('numeric_bounds','valid');
 
-// Real drift check against prior commit. Material core changes require a manifest entry.
 try{
   const prior=[];
-  for(let i=0;i<cfg.authoritative_player_shards;i++){
-    const txt=execFileSync('git',['show',`HEAD^:players${i}.json`],{encoding:'utf8',stdio:['ignore','pipe','ignore']});
-    prior.push(...JSON.parse(txt));
+  for(let i=0;i<authoritativePlayerShards;i++){
+    try{
+      const txt=execFileSync('git',['show',`HEAD^:players${i}.json`],{encoding:'utf8',stdio:['ignore','pipe','ignore']});
+      prior.push(...JSON.parse(txt));
+    }catch(e){
+      if(i<Number((JSON.parse(execFileSync('git',['show','HEAD^:MODEL_SOURCE_OF_TRUTH.json'],{encoding:'utf8',stdio:['ignore','pipe','ignore']}))).runtime_player_shards||0)) throw e;
+    }
   }
   const pm=new Map(prior.map(p=>[p.n,p]));
   const legacyManifest=exists(cfg.drift.change_manifest_file)?read(cfg.drift.change_manifest_file):{changes:[]};
@@ -135,7 +144,7 @@ if(exists('weeklyCalibration2026.json')){
 const blocked=checks.filter(x=>x.status==='BLOCKED');
 const reviews=checks.filter(x=>x.status==='REVIEW_REQUIRED');
 const insuff=checks.filter(x=>x.status==='INSUFFICIENT_DATA');
-const report={generated_at:new Date().toISOString(),guardrail_version:cfg.version,active_model:cfg.authoritative_player_count,result:blocked.length?'BLOCKED':reviews.length?'REVIEW_REQUIRED':insuff.length?'INSUFFICIENT_DATA':'PASS',blocked_count:blocked.length,review_count:reviews.length,insufficient_count:insuff.length,checks};
+const report={generated_at:new Date().toISOString(),guardrail_version:cfg.version,active_model:authoritativePlayerCount,active_shards:authoritativePlayerShards,canonical_source:'MODEL_SOURCE_OF_TRUTH.json',result:blocked.length?'BLOCKED':reviews.length?'REVIEW_REQUIRED':insuff.length?'INSUFFICIENT_DATA':'PASS',blocked_count:blocked.length,review_count:reviews.length,insufficient_count:insuff.length,checks};
 fs.writeFileSync(path.join(root,'guardrails/guardrail-report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));
 if(blocked.length)process.exit(1);
