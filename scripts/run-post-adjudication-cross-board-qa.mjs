@@ -1,3 +1,4 @@
+// Post-adjudication cross-board synchronization gate for the canonical 166-player model.
 import fs from 'node:fs';
 import path from 'node:path';
 const root=process.cwd();
