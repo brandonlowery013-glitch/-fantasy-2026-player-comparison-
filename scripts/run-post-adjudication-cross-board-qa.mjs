@@ -39,10 +39,10 @@ if(exists('comparison-sync-162-audit.json')){const c=read('comparison-sync-162-a
 const html=fs.readFileSync('index-backup.html','utf8');
 const shardNeed=`Array.from({length:${shards}}`; if(!html.includes(shardNeed)) fail.push(`runtime_loader_not_${shards}_shards`);
 if(!html.includes('Player Quality Rank')) fail.push('runtime_missing_player_quality_label');
-if(!html.includes('Expected Fantasy Production')) fail.push('runtime_missing_projection_comparison');
+if(!html.includes('Expected Production')) fail.push('runtime_missing_projection_comparison');
 if(!html.includes('runtime-rank-movement-context-2026.js')) fail.push('runtime_rank_movement_not_mounted');
 if(exists('rankMovement2026.json')){const r=read('rankMovement2026.json'); if(Number(r.active_players)!==expected) fail.push(`rankMovement_active_players:${r.active_players}/${expected}`);}
-const report={schema_version:'1.0.0',generated_at:new Date().toISOString(),source_head:process.env.GITHUB_SHA||null,expected_players:expected,shards,passed:fail.length===0,failures:fail,warnings:warn,details:{pending_cost_players:pendingCost.map(p=>p.n),canonical_board_mismatches:boardMismatch,locked_rank_mismatches:lockedMismatch,locked_missing_players:lockedMissing}};
+const report={schema_version:'1.0.1',generated_at:new Date().toISOString(),source_head:process.env.GITHUB_SHA||null,expected_players:expected,shards,passed:fail.length===0,failures:fail,warnings:warn,details:{pending_cost_players:pendingCost.map(p=>p.n),canonical_board_mismatches:boardMismatch,locked_rank_mismatches:lockedMismatch,locked_missing_players:lockedMissing}};
 fs.mkdirSync('analysis',{recursive:true}); fs.writeFileSync('analysis/post-adjudication-cross-board-qa-current.json',JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));
 if(fail.length) process.exit(1);
