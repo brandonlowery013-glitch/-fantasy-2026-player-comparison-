@@ -10,6 +10,8 @@ on:
       - 'scripts/build-live-full-universe-review-v2.mjs'
       - 'scripts/normalize-nfl-article-bodies.mjs'
       - 'scripts/filter-live-review-materiality.mjs'
+      - 'scripts/build-transition-intelligence-review.mjs'
+      - 'scripts/integrate-transition-intelligence.mjs'
       - 'scripts/stage-admission-requests.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
       - 'admissions/queue.json'
@@ -27,6 +29,8 @@ on:
       - 'scripts/build-live-full-universe-review-v2.mjs'
       - 'scripts/normalize-nfl-article-bodies.mjs'
       - 'scripts/filter-live-review-materiality.mjs'
+      - 'scripts/build-transition-intelligence-review.mjs'
+      - 'scripts/integrate-transition-intelligence.mjs'
       - 'scripts/stage-admission-requests.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
       - 'admissions/queue.json'
@@ -67,6 +71,23 @@ jobs:
       - name: Validate complete active universe plus connected triage
         run: node scripts/validate-full-universe-news-review.mjs
 
+      - name: Build and integrate full-universe transition intelligence
+        env:
+          TRANSITION_LOOKBACK_START: '2026-04-01T00:00:00Z'
+        run: |
+          node scripts/build-transition-intelligence-review.mjs
+          node scripts/integrate-transition-intelligence.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
+          const report=JSON.parse(fs.readFileSync('guardrails/transition-intelligence-integration-report.json','utf8'));
+          if(report.result!=='PASS'||report.coverage!==Number(src.active_player_model)) throw new Error('Transition integration did not cover canonical universe');
+          if(review.transition_intelligence_schema?.integrated_into_unified_evidence_stack!==true) throw new Error('Transition intelligence is still detached from unified evidence stack');
+          for(const p of review.players||[]) if(p.transition_intelligence?.integrated_into_unified_evidence_stack!==true) throw new Error(`Detached transition review: ${p.player}`);
+          console.log(JSON.stringify(report,null,2));
+          NODE
+
       - name: Test incremental substantive scoring
         run: |
           node scripts/test-substantive-football-context-parser.mjs
@@ -86,13 +107,14 @@ jobs:
           const summary=JSON.parse(fs.readFileSync('guardrails/live-full-universe-review-summary.json','utf8'));
           const collect=JSON.parse(fs.readFileSync('guardrails/substantive-football-context-collection-report.json','utf8'));
           const ctx=JSON.parse(fs.readFileSync('guardrails/substantive-football-context-inputs-report.json','utf8'));
+          const transition=JSON.parse(fs.readFileSync('guardrails/transition-intelligence-integration-report.json','utf8'));
           if((review.players||[]).length!==Number(src.active_player_model)) throw new Error(`Review coverage ${(review.players||[]).length}/${src.active_player_model}`);
           if(review.materiality_filter?.name_collision_regression_tests!==true||review.source_quality?.name_collision_regression_tests!==true) throw new Error('Name-collision regression guard did not run');
           if(Number(review.source_quality?.espn_player_news_calls)<Math.min(150,Number(src.active_player_model))) throw new Error(`ESPN player-news coverage too low: ${review.source_quality?.espn_player_news_calls}`);
           if(Number(review.source_quality?.espn_modeled_athlete_ids_resolved)<Math.min(150,Number(src.active_player_model))) throw new Error(`Modeled ESPN athlete-ID coverage too low: ${review.source_quality?.espn_modeled_athlete_ids_resolved}/${src.active_player_model}`);
           if(Number(summary.tracked_material_news_signal_count)>Math.ceil(Number(src.active_player_model)*0.50)) throw new Error(`Material signal cardinality implausibly broad: ${summary.tracked_material_news_signal_count}/${src.active_player_model}`);
-          if(collect.result!=='PASS'||ctx.result!=='PASS') throw new Error('Substantive context pipeline did not PASS');
-          console.log(JSON.stringify({players:src.active_player_model,material_players:summary.tracked_material_news_signal_count,structured_players:ctx.players,structured_signals:ctx.signals},null,2));
+          if(collect.result!=='PASS'||ctx.result!=='PASS'||transition.result!=='PASS') throw new Error('Unified substantive context pipeline did not PASS');
+          console.log(JSON.stringify({players:src.active_player_model,breaking_news_material_players:summary.tracked_material_news_signal_count,transition_direct_players:transition.players_with_direct_transition_signals,transition_team_context_players:transition.players_with_team_context_signals,structured_players:ctx.players,structured_signals:ctx.signals},null,2));
           NODE
 
       - name: Build incremental evidence proposals and canonical-universe taxonomy
@@ -136,8 +158,11 @@ jobs:
             guardrails/full-universe-news-review-report.json
             guardrails/substantive-football-context-collection-report.json
             guardrails/substantive-football-context-inputs-report.json
+            guardrails/transition-intelligence-integration-report.json
             admissions/queue.json
             data/probability/substantive-football-context-inputs-2026.json
+            analysis/transition-intelligence-current.json
+            analysis/transition-intelligence-current.md
             analysis/substantive-component-recalculation-current.json
             analysis/substantive-component-recalculation-current.md
             analysis/substantive-rank-proposals-current.json
@@ -156,7 +181,10 @@ jobs:
             guardrails/full-universe-news-review-report.json
             guardrails/substantive-football-context-collection-report.json
             guardrails/substantive-football-context-inputs-report.json
+            guardrails/transition-intelligence-integration-report.json
             data/probability/substantive-football-context-inputs-2026.json
+            analysis/transition-intelligence-current.json
+            analysis/transition-intelligence-current.md
             analysis/substantive-component-recalculation-current.json
             analysis/substantive-component-recalculation-current.md
             analysis/substantive-rank-proposals-current.json
