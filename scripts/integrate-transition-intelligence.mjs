@@ -1,9 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// This script is the authoritative transition integration point. The workflow builds the
-// historical review and enriches it from validated unified evidence first; only then do we
-// expand material team changes to offensive clusters and synthesize each player's chronology.
+// Authoritative transition integration point. Historical review is enriched from validated
+// dated evidence first. Then rookie status/development is audited, team trajectories expand
+// to offensive clusters, and chronology/current state are synthesized before integration.
+await import('./build-rookie-development-review.mjs');
 await import('./enforce-offensive-transition-clusters.mjs');
 await import('./build-chronological-transition-context.mjs');
 
@@ -13,16 +14,19 @@ const write=(p,x)=>{const f=path.join(root,p);fs.mkdirSync(path.dirname(f),{recu
 const source=read('MODEL_SOURCE_OF_TRUTH.json');
 const ledger=read('guardrails/current-football-review.json');
 const transition=read('analysis/transition-intelligence-current.json');
+const rookie=read('analysis/rookie-development-review-current.json');
 const expected=Number(source.active_player_model);
 if((transition.rows||[]).length!==expected)throw new Error(`Transition coverage ${transition.rows?.length||0}/${expected}`);
 if((ledger.players||[]).length!==expected)throw new Error(`Review coverage ${ledger.players?.length||0}/${expected}`);
+if(Number(rookie.counts?.players_checked)!==expected)throw new Error(`Rookie metadata coverage ${rookie.counts?.players_checked}/${expected}`);
+if((rookie.rookies||[]).some(x=>x.development_review?.required!==true))throw new Error('Mandatory rookie development review missing');
 if(transition.chronological_context?.mandatory!==true)throw new Error('Chronological transition synthesis missing before integration');
 if(transition.offensive_transition_cluster?.mandatory!==true)throw new Error('Offensive transition cluster pass missing before integration');
 if(Number(transition.fallback_enrichment?.added_evidence||0)>0&&Number(transition.chronological_context?.players_with_timeline||0)===0)throw new Error('Enriched transition evidence was not preserved into chronological timelines');
 if(Number(transition.offensive_transition_cluster?.team_count||0)>0&&Number(transition.offensive_transition_cluster?.player_count||0)===0)throw new Error('Offensive transition teams found but no tracked skill players were clustered');
 const byName=new Map((ledger.players||[]).map(x=>[x.player,x]));
 const norm=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/\b(jr|sr|ii|iii|iv)\b/g,'').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
-const substantiveCategories=new Set(['scheme_install','adaptation','role_usage','chemistry','competition','readiness','prior_season_injury_recovery','development','teammate_environment','offensive_transition_cluster']);
+const substantiveCategories=new Set(['scheme_install','adaptation','role_usage','chemistry','competition','readiness','prior_season_injury_recovery','development','teammate_environment','offensive_transition_cluster','rookie_development_review']);
 const directMaterialCategories=new Set(['scheme_install','adaptation','role_usage','chemistry','competition','readiness','prior_season_injury_recovery','development']);
 function key(x){return x.url||`${x.source}|${x.headline}|${x.description}`;}
 function dedupe(xs){const seen=new Set();return xs.filter(x=>{const k=key(x);if(seen.has(k))return false;seen.add(k);return true;});}
@@ -37,7 +41,7 @@ for(const row of transition.rows||[]){
     const finalCats=isCluster&&cats.length===0?['offensive_transition_cluster']:cats;
     const base={source:'TRANSITION_INTELLIGENCE',original_source:e.source||null,team:e.team||row.team||null,published:e.published||null,url:e.url||null,headline:e.headline||null,description:e.description||null,categories:finalCats,transition_window:{start:row.lookback_start,end:row.lookback_end},matched_context:`${e.headline||''} ${e.description||''}`.trim(),chronological_phase:e.phase||null,chronological_direction:e.direction||null};
     if(e.direct_player_evidence===true&&finalCats.some(c=>directMaterialCategories.has(c))){
-      const txt=norm(`${e.headline||''} ${e.description||''}`);const pname=norm(row.player);
+      const txt=norm(`${e.headline||''} ${e.description||''}`),pname=norm(row.player);
       if(!pname||(!txt.includes(pname)&&!String(e.source||'').includes('ESPN_PLAYER_TRANSITION')&&!String(e.source||'').includes('UNIFIED_LEDGER_FALLBACK')))continue;
       direct.push({...base,evidence_scope:'DIRECT_PLAYER_TRANSITION'});
     } else if(e.team_context_only===true||isCluster){
@@ -46,17 +50,15 @@ for(const row of transition.rows||[]){
   }
   const oldDirect=Array.isArray(review.material_news_signals)?review.material_news_signals:[];
   const oldTeam=Array.isArray(review.material_team_context_signals)?review.material_team_context_signals:[];
-  const mergedDirect=dedupe([...oldDirect,...direct]);
-  const mergedTeam=dedupe([...oldTeam,...team]);
+  const mergedDirect=dedupe([...oldDirect,...direct]),mergedTeam=dedupe([...oldTeam,...team]);
   directAdded+=mergedDirect.length-oldDirect.length;teamContextAdded+=mergedTeam.length-oldTeam.length;
   if(direct.length)playersWithDirect++;if(team.length)playersWithTeam++;
   if(direct.some(x=>(x.categories||[]).includes('prior_season_injury_recovery')))recoveryPlayers++;
-  review.material_news_signals=mergedDirect;
-  review.material_team_context_signals=mergedTeam;
-  review.transition_intelligence={...(review.transition_intelligence||{}),integrated_into_unified_evidence_stack:true,direct_material_signals:direct.length,team_context_signals:team.length,prior_season_injury_recovery_integrated:direct.some(x=>(x.categories||[]).includes('prior_season_injury_recovery')),integration_rule:'DIRECT_PLAYER_TRANSITION_AND_PRIOR_SEASON_RECOVERY_FEED_COMPONENT_REVIEW; SAME_TEAM_CONTEXT_AND_OFFENSIVE_TRANSITION_CLUSTERS_FEED_CONNECTED_EFFECT_REVIEW'};
+  review.material_news_signals=mergedDirect;review.material_team_context_signals=mergedTeam;
+  review.transition_intelligence={...(review.transition_intelligence||{}),integrated_into_unified_evidence_stack:true,direct_material_signals:direct.length,team_context_signals:team.length,prior_season_injury_recovery_integrated:direct.some(x=>(x.categories||[]).includes('prior_season_injury_recovery')),integration_rule:'DIRECT PLAYER TRANSITION/RECOVERY FEEDS COMPONENT REVIEW; TEAM TRAJECTORIES AND OFFENSIVE CLUSTERS FEED CONNECTED REVIEW; EVERY ACTIVE ROOKIE HAS EXPLICIT DEVELOPMENT REVIEW'};
 }
-ledger.transition_intelligence_schema={...(ledger.transition_intelligence_schema||{}),integrated_into_unified_evidence_stack:true,integration_rule:'NOT_A_SEPARATE_MODEL_LAYER; CHRONOLOGICAL_DEVELOPMENT_AND_PRIOR_SEASON_INJURY_RECOVERY_ARE_REQUIRED; MAJOR_OFFENSIVE_CHANGES_FORCE_CONNECTED_SKILL_PLAYER_REVIEW'};
+ledger.transition_intelligence_schema={...(ledger.transition_intelligence_schema||{}),integrated_into_unified_evidence_stack:true,rookie_development_review_mandatory:true,integration_rule:'CHRONOLOGICAL DEVELOPMENT, ROOKIE DEVELOPMENT, PRIOR-SEASON RECOVERY, AND CORROBORATED OFFENSIVE TRANSITIONS ARE REQUIRED INPUTS TO THE EXISTING MODEL REVIEW STACK'};
 write('guardrails/current-football-review.json',ledger);
-const report={generated_at:new Date().toISOString(),result:'PASS',coverage:expected,direct_signals_added:directAdded,team_context_signals_added:teamContextAdded,players_with_direct_transition_signals:playersWithDirect,players_with_team_context_signals:playersWithTeam,players_with_prior_season_recovery_signals:recoveryPlayers,offensive_transition_teams:Number(transition.offensive_transition_cluster?.team_count||0),offensive_transition_cluster_players:Number(transition.offensive_transition_cluster?.player_count||0),players_with_chronological_timeline:Number(transition.chronological_context?.players_with_timeline||0),players_with_current_state_basis:Number(transition.chronological_context?.players_with_current_state_basis||0),transition_schema_version:transition.schema_version||null,policy:'TRANSITION_RECOVERY_OFFENSIVE_CLUSTER_AND_CHRONOLOGICAL_DEVELOPMENT_EVIDENCE_PARTICIPATE_IN_EXISTING_NEWS_COMPONENT_CONNECTED_PLAYER_AND_BOARD_REVIEW_PIPELINE'};
+const report={generated_at:new Date().toISOString(),result:'PASS',coverage:expected,direct_signals_added:directAdded,team_context_signals_added:teamContextAdded,players_with_direct_transition_signals:playersWithDirect,players_with_team_context_signals:playersWithTeam,players_with_prior_season_recovery_signals:recoveryPlayers,offensive_transition_teams:Number(transition.offensive_transition_cluster?.team_count||0),offensive_transition_cluster_players:Number(transition.offensive_transition_cluster?.player_count||0),players_with_chronological_timeline:Number(transition.chronological_context?.players_with_timeline||0),players_with_current_state_basis:Number(transition.chronological_context?.players_with_current_state_basis||0),rookie_players:Number(rookie.counts?.rookies||0),rookies_with_dated_development_evidence:Number(rookie.counts?.rookies_with_dated_development_evidence||0),rookies_reviewed_no_dated_evidence:Number(rookie.counts?.rookies_reviewed_no_dated_evidence||0),rookie_classification_unresolved:Number(rookie.counts?.unresolved||0),transition_schema_version:transition.schema_version||null,policy:'FULL-UNIVERSE TRANSITION/RECOVERY/ROOKIE/OFFENSIVE-CLUSTER/CHRONOLOGICAL DEVELOPMENT EVIDENCE PARTICIPATES IN THE EXISTING COMPONENT CONNECTED-PLAYER AND BOARD REVIEW PIPELINE'};
 write('guardrails/transition-intelligence-integration-report.json',report);
 console.log(JSON.stringify(report,null,2));
