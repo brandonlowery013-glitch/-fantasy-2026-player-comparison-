@@ -15,11 +15,16 @@ const boundaries=/[;|•\n]+|\b(?:signings?|injuries?|transactions?|roster moves
 const healthCats=new Set(['readiness','prior_season_injury_recovery']);
 const meaningfulCats=new Set(['role_usage','competition','readiness','prior_season_injury_recovery','development','scheme_install','adaptation','chemistry','teammate_environment']);
 
+function playerClauses(raw,player){const p=norm(player),out=[];if(!raw||!p)return out;for(const piece of String(raw).split(boundaries)){const n=norm(piece);if(n&&n.includes(p))out.push(n);}return out;}
 function clauses(e,player){
-  const p=norm(player),out=[];
-  for(const raw of [e.source_headline,e.headline,e.description,e.matched_context,e.body_text,e.chronology_context_text].filter(Boolean)){
-    for(const piece of String(raw).split(boundaries)){const n=norm(piece);if(n&&n.includes(p))out.push(n);}
-  }
+  // Prefer the raw source headline when it cleanly identifies the tracked player's clause.
+  // This prevents a normalized matched_context from rejoining neighboring semicolon-separated subjects.
+  const headlineOwned=playerClauses(e.source_headline,player);
+  if(headlineOwned.length)return [...new Set(headlineOwned)];
+  const directHeadline=playerClauses(e.headline,player);
+  if(directHeadline.length&&/[;|•\n]/.test(String(e.headline||'')))return [...new Set(directHeadline)];
+  const out=[];
+  for(const raw of [e.headline,e.description,e.matched_context,e.body_text,e.chronology_context_text].filter(Boolean))out.push(...playerClauses(raw,player));
   return [...new Set(out)];
 }
 function ownedText(e,player){return norm(clauses(e,player).join(' '));}
@@ -54,12 +59,12 @@ for(const row of report.rows||[]){
 }
 
 function regression(player,event,expected){const x=refineEvent(event,player);if(expected.direction&&x.direction!==expected.direction)throw new Error(`Regression ${player}: ${x.direction} != ${expected.direction}`);for(const c of expected.absent||[])if((x.categories||[]).includes(c))throw new Error(`Regression ${player}: retained ${c}`);for(const c of expected.present||[])if(!(x.categories||[]).includes(c))throw new Error(`Regression ${player}: lost ${c}`);}
-regression('Hunter Henry',{source_headline:'Commanders LT Laremy Tunsil to undergo surgery on torn triceps; Patriots extend Hunter Henry',headline:'NFL roundup',categories:['readiness','prior_season_injury_recovery'],direction:'NEGATIVE'}, {direction:'CONTEXT',absent:['readiness','prior_season_injury_recovery']});
+regression('Hunter Henry',{source_headline:'Commanders LT Laremy Tunsil to undergo surgery on torn triceps; Patriots extend Hunter Henry',headline:'NFL roundup',matched_context:'laremy tunsil surgery torn triceps patriots extend hunter henry',categories:['readiness','prior_season_injury_recovery'],direction:'NEGATIVE'}, {direction:'CONTEXT',absent:['readiness','prior_season_injury_recovery']});
 regression('Kenneth Walker III',{headline:'Kenneth Walker III dealing with swollen ankle and missed practice',categories:['readiness'],direction:'CONTEXT'}, {direction:'NEGATIVE',present:['readiness']});
 regression('Patrick Mahomes II',{headline:'Patrick Mahomes II returns to full practice after ACL and LCL rehab and is on track for Week 1',categories:['readiness','prior_season_injury_recovery'],direction:'CONTEXT'}, {direction:'POSITIVE',present:['readiness','prior_season_injury_recovery']});
 regression('Rome Odunze',{headline:'Rome Odunze injured at practice',categories:['readiness'],direction:'CONTEXT'}, {direction:'NEGATIVE',present:['readiness']});
 regression('Josh Jacobs',{headline:'Josh Jacobs placed on commissioner exempt list',categories:['role_usage'],direction:'POSITIVE'}, {direction:'NEGATIVE',present:['readiness']});
 
-report.subject_binding_refinement={generated_at:new Date().toISOString(),events_refined:eventsRefined,categories_removed:categoriesRemoved,direction_overrides:directionOverrides,policy:'FINAL PLAYER-OWNED CLAUSE ATTRIBUTION; SEMICOLON/PIPE/BULLET/NEWLINE/ROUNDUP HEADERS ARE HARD SUBJECT BOUNDARIES'};
+report.subject_binding_refinement={generated_at:new Date().toISOString(),events_refined:eventsRefined,categories_removed:categoriesRemoved,direction_overrides:directionOverrides,policy:'FINAL PLAYER-OWNED CLAUSE ATTRIBUTION; RAW SOURCE HEADLINE PLAYER CLAUSE HAS PRECEDENCE; SEMICOLON/PIPE/BULLET/NEWLINE/ROUNDUP HEADERS ARE HARD SUBJECT BOUNDARIES'};
 fs.writeFileSync(file,JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify({result:'PASS',events_refined:eventsRefined,categories_removed:categoriesRemoved,direction_overrides:directionOverrides},null,2));
