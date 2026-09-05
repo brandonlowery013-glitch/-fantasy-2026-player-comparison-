@@ -7,9 +7,12 @@ on:
       - 'current162patch-2026-08-24.json'
       - 'overall-rank-review-names.json'
       - 'scripts/build-full-overall-backwards-audit.mjs'
+      - 'scripts/refine-transition-subject-binding.mjs'
+      - 'scripts/adjudicate-full-overall-backwards-audit.mjs'
       - 'scripts/build-live-full-universe-review-v2.mjs'
       - 'scripts/build-transition-intelligence-review.mjs'
       - 'scripts/build-retroactive-camp-backfill.mjs'
+      - 'scripts/build-chronological-transition-context.mjs'
       - '.github/workflows/full-overall-backwards-audit.yml'
   workflow_dispatch:
 
@@ -61,17 +64,22 @@ jobs:
           node scripts/build-transition-intelligence-review.mjs
           node scripts/enrich-transition-from-unified-evidence.mjs
           node scripts/run-position-specific-transition-integration.mjs
+          node scripts/refine-transition-subject-binding.mjs
       - name: Build 166 to 1 placement audit
-        run: node scripts/build-full-overall-backwards-audit.mjs
-      - name: Enforce complete backwards coverage
+        run: |
+          node scripts/build-full-overall-backwards-audit.mjs
+          node scripts/adjudicate-full-overall-backwards-audit.mjs
+      - name: Enforce complete backwards coverage and adjudication
         run: |
           node - <<'NODE'
           const fs=require('fs');
           const r=JSON.parse(fs.readFileSync('analysis/full-overall-backwards-audit-current.json','utf8'));
+          const a=JSON.parse(fs.readFileSync('analysis/full-overall-backwards-adjudication-current.json','utf8'));
           if(r.universe!==166||r.rows.length!==166||r.rows[0].overall_rank!==166||r.rows.at(-1).overall_rank!==1)throw new Error('backwards audit coverage failed');
           if(r.rows.some((x,i)=>x.audit_sequence!==i+1))throw new Error('audit sequence discontinuity');
-          if(r.rows.some(x=>!x.placement_verdict))throw new Error('player missing placement verdict');
-          console.log(JSON.stringify({status:'PASS',coverage:r.coverage,counts:r.counts,directions:r.directions},null,2));
+          if(a.rows.length!==166||a.coverage.complete!==true)throw new Error('adjudication coverage failed');
+          if(a.rows.some(x=>!x.final_disposition))throw new Error('player missing final adjudication');
+          console.log(JSON.stringify({status:'PASS',coverage:r.coverage,audit_counts:r.counts,audit_directions:r.directions,adjudication_counts:a.counts},null,2));
           NODE
       - name: Upload full backwards audit
         uses: actions/upload-artifact@v4
@@ -80,6 +88,8 @@ jobs:
           path: |
             analysis/full-overall-backwards-audit-current.json
             analysis/full-overall-backwards-audit-current.md
+            analysis/full-overall-backwards-adjudication-current.json
+            analysis/full-overall-backwards-adjudication-current.md
             guardrails/retroactive-camp-backfill-report.json
             analysis/transition-intelligence-current.json
           if-no-files-found: error
