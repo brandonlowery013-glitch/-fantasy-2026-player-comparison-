@@ -15,13 +15,18 @@ if((review.players||[]).length!==expected)throw new Error(`Review mismatch ${(re
 if(review.review_scope!=='FULL_ACTIVE_UNIVERSE_PLUS_CONNECTED')throw new Error(`Unexpected review scope ${review.review_scope}`);
 
 const byName=new Map(players.map(p=>[p.n,p]));
+const byReview=new Map((review.players||[]).map(x=>[x.player,x]));
 const evidenceFound=new Set((review.players||[]).filter(x=>x.transition_intelligence?.transition_signal==='EVIDENCE_FOUND').map(x=>x.player));
 const appliedNumeric=new Map((applied.rows||[]).map(x=>[x.player,x]));
 const priorZero=new Set(applied.zero_delta_resolutions||[]);
 const extraZero=new Map((extra.rows||[]).map(x=>[x.player,x]));
 const resolved=new Set([...appliedNumeric.keys(),...priorZero,...extraZero.keys()]);
 const unresolved=[...evidenceFound].filter(x=>!resolved.has(x)).sort();
-if(unresolved.length)throw new Error(`UNRESOLVED_TRANSITION_EVIDENCE: ${unresolved.join(', ')}`);
+if(unresolved.length){
+  const diagnostics=unresolved.map(name=>{const x=byReview.get(name)||{},ti=x.transition_intelligence||{};return{player:name,trajectory:ti.chronological_development?.overall_trajectory||null,current_season_status:ti.chronological_development?.current_season_state?.status||null,evidence:(ti.evidence||[]).slice(0,5).map(e=>({published:e.published||null,headline:e.headline||null,description:e.description||null,matched_context:e.matched_context||null,url:e.url||null})),chronology:(ti.chronological_development?.events||[]).slice(-6).map(e=>({published:e.published||null,headline:e.headline||null,description:e.description||null,matched_context:e.matched_context||null,url:e.url||null}))};});
+  console.log('UNRESOLVED_DIAGNOSTICS='+JSON.stringify(diagnostics,null,2));
+  throw new Error(`UNRESOLVED_TRANSITION_EVIDENCE: ${unresolved.join(', ')}`);
+}
 
 const weights={pd:.35,ce:.20,r:.15,e:.10,a:.10,rl:.05,su:.05};
 const weighted=p=>Object.entries(weights).reduce((s,[k,w])=>s+Number(p[k])*w,0);
