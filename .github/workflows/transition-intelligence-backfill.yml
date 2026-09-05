@@ -1,0 +1,64 @@
+name: Full Universe Transition Intelligence
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/build-transition-intelligence-review.mjs'
+      - '.github/workflows/transition-intelligence-backfill.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build-transition-intelligence-review.mjs'
+      - '.github/workflows/transition-intelligence-backfill.yml'
+  schedule:
+    - cron: '15 13 * 4-9 1,4'
+
+permissions:
+  contents: read
+
+jobs:
+  transition-intelligence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build current football review prerequisite
+        run: |
+          node scripts/build-live-full-universe-review-v2.mjs
+          node scripts/normalize-nfl-article-bodies.mjs
+          node scripts/filter-live-review-materiality.mjs
+      - name: Backfill full-universe transition intelligence
+        env:
+          TRANSITION_LOOKBACK_START: '2026-04-01T00:00:00Z'
+        run: node scripts/build-transition-intelligence-review.mjs
+      - name: Validate full-universe transition coverage
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const report=JSON.parse(fs.readFileSync('analysis/transition-intelligence-current.json','utf8'));
+          const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
+          const expected=Number(src.active_player_model);
+          if((report.rows||[]).length!==expected) throw new Error(`Transition coverage ${(report.rows||[]).length}/${expected}`);
+          if(new Set((report.rows||[]).map(x=>x.player)).size!==expected) throw new Error('Transition intelligence duplicate/missing players');
+          const missing=(review.players||[]).filter(x=>x.transition_intelligence?.review_status!=='REVIEWED');
+          if(missing.length) throw new Error(`Players missing proactive transition review: ${missing.map(x=>x.player).join(', ')}`);
+          const illegal=(report.rows||[]).filter(x=>!['EVIDENCE_FOUND','REVIEWED_NO_EVIDENCE'].includes(x.transition_signal));
+          if(illegal.length) throw new Error(`Invalid transition status: ${illegal.map(x=>x.player).join(', ')}`);
+          console.log(JSON.stringify({result:'PASS',coverage:expected,counts:report.counts},null,2));
+          NODE
+      - name: Upload transition intelligence evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-universe-transition-intelligence
+          path: |
+            analysis/transition-intelligence-current.json
+            analysis/transition-intelligence-current.md
+            guardrails/current-football-review.json
+          if-no-files-found: error
