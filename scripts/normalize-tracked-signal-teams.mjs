@@ -1,0 +1,16 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=process.cwd();
+const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
+const write=(p,x)=>fs.writeFileSync(path.join(root,p),JSON.stringify(x,null,2)+'\n');
+const source=read('MODEL_SOURCE_OF_TRUTH.json'),ledger=read('guardrails/current-football-review.json');
+const summaryPath='guardrails/live-full-universe-review-summary.json',summary=fs.existsSync(path.join(root,summaryPath))?read(summaryPath):null;
+const expected=Number(source.active_player_model),shards=Number(source.runtime_player_shards);
+let players=[];for(let i=0;i<shards;i++)players.push(...read(`players${i}.json`));if(players.length!==expected)throw new Error(`Universe mismatch ${players.length}/${expected}`);
+const teamMap={'Arizona Cardinals':'ARI','Atlanta Falcons':'ATL','Baltimore Ravens':'BAL','Buffalo Bills':'BUF','Carolina Panthers':'CAR','Chicago Bears':'CHI','Cincinnati Bengals':'CIN','Cleveland Browns':'CLE','Dallas Cowboys':'DAL','Denver Broncos':'DEN','Detroit Lions':'DET','Green Bay Packers':'GB','Houston Texans':'HOU','Indianapolis Colts':'IND','Jacksonville Jaguars':'JAX','Kansas City Chiefs':'KC','Las Vegas Raiders':'LV','Los Angeles Chargers':'LAC','Los Angeles Rams':'LA','Miami Dolphins':'MIA','Minnesota Vikings':'MIN','New England Patriots':'NE','New Orleans Saints':'NO','New York Giants':'NYG','New York Jets':'NYJ','Philadelphia Eagles':'PHI','Pittsburgh Steelers':'PIT','San Francisco 49ers':'SF','Seattle Seahawks':'SEA','Tampa Bay Buccaneers':'TB','Tennessee Titans':'TEN','Washington Commanders':'WAS'};
+const canonical=new Map(players.map(p=>[p.n,teamMap[p.t]||null]));let changed=0,mismatches=0;
+for(const p of ledger.players||[]){const ct=canonical.get(p.player);if(!ct)throw new Error(`No canonical runtime team for ${p.player}`);p.canonical_team=ct;p.material_news_signals=(p.material_news_signals||[]).map(m=>{const sourceTeam=m.source_team??m.team??null;if(sourceTeam&&String(sourceTeam).toUpperCase()!==ct)mismatches++;if(m.team!==ct)changed++;return{...m,source_team:sourceTeam,team:ct,canonical_team:ct};});}
+if(summary){summary.tracked_material_news_signals=(summary.tracked_material_news_signals||[]).map(x=>{const ct=canonical.get(x.player);if(!ct)throw new Error(`No canonical summary team for ${x.player}`);return{...x,team:ct,canonical_team:ct,mentions:(x.mentions||[]).map(m=>({...m,source_team:m.source_team??m.team??null,team:ct,canonical_team:ct}))};});summary.canonical_team_binding={required:true,universe:expected,signals_normalized:changed,source_team_mismatches:mismatches,rule:'TRACKED SIGNAL TEAM IS ALWAYS CANONICAL RUNTIME TEAM; SOURCE TEAM IS AUDIT-ONLY'};write(summaryPath,summary);}
+ledger.canonical_team_binding={required:true,universe:expected,signals_normalized:changed,source_team_mismatches:mismatches,rule:'TRACKED MATERIAL SIGNAL TEAM IS CANONICAL RUNTIME TEAM; SOURCE_TEAM NEVER MUTATES CANONICAL TEAM'};write('guardrails/current-football-review.json',ledger);
+const bad=(ledger.players||[]).flatMap(p=>(p.material_news_signals||[]).filter(m=>m.team!==canonical.get(p.player)).map(m=>p.player));if(bad.length)throw new Error(`TRACKED_SIGNAL_CANONICAL_TEAM_MISMATCH: ${[...new Set(bad)].join(', ')}`);
+console.log(JSON.stringify({result:'PASS',universe:expected,signals_normalized:changed,source_team_mismatches:mismatches},null,2));
