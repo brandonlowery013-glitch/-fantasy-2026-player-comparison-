@@ -13,27 +13,49 @@ if(![campStart,campEnd,currentStart].every(Number.isFinite)||campEnd>=currentSta
 const byLedger=new Map((ledger.players||[]).map(x=>[x.player,x]));
 const norm=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/\b(jr|sr|ii|iii|iv)\b/g,'').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
 
-const health=/\b(injur(?:y|ed)|soreness|sprain|strain|tear|fracture|surgery|rehab|recovery|recovering|swollen|pup|nfi|\bir\b|setback|recurrence|limited|missed practice|did not practice|left practice)\b/i;
+const physicalHealth=/\b(injur(?:y|ed)|soreness|sprain|strain|tear|fracture|surgery|rehab|recovery|recovering|swollen|acl|lcl|mcl|meniscus|achilles|hamstring|ankle|knee|shoulder|back|groin|quad|calf|foot|wrist|hand|concussion|illness|sick|pup|nfi|\bir\b|setback|recurrence)\b/i;
+const practiceRestriction=/\b(limited (?:in|at) practice|missed practice|did not practice|left practice|exits? practice)\b/i;
+const nonHealthAbsence=/\b(personal reasons?|personal matter|family matter|family reasons?|excused absence|veteran rest|rest day|maintenance day|load management|not injury related|not injury-related|non injury related|non-injury-related)\b/i;
 const positiveRole=/\b(won|named starter|starter|starting|lead|featured|feature back|first team|with the ones|bulk reps|expanded role|increase(?:d)? work|more work|more reps|trusted|ahead|target share increased|role grew)\b/i;
-const positiveRecovery=/\b(full practice|full participant|cleared|activated|healthy|ready|returned to practice|returns to practice|ramping up well|progressing|on track)\b/i;
+const positiveRecovery=/\b(full practice|full participant|cleared|activated|healthy|ready|returned to practice|returns to practice|return to practice|back in action|back at practice|off (?:the )?injury report|totally fine|not serious|no limitations?|without limitation|ramping up well|progressing|on track(?: to be)?(?: ready)?|expected to be ready|will be ready|set to play|will play|avoids? injury|escaped injury|good to go|hit all (?:of )?his checkpoints)\b/i;
 const negativeRole=/\b(lost .*job|backup|behind|reduced role|fewer reps|losing snaps|losing targets|demoted|waived|released)\b/i;
 const neutral=/\b(learning|install|competition|battle|split|rotation|working through|adjust|transition|new offense|new scheme|new coordinator|new quarterback|new qb)\b/i;
 const roleTerms=/\b(starter|starting|backup|lead|feature|first team|with the ones|reps|snap|route|target|carry|touch|workload|role|depth chart|competition|committee|split|rotation|bulk reps|more work)\b/i;
 const recoveryTerms=/\b(recover|rehab|surgery|acl|mcl|lcl|meniscus|achilles|ankle|knee|hamstring|cleared|practice|pup|ir|limited|full participant|healthy|setback|swollen)\b/i;
 const schemeTerms=/\b(offense|offensive coordinator|coordinator|scheme|system|playbook|install|motion|rpo|play action|under center|shotgun|terminology|concept)\b/i;
 const chemistryTerms=/\b(chemistry|rapport|connection|timing|trust|sync|working with)\b/i;
+const roundupBoundary=/\b(signings?|injuries?|transactions?|roster moves?|roster updates?|waivers?|cuts?|releases?|activations?|preseason news)\b/i;
 
+function playerSections(e,player){
+  const p=norm(player);if(!p)return[];
+  const out=[];
+  for(const raw of [e.headline,e.description,e.matched_context,e.body_text].filter(Boolean)){
+    const pieces=String(raw).split(roundupBoundary),matching=pieces.filter(piece=>norm(piece).includes(p));
+    if(matching.length)for(const piece of matching)out.push(norm(piece));
+    else {const n=norm(raw);if(n.includes(p))out.push(n);}
+  }
+  return [...new Set(out)];
+}
 function playerLocalText(e,player,radius=82){
-  const p=norm(player);if(!p)return'';
-  const fields=[e.headline,e.description,e.matched_context,e.body_text].filter(Boolean).map(norm),out=[];
-  for(const t of fields){let from=0;while(out.length<12){const i=t.indexOf(p,from);if(i<0)break;out.push(t.slice(Math.max(0,i-radius),Math.min(t.length,i+p.length+radius)));from=i+p.length;}}
+  const p=norm(player);if(!p)return'';const out=[];
+  for(const t of playerSections(e,player)){let from=0;while(out.length<12){const i=t.indexOf(p,from);if(i<0)break;out.push(t.slice(Math.max(0,i-radius),Math.min(t.length,i+p.length+radius)));from=i+p.length;}}
   return norm(out.join(' '));
 }
-function ownHealth(e,player){const p=norm(player),t=playerLocalText(e,player,42);return Boolean(p&&t.includes(p)&&health.test(t));}
+function ownHealth(e,player){
+  const p=norm(player),t=playerLocalText(e,player,58);if(!p||!t.includes(p))return false;
+  const clean=t.replace(/\b(?:not|non)\s+injury\s+related\b/gi,' ');
+  const physical=physicalHealth.test(clean);
+  if(nonHealthAbsence.test(t)&&!physical)return false;
+  if(practiceRestriction.test(t)&&!physical)return false;
+  return physical;
+}
 function ts(e){const t=Date.parse(e.published||'');return Number.isFinite(t)?t:null;}
 function phase(t){if(!t)return'UNDATED';if(t>=currentStart)return'CURRENT_SEASON_STATE';if(t<campStart)return'PRE_CAMP_OFFSEASON';const d=new Date(t),m=d.getUTCMonth()+1,day=d.getUTCDate();if(m<=5)return'OFFSEASON';if(m===6)return'MINICAMP_OTAS';if(m===7)return'TRAINING_CAMP_EARLY';if(m===8&&day<=15)return'TRAINING_CAMP_MID';if(m===8&&day<=26)return'PRESEASON_LATE_CAMP';return'ROSTER_CUTS_FINAL_CAMP';}
 function direction(e,player,local){
   const roleGain=positiveRole.test(local),recoveryGain=positiveRecovery.test(local),roleLoss=negativeRole.test(local),selfHealth=ownHealth(e,player);
+  // Explicit resolution language is authoritative over historical injury wording unless the same local section still says the player is limited/out/set back.
+  const activeRestriction=/\b(out|will miss|expected to miss|setback|recurrence|limited in practice|limited at practice|did not practice|missed practice|placed on ir|placed on pup|placed on nfi)\b/i.test(local)&&!positiveRecovery.test(local);
+  if(recoveryGain&&!activeRestriction&&!roleLoss)return'POSITIVE';
   if((roleGain||recoveryGain)&&!roleLoss&&!selfHealth)return'POSITIVE';
   if(roleLoss&&!roleGain)return'NEGATIVE';
   if(selfHealth&&recoveryGain)return'MIXED';
@@ -48,11 +70,15 @@ function trajectory(events){const dated=events.filter(x=>x.timestamp!==null);if(
 function bestCurrent(events){const current=events.filter(x=>x.timestamp!==null&&x.timestamp>=currentStart);if(!current.length)return null;const meaningful=current.filter(x=>x.significance>=3);return [...(meaningful.length?meaningful:current)].sort((a,b)=>b.significance-a.significance||b.timestamp-a.timestamp)[0];}
 function bestCampBaseline(events){const camp=events.filter(x=>x.timestamp!==null&&x.timestamp>=campStart&&x.timestamp<=campEnd);if(!camp.length)return null;const meaningful=camp.filter(x=>x.significance>=3);return [...(meaningful.length?meaningful:camp)].sort((a,b)=>b.timestamp-a.timestamp||b.significance-a.significance)[0];}
 
-// Chronology regressions: neighboring roundup bullets cannot set direction.
+// Chronology regressions: cross-player bleed, non-health absences and resolved injuries cannot generate false negative state.
 const wilsonLocal=playerLocalText({matched_context:'wr michael wilson signed extension injuries wr zay flowers left practice with knee injury'},'Michael Wilson');if(ownHealth({matched_context:wilsonLocal},'Michael Wilson'))throw new Error('Regression: Michael Wilson inherited neighboring injury');
+const goffEvent={matched_context:'cb ennis rakestraw left practice with lower leg injury preseason news qb jared goff will not play saturday per coach'};const goffLocal=playerLocalText(goffEvent,'Jared Goff');if(ownHealth(goffEvent,'Jared Goff')||direction(goffEvent,'Jared Goff',goffLocal)==='NEGATIVE')throw new Error('Regression: Goff inherited neighboring injury or preseason rest negative');
+const bowersEvent={matched_context:'te brock bowers missed practice for personal reasons'};const bowersLocal=playerLocalText(bowersEvent,'Brock Bowers');if(ownHealth(bowersEvent,'Brock Bowers')||direction(bowersEvent,'Brock Bowers',bowersLocal)==='NEGATIVE')throw new Error('Regression: Bowers personal absence treated as injury');
 const etienneEvent={matched_context:'with alvin kamara sidelined new acquisition travis etienne should receive bulk reps with the first team'};const etienneLocal=playerLocalText(etienneEvent,'Travis Etienne');if(direction(etienneEvent,'Travis Etienne',etienneLocal)!=='POSITIVE')throw new Error('Regression: teammate injury masked Etienne role gain');
 const walkerEvent={matched_context:'kenneth walker is dealing with a swollen ankle and missed practice'};const walkerLocal=playerLocalText(walkerEvent,'Kenneth Walker III');if(direction(walkerEvent,'Kenneth Walker III',walkerLocal)!=='NEGATIVE')throw new Error('Regression: Walker own injury lost');
-const mahomesEvent={matched_context:'patrick mahomes returned to full practice after acl lcl rehab and is on track for week one'};const mahomesLocal=playerLocalText(mahomesEvent,'Patrick Mahomes II');if(!['MIXED','POSITIVE'].includes(direction(mahomesEvent,'Patrick Mahomes II',mahomesLocal)))throw new Error('Regression: Mahomes recovery progression lost');
+const mahomesEvent={matched_context:'patrick mahomes returned to full practice after acl lcl rehab and is on track for week one'};const mahomesLocal=playerLocalText(mahomesEvent,'Patrick Mahomes II');if(direction(mahomesEvent,'Patrick Mahomes II',mahomesLocal)!=='POSITIVE')throw new Error('Regression: Mahomes resolved recovery not positive');
+const shakirEvent={matched_context:'khalil shakir is back in action after injury absence and is off the injury report'};const shakirLocal=playerLocalText(shakirEvent,'Khalil Shakir');if(direction(shakirEvent,'Khalil Shakir',shakirLocal)!=='POSITIVE')throw new Error('Regression: resolved injury still negative');
+const qjEvent={matched_context:'quentin johnston is totally fine after an injury scare and returned to practice'};const qjLocal=playerLocalText(qjEvent,'Quentin Johnston');if(direction(qjEvent,'Quentin Johnston',qjLocal)!=='POSITIVE')throw new Error('Regression: totally fine injury resolution not positive');
 
 let chronologyPlayers=0,currentPlayers=0,campEvidencePlayers=0,campNoEvidencePlayers=0;
 for(const row of report.rows||[]){
@@ -62,10 +88,10 @@ for(const row of report.rows||[]){
   const basis=x=>x?{published:x.published,phase:x.phase,direction:x.direction,headline:x.headline,dimensions:x.dimensions,categories:x.categories||[]}:null;
   const campAudit={required:true,window:{start:phaseConfig.retroactive_camp.start,end:phaseConfig.retroactive_camp.end},status:campEvents.length?'RETROACTIVE_CAMP_EVIDENCE_FOUND':'RETROACTIVE_CAMP_REVIEWED_NO_EVIDENCE',event_count:campEvents.length,trajectory:trajectory(campEvents),latest_camp_basis:basis(campBaseline),authority:phaseConfig.retroactive_camp.authority,rule:phaseConfig.retroactive_camp.rule};
   const currentState={required:true,window:{start:phaseConfig.current_season.start,end:report.generated_at||new Date().toISOString()},status:current?'CURRENT_EVIDENCE_FOUND':'CURRENT_REVIEWED_NO_POST_CAMP_EVIDENCE',event_count:currentEvents.length,current_state_basis:basis(current),inherited_camp_baseline:!current?basis(campBaseline):null,authority:phaseConfig.current_season.authority,rule:phaseConfig.current_season.rule};
-  row.chronological_development={mandatory:true,event_count:events.length,events,camp_retroactive_audit:campAudit,current_season_state:currentState,overall_trajectory:trajectory(events),rule:'DIRECTION AND DIMENSIONS ARE SCORED ONLY FROM PLAYER-LOCAL EVIDENCE; CAMP IS CLOSED HISTORY; CURRENT-SEASON EVIDENCE IS AUTHORITATIVE'};
+  row.chronological_development={mandatory:true,event_count:events.length,events,camp_retroactive_audit:campAudit,current_season_state:currentState,overall_trajectory:trajectory(events),rule:'DIRECTION AND DIMENSIONS ARE SCORED ONLY FROM PLAYER-SECTION LOCAL EVIDENCE; RESOLVED HEALTH LANGUAGE OVERRIDES HISTORICAL INJURY WORDING; CAMP IS CLOSED HISTORY; CURRENT-SEASON EVIDENCE IS AUTHORITATIVE'};
   if(events.length)chronologyPlayers++;if(current)currentPlayers++;if(campEvents.length)campEvidencePlayers++;else campNoEvidencePlayers++;
   const l=byLedger.get(row.player);if(l?.transition_intelligence)l.transition_intelligence.chronological_development=row.chronological_development;
 }
-report.schema_version='1.4.1';report.season_phase={config:`config/season-phase-${source.season||2026}.json`,retroactive_camp:phaseConfig.retroactive_camp,current_season:phaseConfig.current_season};report.chronological_context={mandatory:true,players_with_timeline:chronologyPlayers,players_with_current_state_basis:currentPlayers,retroactive_camp_players_with_evidence:campEvidencePlayers,retroactive_camp_players_reviewed_no_evidence:campNoEvidencePlayers,precedence:'CURRENT_SEASON_STATE_OVER_CLOSED_CAMP_STATE',player_local_scoring_required:true,rule:'Retroactively reconstruct camp as a closed historical phase. Post-camp evidence controls current state. Direction/significance may use only the tracked player local window; neighboring roundup bullets cannot set state.'};ledger.transition_intelligence_schema={...(ledger.transition_intelligence_schema||{}),version:'1.4.1',chronological_context_mandatory:true,retroactive_camp_audit_mandatory:true,current_season_state_mandatory:true,season_phase_config:report.season_phase.config,chronology_rule:report.chronological_context.rule};
+report.schema_version='1.4.2';report.season_phase={config:`config/season-phase-${source.season||2026}.json`,retroactive_camp:phaseConfig.retroactive_camp,current_season:phaseConfig.current_season};report.chronological_context={mandatory:true,players_with_timeline:chronologyPlayers,players_with_current_state_basis:currentPlayers,retroactive_camp_players_with_evidence:campEvidencePlayers,retroactive_camp_players_reviewed_no_evidence:campNoEvidencePlayers,precedence:'CURRENT_SEASON_STATE_OVER_CLOSED_CAMP_STATE',player_local_scoring_required:true,recovery_resolution_precedence:true,rule:'Retroactively reconstruct camp as a closed historical phase. Post-camp evidence controls current state. Direction/significance may use only the tracked player section/local window. Explicit recovery/resolution language supersedes historical injury wording unless an active restriction remains.'};ledger.transition_intelligence_schema={...(ledger.transition_intelligence_schema||{}),version:'1.4.2',chronological_context_mandatory:true,retroactive_camp_audit_mandatory:true,current_season_state_mandatory:true,season_phase_config:report.season_phase.config,chronology_rule:report.chronological_context.rule};
 write('analysis/transition-intelligence-current.json',report);write('guardrails/current-football-review.json',ledger);
 if((report.rows||[]).some(r=>r.chronological_development?.camp_retroactive_audit?.required!==true))throw new Error('RETROACTIVE_CAMP_AUDIT_MISSING');if((report.rows||[]).some(r=>r.chronological_development?.current_season_state?.required!==true))throw new Error('CURRENT_SEASON_STATE_REVIEW_MISSING');console.log(JSON.stringify({result:'PASS',players:(report.rows||[]).length,players_with_timeline:chronologyPlayers,current_state_players:currentPlayers,retroactive_camp_evidence_players:campEvidencePlayers,retroactive_camp_no_evidence_players:campNoEvidencePlayers},null,2));
