@@ -65,12 +65,6 @@ jobs:
           node scripts/normalize-nfl-article-bodies.mjs
           node scripts/filter-live-review-materiality.mjs
 
-      - name: Stage ADMIT decisions into canonical admission requests
-        run: node scripts/stage-admission-requests.mjs
-
-      - name: Validate complete active universe plus connected triage
-        run: node scripts/validate-full-universe-news-review.mjs
-
       - name: Build and integrate full-universe transition intelligence
         env:
           TRANSITION_LOOKBACK_START: '2026-04-01T00:00:00Z'
@@ -87,6 +81,12 @@ jobs:
           for(const p of review.players||[]) if(p.transition_intelligence?.integrated_into_unified_evidence_stack!==true) throw new Error(`Detached transition review: ${p.player}`);
           console.log(JSON.stringify(report,null,2));
           NODE
+
+      - name: Stage ADMIT decisions into canonical admission requests
+        run: node scripts/stage-admission-requests.mjs
+
+      - name: Validate complete active universe plus connected triage
+        run: node scripts/validate-full-universe-news-review.mjs
 
       - name: Test incremental substantive scoring
         run: |
