@@ -12,11 +12,11 @@ if((transition.rows||[]).length!==expected)throw new Error(`Transition coverage 
 if((ledger.players||[]).length!==expected)throw new Error(`Review coverage ${ledger.players?.length||0}/${expected}`);
 const byName=new Map((ledger.players||[]).map(x=>[x.player,x]));
 const norm=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/\b(jr|sr|ii|iii|iv)\b/g,'').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
-const substantiveCategories=new Set(['scheme_install','adaptation','role_usage','chemistry','competition','readiness','development','teammate_environment']);
-const directMaterialCategories=new Set(['scheme_install','adaptation','role_usage','chemistry','competition','readiness','development']);
+const substantiveCategories=new Set(['scheme_install','adaptation','role_usage','chemistry','competition','readiness','prior_season_injury_recovery','development','teammate_environment']);
+const directMaterialCategories=new Set(['scheme_install','adaptation','role_usage','chemistry','competition','readiness','prior_season_injury_recovery','development']);
 function key(x){return x.url||`${x.source}|${x.headline}|${x.description}`;}
 function dedupe(xs){const seen=new Set();return xs.filter(x=>{const k=key(x);if(seen.has(k))return false;seen.add(k);return true;});}
-let directAdded=0,teamContextAdded=0,playersWithDirect=0,playersWithTeam=0;
+let directAdded=0,teamContextAdded=0,playersWithDirect=0,playersWithTeam=0,recoveryPlayers=0;
 for(const row of transition.rows||[]){
   const review=byName.get(row.player);if(!review)throw new Error(`Transition player missing from review: ${row.player}`);
   const direct=[],team=[];
@@ -37,12 +37,13 @@ for(const row of transition.rows||[]){
   const mergedTeam=dedupe([...oldTeam,...team]);
   directAdded+=mergedDirect.length-oldDirect.length;teamContextAdded+=mergedTeam.length-oldTeam.length;
   if(direct.length)playersWithDirect++;if(team.length)playersWithTeam++;
+  if(direct.some(x=>(x.categories||[]).includes('prior_season_injury_recovery')))recoveryPlayers++;
   review.material_news_signals=mergedDirect;
   review.material_team_context_signals=mergedTeam;
-  review.transition_intelligence={...(review.transition_intelligence||{}),integrated_into_unified_evidence_stack:true,direct_material_signals:direct.length,team_context_signals:team.length,integration_rule:'DIRECT_PLAYER_TRANSITION_FEEDS_COMPONENT_REVIEW; SAME_TEAM_CONTEXT_FEEDS_CONNECTED_EFFECT_REVIEW'};
+  review.transition_intelligence={...(review.transition_intelligence||{}),integrated_into_unified_evidence_stack:true,direct_material_signals:direct.length,team_context_signals:team.length,prior_season_injury_recovery_integrated:direct.some(x=>(x.categories||[]).includes('prior_season_injury_recovery')),integration_rule:'DIRECT_PLAYER_TRANSITION_AND_PRIOR_SEASON_RECOVERY_FEED_COMPONENT_REVIEW; SAME_TEAM_CONTEXT_FEEDS_CONNECTED_EFFECT_REVIEW'};
 }
-ledger.transition_intelligence_schema={...(ledger.transition_intelligence_schema||{}),integrated_into_unified_evidence_stack:true,integration_rule:'NOT_A_SEPARATE_MODEL_LAYER'};
+ledger.transition_intelligence_schema={...(ledger.transition_intelligence_schema||{}),integrated_into_unified_evidence_stack:true,integration_rule:'NOT_A_SEPARATE_MODEL_LAYER; PRIOR_SEASON_INJURY_RECOVERY_IS_A_REQUIRED DIRECT PLAYER REVIEW CATEGORY'};
 write('guardrails/current-football-review.json',ledger);
-const report={generated_at:new Date().toISOString(),result:'PASS',coverage:expected,direct_signals_added:directAdded,team_context_signals_added:teamContextAdded,players_with_direct_transition_signals:playersWithDirect,players_with_team_context_signals:playersWithTeam,policy:'TRANSITION_EVIDENCE_PARTICIPATES_IN_EXISTING_NEWS_COMPONENT_CONNECTED_PLAYER_AND_BOARD_REVIEW_PIPELINE'};
+const report={generated_at:new Date().toISOString(),result:'PASS',coverage:expected,direct_signals_added:directAdded,team_context_signals_added:teamContextAdded,players_with_direct_transition_signals:playersWithDirect,players_with_team_context_signals:playersWithTeam,players_with_prior_season_recovery_signals:recoveryPlayers,policy:'TRANSITION_AND_PRIOR_SEASON_RECOVERY_EVIDENCE_PARTICIPATE_IN_EXISTING_NEWS_COMPONENT_CONNECTED_PLAYER_AND_BOARD_REVIEW_PIPELINE'};
 write('guardrails/transition-intelligence-integration-report.json',report);
 console.log(JSON.stringify(report,null,2));
