@@ -1,22 +1,15 @@
 {
   "season": 2026,
   "timezone": "America/Chicago",
-  "draft_period_ends_at": "2026-09-08T23:59:59-05:00",
-  "regular_season_mode_starts_at": "2026-09-09T00:00:00-05:00",
-  "draft_mode": {
-    "through": "2026-09-08",
-    "promote": [
-      "overall_actionable_rank",
-      "true_value_rank",
-      "current_adp",
-      "preferred_draft_range",
-      "market_value",
-      "rank_movement",
-      "news_context"
-    ]
+  "football_state": "REGULAR_SEASON_ACTIVE",
+  "football_state_rule": "NFL football state is independent of the user's fantasy draft completion date. Camp/preseason is historical context; regular-season evidence is current authority once the NFL regular season is active.",
+  "fantasy_draft_reference": {
+    "ends_by": "2026-09-08",
+    "state_gate": false,
+    "purpose": "REFERENCE_ONLY_FOR_USER_WORKFLOW; DOES_NOT_CHANGE_MODEL_FOOTBALL_STATE"
   },
   "regular_season_mode": {
-    "starts": "2026-09-09",
+    "active": true,
     "promote": [
       "weekly_projection",
       "actual_usage",
@@ -37,14 +30,17 @@
       "overall_actionable_rank",
       "true_value_rank",
       "market_value",
-      "draft_cost"
+      "draft_cost",
+      "retroactive_camp_context"
     ]
   },
   "rules": {
     "rank_arrow_requires_actual_saved_rank_change": true,
     "news_without_rank_change_shows_news_badge_only": true,
     "connected_players_receive_independent_context": true,
-    "draft_fields_are_never_deleted_after_transition": true,
-    "regular_season_usage_overrides_preseason_role_only_when_evidence_is_material": true
+    "draft_fields_are_never_deleted": true,
+    "fantasy_draft_date_never_controls_football_state": true,
+    "regular_season_usage_overrides_preseason_role_only_when_evidence_is_material": true,
+    "retroactive_camp_evidence_is_preserved_as_historical_context": true
   }
 }
