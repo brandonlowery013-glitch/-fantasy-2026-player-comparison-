@@ -1,0 +1,36 @@
+name: Post-Adjudication Cross-Board QA
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/run-post-adjudication-cross-board-qa.mjs'
+      - '.github/workflows/post-adjudication-cross-board-qa.yml'
+      - 'players*.json'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'canonicalBoards2026.json'
+      - 'lockedRanks2026.json'
+      - 'comparison-sync-162-audit.json'
+      - 'index-backup.html'
+      - 'rankMovement2026.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cross-board-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run post-adjudication cross-board synchronization QA
+        run: node scripts/run-post-adjudication-cross-board-qa.mjs
+      - name: Upload QA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-adjudication-cross-board-qa
+          path: analysis/post-adjudication-cross-board-qa-current.json
+          if-no-files-found: warn
