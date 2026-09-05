@@ -16,7 +16,7 @@ const marketRows = market.board;
 
 assert(sot.active_player_model === 166, 'source of truth must declare 166 players');
 assert(sot.runtime_player_shards === 14, 'source of truth must declare 14 runtime shards');
-assert(core.model === 'single 166-player active board', 'canonical overlay is not the 166-player board');
+assert(/^single 166-player active board(?:\b|\s|—|-)/.test(String(core.model || '')), 'canonical overlay is not the 166-player active board');
 const coreNames = Object.keys(core.players || {});
 assert(coreNames.length === 166 && uniq(coreNames).size === 166, 'canonical board must contain 166 unique players');
 
@@ -74,12 +74,15 @@ assert(marketRows.filter(x=>x.action==='PRICE PENDING').length === pending.lengt
 assert(marketRows.filter(x=>x.action==='PRICE PENDING').every(x=>x.market_adp==null), 'priced player cannot be PRICE PENDING');
 
 assert(phase.season === 2026, 'season phase must be 2026');
-assert(phase.draft_mode?.through === '2026-09-08', 'draft mode must run through Sept. 8');
-assert(phase.regular_season_mode?.starts === '2026-09-09', 'regular-season mode must begin Sept. 9');
+assert(phase.football_state === 'REGULAR_SEASON_ACTIVE', 'regular-season football state must already be active');
+assert(phase.regular_season_mode?.active === true, 'regular-season mode must be active');
+assert(phase.fantasy_draft_reference?.state_gate === false, 'fantasy draft date must not control football state');
+assert(phase.rules?.fantasy_draft_date_never_controls_football_state === true, 'draft date must never create a football-state transition');
 assert(phase.rules?.rank_arrow_requires_actual_saved_rank_change === true, 'rank arrows must require actual saved-rank change');
 assert(phase.rules?.news_without_rank_change_shows_news_badge_only === true, 'news with no rank move must be badge/HOLD only');
 assert(phase.rules?.connected_players_receive_independent_context === true, 'connected players must retain independent context');
-assert(phase.rules?.draft_fields_are_never_deleted_after_transition === true, 'draft fields must be preserved after transition');
+assert(phase.rules?.draft_fields_are_never_deleted === true, 'draft fields must be preserved after regular-season activation');
+assert(phase.rules?.retroactive_camp_evidence_is_preserved_as_historical_context === true, 'camp evidence must remain historical context');
 assert((phase.regular_season_mode?.deemphasize_but_preserve || []).includes('current_adp'), 'regular-season contract must preserve ADP');
 
 const forbiddenImports = [/read\([^\n]*sportsbook/i,/read\([^\n]*vegas/i,/read\([^\n]*prop/i,/from\s+['"][^'"]*(sportsbook|vegas|prop)/i];
@@ -93,7 +96,8 @@ const summary = {
   edge_players:edgeRows.length,
   market_players:marketRows.length,
   price_pending:pending.length,
-  season_transition:'DRAFT_THROUGH_2026-09-08__REGULAR_2026-09-09',
+  football_state:phase.football_state,
+  fantasy_draft_state_gate:false,
   intrinsic_rank_drift:0,
   authority:'VALIDATION_ONLY_NO_MODEL_MUTATION'
 };

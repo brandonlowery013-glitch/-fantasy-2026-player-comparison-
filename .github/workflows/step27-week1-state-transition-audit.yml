@@ -15,9 +15,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Validate September 8 draft-to-regular-season phase contract
+      - name: Validate existing regular-season authority independent of fantasy draft date
         run: node scripts/validate-season-phase-transition.mjs
-      - name: Validate Week 1 live state transitions
+      - name: Validate Week 1 live pipeline state transitions
         run: node scripts/validate-step27-week1-state-transition.mjs
       - name: Revalidate pipeline health states
         run: node scripts/check-weekly-pipeline-health.mjs --self-test
