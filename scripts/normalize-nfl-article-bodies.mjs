@@ -42,3 +42,5 @@ console.log(JSON.stringify({result:'PASS',nfl_urls:urls.length,structured_articl
 // evolution, chemistry, competition, readiness and teammate/offensive-environment changes even
 // when there is no breaking-news trigger.
 await import('./build-transition-intelligence-review.mjs');
+// Major offensive team changes force the tracked QB/RB/WR/TE cluster into the same evidence stack.
+await import('./enforce-offensive-transition-clusters.mjs');
