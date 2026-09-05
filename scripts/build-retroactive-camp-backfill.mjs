@@ -32,7 +32,7 @@ const universal={
 const positionRules={
   RB:{
     committee:/\b(running back committee|backfield committee|committee backfield|committee role|split backfield|shared backfield|rotation at running back|backfield rotation|timeshare|time share)\b/i,
-    touch_volume:/\b(carries|carry share|touches|touch share|workload|lead back|featured back|workhorse|early down|early-down|goal line|goal-line|red zone|red-zone|third down|third-down|two minute|two-minute|passing downs|receiving role|targets out of the backfield|split carries|more carries|more touches|first team reps|first-team reps|with the ones)\b/i,
+    touch_volume:/\b(carries|carry share|touches|touch share|workload|lead back|featured back|workhorse|early down|early-down|goal line|goal-line|red zone|red-zone|third down|third-down|two minute|two-minute|passing downs|receiving role|targets out of the backfield|split carries|more carries|more touches|first team reps|first-team reps|working with (?:the )?first team|with the ones)\b/i,
     backfield_injury_impact:/\b(backfield|running back|rb)\b.{0,140}\b(injur(?:y|ed)|out|miss|limited|pup|ir|surgery|sprain|strain|tear)\b|\b(injur(?:y|ed)|out|miss|limited|pup|ir|surgery|sprain|strain|tear)\b.{0,140}\b(backfield|running back|rb|carries|touches|workload)\b/i,
     rookie_adjustment:/\b(rookie|first year|first-year)\b.{0,160}\b(pass protection|blitz pickup|protection|vision|patience|reads|playbook|offense|nfl|pro game|route running|receiving|first team|first-team|ones|trust)\b|\b(pass protection|blitz pickup|vision|patience|reads|playbook|nfl|pro game)\b.{0,160}\b(rookie|first year|first-year)\b/i,
     role_security:/\b(ahead of|behind|depth chart|battle for|competing for|competition for|earned a role|losing work|lose work|role security|starter|starting job)\b/i,
@@ -47,9 +47,10 @@ const positionRules={
   },
   WR:{
     rookie_adjustment:/\b(rookie|first year|first-year)\b.{0,180}\b(playbook|offense|nfl|pro game|route running|release|separation|coverage|chemistry|rapport|timing|first team|first-team|ones|trust|blocking)\b|\b(playbook|nfl|pro game|route running|release|separation|coverage|chemistry|rapport|timing)\b.{0,180}\b(rookie|first year|first-year)\b/i,
-    target_hierarchy:/\b(target share|targets|target volume|pecking order|hierarchy|first read|first-read|number one receiver|no 1 receiver|wr1|wr2|slot role|outside role|x receiver|z receiver|featured receiver|lead receiver|routes|route share|first team reps|first-team reps|with the ones)\b/i,
-    role_security:/\b(ahead of|behind|depth chart|battle for|competing for|competition for|role security|losing snaps|lose snaps|losing targets|lose targets|rotation|three receiver sets|three-receiver sets|two receiver sets|two-receiver sets)\b/i,
-    qb_chemistry:/\b(chemistry|rapport|connection|timing|trust|on the same page|favorite target|go to target|go-to target)\b.{0,140}\b(quarterback|qb|starter)\b|\b(quarterback|qb|starter)\b.{0,140}\b(chemistry|rapport|connection|timing|trust|on the same page|favorite target|go to target|go-to target)\b/i
+    target_hierarchy:/\b(target share|targets|target volume|target distribution|pecking order|hierarchy|first read|first-read|number one receiver|no 1 receiver|wr1|wr2|slot role|outside role|x receiver|z receiver|featured receiver|lead receiver|routes|route share|first team reps|first-team reps|with the ones)\b/i,
+    role_security:/\b(ahead of|behind|depth chart|battle for|competing for|competition for|role security|losing snaps|lose snaps|losing targets|lose targets|rotation|receiver rotation|wr rotation|crowded receiver room|crowded wr room|unsettled receiver room|unsettled wr room|no clear wr1|no established wr1|three receiver sets|three-receiver sets|two receiver sets|two-receiver sets)\b/i,
+    qb_chemistry:/\b(chemistry|rapport|connection|timing|trust|on the same page|favorite target|go to target|go-to target)\b.{0,140}\b(quarterback|qb|starter)\b|\b(quarterback|qb|starter)\b.{0,140}\b(chemistry|rapport|connection|timing|trust|on the same page|favorite target|go to target|go-to target)\b/i,
+    unstable_room:/\b(crowded receiver room|crowded wr room|unsettled receiver room|unsettled wr room|no clear wr1|no established wr1|receiver rotation|wr rotation|targets spread around|spread the ball around|target distribution remains fluid|pecking order remains fluid)\b/i
   },
   TE:{
     rookie_adjustment:/\b(rookie|first year|first-year)\b.{0,180}\b(playbook|offense|nfl|pro game|route running|blocking|inline|in line|slot|chemistry|rapport|timing|first team|first-team|ones|trust)\b|\b(playbook|nfl|pro game|route running|blocking|inline|in line|slot|chemistry|rapport|timing)\b.{0,180}\b(rookie|first year|first-year)\b/i,
@@ -99,6 +100,7 @@ const scheme=materialForPosition('quarterback is learning the new offense under 
 const rbCommittee=materialForPosition('coach says the rookie running back is splitting carries in a committee backfield and improving pass protection','RB');if(!rbCommittee.relevant||!rbCommittee.topics.includes('committee')||!rbCommittee.topics.includes('rookie_adjustment'))throw new Error('Regression: RB committee/rookie adaptation not recognized');
 const qbChem=materialForPosition('new quarterback is building chemistry and timing with his wide receiver and tight end while picking up the playbook','QB');if(!qbChem.relevant||!qbChem.topics.includes('receiver_chemistry')||!qbChem.topics.includes('playbook_adaptation'))throw new Error('Regression: QB playbook/chemistry evidence not recognized');
 const wrHierarchy=materialForPosition('parker washington is taking first team reps and competing for targets in the receiver hierarchy','WR');if(!wrHierarchy.relevant||!wrHierarchy.topics.includes('target_hierarchy')||!wrHierarchy.topics.includes('role_security'))throw new Error('Regression: WR target hierarchy evidence not recognized');
+const gbRoom=materialForPosition('green bay has an unsettled receiver room with no clear wr1 and a fluid target distribution as jordan love spreads the ball around','WR');if(!gbRoom.relevant||!gbRoom.topics.includes('unstable_room')||!gbRoom.topics.includes('target_hierarchy')||!gbRoom.topics.includes('role_security'))throw new Error('Regression: Green Bay-style unstable WR room not recognized');
 const teChem=materialForPosition('rookie tight end is developing chemistry with the quarterback and earning first team routes','TE');if(!teChem.relevant||!teChem.topics.includes('rookie_adjustment')||!teChem.topics.includes('target_hierarchy'))throw new Error('Regression: TE development/target role evidence not recognized');
 
 let evidencePlayers=0,checkedNoEvidence=0,gaps=0,added=0,discoveryRejected=0,positionRejected=0,duplicatesCollapsed=0;
@@ -146,14 +148,14 @@ for(const p of ledger.players||[]){
     required:true,status,position:pos,evidence_count:accepted.length,discovery_candidates:candidates.length,
     sources_checked:{player_rss:rss||'NOT_ATTEMPTED',official_team_sitemap:official||'NOT_ATTEMPTED'},
     window:{start:camp.start,end:camp.end},local_player_binding_required:true,position_specific_materiality_required:true,
-    fantasy_opportunity_scope:pos==='RB'?'committee/touches/backfield injury/rookie adjustment/new-team or coordinator touch impact':pos==='QB'?'playbook adaptation/receiver-TE chemistry/practice preference/new-team transition/injury':pos==='WR'?'rookie adjustment/target hierarchy/role security/QB chemistry/injury':pos==='TE'?'rookie adjustment/target-route hierarchy/role security/QB chemistry/injury':'universal injury/scheme only',
+    fantasy_opportunity_scope:pos==='RB'?'committee/touches/backfield injury/rookie adjustment/new-team or coordinator touch impact':pos==='QB'?'playbook adaptation/receiver-TE chemistry/practice preference/new-team transition/injury':pos==='WR'?'rookie adjustment/target hierarchy/unstable WR-room role security/QB chemistry/injury':pos==='TE'?'rookie adjustment/target-route hierarchy/role security/QB chemistry/injury':'universal injury/scheme only',
     rule:'SOURCE COVERAGE IS DISTINCT FROM MATERIAL EVIDENCE; ONLY PLAYER-LOCAL, POSITION-SPECIFIC FANTASY OPPORTUNITY EVENTS ENTER CHRONOLOGY'
   };
   rows.push({player:p.player,position:pos,status,evidence_count:accepted.length,discovery_candidates:candidates.length,player_rss:rss||'NOT_ATTEMPTED',official_team_sitemap:official||'NOT_ATTEMPTED',evidence:accepted});
 }
 
 transition.retroactive_camp_backfill={
-  mandatory:true,window:camp,
+  mandatory:true,window:camp,persistent_opportunity_watches:phase.persistent_opportunity_watches||[],
   counts:{players:expected,evidence_found:evidencePlayers,source_checked_no_material_evidence:checkedNoEvidence,source_coverage_gap:gaps,evidence_added:added,discovery_rejected:discoveryRejected,position_irrelevant_rejected:positionRejected,duplicate_event_reports_collapsed:duplicatesCollapsed},
   position_counts:positionCounts,
   policy:'CAMP IS CLOSED HISTORICAL CONTEXT; 166/166 SOURCE COVERAGE DOES NOT IMPLY 166/166 MATERIAL EVENTS; MATERIALITY IS POSITION-SPECIFIC AND TIED TO FANTASY OPPORTUNITY, ROLE, CHEMISTRY, SCHEME, OR INJURY/RECOVERY'
