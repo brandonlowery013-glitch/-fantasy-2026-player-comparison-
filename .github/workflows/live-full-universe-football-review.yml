@@ -12,6 +12,7 @@ on:
       - 'scripts/filter-live-review-materiality.mjs'
       - 'scripts/build-transition-intelligence-review.mjs'
       - 'scripts/integrate-transition-intelligence.mjs'
+      - 'scripts/triage-untracked-candidates.mjs'
       - 'scripts/stage-admission-requests.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
       - 'admissions/queue.json'
@@ -31,6 +32,7 @@ on:
       - 'scripts/filter-live-review-materiality.mjs'
       - 'scripts/build-transition-intelligence-review.mjs'
       - 'scripts/integrate-transition-intelligence.mjs'
+      - 'scripts/triage-untracked-candidates.mjs'
       - 'scripts/stage-admission-requests.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
       - 'admissions/queue.json'
@@ -81,6 +83,9 @@ jobs:
           for(const p of review.players||[]) if(p.transition_intelligence?.integrated_into_unified_evidence_stack!==true) throw new Error(`Detached transition review: ${p.player}`);
           console.log(JSON.stringify(report,null,2));
           NODE
+
+      - name: Triage connected untracked candidates
+        run: node scripts/triage-untracked-candidates.mjs
 
       - name: Stage ADMIT decisions into canonical admission requests
         run: node scripts/stage-admission-requests.mjs
@@ -156,6 +161,7 @@ jobs:
             guardrails/current-football-review.json
             guardrails/live-full-universe-review-summary.json
             guardrails/full-universe-news-review-report.json
+            guardrails/untracked-candidate-triage-report.json
             guardrails/substantive-football-context-collection-report.json
             guardrails/substantive-football-context-inputs-report.json
             guardrails/transition-intelligence-integration-report.json
@@ -179,6 +185,7 @@ jobs:
             guardrails/current-football-review.json
             guardrails/live-full-universe-review-summary.json
             guardrails/full-universe-news-review-report.json
+            guardrails/untracked-candidate-triage-report.json
             guardrails/substantive-football-context-collection-report.json
             guardrails/substantive-football-context-inputs-report.json
             guardrails/transition-intelligence-integration-report.json
