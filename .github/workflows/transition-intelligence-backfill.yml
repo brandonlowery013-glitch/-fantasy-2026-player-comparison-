@@ -10,6 +10,7 @@ on:
       - 'scripts/enrich-transition-from-unified-evidence.mjs'
       - 'scripts/collect-official-team-sitemaps.mjs'
       - 'scripts/collect-player-news-rss.mjs'
+      - 'scripts/hydrate-current-football-review-positions.mjs'
       - 'scripts/build-retroactive-camp-backfill.mjs'
       - 'scripts/build-rookie-development-review.mjs'
       - 'scripts/enforce-offensive-transition-clusters.mjs'
@@ -23,6 +24,7 @@ on:
     paths:
       - 'scripts/build-transition-intelligence-review.mjs'
       - 'scripts/enrich-transition-from-unified-evidence.mjs'
+      - 'scripts/hydrate-current-football-review-positions.mjs'
       - 'scripts/build-retroactive-camp-backfill.mjs'
       - 'scripts/build-chronological-transition-context.mjs'
       - 'scripts/integrate-transition-intelligence.mjs'
@@ -50,6 +52,7 @@ jobs:
           node scripts/build-live-full-universe-review-v2.mjs
           node scripts/normalize-nfl-article-bodies.mjs
           node scripts/normalize-tracked-signal-teams.mjs
+          node scripts/hydrate-current-football-review-positions.mjs
       - name: Deep retroactive camp source discovery
         env:
           OFFICIAL_TEAM_SITEMAP_START: '2026-04-01T00:00:00Z'
@@ -86,9 +89,12 @@ jobs:
           const statuses=new Set((camp.rows||[]).map(x=>x.status));
           for(const s of statuses) if(!['EVIDENCE_FOUND','SOURCE_CHECKED_NO_MATERIAL_EVIDENCE','SOURCE_COVERAGE_GAP'].includes(s)) throw new Error(`Invalid retroactive status ${s}`);
           if(Number(camp.counts?.source_coverage_gap)===expected) throw new Error('Retroactive source discovery failed for entire universe');
+          const pc=camp.position_counts||{};
+          const resolved=['RB','QB','WR','TE'].reduce((n,k)=>n+Number(pc[k]?.players||0),0);
+          if(resolved!==expected||Number(pc.OTHER?.players||0)!==0) throw new Error(`Position-specific audit not applied to canonical universe: resolved=${resolved}/${expected}, OTHER=${pc.OTHER?.players||0}`);
           if(report.chronological_context?.mandatory!==true) throw new Error('Chronological context missing');
           if(integration.result!=='PASS') throw new Error('Transition integration failed');
-          console.log(JSON.stringify({result:'PASS',coverage:expected,camp_evidence_players:integration.retroactive_camp_evidence_players,camp_checked_no_material:integration.retroactive_camp_source_checked_no_material,camp_source_gaps:integration.retroactive_camp_source_gaps,camp_evidence_added:integration.retroactive_camp_evidence_added,timeline_players:integration.players_with_chronological_timeline,current_regular_season_state_players:integration.players_with_current_state_basis,football_state:phase.football_state,fantasy_draft_state_gate:phase.fantasy_draft_state_gate},null,2));
+          console.log(JSON.stringify({result:'PASS',coverage:expected,position_counts:pc,camp_evidence_players:integration.retroactive_camp_evidence_players,camp_checked_no_material:integration.retroactive_camp_source_checked_no_material,camp_source_gaps:integration.retroactive_camp_source_gaps,camp_evidence_added:integration.retroactive_camp_evidence_added,timeline_players:integration.players_with_chronological_timeline,current_regular_season_state_players:integration.players_with_current_state_basis,football_state:phase.football_state,fantasy_draft_state_gate:phase.fantasy_draft_state_gate},null,2));
           NODE
       - name: Upload transition intelligence evidence
         if: always()
