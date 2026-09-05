@@ -12,6 +12,9 @@ on:
       - 'scripts/filter-live-review-materiality.mjs'
       - 'scripts/build-transition-intelligence-review.mjs'
       - 'scripts/enrich-transition-from-unified-evidence.mjs'
+      - 'scripts/build-rookie-development-review.mjs'
+      - 'scripts/enforce-offensive-transition-clusters.mjs'
+      - 'scripts/build-chronological-transition-context.mjs'
       - 'scripts/integrate-transition-intelligence.mjs'
       - 'scripts/triage-untracked-candidates.mjs'
       - 'scripts/stage-admission-requests.mjs'
@@ -33,6 +36,9 @@ on:
       - 'scripts/filter-live-review-materiality.mjs'
       - 'scripts/build-transition-intelligence-review.mjs'
       - 'scripts/enrich-transition-from-unified-evidence.mjs'
+      - 'scripts/build-rookie-development-review.mjs'
+      - 'scripts/enforce-offensive-transition-clusters.mjs'
+      - 'scripts/build-chronological-transition-context.mjs'
       - 'scripts/integrate-transition-intelligence.mjs'
       - 'scripts/triage-untracked-candidates.mjs'
       - 'scripts/stage-admission-requests.mjs'
@@ -81,7 +87,10 @@ jobs:
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
           const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
           const report=JSON.parse(fs.readFileSync('guardrails/transition-intelligence-integration-report.json','utf8'));
+          const rookie=JSON.parse(fs.readFileSync('analysis/rookie-development-review-current.json','utf8'));
           if(report.result!=='PASS'||report.coverage!==Number(src.active_player_model)) throw new Error('Transition integration did not cover canonical universe');
+          if(Number(rookie.counts?.players_checked)!==Number(src.active_player_model)) throw new Error('Rookie classification did not cover canonical universe');
+          if((rookie.rookies||[]).some(x=>x.development_review?.required!==true)) throw new Error('Mandatory rookie development review missing');
           if(review.transition_intelligence_schema?.integrated_into_unified_evidence_stack!==true) throw new Error('Transition intelligence is still detached from unified evidence stack');
           for(const p of review.players||[]) if(p.transition_intelligence?.integrated_into_unified_evidence_stack!==true) throw new Error(`Detached transition review: ${p.player}`);
           console.log(JSON.stringify(report,null,2));
@@ -122,7 +131,7 @@ jobs:
           if(Number(review.source_quality?.espn_modeled_athlete_ids_resolved)<Math.min(150,Number(src.active_player_model))) throw new Error(`Modeled ESPN athlete-ID coverage too low: ${review.source_quality?.espn_modeled_athlete_ids_resolved}/${src.active_player_model}`);
           if(Number(summary.tracked_material_news_signal_count)>Math.ceil(Number(src.active_player_model)*0.50)) throw new Error(`Material signal cardinality implausibly broad: ${summary.tracked_material_news_signal_count}/${src.active_player_model}`);
           if(collect.result!=='PASS'||ctx.result!=='PASS'||transition.result!=='PASS') throw new Error('Unified substantive context pipeline did not PASS');
-          console.log(JSON.stringify({players:src.active_player_model,breaking_news_material_players:summary.tracked_material_news_signal_count,transition_direct_players:transition.players_with_direct_transition_signals,transition_team_context_players:transition.players_with_team_context_signals,structured_players:ctx.players,structured_signals:ctx.signals},null,2));
+          console.log(JSON.stringify({players:src.active_player_model,breaking_news_material_players:summary.tracked_material_news_signal_count,transition_direct_players:transition.players_with_direct_transition_signals,transition_team_context_players:transition.players_with_team_context_signals,transition_teams:transition.offensive_transition_teams,transition_cluster_players:transition.offensive_transition_cluster_players,transition_timeline_players:transition.players_with_chronological_timeline,rookies:transition.rookie_players,rookies_with_evidence:transition.rookies_with_dated_development_evidence,rookie_unresolved:transition.rookie_classification_unresolved,structured_players:ctx.players,structured_signals:ctx.signals},null,2));
           NODE
 
       - name: Build incremental evidence proposals and canonical-universe taxonomy
@@ -172,6 +181,7 @@ jobs:
             data/probability/substantive-football-context-inputs-2026.json
             analysis/transition-intelligence-current.json
             analysis/transition-intelligence-current.md
+            analysis/rookie-development-review-current.json
             analysis/substantive-component-recalculation-current.json
             analysis/substantive-component-recalculation-current.md
             analysis/substantive-rank-proposals-current.json
@@ -195,6 +205,7 @@ jobs:
             data/probability/substantive-football-context-inputs-2026.json
             analysis/transition-intelligence-current.json
             analysis/transition-intelligence-current.md
+            analysis/rookie-development-review-current.json
             analysis/substantive-component-recalculation-current.json
             analysis/substantive-component-recalculation-current.md
             analysis/substantive-rank-proposals-current.json
