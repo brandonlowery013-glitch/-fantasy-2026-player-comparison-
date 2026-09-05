@@ -18,22 +18,35 @@ const media=/\b(beat writer|practice report|camp report|observed in practice|rep
 const development=/\b(rookie|first year|first-year|improv(?:e|ed|ing)|develop(?:ed|ing|ment)|route running|release|separation|vision|patience|reads|blocking)\b/i;
 const competition=/\b(ahead of|behind|battle for|competing for|competition for|losing snaps|losing targets|rotation|crowded|unsettled|no clear|role security)\b/i;
 const operational=new RegExp([health.source,role.source,scheme.source,transaction.source,coach.source,media.source,development.source,competition.source].join('|'),'i');
+const roundupBoundary=/\b(signings?|injuries?|transactions?|roster moves?|roster updates?|waivers?|cuts?|releases?|activations?)\b/i;
 
 const canonical=new Set(['scheme_install','adaptation','role_usage','chemistry','competition','readiness','prior_season_injury_recovery','development','teammate_environment']);
 const eventKey=e=>e.url||`${e.source}|${e.published}|${e.headline}`;
-function playerWindows(e,player,radius=72){
+function playerSections(e,player){
+  const p=norm(player);if(!p)return[];
+  const fields=[e.headline,e.description,e.matched_context,e.body_text].filter(Boolean);
+  const out=[];
+  for(const raw of fields){
+    const normalized=norm(raw);
+    if(!normalized.includes(p))continue;
+    const pieces=String(raw).split(roundupBoundary);
+    for(const piece of pieces){const n=norm(piece);if(n.includes(p))out.push(n);}
+    if(!pieces.some(piece=>norm(piece).includes(p)))out.push(normalized);
+  }
+  return [...new Set(out)];
+}
+function playerWindows(e,player,radius=96){
   const p=norm(player);if(!p)return'';
-  const fields=[e.headline,e.description,e.matched_context,e.body_text].filter(Boolean).map(norm);
   const windows=[];
-  for(const t of fields){let from=0;while(windows.length<12){const i=t.indexOf(p,from);if(i<0)break;windows.push(t.slice(Math.max(0,i-radius),Math.min(t.length,i+p.length+radius)));from=i+p.length;}}
+  for(const t of playerSections(e,player)){let from=0;while(windows.length<16){const i=t.indexOf(p,from);if(i<0)break;windows.push(t.slice(Math.max(0,i-radius),Math.min(t.length,i+p.length+radius)));from=i+p.length;}}
   return norm(windows.join(' '));
 }
-function nearPlayer(e,player,re,radius=48){return re.test(playerWindows(e,player,radius));}
+function nearPlayer(e,player,re,radius=64){return re.test(playerWindows(e,player,radius));}
 function canonicalCategories(e,pos,player){
-  const local=playerWindows(e,player,72);
+  const local=playerWindows(e,player,96);
   const out=new Set();
   if(!local)return out;
-  const ownHealth=nearPlayer(e,player,health,44);
+  const ownHealth=nearPlayer(e,player,health,64);
   const hasRole=role.test(local),hasScheme=scheme.test(local),hasTransaction=transaction.test(local),hasCoach=coach.test(local),hasMedia=media.test(local),hasDevelopment=development.test(local),hasCompetition=competition.test(local);
   if(ownHealth){out.add('readiness');if(/\b(rehab|recovery|recovering|returning from|coming back from|months removed|year removed|surgery last|acl|achilles|meniscus|lcl|mcl)\b/i.test(local))out.add('prior_season_injury_recovery');}
   if(hasRole)out.add('role_usage');
@@ -47,7 +60,7 @@ function canonicalCategories(e,pos,player){
 }
 function qualify(e,pos,player){
   if(editorial.test(e.headline||''))return{keep:false,reason:'EDITORIAL_OR_FANTASY_HEADLINE'};
-  const local=playerWindows(e,player,72);
+  const local=playerWindows(e,player,96);
   if(!local||!operational.test(local))return{keep:false,reason:'NO_PLAYER_PROXIMATE_OPERATIONAL_ANCHOR'};
   const out=canonicalCategories(e,pos,player);
   for(const c of [...out])if(!canonical.has(c))out.delete(c);
@@ -67,11 +80,11 @@ const btj=qualify({headline:'Brian Thomas Jr. limited by shoulder injury',matche
 let kept=0,rejected=0,editorialRejected=0,noProximityRejected=0,noCanonicalRejected=0;const keepKeys=new Set();
 for(const row of report.rows||[]){
   const next=[];
-  for(const e of row.evidence||[]){const q=qualify(e,row.position,row.player);if(!q.keep){rejected++;if(q.reason==='EDITORIAL_OR_FANTASY_HEADLINE')editorialRejected++;if(q.reason==='NO_PLAYER_PROXIMATE_OPERATIONAL_ANCHOR')noProximityRejected++;if(q.reason==='NO_CANONICAL_MATERIAL_CATEGORY')noCanonicalRejected++;continue;}e.categories=q.categories;e.matched_context=q.local;e.quality_gate='TIGHT_PLAYER_LOCAL_CATEGORY_BINDING';next.push(e);keepKeys.add(eventKey(e));kept++;}
+  for(const e of row.evidence||[]){const q=qualify(e,row.position,row.player);if(!q.keep){rejected++;if(q.reason==='EDITORIAL_OR_FANTASY_HEADLINE')editorialRejected++;if(q.reason==='NO_PLAYER_PROXIMATE_OPERATIONAL_ANCHOR')noProximityRejected++;if(q.reason==='NO_CANONICAL_MATERIAL_CATEGORY')noCanonicalRejected++;continue;}e.categories=q.categories;e.matched_context=q.local;e.quality_gate='PLAYER_SECTION_LOCAL_CATEGORY_BINDING';next.push(e);keepKeys.add(eventKey(e));kept++;}
   row.evidence=next;row.evidence_count=next.length;row.status=next.length?'EVIDENCE_FOUND':((row.player_rss==='CHECKED'||row.official_team_sitemap==='CHECKED')?'SOURCE_CHECKED_NO_MATERIAL_EVIDENCE':'SOURCE_COVERAGE_GAP');
 }
 let evidenceFound=0,checkedNo=0,gaps=0;const positionCounts={RB:{players:0,evidence_found:0,evidence:0},QB:{players:0,evidence_found:0,evidence:0},WR:{players:0,evidence_found:0,evidence:0},TE:{players:0,evidence_found:0,evidence:0},OTHER:{players:0,evidence_found:0,evidence:0}};
 for(const row of report.rows||[]){const b=positionCounts[row.position]||positionCounts.OTHER;b.players++;b.evidence+=row.evidence_count;if(row.evidence_count)b.evidence_found++;if(row.status==='EVIDENCE_FOUND')evidenceFound++;else if(row.status==='SOURCE_CHECKED_NO_MATERIAL_EVIDENCE')checkedNo++;else gaps++;}
-for(const tr of transition.rows||[]){tr.development_evidence=(tr.development_evidence||[]).filter(e=>e.retroactive_camp_evidence!==true||keepKeys.has(eventKey(e))).map(e=>{if(e.retroactive_camp_evidence===true){const rr=(report.rows||[]).find(x=>x.player===tr.player);const keptEvent=rr?.evidence?.find(x=>eventKey(x)===eventKey(e));if(keptEvent)return{...e,categories:keptEvent.categories,matched_context:keptEvent.matched_context,quality_gate:keptEvent.quality_gate};}return e;});const rr=(report.rows||[]).find(x=>x.player===tr.player);if(rr)tr.retroactive_camp_audit={...(tr.retroactive_camp_audit||{}),status:rr.status,evidence_count:rr.evidence_count,quality_gate:'TIGHT_PLAYER_LOCAL_CATEGORY_BINDING'};}
-report.counts={...(report.counts||{}),evidence_found:evidenceFound,source_checked_no_material_evidence:checkedNo,source_coverage_gap:gaps,evidence_added:kept,quality_rejected:rejected,editorial_or_fantasy_rejected:editorialRejected,no_player_proximate_anchor_rejected:noProximityRejected,no_canonical_material_category_rejected:noCanonicalRejected};report.position_counts=positionCounts;report.quality_policy='TIGHT PLAYER-LOCAL CATEGORY BINDING; A CATEGORY SURVIVES ONLY WHEN ITS OWN TRIGGER OCCURS IN THE PLAYER-CENTERED WINDOW; NEIGHBORING ROUNDUP BULLETS CANNOT SUPPLY INJURY, TRANSACTION, ROLE OR COACH SIGNALS';transition.retroactive_camp_backfill={...(transition.retroactive_camp_backfill||{}),counts:report.counts,position_counts:positionCounts,quality_policy:report.quality_policy};
+for(const tr of transition.rows||[]){tr.development_evidence=(tr.development_evidence||[]).filter(e=>e.retroactive_camp_evidence!==true||keepKeys.has(eventKey(e))).map(e=>{if(e.retroactive_camp_evidence===true){const rr=(report.rows||[]).find(x=>x.player===tr.player);const keptEvent=rr?.evidence?.find(x=>eventKey(x)===eventKey(e));if(keptEvent)return{...e,categories:keptEvent.categories,matched_context:keptEvent.matched_context,quality_gate:keptEvent.quality_gate};}return e;});const rr=(report.rows||[]).find(x=>x.player===tr.player);if(rr)tr.retroactive_camp_audit={...(tr.retroactive_camp_audit||{}),status:rr.status,evidence_count:rr.evidence_count,quality_gate:'PLAYER_SECTION_LOCAL_CATEGORY_BINDING'};}
+report.counts={...(report.counts||{}),evidence_found:evidenceFound,source_checked_no_material_evidence:checkedNo,source_coverage_gap:gaps,evidence_added:kept,quality_rejected:rejected,editorial_or_fantasy_rejected:editorialRejected,no_player_proximate_anchor_rejected:noProximityRejected,no_canonical_material_category_rejected:noCanonicalRejected};report.position_counts=positionCounts;report.quality_policy='PLAYER-SECTION LOCAL CATEGORY BINDING; ROUNDUP SECTION HEADERS SUCH AS INJURIES, SIGNINGS, TRANSACTIONS, WAIVERS, CUTS AND RELEASES ARE HARD BOUNDARIES; A MATERIAL CATEGORY SURVIVES ONLY WHEN THE PLAYER AND ITS TRIGGER OCCUR INSIDE THE SAME LOCAL SECTION';transition.retroactive_camp_backfill={...(transition.retroactive_camp_backfill||{}),counts:report.counts,position_counts:positionCounts,quality_policy:report.quality_policy};
 write('guardrails/retroactive-camp-backfill-report.json',report);write('analysis/transition-intelligence-current.json',transition);console.log(JSON.stringify({result:gaps?'PARTIAL_SOURCE_GAPS':'PASS',kept,rejected,editorialRejected,noProximityRejected,noCanonicalRejected,evidenceFound,checkedNo,gaps,positionCounts},null,2));
