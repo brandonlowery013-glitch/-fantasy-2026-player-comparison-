@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'scripts/run-post-adjudication-cross-board-qa.mjs'
+      - 'scripts/repair-post-adjudication-cross-board-sync.mjs'
       - '.github/workflows/post-adjudication-cross-board-qa.yml'
       - 'players*.json'
       - 'MODEL_SOURCE_OF_TRUTH.json'
@@ -15,18 +16,34 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   cross-board-qa:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Repair deterministic post-adjudication sync drift
+        run: node scripts/repair-post-adjudication-cross-board-sync.mjs
       - name: Run post-adjudication cross-board synchronization QA
         run: node scripts/run-post-adjudication-cross-board-qa.mjs
+      - name: Commit deterministic synchronization repairs
+        if: github.event_name == 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lockedRanks2026.json index-backup.html
+          if git diff --cached --quiet; then
+            echo 'No synchronization repair commit required.'
+            exit 0
+          fi
+          git commit -m "Synchronize post-adjudication locked ranks and runtime context"
+          git push origin HEAD:${GITHUB_HEAD_REF}
       - name: Upload QA report
         if: always()
         uses: actions/upload-artifact@v4
