@@ -11,6 +11,7 @@ on:
       - 'scripts/normalize-nfl-article-bodies.mjs'
       - 'scripts/filter-live-review-materiality.mjs'
       - 'scripts/build-transition-intelligence-review.mjs'
+      - 'scripts/enrich-transition-from-unified-evidence.mjs'
       - 'scripts/integrate-transition-intelligence.mjs'
       - 'scripts/triage-untracked-candidates.mjs'
       - 'scripts/stage-admission-requests.mjs'
@@ -31,6 +32,7 @@ on:
       - 'scripts/normalize-nfl-article-bodies.mjs'
       - 'scripts/filter-live-review-materiality.mjs'
       - 'scripts/build-transition-intelligence-review.mjs'
+      - 'scripts/enrich-transition-from-unified-evidence.mjs'
       - 'scripts/integrate-transition-intelligence.mjs'
       - 'scripts/triage-untracked-candidates.mjs'
       - 'scripts/stage-admission-requests.mjs'
@@ -72,6 +74,7 @@ jobs:
           TRANSITION_LOOKBACK_START: '2026-04-01T00:00:00Z'
         run: |
           node scripts/build-transition-intelligence-review.mjs
+          node scripts/enrich-transition-from-unified-evidence.mjs
           node scripts/integrate-transition-intelligence.mjs
           node - <<'NODE'
           const fs=require('fs');
