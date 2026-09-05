@@ -1,0 +1,56 @@
+name: Post-Repair Transition Adjudication
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/build-post-repair-transition-adjudication.mjs'
+      - 'analysis/post-repair-transition-clear-no-change-2026-09-05.json'
+      - '.github/workflows/post-repair-transition-adjudication.yml'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'players*.json'
+      - 'analysis/material-hold-canonical-apply-input-2026-09-05.json'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  adjudicate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Hydrate latest repaired transition review
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/transition-intelligence-backfill.yml/runs?status=success&per_page=20" --jq '.workflow_runs[] | .id' | head -n 1)"
+          test -n "$run_id"
+          artifact_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts" --jq '.artifacts[] | select(.name=="full-universe-transition-intelligence" and .expired==false) | .id' | head -n 1)"
+          test -n "$artifact_id"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/transition.zip
+          rm -rf /tmp/transition && mkdir -p /tmp/transition
+          unzip -q /tmp/transition.zip -d /tmp/transition
+          test -f /tmp/transition/guardrails/current-football-review.json
+          mkdir -p guardrails
+          cp /tmp/transition/guardrails/current-football-review.json guardrails/current-football-review.json
+      - name: Build complete post-repair adjudication
+        run: node scripts/build-post-repair-transition-adjudication.mjs
+      - name: Prove audit is non-mutating
+        run: |
+          if ! git diff --quiet -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json; then
+            echo 'Post-repair adjudication illegally mutated canonical files.'
+            git diff -- players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json
+            exit 1
+          fi
+      - name: Upload adjudication artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-repair-transition-adjudication
+          path: |
+            analysis/post-repair-transition-adjudication-current.json
+            analysis/post-repair-transition-adjudication-current.md
+          if-no-files-found: error
