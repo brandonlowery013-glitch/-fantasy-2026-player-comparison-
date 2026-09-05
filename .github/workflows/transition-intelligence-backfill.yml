@@ -5,11 +5,13 @@ on:
   pull_request:
     paths:
       - 'scripts/build-transition-intelligence-review.mjs'
+      - 'scripts/enrich-transition-from-unified-evidence.mjs'
       - '.github/workflows/transition-intelligence-backfill.yml'
   push:
     branches: [main]
     paths:
       - 'scripts/build-transition-intelligence-review.mjs'
+      - 'scripts/enrich-transition-from-unified-evidence.mjs'
       - '.github/workflows/transition-intelligence-backfill.yml'
   schedule:
     - cron: '15 13 * 4-9 1,4'
@@ -32,11 +34,13 @@ jobs:
           node scripts/build-live-full-universe-review-v2.mjs
           node scripts/normalize-nfl-article-bodies.mjs
           node scripts/filter-live-review-materiality.mjs
-      - name: Backfill full-universe transition intelligence
+      - name: Backfill and enrich full-universe transition intelligence
         env:
           TRANSITION_LOOKBACK_START: '2026-04-01T00:00:00Z'
-        run: node scripts/build-transition-intelligence-review.mjs
-      - name: Validate full-universe transition coverage
+        run: |
+          node scripts/build-transition-intelligence-review.mjs
+          node scripts/enrich-transition-from-unified-evidence.mjs
+      - name: Validate full-universe transition coverage and evidence quality
         run: |
           node - <<'NODE'
           const fs=require('fs');
@@ -50,7 +54,10 @@ jobs:
           if(missing.length) throw new Error(`Players missing proactive transition review: ${missing.map(x=>x.player).join(', ')}`);
           const illegal=(report.rows||[]).filter(x=>!['EVIDENCE_FOUND','REVIEWED_NO_EVIDENCE'].includes(x.transition_signal));
           if(illegal.length) throw new Error(`Invalid transition status: ${illegal.map(x=>x.player).join(', ')}`);
-          console.log(JSON.stringify({result:'PASS',coverage:expected,counts:report.counts},null,2));
+          const evidenceFound=(report.rows||[]).filter(x=>x.transition_signal==='EVIDENCE_FOUND').length;
+          const recoveryFound=(report.rows||[]).filter(x=>Number(x.prior_season_injury_recovery_evidence_count)>0).length;
+          if(evidenceFound===0) throw new Error('False-green blocked: full-universe transition sweep produced zero evidence after historical + unified-evidence enrichment');
+          console.log(JSON.stringify({result:'PASS',coverage:expected,evidence_found:evidenceFound,prior_season_injury_recovery_players:recoveryFound,counts:report.counts},null,2));
           NODE
       - name: Upload transition intelligence evidence
         if: always()
