@@ -14,7 +14,7 @@ const teamMap={'Arizona Cardinals':'ARI','Atlanta Falcons':'ATL','Baltimore Rave
 const teamWords={ARI:['arizona','cardinals'],ATL:['atlanta','falcons'],BAL:['baltimore','ravens'],BUF:['buffalo','bills'],CAR:['carolina','panthers'],CHI:['chicago','bears'],CIN:['cincinnati','bengals'],CLE:['cleveland','browns'],DAL:['dallas','cowboys'],DEN:['denver','broncos'],DET:['detroit','lions'],GB:['green bay','packers'],HOU:['houston','texans'],IND:['indianapolis','colts'],JAX:['jacksonville','jaguars','jags'],KC:['kansas city','chiefs'],LV:['las vegas','raiders'],LAC:['los angeles chargers','chargers'],LA:['los angeles rams','rams'],MIA:['miami','dolphins'],MIN:['minnesota','vikings'],NE:['new england','patriots'],NO:['new orleans','saints'],NYG:['new york giants','giants'],NYJ:['new york jets','jets'],PHI:['philadelphia','eagles'],PIT:['pittsburgh','steelers'],SF:['san francisco','49ers','niners'],SEA:['seattle','seahawks'],TB:['tampa bay','buccaneers','bucs'],TEN:['tennessee','titans'],WAS:['washington','commanders']};
 const norm=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/\b(jr|sr|ii|iii|iv)\b/g,'').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim();
 const explicitTransitionRe=/\b(new|first year|new look|overhaul|revamp|install|installation|transition|changed|change|different)\b.{0,120}\b(offense|offensive coordinator|oc|play caller|playcaller|scheme|system|quarterback|qb)\b|\b(new offensive coordinator|new oc|new play caller|new playcaller|new offense|new scheme|new system|quarterback competition|qb competition|named .* starting quarterback|named .* starter|starting quarterback|new starting quarterback)\b/i;
-const qbTransitionRe=/\b(quarterback|qb)\b.{0,90}\b(traded|trade|signed|signing|released|departure|departed|acquired|named|starter|starting|competition)\b|\b(traded|trade|signed|signing|released|departure|departed|acquired|named|starter|starting|competition)\b.{0,90}\b(quarterback|qb)\b/i;
+const qbTransitionRe=/\b(quarterback|qb)\s+(competition|battle)\b|\b(named|declared|announced)\b.{0,100}\b(starting quarterback|starting qb|qb1|starter)\b|\b(starting quarterback|starting qb|qb1)\b.{0,100}\b(traded|trade|signed|signing|released|departure|departed|acquired|changed|change|new)\b|\b(traded|trade|signed|signing|released|departure|departed|acquired|changed|change|new)\b.{0,100}\b(starting quarterback|starting qb|qb1)\b/i;
 const skillPositions=new Set(['QB','RB','WR','TE']);
 const foundationCats=new Set(['scheme_install','adaptation']);
 const trajectoryCats=new Set(['scheme_install','adaptation','teammate_environment','role_usage','competition','chemistry']);
@@ -45,6 +45,10 @@ function regressionTests(){
   for(const x of fakeRows)if(boundToCanonicalTeam(x,x.e).ok)throw new Error(`CLUSTER_BINDING_REGRESSION_FAILED: ${x.player}`);
   const positive={player:'Alec Pierce',team:'IND',e:{team:'IND',team_context_only:true,headline:'Transaction: Activated WR Alec Pierce from the PUP list.',description:'Activated WR Alec Pierce.'}};
   if(!boundToCanonicalTeam(positive,positive.e).ok)throw new Error('CLUSTER_BINDING_POSITIVE_CONTROL_FAILED');
+  const backupAcquisition='Transaction acquired a 2028 sixth round pick from Miami in exchange for QB Kyle McCord and placed RB Josh Jacobs on the commissioner exempt list';
+  if(qbTransitionRe.test(backupAcquisition)||explicitTransitionRe.test(backupAcquisition))throw new Error('QB_TRANSITION_REGRESSION: generic backup QB transaction triggered team-wide transition');
+  const starterChange='The team named Example Player its starting quarterback after a quarterback competition';
+  if(!qbTransitionRe.test(starterChange)&&!explicitTransitionRe.test(starterChange))throw new Error('QB_TRANSITION_POSITIVE_CONTROL_FAILED');
 }
 regressionTests();
 const evidenceByTeam=new Map(),rejected=[];
@@ -66,7 +70,7 @@ for(const [team,items] of evidenceByTeam){
   const qualifies=explicit.length>0||corroborated||denseTrajectory;
   trajectoryDiagnostics.push({team,evidence_documents:items.length,players_represented:playersSeen.size,categories:[...cats],explicit_trigger_documents:explicit.length,has_scheme_or_adaptation_foundation:hasFoundation,corroborated,dense_trajectory:denseTrajectory,qualifies});
   if(!qualifies)continue;
-  const selected=(explicit.length?explicit:items).slice(0,10).map(x=>({...x.evidence,team,cluster_trigger:true,team_context_only:true,direct_player_evidence:false,canonical_binding_basis:x.binding_basis,cluster_trigger_basis:explicit.length?'EXPLICIT_SCHEME_OR_QB_TRANSITION':'CORROBORATED_MULTI_PLAYER_TEAM_TRAJECTORY'}));
+  const selected=(explicit.length?explicit:items).slice(0,10).map(x=>({...x.evidence,team,cluster_trigger:true,team_context_only:true,direct_player_evidence:false,canonical_binding_basis:x.binding_basis,cluster_trigger_basis:explicit.length?'EXPLICIT_SCHEME_OR_STARTING_QB_TRANSITION':'CORROBORATED_MULTI_PLAYER_TEAM_TRAJECTORY'}));
   triggersByTeam.set(team,selected);
 }
 const clusterRows=[];
@@ -78,14 +82,14 @@ for(const p of players){
   const injected=triggers.filter(e=>!existing.has(e.url||`${e.source}|${e.headline}|${e.description}`)).slice(0,10);
   row.development_evidence=[...(row.development_evidence||[]),...injected].slice(0,50);row.team_context_count=(row.team_context_count||0)+injected.length;
   row.categories_covered=[...new Set([...(row.categories_covered||[]),'offensive_transition_cluster'])];row.transition_signal='EVIDENCE_FOUND';
-  row.offensive_transition_cluster={required:true,team,trigger_count:triggers.length,trigger_bases:[...new Set(triggers.map(x=>x.cluster_trigger_basis))],rule:'ONLY CANONICALLY BOUND LOCAL EVIDENCE; EXPLICIT SCHEME/QB CHANGE OR CORROBORATED SCHEME/ADAPTATION TRAJECTORY FORCES TRACKED QB_RB_WR_TE REVIEW'};
+  row.offensive_transition_cluster={required:true,team,trigger_count:triggers.length,trigger_bases:[...new Set(triggers.map(x=>x.cluster_trigger_basis))],rule:'ONLY CANONICALLY BOUND LOCAL EVIDENCE; EXPLICIT SCHEME/STARTING-QB CHANGE OR CORROBORATED SCHEME/ADAPTATION TRAJECTORY FORCES TRACKED QB_RB_WR_TE REVIEW'};
   led.transition_intelligence={...(led.transition_intelligence||{}),team_context_count:row.team_context_count,categories_covered:row.categories_covered,transition_signal:row.transition_signal,evidence:row.development_evidence,offensive_transition_cluster:row.offensive_transition_cluster};
   clusterRows.push({player:p.n,pos:p.p,team,trigger_count:triggers.length});
 }
 const requiredClusterPlayers=players.filter(p=>skillPositions.has(String(p.p||'').toUpperCase())&&triggersByTeam.has(teamMap[p.t])).map(p=>p.n),covered=new Set(clusterRows.map(x=>x.player)),missing=requiredClusterPlayers.filter(n=>!covered.has(n));
-report.schema_version='1.4.0';report.counts={...(report.counts||{}),offensive_transition_cluster_players:clusterRows.length,offensive_transition_teams:triggersByTeam.size,rejected_transition_evidence:rejected.length};
-report.offensive_transition_cluster={mandatory:true,team_count:triggersByTeam.size,player_count:clusterRows.length,trigger_policy:'CANONICAL LOCAL BINDING + EXPLICIT SCHEME/QB CHANGE OR CORROBORATED SCHEME/ADAPTATION TRAJECTORY',binding_regression_tests:true,rejected_evidence_count:rejected.length,rejected_evidence:rejected.slice(0,100),trajectory_diagnostics:trajectoryDiagnostics,teams:[...triggersByTeam.entries()].map(([team,evidence])=>({team,trigger_count:evidence.length,trigger_bases:[...new Set(evidence.map(x=>x.cluster_trigger_basis))],evidence:evidence.slice(0,10)})),rows:clusterRows};
-ledger.transition_intelligence_schema={...(ledger.transition_intelligence_schema||{}),version:'1.4.0',offensive_transition_cluster_mandatory:true,canonical_local_binding_required:true,cluster_rule:'EXPLICIT SCHEME/QB CHANGE OR CORROBORATED SCHEME/ADAPTATION TRAJECTORY FORCES TRACKED QB_RB_WR_TE REVIEW'};
+report.schema_version='1.5.0';report.counts={...(report.counts||{}),offensive_transition_cluster_players:clusterRows.length,offensive_transition_teams:triggersByTeam.size,rejected_transition_evidence:rejected.length};
+report.offensive_transition_cluster={mandatory:true,team_count:triggersByTeam.size,player_count:clusterRows.length,trigger_policy:'CANONICAL LOCAL BINDING + EXPLICIT SCHEME/STARTING-QB CHANGE OR CORROBORATED SCHEME/ADAPTATION TRAJECTORY',binding_regression_tests:true,qb_transition_regression_tests:true,rejected_evidence_count:rejected.length,rejected_evidence:rejected.slice(0,100),trajectory_diagnostics:trajectoryDiagnostics,teams:[...triggersByTeam.entries()].map(([team,evidence])=>({team,trigger_count:evidence.length,trigger_bases:[...new Set(evidence.map(x=>x.cluster_trigger_basis))],evidence:evidence.slice(0,10)})),rows:clusterRows};
+ledger.transition_intelligence_schema={...(ledger.transition_intelligence_schema||{}),version:'1.5.0',offensive_transition_cluster_mandatory:true,canonical_local_binding_required:true,starting_qb_transition_required:true,cluster_rule:'EXPLICIT SCHEME/STARTING-QB CHANGE OR CORROBORATED SCHEME/ADAPTATION TRAJECTORY FORCES TRACKED QB_RB_WR_TE REVIEW'};
 write('analysis/transition-intelligence-current.json',report);write('guardrails/current-football-review.json',ledger);
 if(missing.length)throw new Error(`TRANSITION_CLUSTER_MISSING_TRACKED_PLAYERS: ${missing.join(', ')}`);
 if((report.offensive_transition_cluster.rejected_evidence||[]).some(x=>!x.reason))throw new Error('Rejected transition evidence missing reason');
