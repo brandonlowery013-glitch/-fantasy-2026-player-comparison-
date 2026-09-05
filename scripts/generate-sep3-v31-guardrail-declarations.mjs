@@ -1,3 +1,4 @@
+// PR-scoped guardrail declarations: prefer the evidence-gated Sep. 5 material-hold payload when present; retain Sep. 3 compatibility otherwise.
 import fs from 'node:fs';
 const R=p=>JSON.parse(fs.readFileSync(p,'utf8')),W=(p,x)=>fs.writeFileSync(p,JSON.stringify(x,null,2)+'\n');
 const src=R('MODEL_SOURCE_OF_TRUTH.json'),patch=R(src.current_update_layer);
