@@ -8,6 +8,7 @@ on:
       - 'data/market/draft-edge-opportunity-screen-166.json'
       - 'data/market/market-value-board-2026.json'
       - 'data/sources/season-phase-2026.json'
+      - 'scripts/sync-derived-market-ranks-2026.mjs'
       - 'scripts/build-market-value-board-2026.mjs'
       - 'scripts/validate-cross-board-lock-2026.mjs'
       - '.github/workflows/step4-cross-board-lock.yml'
@@ -19,6 +20,7 @@ on:
       - 'data/market/draft-edge-opportunity-screen-166.json'
       - 'data/market/market-value-board-2026.json'
       - 'data/sources/season-phase-2026.json'
+      - 'scripts/sync-derived-market-ranks-2026.mjs'
       - 'scripts/build-market-value-board-2026.mjs'
       - 'scripts/validate-cross-board-lock-2026.mjs'
       - '.github/workflows/step4-cross-board-lock.yml'
@@ -28,11 +30,30 @@ jobs:
   cross-board-lock:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Synchronize Step 2 ranks from canonical board
+        run: node scripts/sync-derived-market-ranks-2026.mjs
+      - name: Rebuild Step 3 market board from synchronized Step 2
+        run: node scripts/build-market-value-board-2026.mjs
+      - name: Commit derived synchronization when needed
+        if: github.event_name == 'pull_request'
+        run: |
+          if git diff --quiet -- data/market/draft-edge-opportunity-screen-166.json data/market/market-value-board-2026.json; then
+            echo 'Derived market layers already synchronized.'
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add data/market/draft-edge-opportunity-screen-166.json data/market/market-value-board-2026.json
+          git commit -m 'Synchronize derived market ranks with canonical board'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
       - name: Validate 166-player cross-board lock
         run: node scripts/validate-cross-board-lock-2026.mjs
