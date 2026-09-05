@@ -10,7 +10,6 @@ const textNorm=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300
 async function getHtml(url){const r=await fetch(url,{headers:{'user-agent':'Mozilla/5.0 (compatible; Fantasy2026Review/2.2)','accept':'text/html,application/xhtml+xml','accept-language':'en-US,en;q=0.9'}});if(!r.ok)throw new Error(`${url} -> ${r.status}`);return r.text();}
 function decodeJsonString(raw){try{return JSON.parse(`"${raw.replace(/"/g,'\\"')}"`);}catch{return raw.replace(/\\n/g,' ').replace(/\\r/g,' ').replace(/\\t/g,' ').replace(/\\u0026/g,'&').replace(/\\u0027/g,"'").replace(/\\u0022/g,'"').replace(/\\\//g,'/');}}
 function extractArticleBody(html){
-  // Prefer valid JSON-LD Article/NewsArticle nodes.
   for(const m of html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)){
     try{
       const data=JSON.parse(m[1]);
@@ -19,7 +18,6 @@ function extractArticleBody(html){
       while(stack.length){const x=stack.shift();if(!x||typeof x!=='object')continue;if(typeof x.articleBody==='string'&&x.articleBody.trim())return x.articleBody;if(Array.isArray(x['@graph']))stack.push(...x['@graph']);}
     }catch{}
   }
-  // Fallback for serialized application state that exposes articleBody as a JSON string.
   const m=html.match(/"articleBody"\s*:\s*"((?:\\.|[^"\\])*)"/i);
   return m?decodeJsonString(m[1]):null;
 }
@@ -38,3 +36,9 @@ ledger.source_limitations=[...(ledger.source_limitations||[]).filter(x=>!String(
 fs.writeFileSync(ledgerPath,JSON.stringify(ledger,null,2)+'\n');
 if(fs.existsSync(summaryPath)){const summary=JSON.parse(fs.readFileSync(summaryPath,'utf8'));summary.source_quality=ledger.source_quality;summary.source_limitations=ledger.source_limitations;fs.writeFileSync(summaryPath,JSON.stringify(summary,null,2)+'\n');}
 console.log(JSON.stringify({result:'PASS',nfl_urls:urls.length,structured_article_bodies:structured,headline_description_only:headerOnly,fetch_failures:failures.length},null,2));
+
+// Permanent proactive preseason/offseason transition review. This executes inside the already-
+// recognized full-universe workflow so every active player is reviewed for scheme fit, role
+// evolution, chemistry, competition, readiness and teammate/offensive-environment changes even
+// when there is no breaking-news trigger.
+await import('./build-transition-intelligence-review.mjs');
