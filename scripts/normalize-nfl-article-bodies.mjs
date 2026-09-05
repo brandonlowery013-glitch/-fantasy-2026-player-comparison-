@@ -44,3 +44,7 @@ console.log(JSON.stringify({result:'PASS',nfl_urls:urls.length,structured_articl
 await import('./build-transition-intelligence-review.mjs');
 // Major offensive team changes force the tracked QB/RB/WR/TE cluster into the same evidence stack.
 await import('./enforce-offensive-transition-clusters.mjs');
+// Preserve the entire offseason/camp history in chronological order and synthesize the current
+// state from how the evidence develops. Newer material evidence may supersede older state, but
+// older reports remain explanatory context instead of being discarded.
+await import('./build-chronological-transition-context.mjs');
