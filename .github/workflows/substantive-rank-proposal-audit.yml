@@ -32,7 +32,7 @@ jobs:
         run: node scripts/test-substantive-football-context-parser.mjs
       - name: Test substantive recalculation outcomes
         run: node scripts/build-substantive-component-recalculation.mjs --self-test
-      - name: Hydrate latest verified live football review when ledger is absent
+      - name: Hydrate repaired verified football review when ledger is absent
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -40,16 +40,15 @@ jobs:
             echo 'Using repository current-football-review ledger.'
             exit 0
           fi
-          run_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/live-full-universe-football-review.yml/runs?status=success&per_page=20" --jq '.workflow_runs[] | .id' 2>/dev/null | head -n 1 || true)"
-          test -n "$run_id"
-          artifact_id="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/artifacts" --jq '.artifacts[] | select(.name=="live-full-universe-football-review" and .expired==false) | .id' 2>/dev/null | head -n 1 || true)"
-          test -n "$artifact_id"
-          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/live-review.zip
-          rm -rf /tmp/live-review && mkdir -p /tmp/live-review
-          unzip -q /tmp/live-review.zip -d /tmp/live-review
-          test -f /tmp/live-review/current-football-review.json
+          # Temporary adjudication-run pin: this is the green repaired transition-evidence
+          # artifact from Full Universe Transition Intelligence run 33974927625.
+          artifact_id='9972095452'
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${artifact_id}/zip" > /tmp/repaired-transition.zip
+          rm -rf /tmp/repaired-transition && mkdir -p /tmp/repaired-transition
+          unzip -q /tmp/repaired-transition.zip -d /tmp/repaired-transition
+          test -f /tmp/repaired-transition/guardrails/current-football-review.json
           mkdir -p guardrails
-          cp /tmp/live-review/current-football-review.json guardrails/current-football-review.json
+          cp /tmp/repaired-transition/guardrails/current-football-review.json guardrails/current-football-review.json
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
@@ -58,7 +57,7 @@ jobs:
           if(review.active_player_shards!==Number(src.runtime_player_shards)) throw new Error(`Live review shard count ${review.active_player_shards} != source of truth ${src.runtime_player_shards}`);
           if(review.review_scope!=='FULL_ACTIVE_UNIVERSE_PLUS_CONNECTED') throw new Error(`Unexpected live review scope ${review.review_scope}`);
           if((review.players||[]).length!==Number(src.active_player_model)) throw new Error('Live review does not contain every active player');
-          console.log(`Hydrated verified live review: ${review.active_player_count} players, completed ${review.sweep_completed_at}`);
+          console.log(`Hydrated repaired verified review: ${review.active_player_count} players, completed ${review.sweep_completed_at}`);
           NODE
       - name: Refresh season-long substantive football evidence
         run: |
@@ -103,4 +102,4 @@ jobs:
             data/probability/substantive-football-context-inputs-2026.json
           if-no-files-found: warn
 
-# Manual no-op trigger for the gated 166-player adjudication audit, 2026-09-05.
+# Temporary trigger/pin exists only on PR #189; do not merge.
