@@ -1,0 +1,85 @@
+name: Full Overall Backwards Audit
+
+on:
+  pull_request:
+    paths:
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'current162patch-2026-08-24.json'
+      - 'overall-rank-review-names.json'
+      - 'scripts/build-full-overall-backwards-audit.mjs'
+      - 'scripts/build-live-full-universe-review-v2.mjs'
+      - 'scripts/build-transition-intelligence-review.mjs'
+      - 'scripts/build-retroactive-camp-backfill.mjs'
+      - '.github/workflows/full-overall-backwards-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backwards-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate canonical 166-player source
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const c=JSON.parse(fs.readFileSync(s.current_update_layer,'utf8'));
+          const p=Object.values(c.players||{});
+          if(Number(s.active_player_model)!==166||p.length!==166)throw new Error('canonical universe is not 166');
+          const ranks=p.map(x=>Number(x.o)).sort((a,b)=>a-b);
+          if(ranks.some((r,i)=>r!==i+1))throw new Error('Overall ranks not unique 1..166');
+          console.log('CANONICAL 166 PASS');
+          NODE
+      - name: Build current football and retroactive transition evidence
+        env:
+          OFFICIAL_TEAM_SITEMAP_START: '2026-04-01T00:00:00Z'
+          OFFICIAL_TEAM_SITEMAP_END: '2026-09-04T23:59:59Z'
+          OFFICIAL_TEAM_SITEMAP_MAX_ARTICLES: '160'
+          OFFICIAL_TEAM_SITEMAP_MAX_CHILDREN: '48'
+          PLAYER_NEWS_RSS_START: '2026-04-01T00:00:00Z'
+          PLAYER_NEWS_RSS_END: '2026-09-04T23:59:59Z'
+          PLAYER_NEWS_RSS_MAX: '60'
+          TRANSITION_LOOKBACK_START: '2026-04-01T00:00:00Z'
+        run: |
+          node scripts/validate-season-phase-transition.mjs
+          node scripts/build-live-full-universe-review-v2.mjs
+          node scripts/normalize-nfl-article-bodies.mjs
+          node scripts/normalize-tracked-signal-teams.mjs
+          node scripts/hydrate-current-football-review-positions.mjs
+          node scripts/collect-official-team-sitemaps.mjs
+          node scripts/collect-player-news-rss.mjs
+          node scripts/filter-live-review-materiality.mjs
+          node scripts/build-transition-intelligence-review.mjs
+          node scripts/enrich-transition-from-unified-evidence.mjs
+          node scripts/run-position-specific-transition-integration.mjs
+      - name: Build 166 to 1 placement audit
+        run: node scripts/build-full-overall-backwards-audit.mjs
+      - name: Enforce complete backwards coverage
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const r=JSON.parse(fs.readFileSync('analysis/full-overall-backwards-audit-current.json','utf8'));
+          if(r.universe!==166||r.rows.length!==166||r.rows[0].overall_rank!==166||r.rows.at(-1).overall_rank!==1)throw new Error('backwards audit coverage failed');
+          if(r.rows.some((x,i)=>x.audit_sequence!==i+1))throw new Error('audit sequence discontinuity');
+          if(r.rows.some(x=>!x.placement_verdict))throw new Error('player missing placement verdict');
+          console.log(JSON.stringify({status:'PASS',coverage:r.coverage,counts:r.counts,directions:r.directions},null,2));
+          NODE
+      - name: Upload full backwards audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-overall-backwards-audit
+          path: |
+            analysis/full-overall-backwards-audit-current.json
+            analysis/full-overall-backwards-audit-current.md
+            guardrails/retroactive-camp-backfill-report.json
+            analysis/transition-intelligence-current.json
+          if-no-files-found: error
