@@ -36,3 +36,8 @@ ledger.source_limitations=[...(ledger.source_limitations||[]).filter(x=>!String(
 fs.writeFileSync(ledgerPath,JSON.stringify(ledger,null,2)+'\n');
 if(fs.existsSync(summaryPath)){const summary=JSON.parse(fs.readFileSync(summaryPath,'utf8'));summary.source_quality=ledger.source_quality;summary.source_limitations=ledger.source_limitations;fs.writeFileSync(summaryPath,JSON.stringify(summary,null,2)+'\n');}
 console.log(JSON.stringify({result:'PASS',nfl_urls:urls.length,structured_article_bodies:structured,headline_description_only:headerOnly,fetch_failures:failures.length},null,2));
+
+// Team-bound evidence is ineligible until every resolvable runtime player identity is checked
+// against a current independent roster/depth source. This is a fail-closed guard, not a source
+// that silently rewrites canonical model files.
+await import('./validate-canonical-team-identity.mjs');
