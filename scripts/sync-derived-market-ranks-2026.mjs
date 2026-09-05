@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 
+// Idempotent companion-layer synchronization. Canonical ranks remain authoritative.
 const read = p => JSON.parse(fs.readFileSync(p, 'utf8'));
 const write = (p, x) => fs.writeFileSync(p, JSON.stringify(x, null, 2) + '\n');
 const fail = m => { throw new Error(`SYNC_DERIVED_MARKET_RANKS: ${m}`); };
