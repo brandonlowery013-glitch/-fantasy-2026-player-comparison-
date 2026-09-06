@@ -36,9 +36,9 @@ const templates={
 const rows=[];
 for(const p of players){
   const s=byScout.get(p.n);if(!s)throw new Error(`missing scouting ${p.n}`);
-  const thesis=first(s,['scouting_thesis','thesis','current_thesis','football_case','scouting_outlook','archetype'])||first(s,['summary','primary_case'])||`${p.n} enters 2026 with the saved canonical role and projection baseline.`;
-  const classification=first(s,['historical_classification','classification','career_direction'])||null;
-  const risk=first(s,['primary_risk','risk','main_risk','risks','primary_constraint'])||null;
+  const thesis=first(s,['s','scouting_thesis','thesis','current_thesis','football_case','scouting_outlook','archetype'])||first(s,['summary','primary_case'])||`${p.n} enters 2026 with the saved canonical role and projection baseline.`;
+  const classification=first(s,['c','historical_classification','classification','career_direction'])||null;
+  const risk=first(s,['r','primary_risk','risk','main_risk','risks','primary_constraint'])||null;
   const blob=txt(`${classification||''} ${thesis||''} ${risk||''}`);
   const connected=names.filter(n=>n!==p.n&&blob.toLowerCase().includes(n.toLowerCase())).slice(0,8);
   const base=templates[p.p]||templates.WR;
@@ -68,9 +68,11 @@ for(const p of players){
     news_policy:'Visible news stays short and current (Yahoo/ESPN style). This storyline is internal scouting context used to interpret whether news/game evidence should affect the model.'
   });
 }
-const out={schema_version:'1.0.0',as_of:new Date().toISOString(),players:166,policy:'The scouting thesis initializes each player season storyline. Incoming evidence must answer a player-specific watch item or represent a material health/role deviation before it can influence model components. Regular-season usage supersedes camp evidence when it resolves the same question.',rows};
+const out={schema_version:'1.0.1',as_of:new Date().toISOString(),players:166,policy:'The scouting thesis initializes each player season storyline. Incoming evidence must answer a player-specific watch item or represent a material health/role deviation before it can influence model components. Regular-season usage supersedes camp evidence when it resolves the same question.',rows};
 W('analysis/player-storyline-state-current.json',out);
 const md=['# Player storyline state — 166-player universe','',`Players: ${rows.length}`,'','| Player | Pos | Storyline type | Starting storyline | Watch |','|---|---|---|---|---|',...rows.map(r=>`| ${r.player} | ${r.position} | ${r.storyline_type} | ${(r.starting_storyline||'').replaceAll('|','/')} | ${r.watch_for.join('; ').replaceAll('|','/')} |`)];
 fs.writeFileSync('analysis/player-storyline-state-current.md',md.join('\n')+'\n');
 if(rows.length!==166||rows.some(r=>!r.starting_storyline||!r.watch_for.length||!r.model_components_to_reconsider.length))throw new Error('storyline completeness');
-console.log(JSON.stringify({result:'PASS',players:rows.length,active_questions:rows.filter(r=>r.storyline_type==='ACTIVE_QUESTION').length,baseline_monitors:rows.filter(r=>r.storyline_type==='BASELINE_MONITOR').length},null,2));
+const fallbackRows=rows.filter(r=>r.starting_storyline===`${r.player} enters 2026 with the saved canonical role and projection baseline.`);
+if(fallbackRows.length)throw new Error(`scouting thesis fallback rows: ${fallbackRows.map(x=>x.player).join(', ')}`);
+console.log(JSON.stringify({result:'PASS',players:rows.length,active_questions:rows.filter(r=>r.storyline_type==='ACTIVE_QUESTION').length,baseline_monitors:rows.filter(r=>r.storyline_type==='BASELINE_MONITOR').length,fallback_storylines:fallbackRows.length},null,2));

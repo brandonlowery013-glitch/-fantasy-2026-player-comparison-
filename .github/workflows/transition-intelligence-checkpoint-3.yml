@@ -1,0 +1,82 @@
+name: Transition Intelligence Checkpoint 3
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/transition-intelligence-checkpoint-3.yml'
+      - 'scripts/build-player-storyline-state.mjs'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  checkpoint-3-player-storyline-state:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Restore immutable checkpoint 2 transition state
+        uses: actions/download-artifact@v4
+        with:
+          name: transition-intelligence-checkpoint-2-transition-state
+          path: checkpoint-2
+          repository: brandonlowery013-glitch/-fantasy-2026-player-comparison-
+          run-id: 34038464427
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Promote checkpoint 2 transition state into workspace
+        run: |
+          TRANSITION_FILE="$(find checkpoint-2 -type f -name 'transition-intelligence-current.json' -print -quit)"
+          test -n "$TRANSITION_FILE"
+          mkdir -p analysis
+          cp "$TRANSITION_FILE" analysis/transition-intelligence-current.json
+      - name: Validate checkpoint 2 input provenance and coverage
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const tr=JSON.parse(fs.readFileSync('analysis/transition-intelligence-current.json','utf8'));
+          const expected=Number(src.active_player_model);
+          if((tr.rows||[]).length!==expected) throw new Error(`Checkpoint 2 transition coverage ${(tr.rows||[]).length}/${expected}`);
+          console.log(JSON.stringify({result:'PASS',players:expected,checkpoint_2_run:34038464427,checkpoint_2_artifact:9990922848,checkpoint_2_digest:'sha256:b1df9a13caecf82185069861a8924973ef7256bd9d658081149106ddd07fd39d'},null,2));
+          NODE
+      - name: Build 166-player storyline scouting state
+        run: node scripts/build-player-storyline-state.mjs
+      - name: Validate recovered scouting thesis wiring
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('analysis/player-storyline-state-current.json','utf8'));
+          if(x.players!==166||(x.rows||[]).length!==166) throw new Error(`Storyline coverage ${(x.rows||[]).length}/166`);
+          const by=new Map(x.rows.map(r=>[r.player,r]));
+          const checks=[
+            ['Bijan Robinson',/market already treats Bijan|elite/i],
+            ['Brian Thomas Jr.',/Jacksonville|Lawrence|rebound|target/i],
+            ['Parker Washington',/passing-game plans|late-season breakout|Jacksonville|target/i]
+          ];
+          for(const [name,re] of checks){
+            const r=by.get(name);
+            if(!r) throw new Error(`Missing storyline sanity player ${name}`);
+            if(!re.test(String(r.starting_storyline||''))) throw new Error(`Recovered scouting thesis not wired for ${name}: ${r.starting_storyline}`);
+          }
+          const fallback=(x.rows||[]).filter(r=>String(r.starting_storyline||'').includes('enters 2026 with the saved canonical role and projection baseline'));
+          if(fallback.length) throw new Error(`Generic fallback storylines present: ${fallback.map(r=>r.player).join(', ')}`);
+          console.log(JSON.stringify({result:'PASS',players:x.rows.length,fallback_storylines:0,sanity_players:checks.map(x=>x[0])},null,2));
+          NODE
+      - name: Upload checkpoint 3 saved storyline state
+        uses: actions/upload-artifact@v4
+        with:
+          name: transition-intelligence-checkpoint-3-player-storyline-state
+          path: |
+            analysis/player-storyline-state-current.json
+            analysis/player-storyline-state-current.md
+            analysis/transition-intelligence-current.json
+          if-no-files-found: error
+          retention-days: 30
