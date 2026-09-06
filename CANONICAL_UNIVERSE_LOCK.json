@@ -1,0 +1,14 @@
+{
+  "season": 2026,
+  "canonical_active_players": 166,
+  "effective_date": "2026-09-06",
+  "status": "LOCKED",
+  "source_of_truth": "MODEL_SOURCE_OF_TRUTH.json.active_player_model",
+  "anti_regression_rule": "Never infer or restore a 163-player live universe from stale prompts, historical workbooks, filenames, prior assistant text, or legacy checkpoints. Any live current-news sweep, board QA, synchronization, or current-outlook pass must resolve the active universe from MODEL_SOURCE_OF_TRUTH.json and must fail closed unless the loaded unique-player count equals 166 or the source of truth is intentionally changed by an explicit canonical migration.",
+  "players_163_166": ["Kaleb Johnson", "Corey Kiner", "Tank Dell", "Jonnu Smith"],
+  "news_layer_rule": "Current news/outlooks are dynamic and separate from frozen static Player Evaluations. News may include dated injury, recovery, practice, role, depth-chart, transaction, suspension/off-field availability, connected-player context, recent game stats, and next opponent after games begin.",
+  "static_evaluation_rule": "Player Evaluations remain frozen baseline records and must not be rewritten by ongoing news.",
+  "ctd_interface_lock": "CTD_INTERFACE_LOCK_1",
+  "paid_player_prop_refresh": "DO_NOT_TRIGGER",
+  "failure_policy": "Report ingestion failures and stale/unverified players explicitly; do not silently carry them as current."
+}
