@@ -1,0 +1,52 @@
+name: Post Overall Audit Quantitative Proposal
+
+on:
+  pull_request:
+    paths:
+      - 'analysis/post-overall-audit-quantitative-input-2026-09-05.json'
+      - 'scripts/build-post-overall-audit-quantitative-proposal.mjs'
+      - '.github/workflows/post-overall-audit-quantitative-proposal.yml'
+      - 'analysis/sep3-v31-canonical-apply-input.json'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'current162patch-2026-08-24.json'
+      - 'players*.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quantify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build read-only 12-player quantitative proposal
+        run: node scripts/build-post-overall-audit-quantitative-proposal.mjs
+      - name: Prove proposal did not mutate canonical state
+        run: |
+          if ! git diff --quiet -- MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json current162patch-2026-08-24.json players*.json; then
+            echo 'Quantitative proposal illegally mutated canonical state.'
+            git diff -- MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json current162patch-2026-08-24.json players*.json
+            exit 1
+          fi
+      - name: Enforce complete quantitative resolution
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const q=JSON.parse(fs.readFileSync('analysis/post-overall-audit-quantitative-proposal-current.json','utf8'));
+          const input=JSON.parse(fs.readFileSync('analysis/post-overall-audit-quantitative-input-2026-09-05.json','utf8'));
+          if(q.universe!==166||q.coverage?.reviewed!==12||q.coverage?.complete!==true) throw Error('coverage gate');
+          if(q.counts?.proposed_component_changes!==input.expected_component_changes||q.counts?.zero_delta_resolutions!==input.expected_zero_delta_resolutions) throw Error('resolution count gate');
+          if(q.counts?.errors!==0||q.errors?.length) throw Error('quantitative errors');
+          if(q.canonical_writes!==false) throw Error('canonical mutation authority');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: post-overall-audit-quantitative-proposal
+          path: |
+            analysis/post-overall-audit-quantitative-proposal-current.json
+            analysis/post-overall-audit-quantitative-proposal-current.md
+          if-no-files-found: error

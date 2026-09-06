@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.1.0",
+  "approval": "USER_APPROVED_QUANTITATIVE_RECALCULATION",
+  "as_of": "2026-09-05",
+  "source_pr": 193,
+  "source_audit_run": 33996221947,
+  "source_audit_artifact": 9978216198,
+  "universe": 166,
+  "policy": "Resolve exactly the current 12 subject-bound component reopens. Reuse established Sep. 3 calibration magnitudes; do not invent a new component scale. De-duplicate evidence already applied canonically. Newer authoritative evidence supersedes stale camp/injury signals. Produce read-only proposed component targets and incremental True-Value score deltas; do not mutate canonical files, Overall/actionable ranks, projections, market labels, ADP/ECR, or fair-value windows.",
+  "expected_reopens": 12,
+  "expected_component_changes": 5,
+  "expected_zero_delta_resolutions": 7,
+  "semantic_validation": {
+    "scope": "ALL_12_ROWS_REVIEWED_TOGETHER",
+    "current_sweep_run": 34000376517,
+    "current_sweep_artifact": 9979365417,
+    "rule": "Validate player ownership, team relationship, chronology and superseding evidence for every reopen before any canonical apply.",
+    "changes_from_prior_proposal": [
+      "Keaton Mitchell changed to zero delta because the claimed Week 1 availability recovery could not be substantiated as a new current signal and the completed current sweep resolved no new material development.",
+      "Jayden Reed changed to zero delta because the early 12-personnel first-team signal was superseded by later preseason usage showing him off the field in the heavier grouping.",
+      "Brian Thomas Jr. changed to zero delta because Jacksonville subsequently reported him full-go with no issues, superseding the shoulder scare.",
+      "Kenneth Walker III changed to zero delta because the swollen-ankle item was explicitly described by Andy Reid as minor and later current-season framing expects a normal/large Week 1 role rather than ongoing readiness restriction."
+    ]
+  },
+  "templates": {
+    "AVAILABILITY_POSITIVE_MINOR": {"a": 0.15, "rl": 0.0825},
+    "AVAILABILITY_NEGATIVE_MINOR": {"a": -0.15, "rl": -0.0825},
+    "ROLE_UP": {"r": 0.24, "pd": 0.195, "ce": 0.135},
+    "ROLE_UP_MINOR": {"r": 0.12, "pd": 0.0975, "ce": 0.0675},
+    "ROLE_DOWN_MINOR_WITH_RELIABILITY": {"r": -0.12, "pd": -0.0975, "ce": -0.0675, "rl": -0.0525},
+    "ROLE_ENV_DOWN_MINOR_WITH_RELIABILITY": {"r": -0.12, "pd": -0.0975, "ce": -0.0675, "rl": -0.0525, "e": -0.09}
+  },
+  "rows": [
+    {
+      "player": "Keaton Mitchell",
+      "direction": "UP",
+      "resolution": "ZERO_DELTA_CONFIRMATION",
+      "reason": "The earlier availability-recovery wording is not strong enough to authorize a new numeric increase after the completed current sweep found no new material development. Preserve the existing calibrated state rather than infer an availability bump."
+    },
+    {
+      "player": "Romeo Doubs",
+      "direction": "DOWN",
+      "template": "ROLE_ENV_DOWN_MINOR_WITH_RELIABILITY",
+      "allowed_components": ["role_volume", "production", "ceiling", "weekly_reliability", "offensive_environment"],
+      "reason": "Official Patriots evidence confirms Doubs signed with New England and that A.J. Brown is the coverage-dictating No. 1 with Doubs slotted as the high-end No. 2. The team-transition relationship is valid; use only the established minor role/environment magnitude."
+    },
+    {
+      "player": "Blake Corum",
+      "direction": "UP",
+      "resolution": "ACCOUNTED_PRIOR_ZERO_DELTA",
+      "prior_reference": {"file": "analysis/sep3-v31-canonical-apply-input.json", "classification": "UP_DEVELOPMENT"},
+      "reason": "The camp-surge/development evidence is the same evidence lane already applied on Sep. 3; do not double-count it."
+    },
+    {
+      "player": "Hunter Henry",
+      "direction": "UP",
+      "resolution": "ZERO_DELTA_CONFIRMATION",
+      "reason": "A contract extension supports roster security but does not establish new routes, targets, snap share, or production volume beyond the current canonical role; quantitative delta remains zero."
+    },
+    {
+      "player": "Jadarian Price",
+      "direction": "UP",
+      "template": "ROLE_UP",
+      "allowed_components": ["role_volume", "production", "ceiling", "weekly_reliability"],
+      "reason": "The Seattle relationship is valid: Kenneth Walker departed, Zach Charbonnet opens on PUP, and multiple current sources project Price for the lead/big-workload role. Apply only the established lead-back role, production and ceiling magnitudes."
+    },
+    {
+      "player": "Jayden Reed",
+      "direction": "UP",
+      "resolution": "ZERO_DELTA_CONFIRMATION",
+      "reason": "The Aug. 2 first-team 12-personnel signal was superseded by later preseason usage in which Reed remained the slot receiver and came off the field in 12 personnel. Do not apply a stale role-up delta."
+    },
+    {
+      "player": "Malik Nabers",
+      "direction": "UP",
+      "template": "AVAILABILITY_POSITIVE_MINOR",
+      "allowed_components": ["availability", "weekly_reliability"],
+      "reason": "Direct late-August/early-September recovery progress and participation in most team reps improve near-term ACL readiness without removing baseline post-ACL risk; use only the established minor availability/reliability recovery magnitude."
+    },
+    {
+      "player": "TreVeyon Henderson",
+      "direction": "DOWN",
+      "template": "AVAILABILITY_NEGATIVE_MINOR",
+      "allowed_components": ["availability", "weekly_reliability"],
+      "reason": "Newest Sep. 5 evidence says Henderson remained out of practice with the ankle issue and has not practiced since Aug. 24; apply the established minor current-injury availability/reliability decrement only."
+    },
+    {
+      "player": "Travis Etienne Jr.",
+      "direction": "UP",
+      "resolution": "ACCOUNTED_PRIOR_ZERO_DELTA",
+      "prior_reference": {"file": "analysis/sep3-v31-canonical-apply-input.json", "classification": "UP"},
+      "reason": "The Kamara-absence item is cross-team contamination and cannot independently support Etienne. The prior Sep. 3 opportunity adjustment is already canonical, so this reopen adds zero and cannot double-count the contaminated lane."
+    },
+    {
+      "player": "Brian Thomas Jr.",
+      "direction": "DOWN",
+      "resolution": "ZERO_DELTA_CONFIRMATION",
+      "reason": "The shoulder scare was superseded by Jaguars coach Liam Coen reporting Thomas full-go with no issues and ready for the opener. Do not carry a stale availability decrement into canonical state."
+    },
+    {
+      "player": "Kenneth Walker III",
+      "direction": "DOWN",
+      "resolution": "ZERO_DELTA_CONFIRMATION",
+      "reason": "The Aug. 26 swollen-ankle report was explicitly described by Andy Reid as minor and expected to resolve; later Week 1 framing expects Walker to shoulder a large role. Do not apply a stale readiness decrement."
+    },
+    {
+      "player": "Jonathan Taylor",
+      "direction": "DOWN",
+      "template": "ROLE_DOWN_MINOR_WITH_RELIABILITY",
+      "allowed_components": ["role_volume", "production", "ceiling", "weekly_reliability"],
+      "reason": "Direct Colts coaching comments repeatedly state an intent to take some workload off Taylor after 323 carries in 2025. The evidence supports only a minor volume adjustment because he still projects as the overwhelming lead back."
+    }
+  ]
+}
