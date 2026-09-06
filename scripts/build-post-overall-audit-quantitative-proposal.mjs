@@ -13,12 +13,12 @@ const inp=R(INPUT),src=R('MODEL_SOURCE_OF_TRUTH.json'),prior=R('analysis/sep3-v3
 if(inp.approval!=='USER_APPROVED_QUANTITATIVE_RECALCULATION')throw Error('approval gate');
 if(inp.universe!==166||inp.universe!==Number(src.active_player_model))throw Error('universe gate');
 if(inp.expected_reopens!==12||inp.rows.length!==12||new Set(inp.rows.map(x=>x.player)).size!==12)throw Error('12-player gate');
+if(!Number.isInteger(inp.expected_component_changes)||!Number.isInteger(inp.expected_zero_delta_resolutions)||inp.expected_component_changes+inp.expected_zero_delta_resolutions!==12)throw Error('resolution expectation gate');
 let players=[];for(let i=0;i<src.runtime_player_shards;i++)players.push(...R(`players${i}.json`));
 if(players.length!==166||new Set(players.map(x=>x.n)).size!==166)throw Error('canonical player coverage');
 for(const p of players)Object.assign(p,patch.players?.[p.n]||{});
 const by=new Map(players.map(x=>[x.n,x]));
 const priorBy=new Map(prior.rows.map(x=>[x.player,x]));
-// Every quantitative magnitude must already exist for that exact component in the Sep. 3 governed calibration input.
 const precedent={};for(const k of Object.keys(weights))precedent[k]=new Set();
 for(const row of prior.rows)for(const[k,v]of Object.entries(row.component_deltas||{}))if(precedent[k])precedent[k].add(rd(Math.abs(+v),6));
 const errors=[];
@@ -54,8 +54,8 @@ for(const x of inp.rows){
   rows.push({player:x.player,direction:x.direction,resolution:'PROPOSE_COMPONENT_CHANGE',template:x.template,reason:x.reason,base,component_deltas:deltas,component_targets:targets,score_delta:scoreDelta,proposed_score:rd(base.score+scoreDelta,6)});
 }
 const changed=rows.filter(x=>x.score_delta!==0),zero=rows.filter(x=>x.score_delta===0);
-if(changed.length!==9||zero.length!==3)errors.push(`expected 9 changed / 3 zero, got ${changed.length}/${zero.length}`);
-const report={schema_version:'1.0.0',generated_at:new Date().toISOString(),as_of:inp.as_of,source_pr:inp.source_pr,source_audit_run:inp.source_audit_run,source_audit_artifact:inp.source_audit_artifact,universe:166,authority:'READ_ONLY_QUANTITATIVE_PROPOSAL_REQUIRES_SEPARATE_CANONICAL_APPLY',canonical_writes:false,policy:inp.policy,coverage:{reviewed:rows.length,expected:12,complete:rows.length===12},counts:{proposed_component_changes:changed.length,zero_delta_resolutions:zero.length,errors:errors.length},errors,rows};
+if(changed.length!==inp.expected_component_changes||zero.length!==inp.expected_zero_delta_resolutions)errors.push(`expected ${inp.expected_component_changes} changed / ${inp.expected_zero_delta_resolutions} zero, got ${changed.length}/${zero.length}`);
+const report={schema_version:'1.1.0',generated_at:new Date().toISOString(),as_of:inp.as_of,source_pr:inp.source_pr,source_audit_run:inp.source_audit_run,source_audit_artifact:inp.source_audit_artifact,universe:166,authority:'READ_ONLY_QUANTITATIVE_PROPOSAL_REQUIRES_SEPARATE_CANONICAL_APPLY',canonical_writes:false,policy:inp.policy,semantic_validation:inp.semantic_validation,coverage:{reviewed:rows.length,expected:12,complete:rows.length===12},counts:{proposed_component_changes:changed.length,zero_delta_resolutions:zero.length,errors:errors.length},errors,rows};
 W(OUT,report);
 const md=['# Post-Overall Audit Quantitative Proposal','',`Coverage: ${rows.length}/12.`,`Proposed component changes: ${changed.length}.`,`Zero-delta resolutions: ${zero.length}.`,`Canonical writes: false.`,'', '| Player | Dir | Resolution | Score delta | Proposed score | Components |','|---|---|---|---:|---:|---|'];
 for(const r of rows)md.push(`| ${r.player} | ${r.direction} | ${r.resolution} | ${r.score_delta>=0?'+':''}${r.score_delta} | ${r.proposed_score} | ${Object.entries(r.component_targets).map(([k,v])=>`${k} ${r.base.components[k]}→${v}`).join('; ')||'none'} |`);
