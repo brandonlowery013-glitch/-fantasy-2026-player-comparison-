@@ -32,10 +32,13 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Promote checkpoint 1 saved state into workspace
         run: |
-          test -f checkpoint-1/guardrails/current-football-review.json
-          test -f checkpoint-1/guardrails/season-phase-transition-report.json
-          cp checkpoint-1/guardrails/current-football-review.json guardrails/current-football-review.json
-          cp checkpoint-1/guardrails/season-phase-transition-report.json guardrails/season-phase-transition-report.json
+          REVIEW_FILE="$(find checkpoint-1 -type f -name 'current-football-review.json' -print -quit)"
+          PHASE_FILE="$(find checkpoint-1 -type f -name 'season-phase-transition-report.json' -print -quit)"
+          test -n "$REVIEW_FILE"
+          test -n "$PHASE_FILE"
+          mkdir -p guardrails
+          cp "$REVIEW_FILE" guardrails/current-football-review.json
+          cp "$PHASE_FILE" guardrails/season-phase-transition-report.json
       - name: Validate restored checkpoint 1 state
         run: |
           node - <<'NODE'
