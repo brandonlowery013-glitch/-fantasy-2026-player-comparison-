@@ -38,7 +38,6 @@ for(const tr of report.rows||[]){
   const current=accepted.filter(e=>e.phase==='CURRENT_SEASON_STATE');
   const historical=accepted.filter(e=>e.phase!=='CURRENT_SEASON_STATE');
   const latest=accepted.at(-1)||null;
-  const latestDir=latest?directionOf(latest):'NONE';
   const phases=[...new Set(accepted.map(e=>e.phase).filter(Boolean))];
   const directional=accepted.filter(e=>['POSITIVE','NEGATIVE','MIXED'].includes(directionOf(e)));
   const pos=directional.filter(e=>directionOf(e)==='POSITIVE').length;
@@ -66,7 +65,8 @@ for(const tr of report.rows||[]){
   });
 }
 
-const candidates=rows.filter(r=>r.disposition==='REVIEW_RECALIBRATION').sort((a,b)=>({HIGH:0,MEDIUM:1}[a.priority]-({HIGH:0,MEDIUM:1}[b.priority])||a.overall_rank-b.overall_rank);
+const priorityOrder={HIGH:0,MEDIUM:1};
+const candidates=rows.filter(r=>r.disposition==='REVIEW_RECALIBRATION').sort((a,b)=>(priorityOrder[a.priority]??2)-(priorityOrder[b.priority]??2)||a.overall_rank-b.overall_rank);
 const confirmations=rows.filter(r=>r.disposition==='CONTEXT_CONFIRMATION_ONLY');
 const out={schema_version:'1.0.0',as_of:new Date().toISOString(),source_status:source.status,scope:'FULL_166_ACCUMULATED_CONTEXT_RECALIBRATION_AUDIT',policy:'Read-only full-universe audit. Every player is reconsidered from accumulated offseason/camp/preseason/current evidence without requiring a prior reopen flag. This stage identifies candidates for fresh component re-grading; it does not auto-apply numeric deltas or rankings.',players:rows.length,candidate_count:candidates.length,confirmation_only_count:confirmations.length,no_signal_count:rows.length-candidates.length-confirmations.length,candidates,rows};
 W('analysis/full-universe-accumulated-context-audit-current.json',out);
