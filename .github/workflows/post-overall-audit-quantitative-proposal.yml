@@ -37,8 +37,9 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const q=JSON.parse(fs.readFileSync('analysis/post-overall-audit-quantitative-proposal-current.json','utf8'));
+          const input=JSON.parse(fs.readFileSync('analysis/post-overall-audit-quantitative-input-2026-09-05.json','utf8'));
           if(q.universe!==166||q.coverage?.reviewed!==12||q.coverage?.complete!==true) throw Error('coverage gate');
-          if(q.counts?.proposed_component_changes!==9||q.counts?.zero_delta_resolutions!==3) throw Error('resolution count gate');
+          if(q.counts?.proposed_component_changes!==input.expected_component_changes||q.counts?.zero_delta_resolutions!==input.expected_zero_delta_resolutions) throw Error('resolution count gate');
           if(q.counts?.errors!==0||q.errors?.length) throw Error('quantitative errors');
           if(q.canonical_writes!==false) throw Error('canonical mutation authority');
           NODE
