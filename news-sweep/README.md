@@ -1,0 +1,1 @@
+Temporary automation branch for the September 6, 2026 full-universe news sweep. This branch is not merged until guardrail QA passes.
