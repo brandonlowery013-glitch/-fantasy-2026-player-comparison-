@@ -1,19 +1,31 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "season": 2026,
   "active_checkpoint": {
     "status": "CONSUMED",
-    "migration": "SEP5_MATERIAL_HOLD_RECALIBRATION_166",
-    "merged_pr": 186,
-    "commit": "b3790f1cc6a3f7a105d169aa6d44515f6605a8f8",
+    "migration": "POST_OVERALL_AUDIT_5_PLAYER_RECALIBRATION_166",
+    "merged_pr": 196,
+    "commit": "5d5bb4779500a2a6574fbd21c7509d4913c88c1f",
     "player_count": 166,
     "player_shards": 14,
-    "guardrail_run": 33964667842,
-    "guardrail_job": 101302565695,
+    "guardrail_run": 34005957142,
+    "guardrail_job": 101413044013,
     "guardrail_result": "success",
-    "reason": "PR #186 passed the required Guardrail QA, including the hard guardrail, and merged the approved Sep. 5 material-hold recalibration. This consumed checkpoint advances the immutable comparison anchor to that verified canonical state so already-merged Sep. 5 component/rank changes are not re-litigated in later unrelated PRs; main-to-PR drift remains strictly declaration-gated."
+    "reason": "PR #196 passed the required Guardrail QA and merged the approved five-player post-overall-audit canonical recalibration. This consumed checkpoint advances the immutable comparison anchor to the current verified 166-player main state so those already-merged component changes are not re-litigated by later read-only scouting/storyline work; main-to-PR core drift remains declaration-gated."
   },
   "superseded_checkpoints": [
+    {
+      "status": "CONSUMED",
+      "migration": "SEP5_MATERIAL_HOLD_RECALIBRATION_166",
+      "merged_pr": 186,
+      "commit": "b3790f1cc6a3f7a105d169aa6d44515f6605a8f8",
+      "player_count": 166,
+      "player_shards": 14,
+      "guardrail_run": 33964667842,
+      "guardrail_job": 101302565695,
+      "guardrail_result": "success",
+      "reason": "Historical Sep. 5 material-hold recalibration checkpoint; superseded by the later approved post-overall-audit five-player recalibration checkpoint."
+    },
     {
       "status": "CONSUMED",
       "migration": "SEP3_V31_CANONICAL_166",
@@ -24,7 +36,7 @@
       "guardrail_run": 33831033529,
       "guardrail_job": 100893895740,
       "guardrail_result": "success",
-      "reason": "Historical Sep. 3 V3.1 canonical checkpoint; superseded by the later approved Sep. 5 material-hold recalibration checkpoint."
+      "reason": "Historical Sep. 3 V3.1 canonical checkpoint; superseded by later approved canonical checkpoints."
     },
     {
       "status": "CONSUMED",
