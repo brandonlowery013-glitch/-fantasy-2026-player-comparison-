@@ -44,7 +44,7 @@ jobs:
         run: node scripts/validate-final-betting-pipeline-step4.mjs
 
   adaptive-market-refresh:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -56,7 +56,15 @@ jobs:
           node-version: '20'
       - name: Determine time-to-kickoff market cadence
         id: cadence
-        run: node scripts/adaptive-market-refresh-gate.mjs
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            node scripts/adaptive-market-refresh-gate.mjs
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "band=FORCED_CURRENT_WEEK" >> "$GITHUB_OUTPUT"
+            echo "Forced current-week market refresh for ${{ github.event_name }} event."
+          fi
       - name: Capture current featured sportsbook markets when due
         if: steps.cadence.outputs.run == 'true'
         env:
