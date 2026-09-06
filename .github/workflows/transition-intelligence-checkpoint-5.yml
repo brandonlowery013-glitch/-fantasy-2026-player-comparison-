@@ -1,0 +1,89 @@
+name: Transition Intelligence Checkpoint 5
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/transition-intelligence-checkpoint-5.yml'
+      - 'scripts/reconcile-audit-with-player-storylines.mjs'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  checkpoint-5-storyline-reconciliation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Restore immutable checkpoint 4 accumulated-context audit
+        uses: actions/download-artifact@v4
+        with:
+          name: transition-intelligence-checkpoint-4-accumulated-context-audit
+          path: checkpoint-4
+          repository: brandonlowery013-glitch/-fantasy-2026-player-comparison-
+          run-id: 34046965877
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Promote checkpoint 4 saved state into workspace
+        run: |
+          AUDIT_FILE="$(find checkpoint-4 -type f -name 'full-universe-accumulated-context-audit-current.json' -print -quit)"
+          AUDIT_MD="$(find checkpoint-4 -type f -name 'full-universe-accumulated-context-audit-current.md' -print -quit)"
+          STORYLINE_FILE="$(find checkpoint-4 -type f -name 'player-storyline-state-current.json' -print -quit)"
+          STORYLINE_MD="$(find checkpoint-4 -type f -name 'player-storyline-state-current.md' -print -quit)"
+          TRANSITION_FILE="$(find checkpoint-4 -type f -name 'transition-intelligence-current.json' -print -quit)"
+          test -n "$AUDIT_FILE"
+          test -n "$STORYLINE_FILE"
+          mkdir -p analysis
+          cp "$AUDIT_FILE" analysis/full-universe-accumulated-context-audit-current.json
+          if [ -n "$AUDIT_MD" ]; then cp "$AUDIT_MD" analysis/full-universe-accumulated-context-audit-current.md; fi
+          cp "$STORYLINE_FILE" analysis/player-storyline-state-current.json
+          if [ -n "$STORYLINE_MD" ]; then cp "$STORYLINE_MD" analysis/player-storyline-state-current.md; fi
+          if [ -n "$TRANSITION_FILE" ]; then cp "$TRANSITION_FILE" analysis/transition-intelligence-current.json; fi
+      - name: Validate checkpoint 4 input provenance and coverage
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const audit=JSON.parse(fs.readFileSync('analysis/full-universe-accumulated-context-audit-current.json','utf8'));
+          const story=JSON.parse(fs.readFileSync('analysis/player-storyline-state-current.json','utf8'));
+          const expected=Number(src.active_player_model);
+          if((audit.rows||[]).length!==expected||Number(audit.players)!==expected) throw new Error(`Checkpoint 4 audit coverage ${(audit.rows||[]).length}/${expected}`);
+          if((story.rows||[]).length!==expected||Number(story.players)!==expected) throw new Error(`Checkpoint 4 storyline coverage ${(story.rows||[]).length}/${expected}`);
+          console.log(JSON.stringify({result:'PASS',players:expected,checkpoint_4_run:34046965877,checkpoint_4_artifact:9993393220,checkpoint_4_digest:'sha256:26f6c3f1ac972707ed3188cd3e3a8b9013a097a7d06da59bb0712ab7609a3407',pre_reconciliation_candidates:audit.candidate_count},null,2));
+          NODE
+      - name: Reconcile recalibration candidates against player storylines
+        run: node scripts/reconcile-audit-with-player-storylines.mjs
+      - name: Validate checkpoint 5 final reconciliation state
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const audit=JSON.parse(fs.readFileSync('analysis/full-universe-accumulated-context-audit-current.json','utf8'));
+          const expected=Number(src.active_player_model);
+          if((audit.rows||[]).length!==expected) throw new Error(`Checkpoint 5 coverage ${(audit.rows||[]).length}/${expected}`);
+          if(audit.storyline_reconciliation?.applied!==true) throw new Error('Storyline reconciliation not applied');
+          const total=Number(audit.candidate_count||0)+Number(audit.confirmation_only_count||0)+Number(audit.no_signal_count||0);
+          if(total!==expected) throw new Error(`Checkpoint 5 disposition count ${total}/${expected}`);
+          if((audit.candidates||[]).some(r=>r.disposition!=='REVIEW_RECALIBRATION')) throw new Error('Non-review row survived in final candidate set');
+          if((audit.candidates||[]).some(r=>!r.player_storyline||Number(r.player_storyline.matched_story_beats||0)<1)) throw new Error('Final candidate without matched storyline beat');
+          console.log(JSON.stringify({result:'PASS',players:expected,final_candidates:audit.candidate_count,confirmation_only:audit.confirmation_only_count,no_signal:audit.no_signal_count,downgraded:audit.storyline_reconciliation.downgraded_candidates},null,2));
+          NODE
+      - name: Upload checkpoint 5 final storyline-reconciled audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: transition-intelligence-checkpoint-5-final-storyline-reconciliation
+          path: |
+            analysis/full-universe-accumulated-context-audit-current.json
+            analysis/full-universe-accumulated-context-audit-current.md
+            analysis/player-storyline-state-current.json
+            analysis/player-storyline-state-current.md
+            analysis/transition-intelligence-current.json
+          if-no-files-found: error
+          retention-days: 30
