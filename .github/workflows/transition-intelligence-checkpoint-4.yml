@@ -1,0 +1,90 @@
+name: Transition Intelligence Checkpoint 4
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/transition-intelligence-checkpoint-4.yml'
+      - 'scripts/build-full-universe-accumulated-context-audit.mjs'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  checkpoint-4-accumulated-context-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Restore immutable checkpoint 3 storyline state
+        uses: actions/download-artifact@v4
+        with:
+          name: transition-intelligence-checkpoint-3-player-storyline-state
+          path: checkpoint-3
+          repository: brandonlowery013-glitch/-fantasy-2026-player-comparison-
+          run-id: 34046169800
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Promote checkpoint 3 saved state into workspace
+        run: |
+          STORYLINE_FILE="$(find checkpoint-3 -type f -name 'player-storyline-state-current.json' -print -quit)"
+          STORYLINE_MD="$(find checkpoint-3 -type f -name 'player-storyline-state-current.md' -print -quit)"
+          TRANSITION_FILE="$(find checkpoint-3 -type f -name 'transition-intelligence-current.json' -print -quit)"
+          test -n "$STORYLINE_FILE"
+          test -n "$TRANSITION_FILE"
+          mkdir -p analysis
+          cp "$STORYLINE_FILE" analysis/player-storyline-state-current.json
+          if [ -n "$STORYLINE_MD" ]; then cp "$STORYLINE_MD" analysis/player-storyline-state-current.md; fi
+          cp "$TRANSITION_FILE" analysis/transition-intelligence-current.json
+      - name: Validate checkpoint 3 input provenance and coverage
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const story=JSON.parse(fs.readFileSync('analysis/player-storyline-state-current.json','utf8'));
+          const tr=JSON.parse(fs.readFileSync('analysis/transition-intelligence-current.json','utf8'));
+          const expected=Number(src.active_player_model);
+          if((story.rows||[]).length!==expected||Number(story.players)!==expected) throw new Error(`Checkpoint 3 storyline coverage ${(story.rows||[]).length}/${expected}`);
+          if((tr.rows||[]).length!==expected) throw new Error(`Checkpoint 3 transition coverage ${(tr.rows||[]).length}/${expected}`);
+          const fallback=(story.rows||[]).filter(r=>String(r.starting_storyline||'').includes('enters 2026 with the saved canonical role and projection baseline'));
+          if(fallback.length) throw new Error(`Checkpoint 3 contains fallback storylines: ${fallback.map(r=>r.player).join(', ')}`);
+          console.log(JSON.stringify({result:'PASS',players:expected,checkpoint_3_run:34046169800,checkpoint_3_artifact:9993160309,checkpoint_3_digest:'sha256:ac47bf675290e5d4c10e78c50d07016a64c4e5e316e72fd44dbd86d41ec7b642',fallback_storylines:0},null,2));
+          NODE
+      - name: Audit all 166 players from accumulated context
+        run: node scripts/build-full-universe-accumulated-context-audit.mjs
+      - name: Validate checkpoint 4 audit state
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const audit=JSON.parse(fs.readFileSync('analysis/full-universe-accumulated-context-audit-current.json','utf8'));
+          const story=JSON.parse(fs.readFileSync('analysis/player-storyline-state-current.json','utf8'));
+          const expected=Number(src.active_player_model);
+          if(Number(audit.players)!==expected||(audit.rows||[]).length!==expected) throw new Error(`Checkpoint 4 audit coverage ${(audit.rows||[]).length}/${expected}`);
+          if(Number(audit.scouting_context_coverage)!==expected) throw new Error(`Checkpoint 4 scouting coverage ${audit.scouting_context_coverage}/${expected}`);
+          if((story.rows||[]).length!==expected) throw new Error('Checkpoint 3 storyline state lost during checkpoint 4');
+          const dispositions=new Set((audit.rows||[]).map(r=>r.disposition));
+          for(const d of dispositions) if(!['REVIEW_RECALIBRATION','CONTEXT_CONFIRMATION_ONLY','NO_MATERIAL_RECALIBRATION_SIGNAL'].includes(d)) throw new Error(`Invalid audit disposition ${d}`);
+          const total=Number(audit.candidate_count||0)+Number(audit.confirmation_only_count||0)+Number(audit.no_signal_count||0);
+          if(total!==expected) throw new Error(`Checkpoint 4 disposition count ${total}/${expected}`);
+          if((audit.rows||[]).some(r=>!r.scouting_context?.current_thesis)) throw new Error('Checkpoint 4 row missing recovered scouting thesis');
+          console.log(JSON.stringify({result:'PASS',players:expected,candidates:audit.candidate_count,confirmation_only:audit.confirmation_only_count,no_signal:audit.no_signal_count,scope:audit.scope},null,2));
+          NODE
+      - name: Upload checkpoint 4 saved accumulated-context audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: transition-intelligence-checkpoint-4-accumulated-context-audit
+          path: |
+            analysis/full-universe-accumulated-context-audit-current.json
+            analysis/full-universe-accumulated-context-audit-current.md
+            analysis/player-storyline-state-current.json
+            analysis/player-storyline-state-current.md
+            analysis/transition-intelligence-current.json
+          if-no-files-found: error
+          retention-days: 30
