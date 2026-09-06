@@ -1,1 +1,100 @@
-{"status":"in_progress"}
+{
+  "run_date": "2026-09-06",
+  "requested_universe": 163,
+  "canonical_universe": 166,
+  "canonical_source": "MODEL_SOURCE_OF_TRUTH.json",
+  "status": "PARTIAL_RESEARCH_COMPLETE_CANONICAL_APPLY_BLOCKED_PENDING_166_PLAYER_REVIEW",
+  "guardrail": "Do not apply a 163-player sweep to the production model because the authoritative active universe is 166 players as of 2026-09-05.",
+  "interface": {
+    "lock": "CTD_INTERFACE_LOCK_1",
+    "changed": false
+  },
+  "paid_player_prop_refresh_triggered": false,
+  "verified_updates": [
+    {
+      "player": "TreVeyon Henderson",
+      "type": "injury/practice",
+      "status": "ankle; missed practice since Aug. 24 and absent from the Sep. 6 media portion",
+      "materiality": "HIGH_WEEKLY",
+      "model_action": "Downgrade Week 1 availability/workload assumption; connected-player upside to Rhamondre Stevenson if Henderson is inactive or limited. No season-rank change without longer-term prognosis."
+    },
+    {
+      "player": "Zach Charbonnet",
+      "type": "injury/PUP",
+      "status": "recovering from torn ACL; reserve/PUP; unavailable for at least first four games",
+      "materiality": "HIGH",
+      "model_action": "Set Weeks 1-4 availability to zero and re-evaluate Seattle backfield opportunity allocation."
+    },
+    {
+      "player": "George Kittle",
+      "type": "injury/recovery",
+      "status": "returning from Achilles recovery; trending toward Week 1 but reduced route/snap workload remains possible",
+      "materiality": "HIGH_WEEKLY",
+      "model_action": "Apply Week 1 workload discount unless later practice/game-status evidence clears the limitation; preserve static evaluation."
+    },
+    {
+      "player": "D'Andre Swift",
+      "type": "injury/practice",
+      "status": "left Sep. 4 practice with apparent core/midsection issue",
+      "materiality": "REVIEW_HIGH_WEEKLY",
+      "model_action": "Monitor first official injury report; if limited/out, shift connected opportunity toward Kyle Monangai."
+    },
+    {
+      "player": "Rome Odunze",
+      "type": "injury/practice",
+      "status": "left Sep. 4 practice with right-leg issue; preliminary reporting indicated he should be okay",
+      "materiality": "MONITOR",
+      "model_action": "No projection/rank change yet; update weekly availability context."
+    },
+    {
+      "player": "Malik Nabers",
+      "type": "ACL/meniscus recovery",
+      "status": "continued return from ACL and lateral-meniscus injury; shed non-contact jersey but remained noncommittal on Week 1",
+      "materiality": "HIGH_WEEKLY",
+      "model_action": "Carry full recovery context in current outlook and Week 1 availability/workload uncertainty; do not rewrite frozen baseline evaluation."
+    },
+    {
+      "player": "Luther Burden III",
+      "type": "groin recovery/practice",
+      "status": "returned to practice and running routes; trending toward Week 1 but not treated as confirmed unrestricted full-go",
+      "materiality": "MODERATE_WEEKLY",
+      "model_action": "Status RETURNING/RAMPING UP; no season-rank change without evidence of workload restriction."
+    },
+    {
+      "player": "Ja'Marr Chase",
+      "type": "injury/practice",
+      "status": "recovering from hyperextended left knee; expected ready for opener",
+      "materiality": "MONITOR",
+      "model_action": "No rank change; retain current weekly health note until fully cleared."
+    },
+    {
+      "player": "Tee Higgins",
+      "type": "injury/practice",
+      "status": "bruised heel; expected ready for opener",
+      "materiality": "MONITOR",
+      "model_action": "No rank change; retain current weekly health note until fully cleared."
+    },
+    {
+      "player": "Ashton Jeanty",
+      "type": "ankle recovery",
+      "status": "team indicated he may return sooner than expected and could be available for opener",
+      "materiality": "REVIEW",
+      "model_action": "Do not alter season value until current practice/game-status evidence resolves Week 1 availability."
+    },
+    {
+      "player": "Jacory Croskey-Merritt",
+      "type": "groin recovery/practice",
+      "status": "returned from groin issue",
+      "materiality": "POSITIVE_WEEKLY",
+      "model_action": "Restore availability assumption subject to official injury report; review connected Washington backfield split."
+    }
+  ],
+  "not_applied_to_production": true,
+  "reason_not_applied": "The user requested a 163-player sweep, but the authoritative repository contains 166 active players. A complete 166-player review and guardrail QA are required before canonical writes/merge.",
+  "remaining_work": [
+    "Review all 166 canonical players, including Kaleb Johnson, Corey Kiner, Tank Dell and Jonnu Smith.",
+    "Bind verified news to canonical player records and separate dated news from weekly Current Outlook.",
+    "Apply materiality-gated weekly/model changes and connected-player effects.",
+    "Run full-universe validation and guardrail-qa before merge."
+  ]
+}
