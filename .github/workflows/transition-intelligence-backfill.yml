@@ -17,7 +17,11 @@ on:
       - 'scripts/build-rookie-development-review.mjs'
       - 'scripts/enforce-offensive-transition-clusters.mjs'
       - 'scripts/build-chronological-transition-context.mjs'
+      - 'scripts/build-player-storyline-state.mjs'
       - 'scripts/build-full-universe-accumulated-context-audit.mjs'
+      - 'scripts/reconcile-audit-with-player-storylines.mjs'
+      - 'analysis/player-scouting-context-recovered-2026-09-05.json'
+      - 'analysis/scouting-context-payload/**'
       - 'scripts/integrate-transition-intelligence.mjs'
       - 'scripts/normalize-tracked-signal-teams.mjs'
       - 'scripts/validate-season-phase-transition.mjs'
@@ -32,7 +36,11 @@ on:
       - 'scripts/filter-retroactive-position-evidence-quality.mjs'
       - 'scripts/run-position-specific-transition-integration.mjs'
       - 'scripts/build-chronological-transition-context.mjs'
+      - 'scripts/build-player-storyline-state.mjs'
       - 'scripts/build-full-universe-accumulated-context-audit.mjs'
+      - 'scripts/reconcile-audit-with-player-storylines.mjs'
+      - 'analysis/player-scouting-context-recovered-2026-09-05.json'
+      - 'analysis/scouting-context-payload/**'
       - 'scripts/integrate-transition-intelligence.mjs'
   schedule:
     - cron: '15 13 * 4-9 1,4'
@@ -103,8 +111,12 @@ jobs:
           if(integration.result!=='PASS') throw new Error('Transition integration failed');
           console.log(JSON.stringify({result:'PASS',coverage:expected,position_counts:pc,camp_evidence_players:integration.retroactive_camp_evidence_players,camp_checked_no_material:integration.retroactive_camp_source_checked_no_material,camp_source_gaps:integration.retroactive_camp_source_gaps,camp_evidence_added:integration.retroactive_camp_evidence_added,quality_rejected:camp.counts?.quality_rejected,editorial_without_event_rejected:camp.counts?.editorial_without_event_rejected,no_operational_anchor_rejected:camp.counts?.no_operational_anchor_rejected,timeline_players:integration.players_with_chronological_timeline,current_regular_season_state_players:integration.players_with_current_state_basis,football_state:phase.football_state,fantasy_draft_state_gate:phase.fantasy_draft_state_gate},null,2));
           NODE
+      - name: Build persistent 166-player storyline state
+        run: node scripts/build-player-storyline-state.mjs
       - name: Audit all 166 players from accumulated context
         run: node scripts/build-full-universe-accumulated-context-audit.mjs
+      - name: Reconcile recalibration candidates against player storylines
+        run: node scripts/reconcile-audit-with-player-storylines.mjs
       - name: Upload transition intelligence evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -114,6 +126,8 @@ jobs:
             analysis/transition-intelligence-current.json
             analysis/transition-intelligence-current.md
             analysis/rookie-development-review-current.json
+            analysis/player-storyline-state-current.json
+            analysis/player-storyline-state-current.md
             analysis/full-universe-accumulated-context-audit-current.json
             analysis/full-universe-accumulated-context-audit-current.md
             guardrails/current-football-review.json
