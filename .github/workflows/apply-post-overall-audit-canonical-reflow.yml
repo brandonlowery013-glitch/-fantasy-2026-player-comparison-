@@ -1,0 +1,63 @@
+name: Apply Post Overall Audit Canonical Reflow
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'analysis/post-overall-audit-canonical-apply-input-2026-09-05.json'
+      - 'scripts/apply-post-overall-audit-canonical-reflow.mjs'
+      - 'scripts/generate-sep3-v31-guardrail-declarations.mjs'
+      - '.github/workflows/apply-post-overall-audit-canonical-reflow.yml'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'canonicalBoards2026.json'
+      - 'current162patch-2026-08-24.json'
+      - 'players*.json'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apply five-player post-audit recalibration
+        run: node scripts/apply-post-overall-audit-canonical-reflow.mjs
+      - name: Verify canonical apply QA
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const q=JSON.parse(fs.readFileSync('analysis/post-overall-audit-canonical-apply-qa-2026-09-05.json','utf8'));
+          if(q.players!==166||q.reviewed_reopens!==12||q.changed!==5||q.zero_delta!==7||q.errors.length||!q.overall_unchanged||!q.market_unchanged||!q.projections_unchanged||!q.overall_unique||!q.true_value_unique)throw new Error('post-audit canonical QA failed');
+          const s=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const c=JSON.parse(fs.readFileSync('canonicalBoards2026.json','utf8'));
+          if(s.status!=='authoritative_current_2026_09_05_post_overall_audit_recalibrated'||s.active_player_model!==166||c.active_players!==166||c.overall.length!==166||c.trueValue.length!==166)throw new Error('canonical sync failed');
+          console.log(JSON.stringify(q.changes,null,2));
+          NODE
+      - name: Generate exact PR-scoped guardrail declarations
+        run: |
+          node scripts/generate-sep3-v31-guardrail-declarations.mjs
+          node scripts/prepare-pr-scoped-drift-check.mjs
+      - name: Prove baseline drift is exactly declared
+        run: node scripts/run-baseline-drift-check.mjs
+      - name: Commit declarations and sync bridge when changed
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add guardrails/universe-change-manifest.json guardrails/structural-change-manifest.json scripts/run-baseline-drift-check.mjs analysis/sep3-v31-spreadsheet-sync.tsv
+          git diff --cached --quiet || git commit -m 'Declare post-audit five-player recalibration'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: post-overall-audit-canonical-apply
+          path: |
+            analysis/post-overall-audit-canonical-apply-qa-2026-09-05.json
+            analysis/post-overall-audit-canonical-apply-input-2026-09-05.json
+          if-no-files-found: error
