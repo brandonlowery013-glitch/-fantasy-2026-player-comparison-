@@ -1,0 +1,76 @@
+name: Post Checkpoint 5 Local Context Semantic Gate
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/build-post-cp5-local-context-semantic-gate.mjs'
+      - '.github/workflows/post-cp5-local-context-semantic-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  semantic-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Restore immutable checkpoint 5 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: transition-intelligence-checkpoint-5-final-storyline-reconciliation
+          path: checkpoint-5
+          repository: brandonlowery013-glitch/-fantasy-2026-player-comparison-
+          run-id: 34047466708
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Promote checkpoint 5 state
+        run: |
+          AUDIT_FILE="$(find checkpoint-5 -type f -name 'full-universe-accumulated-context-audit-current.json' -print -quit)"
+          TRANSITION_FILE="$(find checkpoint-5 -type f -name 'transition-intelligence-current.json' -print -quit)"
+          test -n "$AUDIT_FILE"
+          test -n "$TRANSITION_FILE"
+          mkdir -p analysis
+          cp "$AUDIT_FILE" analysis/full-universe-accumulated-context-audit-current.json
+          cp "$TRANSITION_FILE" analysis/transition-intelligence-current.json
+      - name: Validate checkpoint 5 source
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const a=JSON.parse(fs.readFileSync('analysis/full-universe-accumulated-context-audit-current.json','utf8'));
+          const t=JSON.parse(fs.readFileSync('analysis/transition-intelligence-current.json','utf8'));
+          if((a.rows||[]).length!==166||(a.candidates||[]).length!==38) throw new Error('checkpoint 5 audit coverage');
+          if((t.rows||[]).length!==166) throw new Error('checkpoint 5 transition coverage');
+          console.log(JSON.stringify({result:'PASS',players:166,candidates:38,checkpoint_5_run:34047466708,checkpoint_5_artifact:9993533527},null,2));
+          NODE
+      - name: Run player-local semantic gate
+        run: node scripts/build-post-cp5-local-context-semantic-gate.mjs
+      - name: Prove read-only behavior
+        run: |
+          if ! git diff --quiet -- MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json current162patch-2026-08-24.json players*.json; then
+            echo 'Semantic gate illegally mutated canonical state.'
+            exit 1
+          fi
+      - name: Validate complete resolution
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('analysis/post-cp5-local-context-semantic-gate-current.json','utf8'));
+          if(x.universe!==166||x.input_candidates!==38||x.rows.length!==38) throw new Error('coverage');
+          if(x.quant_review_count+x.context_only_count!==38) throw new Error('resolution count');
+          if(x.context_only.some(r=>r.directional_events!==0)) throw new Error('context-only directional leakage');
+          if(x.rows.some(r=>!['QUANT_REVIEW','CONTEXT_ONLY_AFTER_LOCAL_SEMANTIC_GATE'].includes(r.resolution))) throw new Error('invalid resolution');
+          console.log(JSON.stringify({result:'PASS',quant_review:x.quant_review_count,context_only:x.context_only_count,removed:x.context_only.map(r=>r.player)},null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: post-cp5-local-context-semantic-gate
+          path: |
+            analysis/post-cp5-local-context-semantic-gate-current.json
+            analysis/post-cp5-local-context-semantic-gate-current.md
+          if-no-files-found: error
+          retention-days: 30
