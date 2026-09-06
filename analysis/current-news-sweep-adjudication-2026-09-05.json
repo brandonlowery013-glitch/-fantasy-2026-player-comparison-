@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.1.0",
+  "authority": "CURRENT_FULL_UNIVERSE_NEWS_SWEEP_ADJUDICATION",
+  "as_of": "2026-09-05",
+  "source_workflow_run": 34000376517,
+  "source_artifact": 9979365417,
+  "source_artifact_digest": "sha256:4f418d3fd6783f50de202b3dd9e6efe3eae53a3708dee3494566905eb80962d2",
+  "universe": 166,
+  "canonical_writes": false,
+  "policy": "Every active player must have a progressive story from closed camp/offseason history into an explicit current Week 1 state. Current-season evidence dated on or after 2026-09-05 controls current state when subject-bound and fantasy-material. A complete current sweep with no new material player evidence resolves NO_NEW_MATERIAL_DEVELOPMENT. Context-only or misbound current matches cannot become player-state authority.",
+  "progressive_story_validation": {
+    "players_reviewed": 166,
+    "players_with_synthesized_current_state": 166,
+    "players_with_timeline": 151,
+    "retroactive_camp_players_with_evidence": 151,
+    "retroactive_camp_players_reviewed_no_evidence": 15,
+    "direct_post_camp_matches": 3,
+    "accepted_direct_post_camp_state_basis": 1,
+    "rejected_context_only_post_camp_matches": 2,
+    "resolution_counts": {
+      "NO_NEW_MATERIAL_DEVELOPMENT": 165,
+      "AVAILABILITY_RISK": 1
+    },
+    "current_state_unresolved": 0,
+    "result": "PASS_166_OF_166_PROGRESSIVE_CURRENT_STATE"
+  },
+  "current_season_adjudication": [
+    {
+      "player": "TreVeyon Henderson",
+      "published": "2026-09-05T19:09:12.433Z",
+      "headline": "NFL news roundup: Patriots RB TreVeyon Henderson (ankle) doesn't practice; Niners sign DL Khalid Kareem",
+      "dimensions": ["availability_recovery"],
+      "progressive_resolution": "AVAILABILITY_RISK",
+      "direction": "NEGATIVE",
+      "material_change_candidate": true,
+      "decision": "ALREADY_IN_POST_AUDIT_QUANTITATIVE_PROPOSAL",
+      "components": ["availability", "weekly_reliability"],
+      "reason": "The corrected progressive-story layer recognizes the Sep. 5 ankle DNP as the sole accepted current-season material player-state signal. It is already represented in the post-audit quantitative proposal as a bounded negative availability/reliability change, so no duplicate delta is added."
+    },
+    {
+      "player": "Josh Allen",
+      "published": "2026-09-05T16:15:07.495Z",
+      "headline": "Former Bills head coach Sean McDermott predicts Buffalo will reach Super Bowl LXI",
+      "dimensions": [],
+      "progressive_resolution": "NO_NEW_MATERIAL_DEVELOPMENT",
+      "direction": "UNCHANGED",
+      "material_change_candidate": false,
+      "decision": "REJECT_CURRENT_SIGNAL_NO_PLAYER_VALUE_CHANGE",
+      "components": [],
+      "reason": "The corrected synthesis rejects the team-level Super Bowl commentary as nonmaterial player-state context for Allen. It cannot create a current-state fantasy change."
+    },
+    {
+      "player": "DJ Moore",
+      "published": "2026-09-05T16:15:07.495Z",
+      "headline": "Former Bills head coach Sean McDermott predicts Buffalo will reach Super Bowl LXI",
+      "dimensions": [],
+      "progressive_resolution": "NO_NEW_MATERIAL_DEVELOPMENT",
+      "direction": "UNCHANGED",
+      "material_change_candidate": false,
+      "decision": "REJECT_MISBOUND_CURRENT_SIGNAL",
+      "components": [],
+      "reason": "The corrected synthesis rejects the Bills/Super Bowl article as a misbound, dimensionless DJ Moore current-state signal. It remains nonmaterial context and cannot reopen Moore."
+    }
+  ],
+  "reconciliation_with_post_audit_proposal": {
+    "post_audit_nonzero_proposal_players": [
+      "Keaton Mitchell",
+      "Romeo Doubs",
+      "Jadarian Price",
+      "Jayden Reed",
+      "Malik Nabers",
+      "TreVeyon Henderson",
+      "Brian Thomas Jr.",
+      "Kenneth Walker III",
+      "Jonathan Taylor"
+    ],
+    "progressive_story_material_candidates": ["TreVeyon Henderson"],
+    "news_sweep_additions": [],
+    "news_sweep_removals": [],
+    "duplicate_current_signal": ["TreVeyon Henderson"],
+    "final_numeric_apply_candidate_count_before_separate_semantic_validation": 9,
+    "note": "This reconciliation confirms the corrected full-universe current-news sweep adds no new numeric player and removes none solely on current-news grounds. Separate semantic validation of previously flagged suspicious evidence lanes remains required before canonical apply."
+  },
+  "result": "PASS_PROGRESSIVE_STORY_RECONCILED_NO_NEW_CURRENT_NEWS_REOPENS"
+}

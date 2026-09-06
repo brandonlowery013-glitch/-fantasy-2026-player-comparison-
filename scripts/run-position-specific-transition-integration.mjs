@@ -9,3 +9,4 @@ await import('./build-retroactive-camp-backfill.mjs');
 await import('./filter-retroactive-position-evidence-quality.mjs');
 await import('./build-chronological-transition-context.mjs');
 await import('./integrate-transition-intelligence.mjs');
+await import('./repair-progressive-current-state-semantics.mjs');
