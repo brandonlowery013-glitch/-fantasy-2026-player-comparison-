@@ -133,34 +133,42 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
+          set -euo pipefail
           PATCH=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').current_update_layer")
           FILES=("$PATCH" guardrails/live-news-model-application-report.json guardrails/current-football-review.json analysis/substantive-component-recalculation-current.json analysis/full-universe-reconciliation-taxonomy-current.json)
-          if git diff --quiet HEAD -- "${FILES[@]}"; then
+
+          # git diff alone ignores untracked generated files. status catches tracked,
+          # modified, deleted, and newly-created evidence files.
+          if [ -z "$(git status --porcelain -- "${FILES[@]}")" ]; then
+            echo 'No persistence changes; latest committed news/model state remains canonical.'
             echo 'changed=false' >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           BRANCH="production/live-news-model-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          BASE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq '.object.sha')
-          gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/heads/${BRANCH}" -f sha="$BASE_SHA" >/dev/null
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add -- "${FILES[@]}"
 
-          for f in "${FILES[@]}"; do
-            if git diff --quiet HEAD -- "$f"; then
-              continue
-            fi
-            REMOTE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${f}?ref=${BRANCH}" --jq '.sha' 2>/dev/null || true)
-            base64 -w0 "$f" > /tmp/ctd-content.b64
-            if [ -n "$REMOTE_SHA" ]; then
-              jq -n --rawfile content /tmp/ctd-content.b64 --arg message "Persist live 166-player news model impact: ${f}" --arg branch "$BRANCH" --arg sha "$REMOTE_SHA" '{message:$message,content:$content,branch:$branch,sha:$sha}' > /tmp/ctd-request.json
-            else
-              jq -n --rawfile content /tmp/ctd-content.b64 --arg message "Persist live 166-player news model impact: ${f}" --arg branch "$BRANCH" '{message:$message,content:$content,branch:$branch}' > /tmp/ctd-request.json
-            fi
-            gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${f}" --input /tmp/ctd-request.json >/dev/null
-          done
+          if git diff --cached --quiet; then
+            echo 'No staged persistence changes; latest committed news/model state remains canonical.'
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
-          PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Persist live 166-player news model impact" --body "Automated live-news ingestion for the canonical 166-player model. Writes dated news state and Current Model Impact into the canonical current update layer; static evaluations, canonical boards, and CTD interface are not mutated. Untracked admissions are handled by the separate universe-admission pipeline. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
+          git commit -m "Persist live 166-player news model impact"
+          git push --set-upstream origin "$BRANCH"
+
+          PR_URL=$(gh pr list --base main --head "$BRANCH" --state open --json url --jq '.[0].url // empty')
+          if [ -z "$PR_URL" ]; then
+            PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Persist live 166-player news model impact" --body "Automated live-news ingestion for the canonical 166-player model. Writes dated news state and Current Model Impact into the canonical current update layer; when a run has no newer material player news, the most recent material news state is retained. Static evaluations, canonical boards, and CTD interface are not mutated. Untracked admissions are handled by the separate universe-admission pipeline. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
+          fi
+
+          test -n "$PR_URL"
           echo 'changed=true' >> "$GITHUB_OUTPUT"
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "Persisted validated update through $PR_URL"
 
       - name: Auto-merge scheduled generated update only after required checks
         if: steps.persist.outputs.changed == 'true' && github.event_name == 'schedule'
@@ -171,5 +179,3 @@ jobs:
         run: |
           timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
           gh pr merge "$PR_URL" --merge --delete-branch
-
-# acceptance-test trigger 1
