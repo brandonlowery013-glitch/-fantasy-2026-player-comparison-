@@ -15,10 +15,32 @@ const truth=v=>v===1||v==='1'||v===true||String(v).toLowerCase()==='true';
 const val=(r,...ks)=>{for(const k of ks){if(r[k]!==undefined&&r[k]!==null&&r[k]!=='')return r[k]}return null};
 const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
 const quantile=(arr,q)=>{if(!arr.length)return null;const a=[...arr].sort((x,y)=>x-y);const p=(a.length-1)*q,lo=Math.floor(p),hi=Math.ceil(p);return lo===hi?a[lo]:a[lo]+(a[hi]-a[lo])*(p-lo)};
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const retryableStatus=status=>status===408||status===425||status===429||(status>=500&&status<=599);
+async function fetchWithRetry(url,{attempts=4,label=url}={}){
+  let lastError=null;
+  for(let attempt=1;attempt<=attempts;attempt++){
+    try{
+      const res=await fetch(url,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});
+      if(res.ok) return res;
+      const err=new Error(`${label} returned HTTP ${res.status}`);
+      lastError=err;
+      if(!retryableStatus(res.status)||attempt===attempts) throw err;
+      console.warn(`Transient HTTP ${res.status} fetching ${label}; retry ${attempt}/${attempts-1}.`);
+    }catch(err){
+      lastError=err;
+      const code=err?.cause?.code||err?.code||'';
+      const transient=!err?.message?.includes('returned HTTP')||/UND_ERR_|ECONNRESET|ETIMEDOUT|EAI_AGAIN|ENETUNREACH|ECONNREFUSED/.test(String(code));
+      if(!transient||attempt===attempts) throw err;
+      console.warn(`Transient fetch failure for ${label} (${code||err.message}); retry ${attempt}/${attempts-1}.`);
+    }
+    await sleep(750*Math.pow(2,attempt-1));
+  }
+  throw lastError||new Error(`Failed to fetch ${label}`);
+}
 
 const playersUrl='https://github.com/nflverse/nflverse-data/releases/download/players/players.csv';
-const pr=await fetch(playersUrl,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});
-if(!pr.ok) throw new Error(`Failed nflverse players: ${pr.status}`);
+const pr=await fetchWithRetry(playersUrl,{label:'nflverse players'});
 const playerMaster=parseCsv(await pr.text());
 const playerById=new Map();
 for(const p of playerMaster){const id=val(p,'gsis_id');if(id)playerById.set(String(id),val(p,'display_name','full_name','football_name')||null);}
@@ -30,8 +52,7 @@ const getRec=(season,week,team,opp,gameId)=>{const k=`${season}|${week}|${team}`
 
 for(const season of seasons){
   const url=`https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_${season}.csv.gz`;
-  const res=await fetch(url,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});
-  if(!res.ok) throw new Error(`Failed nflverse PBP ${season}: ${res.status}`);
+  const res=await fetchWithRetry(url,{label:`nflverse PBP ${season}`});
   const buf=Buffer.from(await res.arrayBuffer());
   const pbp=parseCsv(zlib.gunzipSync(buf).toString('utf8'));
   sourceFiles.push({type:'pbp',season,url,compressed_bytes:buf.length});
@@ -146,7 +167,7 @@ const report={
   qb_policy:'primary_game_qb is the GSIS-identified passer with the most pass plays in that team-game. It is a game-QB context field, not claimed to be an official starter. starting_qb remains null until a direct starter source is added.',
   pace_policy:'seconds_per_play uses within-drive gaps between consecutive offensive plays, bounded to 0-60 seconds.',
   neutral_policy:'neutral pass rate uses quarters 1-3 with absolute posteam score differential <= 7.',
-  safeguards:['No sportsbook data used.','Observed game outcomes are explicitly separated from pregame rolling features.','No current-game data enters its own pregame rolling features.','Opponent defense context is prior-game only.','Official starting QB is not guessed from primary passer usage.']
+  safeguards:['No sportsbook data used.','Observed game outcomes are explicitly separated from pregame rolling features.','No current-game data enters its own pregame rolling features.','Opponent defense context is prior-game only.','Official starting QB is not guessed from primary passer usage.','Transient source-fetch failures are retried with bounded exponential backoff; non-retryable or exhausted failures remain hard failures.']
 };
 fs.writeFileSync(path.join(root,'guardrails/deeper-football-context-report.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));
