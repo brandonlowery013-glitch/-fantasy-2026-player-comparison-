@@ -140,24 +140,54 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          LAST_DISPATCH_SHA=''
           for i in $(seq 1 180); do
-            MERGE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
+            PR_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
+            PR_STATE=$(printf '%s' "$PR_JSON" | jq -r '.state')
+            if [ "$PR_STATE" != 'open' ]; then
+              MERGED=$(printf '%s' "$PR_JSON" | jq -r '.merged')
+              if [ "$MERGED" = 'true' ]; then
+                echo "Adaptive market PR #${PR_NUMBER} is merged."
+                exit 0
+              fi
+              echo "Adaptive market PR #${PR_NUMBER} is no longer open and was not merged."
+              exit 1
+            fi
+            MERGE_SHA=$(printf '%s' "$PR_JSON" | jq -r '.merge_commit_sha // empty')
+            HEAD_REF=$(printf '%s' "$PR_JSON" | jq -r '.head.ref')
             if [ -n "$MERGE_SHA" ]; then
               CHECK=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${MERGE_SHA}/check-runs" \
                 --jq '[.check_runs[] | select(.name=="guardrail-qa" and .app.id==15368)] | sort_by(.started_at // .created_at) | last // {}')
               CONCLUSION=$(printf '%s' "$CHECK" | jq -r '.conclusion // empty')
               STATUS=$(printf '%s' "$CHECK" | jq -r '.status // empty')
               if [ "$CONCLUSION" = 'success' ]; then
-                echo "Required guardrail-qa passed on protected synthetic merge ${MERGE_SHA}."
-                gh pr merge "$PR_URL" --merge --delete-branch
-                exit 0
-              fi
-              if [ "$STATUS" = 'completed' ] && [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != 'success' ]; then
+                CURRENT_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
+                if [ "$CURRENT_SHA" != "$MERGE_SHA" ]; then
+                  echo "Protected synthetic merge moved from ${MERGE_SHA} to ${CURRENT_SHA}; revalidating before merge."
+                  MERGE_SHA="$CURRENT_SHA"
+                else
+                  echo "Required guardrail-qa passed on current protected synthetic merge ${MERGE_SHA}."
+                  if gh pr merge "$PR_URL" --merge --delete-branch; then
+                    exit 0
+                  fi
+                  NEW_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
+                  echo "Merge was rejected after the validated check; current protected merge is ${NEW_SHA}. Revalidating instead of failing the production run."
+                  MERGE_SHA="$NEW_SHA"
+                fi
+              elif [ "$STATUS" = 'completed' ] && [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != 'success' ]; then
                 echo "Required guardrail-qa completed with ${CONCLUSION} on ${MERGE_SHA}."
                 exit 1
+              fi
+              if [ -n "$MERGE_SHA" ] && [ "$MERGE_SHA" != "$LAST_DISPATCH_SHA" ]; then
+                CHECK_COUNT=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${MERGE_SHA}/check-runs" --jq '[.check_runs[] | select(.name=="guardrail-qa" and .app.id==15368)] | length')
+                if [ "$CHECK_COUNT" = '0' ]; then
+                  echo "No guardrail-qa exists on current protected merge ${MERGE_SHA}; dispatching QA for ${HEAD_REF}."
+                  gh workflow run guardrail-qa.yml --ref "$HEAD_REF"
+                  LAST_DISPATCH_SHA="$MERGE_SHA"
+                fi
               fi
             fi
             sleep 10
           done
-          echo 'Required guardrail-qa did not reach success on the protected synthetic merge within 30 minutes.'
+          echo 'Required guardrail-qa did not reach a mergeable stable protected synthetic commit within 30 minutes.'
           exit 1
