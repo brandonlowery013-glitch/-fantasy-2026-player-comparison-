@@ -46,7 +46,20 @@ jobs:
           node scripts/build-live-full-universe-review-v2.mjs
           node scripts/normalize-nfl-article-bodies.mjs
           node scripts/filter-live-review-materiality.mjs
-          node scripts/validate-full-universe-news-review.mjs
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          let canonical=[];
+          for(let i=0;i<Number(src.runtime_player_shards);i++) canonical.push(...require(`./players${i}.json`).map(p=>p.n));
+          const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
+          const names=(review.players||[]).map(x=>x.player);
+          const set=new Set(names), canon=new Set(canonical);
+          const missing=canonical.filter(x=>!set.has(x));
+          const extra=names.filter(x=>!canon.has(x));
+          if(canonical.length!==166||new Set(canonical).size!==166||names.length!==166||set.size!==166||missing.length||extra.length) throw new Error(`Tracked weekly review coverage failed: rows=${names.length}, unique=${set.size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
+          if(review.materiality_filter?.name_collision_regression_tests!==true||review.source_quality?.name_collision_regression_tests!==true) throw new Error('Weekly review name-collision guard did not run');
+          console.log(JSON.stringify({result:'PASS',tracked_players:166},null,2));
+          NODE
 
       - name: Build Yahoo-ESPN-style weekly player outlook layer
         run: node scripts/build-weekly-player-outlook.mjs
@@ -60,6 +73,7 @@ jobs:
           const names=Object.keys(out.players||{});
           if(out.universe!==166||names.length!==166||new Set(names).size!==166) throw new Error(`Weekly outlook coverage ${names.length}/166`);
           if(report.result!=='PASS'||report.players!==166) throw new Error('Weekly outlook report did not PASS');
+          if(Number(report.with_next_game)<150) throw new Error(`Next-game coverage too low: ${report.with_next_game}/166`);
           for(const [name,p] of Object.entries(out.players)){
             if(!p.current_outlook) throw new Error(`${name} missing current outlook`);
             if(!['MATERIAL_NEWS','NEWS_PRESENT','NO_MATERIAL_NEWS'].includes(p.news_state)) throw new Error(`${name} invalid news state`);
