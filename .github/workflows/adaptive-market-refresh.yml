@@ -70,8 +70,6 @@ jobs:
         if: steps.cadence.outputs.run == 'true'
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-          # Player props now run in adaptive-player-prop-refresh.yml so the
-          # featured-market loop cannot duplicate prop requests/credits.
           MARKET_MAX_PROP_EVENTS: '0'
         run: node scripts/ingest-live-market-snapshots.mjs
       - name: Validate current market snapshots
@@ -129,25 +127,37 @@ jobs:
         run: |
           branch="${{ steps.persist.outputs.branch }}"
           pr_url=$(gh pr create --base main --head "$branch" --title "Production: adaptive pregame market refresh" --body "Automated pregame spread/total/moneyline refresh selected by time-to-kickoff cadence. Market data remains downstream-only and stale-week isolation remains enforced. Required Guardrail QA must pass before merge.")
-          # A PR created with GITHUB_TOKEN does not recursively trigger PR workflows,
-          # so explicitly dispatch the required Guardrail QA on this exact head ref.
+          pr_number=$(gh pr view "$pr_url" --json number --jq '.number')
           gh workflow run guardrail-qa.yml --ref "$branch"
           echo "url=$pr_url" >> "$GITHUB_OUTPUT"
+          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
       - name: Wait for guardrail and merge adaptive market state
         if: steps.persist.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           PR_URL: ${{ steps.state_pr.outputs.url }}
+          PR_NUMBER: ${{ steps.state_pr.outputs.number }}
         shell: bash
         run: |
-          found=false
-          for i in $(seq 1 60); do
-            if gh pr checks "$PR_URL" --required 2>&1 | grep -q "guardrail-qa"; then found=true; break; fi
+          set -euo pipefail
+          for i in $(seq 1 180); do
+            MERGE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
+            if [ -n "$MERGE_SHA" ]; then
+              CHECK=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${MERGE_SHA}/check-runs" \
+                --jq '[.check_runs[] | select(.name=="guardrail-qa" and .app.id==15368)] | sort_by(.started_at // .created_at) | last // {}')
+              CONCLUSION=$(printf '%s' "$CHECK" | jq -r '.conclusion // empty')
+              STATUS=$(printf '%s' "$CHECK" | jq -r '.status // empty')
+              if [ "$CONCLUSION" = 'success' ]; then
+                echo "Required guardrail-qa passed on protected synthetic merge ${MERGE_SHA}."
+                gh pr merge "$PR_URL" --merge --delete-branch
+                exit 0
+              fi
+              if [ "$STATUS" = 'completed' ] && [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != 'success' ]; then
+                echo "Required guardrail-qa completed with ${CONCLUSION} on ${MERGE_SHA}."
+                exit 1
+              fi
+            fi
             sleep 10
           done
-          if [ "$found" != "true" ]; then
-            echo "Required guardrail-qa check did not appear."
-            exit 1
-          fi
-          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
-          gh pr merge "$PR_URL" --merge --delete-branch
+          echo 'Required guardrail-qa did not reach success on the protected synthetic merge within 30 minutes.'
+          exit 1
