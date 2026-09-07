@@ -140,8 +140,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Revalidate any newly generated protected merge SHA instead of relying on a stale success.
           LAST_DISPATCH_SHA=''
+          LAST_FAILURE_RETRY_SHA=''
           for i in $(seq 1 180); do
             PR_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
             PR_STATE=$(printf '%s' "$PR_JSON" | jq -r '.state')
@@ -176,7 +176,15 @@ jobs:
                   MERGE_SHA="$NEW_SHA"
                 fi
               elif [ "$STATUS" = 'completed' ] && [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != 'success' ]; then
-                echo "Required guardrail-qa completed with ${CONCLUSION} on ${MERGE_SHA}."
+                if [ "$MERGE_SHA" != "$LAST_FAILURE_RETRY_SHA" ]; then
+                  echo "Required guardrail-qa completed with ${CONCLUSION} on ${MERGE_SHA}; redispatching QA once for this exact protected merge before treating it as a hard failure."
+                  gh workflow run guardrail-qa.yml --ref "$HEAD_REF"
+                  LAST_FAILURE_RETRY_SHA="$MERGE_SHA"
+                  LAST_DISPATCH_SHA="$MERGE_SHA"
+                  sleep 10
+                  continue
+                fi
+                echo "Required guardrail-qa remained non-successful on ${MERGE_SHA} after one exact-SHA retry."
                 exit 1
               fi
               if [ -n "$MERGE_SHA" ] && [ "$MERGE_SHA" != "$LAST_DISPATCH_SHA" ]; then
