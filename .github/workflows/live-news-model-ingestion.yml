@@ -20,6 +20,10 @@ permissions:
   checks: read
   actions: write
 
+concurrency:
+  group: live-news-model-ingestion-production
+  cancel-in-progress: false
+
 jobs:
   live-news-model-ingestion:
     runs-on: ubuntu-latest
@@ -43,6 +47,30 @@ jobs:
           if(names.length!==166||new Set(names).size!==166) throw new Error(`Loaded player universe ${names.length}/${new Set(names).size}, expected 166/166`);
           console.log(JSON.stringify({result:'PASS',players:166,shards:src.runtime_player_shards},null,2));
           NODE
+
+      - name: Reconcile any in-flight accepted canonical news state
+        if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH='production/live-news-model-current'
+          PATCH=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').current_update_layer")
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH"
+            OPEN_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&base=main&head=${OWNER}:${BRANCH}" --jq '.[0].number // empty')
+            if [ -n "$OPEN_NUMBER" ]; then
+              git checkout "refs/remotes/origin/$BRANCH" -- "$PATCH"
+              echo "Reconciled canonical current-update layer from in-flight persistence PR #${OPEN_NUMBER}."
+            else
+              echo 'Stable persistence branch exists without an open PR; main remains the reconciliation source.'
+            fi
+          else
+            echo 'No in-flight persistence branch; main is the reconciliation source.'
+          fi
 
       - name: Collect current live football news and context
         run: |
@@ -136,33 +164,59 @@ jobs:
           set -euo pipefail
           PATCH=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').current_update_layer")
           FILES=("$PATCH" guardrails/live-news-model-application-report.json guardrails/current-football-review.json analysis/substantive-component-recalculation-current.json analysis/full-universe-reconciliation-taxonomy-current.json)
+          BRANCH='production/live-news-model-current'
+          OWNER="${GITHUB_REPOSITORY_OWNER}"
+          BODY="Automated live-news ingestion for the canonical 166-player model. Writes dated news state and Current Model Impact into the canonical current update layer; when a run has no newer material player news, the most recent material news state is retained. Static evaluations, canonical boards, and CTD interface are not mutated. Untracked admissions are handled by the separate universe-admission pipeline. Latest source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+
+          EXISTING_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&base=main&head=${OWNER}:${BRANCH}" --jq '.[0].number // empty')
 
           if [ -z "$(git status --porcelain -- "${FILES[@]}")" ]; then
-            echo 'No persistence changes; latest committed news/model state remains canonical.'
-            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            if [ -n "$EXISTING_NUMBER" ]; then
+              gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${EXISTING_NUMBER}" -f body="$BODY" >/dev/null
+              gh workflow run guardrail-qa.yml --ref "$BRANCH"
+              PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${EXISTING_NUMBER}"
+              echo 'changed=true' >> "$GITHUB_OUTPUT"
+              echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+              echo "pr_number=$EXISTING_NUMBER" >> "$GITHUB_OUTPUT"
+              echo "No new file delta, but existing persistence PR #${EXISTING_NUMBER} remains active; re-dispatched required Guardrail QA."
+            else
+              echo 'No persistence changes; latest committed news/model state remains canonical.'
+              echo 'changed=false' >> "$GITHUB_OUTPUT"
+            fi
             exit 0
           fi
 
-          BRANCH="production/live-news-model-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH"
+          fi
+
           git checkout -B "$BRANCH"
           git add -- "${FILES[@]}"
 
           if git diff --cached --quiet; then
-            echo 'No staged persistence changes; latest committed news/model state remains canonical.'
-            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            if [ -n "$EXISTING_NUMBER" ]; then
+              gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${EXISTING_NUMBER}" -f body="$BODY" >/dev/null
+              gh workflow run guardrail-qa.yml --ref "$BRANCH"
+              PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${EXISTING_NUMBER}"
+              echo 'changed=true' >> "$GITHUB_OUTPUT"
+              echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+              echo "pr_number=$EXISTING_NUMBER" >> "$GITHUB_OUTPUT"
+            else
+              echo 'changed=false' >> "$GITHUB_OUTPUT"
+            fi
             exit 0
           fi
 
           git commit -m "Persist live 166-player news model impact"
-          git push --set-upstream origin "$BRANCH"
+          git push --force-with-lease --set-upstream origin "$BRANCH"
 
-          EXISTING_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&base=main&head=${GITHUB_REPOSITORY_OWNER}:${BRANCH}" --jq '.[0].number // empty')
           if [ -n "$EXISTING_NUMBER" ]; then
             PR_NUMBER="$EXISTING_NUMBER"
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" -f body="$BODY" >/dev/null
           else
-            BODY="Automated live-news ingestion for the canonical 166-player model. Writes dated news state and Current Model Impact into the canonical current update layer; when a run has no newer material player news, the most recent material news state is retained. Static evaluations, canonical boards, and CTD interface are not mutated. Untracked admissions are handled by the separate universe-admission pipeline. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
             PR_NUMBER=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pulls" -f title='Persist live 166-player news model impact' -f head="$BRANCH" -f base='main' -f body="$BODY" --jq '.number')
           fi
 
