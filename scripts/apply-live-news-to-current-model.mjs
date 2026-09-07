@@ -1,4 +1,4 @@
-// Acceptance trigger: post-PR-237 synthetic-merge guardrail production proof.
+// Acceptance trigger: second consecutive post-PR-297 production live-news proof.
 import fs from 'node:fs';
 import path from 'node:path';
 
