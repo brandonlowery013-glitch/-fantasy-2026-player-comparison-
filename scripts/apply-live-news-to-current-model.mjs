@@ -1,3 +1,4 @@
+// Acceptance trigger: consecutive real production live-news persistence run 2.
 import fs from 'node:fs';
 import path from 'node:path';
 
