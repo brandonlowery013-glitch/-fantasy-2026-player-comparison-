@@ -1,6 +1,6 @@
 {
   "schema_version": "1.5.0",
-  "generated_at": "2026-09-07T04:36:28.264Z",
+  "generated_at": "2026-09-07T23:39:40.334Z",
   "authoritative": false,
   "mutation_policy": "PROPOSAL_ONLY_NO_CANONICAL_WRITES",
   "universe": {
@@ -10,10 +10,10 @@
   "counts": {
     "UP": 0,
     "DOWN": 0,
-    "MATERIAL_HOLD": 74,
+    "MATERIAL_HOLD": 80,
     "POSITIVE_HOLD": 0,
     "NEGATIVE_HOLD": 0,
-    "NO_MATERIAL_UPDATE": 92
+    "NO_MATERIAL_UPDATE": 86
   },
   "validation": {
     "exact_universe": true,
@@ -33,10 +33,25 @@
       "player": "Bijan Robinson",
       "pos": "RB",
       "team": "Atlanta Falcons",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_LEAGUE",
+          "headline": "Fantasy football buzz: What Tua Tagovailoa being named starter means for Falcons",
+          "matched_context": "fantasy football buzz what tua tagovailoa being named starter means for falcons matt bowen looks at what tua tagovailoa starting means for bijan robinson drake london and kyle pitts",
+          "description": "Matt Bowen looks at what Tua Tagovailoa starting means for Bijan Robinson, Drake London and Kyle Pitts Sr.",
+          "published": "2026-09-07T23:18:39Z",
+          "url": "https://www.espn.com/fantasy/football/story/_/id/40699880/fantasy-football-injuries-position-battles-nfl-news-analysis",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "ATL",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.645,
@@ -52,21 +67,28 @@
           "sustainability": 9.6
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "fantasy football buzz what tua tagovailoa being named starter means for falcons matt bowen looks at what tua tagovailoa starting means for bijan robinson drake london and kyle pitts",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.645,
       "proposed_true_value_rank": 1,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Atlanta Falcons"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Jahmyr Gibbs",
@@ -83,6 +105,20 @@
           "description": "As we hurtle toward the 2026 NFL season, Kevin Patra breaks down the top NFC North training camp storylines to monitor for the Chicago Bears, Detroit Lions, Green Bay Packers and Minnesota Vikings.",
           "published": "2026-07-14T14:32:30.781Z",
           "url": "https://www.nfl.com/news/nfc-north-training-camp-2026-preview-bears-lions-packers-vikings",
+          "match_evidence": null,
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
+          "team": "DET",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "2026 NFL season: Predicting stat leaders in 11 major categories",
+          "matched_context": "2026 NFL season: Predicting stat leaders in 11 major categories Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories. minimize the risks he opens himself up to however dart scored nine times on the ground as a rookie and it s difficult to envision him ever backing down when the goal line is in sight non qb rushing yards rest of top five 2 bijan robinson 3 jahmyr gibbs 4 james cook 5 omarion hampton taylor lost the rushing crown to cook by just 36 yards in 2025 after tailing off from a torrid start to the campaign over the colts first 10 games taylor produced outings of 165 102 123 153 and 244 rushing ya es tear those types of performances are again on the menu robinson has enjoyed back to back 1 400 yard rushing seasons and could be in line for more work after atlanta replaced tyler allgeier 157 touches in 2025 with brian robinson just as jahmyr gibbs will take on an even larger load in detroit s backfield sharing it with isiah pacheco versus david montgomery cook is perennially underrated and could absolutely come close to matching his league career high 1 621 rushing yards from 2025 h",
+          "description": "Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories.",
+          "published": "2026-08-28T12:30:51.554Z",
+          "url": "https://www.nfl.com/news/2026-nfl-season-predicting-stat-leaders-in-11-major-categories",
           "match_evidence": null,
           "evidence_lane": "material_news_signals",
           "evidence_scope": "DIRECT_PLAYER_TRANSITION",
@@ -168,11 +204,11 @@
         },
         {
           "source": "TRANSITION_INTELLIGENCE",
-          "headline": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27;",
-          "matched_context": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27; NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. n saturday s preseason game per head coach andy reid justin fields garrett nussmeier and chris oladokun will split snaps roster cuts db bryce phillips injuries de myles garrett knee did not practice on thursday per the los angeles times wr puka nacua is dealing with psoas core groin soreness but sean mcvay expects the receiver to resume practicing next week per the los angeles times preseason news sean mcvay said stetson bennett will start at quarterback in saturday s preseason opener",
+          "headline": "NFL news roundup: Breece Hall strains groin at Jets practice; Najee Harris visits Giants",
+          "matched_context": "NFL news roundup: Breece Hall strains groin at Jets practice; Najee Harris visits Giants NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. lb parker hughes placed on injured reserve roster cuts te ethan connor injuries og jackson powers johnson left monday s practice with an undisclosed injury per local reporters signings wr noah brown signings p jack bouwmeester injuries wr puka nacua psoas is still dealing with soreness and is expected to return to practice next week coach sean mcvay told reporters wr mario williams hamstring is expected to miss a few weeks per mcvay ol keagen trost hamstring is expected to miss a few",
           "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
-          "published": "2026-08-13T15:41:16.817Z",
-          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-thursday-aug-13",
+          "published": "2026-08-17T13:47:03.292Z",
+          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-monday-aug-17",
           "match_evidence": null,
           "evidence_lane": "material_news_signals",
           "evidence_scope": "DIRECT_PLAYER_TRANSITION",
@@ -182,11 +218,11 @@
         },
         {
           "source": "TRANSITION_INTELLIGENCE",
-          "headline": "NFL news roundup: Breece Hall strains groin at Jets practice; Najee Harris visits Giants",
-          "matched_context": "NFL news roundup: Breece Hall strains groin at Jets practice; Najee Harris visits Giants NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. lb parker hughes placed on injured reserve roster cuts te ethan connor injuries og jackson powers johnson left monday s practice with an undisclosed injury per local reporters signings wr noah brown signings p jack bouwmeester injuries wr puka nacua psoas is still dealing with soreness and is expected to return to practice next week coach sean mcvay told reporters wr mario williams hamstring is expected to miss a few weeks per mcvay ol keagen trost hamstring is expected to miss a few",
-          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
-          "published": "2026-08-17T13:47:03.292Z",
-          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-monday-aug-17",
+          "headline": "2026 NFL season: Predicting stat leaders in 11 major categories",
+          "matched_context": "2026 NFL season: Predicting stat leaders in 11 major categories Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories. lenty of chances to be the guy to score editor s update green bay s josh jacobs originally ranked fourth in this category but was removed after the nfl placed jacobs on the commissioner s exempt list on sunday receptions rest of top five 2 puka nacua 3 amon ra st brown 4 brock bowers 5 jaxon smith njigba chase sat a game in 2025 and still paced the nfl with 185 targets he had to deal with the arduous journey from jake browning to joe flacco amid joe burrow s injury and still trailed na d to reach 1 194 receiving yards in 2023 as a rookie at a position with a notoriously difficult learning curve entering year 3 he is the raiders offense through the air receiving touchdowns rest of top five 2 a j brown 3 ja 39 marr chase 4 puka nacua 5 george pickens if it s not clear by now st brown chase and nacua are solid bets to be the top three wide receivers in the league in some order both in real life and in fantasy competition there s no need to get too contrarian for all the d last year with 23 red zone targets is in a high octane offense and has a mega contract to play for on the franchise tag every touchdown will help scrimmage yards rest of top five 2 christian mccaffrey 3 bijan robinson 4 jonathan taylor 5 puka nacua gibbs finished fifth in scrimmage yards last year behind the three players immediately following him on this list and james cook as mentioned before he s in line for the most logical usage boost of any of them due to david montgomery s dep",
+          "description": "Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories.",
+          "published": "2026-08-28T12:30:51.554Z",
+          "url": "https://www.nfl.com/news/2026-nfl-season-predicting-stat-leaders-in-11-major-categories",
           "match_evidence": null,
           "evidence_lane": "material_news_signals",
           "evidence_scope": "DIRECT_PLAYER_TRANSITION",
@@ -291,10 +327,25 @@
       "player": "Jaxon Smith-Njigba",
       "pos": "WR",
       "team": "Seattle Seahawks",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "2026 NFL season: Predicting stat leaders in 11 major categories",
+          "matched_context": "2026 NFL season: Predicting stat leaders in 11 major categories Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories. s update green bay s josh jacobs originally ranked fourth in this category but was removed after the nfl placed jacobs on the commissioner s exempt list on sunday receptions rest of top five 2 puka nacua 3 amon ra st brown 4 brock bowers 5 jaxon smith njigba chase sat a game in 2025 and still paced the nfl with 185 targets he had to deal with the arduous journey from jake browning to joe flacco amid joe burrow s injury and still trailed nacua the receptions leader with 129 by just four catches",
+          "description": "Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories.",
+          "published": "2026-08-28T12:30:51.554Z",
+          "url": "https://www.nfl.com/news/2026-nfl-season-predicting-stat-leaders-in-11-major-categories",
+          "match_evidence": null,
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
+          "team": "SEA",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.305,
@@ -310,30 +361,52 @@
           "sustainability": 8.7
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "2026 NFL season: Predicting stat leaders in 11 major categories Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories. s update green bay s josh jacobs originally ranked fourth in this category but was removed after the nfl placed jacobs on the commissioner s exempt list on sunday receptions rest of top five 2 puka nacua 3 amon ra st brown 4 brock bowers 5 jaxon smith njigba chase sat a game in 2025 and still paced the nfl with 185 targets he had to deal with the arduous journey from jake browning to joe flacco amid joe burrow s injury and still trailed nacua the receptions leader with 129 by just four catches",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.305,
       "proposed_true_value_rank": 5,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Seattle Seahawks"
       },
       "market_impact": {
         "current_label": "FADE",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Amon-Ra St. Brown",
       "pos": "WR",
       "team": "Detroit Lions",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "2026 NFL season: Predicting stat leaders in 11 major categories",
+          "matched_context": "2026 NFL season: Predicting stat leaders in 11 major categories Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories. ces to be the guy to score editor s update green bay s josh jacobs originally ranked fourth in this category but was removed after the nfl placed jacobs on the commissioner s exempt list on sunday receptions rest of top five 2 puka nacua 3 amon ra st brown 4 brock bowers 5 jaxon smith njigba chase sat a game in 2025 and still paced the nfl with 185 targets he had to deal with the arduous journey from jake browning to joe flacco amid joe burrow s injury and still trailed nacua the receptions e year jsn is a regression candidate as seattle figures things out under first time offensive coordinator brian fleury regardless he ll be the focal point of the seahawks passing attack receiving yards rest of top five 2 ja 39 marr chase 3 amon ra st brown 4 justin jefferson 5 brock bowers even if nacua doesn t end up with the most receptions in the league he always makes the most of his opportunities he currently holds the all time record with an average of 95 3 receiving yards per game he",
+          "description": "Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories.",
+          "published": "2026-08-28T12:30:51.554Z",
+          "url": "https://www.nfl.com/news/2026-nfl-season-predicting-stat-leaders-in-11-major-categories",
+          "match_evidence": null,
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
+          "team": "DET",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.605,
@@ -349,21 +422,29 @@
           "sustainability": 9.7
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "2026 NFL season: Predicting stat leaders in 11 major categories Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories. ces to be the guy to score editor s update green bay s josh jacobs originally ranked fourth in this category but was removed after the nfl placed jacobs on the commissioner s exempt list on sunday receptions rest of top five 2 puka nacua 3 amon ra st brown 4 brock bowers 5 jaxon smith njigba chase sat a game in 2025 and still paced the nfl with 185 targets he had to deal with the arduous journey from jake browning to joe flacco amid joe burrow s injury and still trailed nacua the receptions e year jsn is a regression candidate as seattle figures things out under first time offensive coordinator brian fleury regardless he ll be the focal point of the seahawks passing attack receiving yards rest of top five 2 ja 39 marr chase 3 amon ra st brown 4 justin jefferson 5 brock bowers even if nacua doesn t end up with the most receptions in the league he always makes the most of his opportunities he currently holds the all time record with an average of 95 3 receiving yards per game he",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.605,
       "proposed_true_value_rank": 6,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Detroit Lions"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Christian McCaffrey",
@@ -373,20 +454,6 @@
       "meaningful_evidence": true,
       "team_context_only": false,
       "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "Christian McCaffrey: Absence from practices was &#x27;part of the plan from the jump&#x27; ",
-          "matched_context": "christian mccaffrey absence from practices was x27 part of the plan from the jump x27 san francisco 49ers running back christian mccaffrey returned to practice on sunday for the first time since aug 8",
-          "description": "San Francisco 49ers running back Christian McCaffrey returned to practice on Sunday for the first time since Aug. 8. ",
-          "published": "2026-08-24T11:43:55.182Z",
-          "url": "https://www.nfl.com/news/christian-mccaffrey-absence-from-practices-was-part-of-the-plan-from-the-jump",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "SF",
-          "source_team": null,
-          "context_lanes": null
-        },
         {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFL news roundup: Breece Hall strains groin at Jets practice; Najee Harris visits Giants",
@@ -428,6 +495,20 @@
           "team": "SF",
           "source_team": null,
           "context_lanes": null
+        },
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "Christian McCaffrey: Absence from practices was &#x27;part of the plan from the jump&#x27; ",
+          "matched_context": "Christian McCaffrey: Absence from practices was &#x27;part of the plan from the jump&#x27;  San Francisco 49ers running back Christian McCaffrey returned to practice on Sunday for the first time since Aug. 8.  christian mccaffrey absence from practices was x27 part of the plan from the jump x27 san francisco 49ers running back christian mccaffrey returned to practice on sunday for the first time since aug 8 george kittle getting activated from the physically unable to perform list wasn t the only positive news from san francisco on sunday star 49ers running back christian mccaffrey also returned to the practice field cmc participated in team drills for the first time since aug 8 as he dealt with tightness for a fortnight the running back said that the time off was part of the plan to ensure he s ready for another lon",
+          "description": "San Francisco 49ers running back Christian McCaffrey returned to practice on Sunday for the first time since Aug. 8. ",
+          "published": "2026-08-24T11:43:55.182Z",
+          "url": "https://www.nfl.com/news/christian-mccaffrey-absence-from-practices-was-part-of-the-plan-from-the-jump",
+          "match_evidence": null,
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
+          "team": "SF",
+          "source_team": null,
+          "context_lanes": null
         }
       ],
       "prior_assumption": {
@@ -445,13 +526,12 @@
           "sustainability": 8.3
         }
       },
-      "changed_fact": "christian mccaffrey absence from practices was x27 part of the plan from the jump x27 san francisco 49ers running back christian mccaffrey returned to practice on sunday for the first time since aug 8",
+      "changed_fact": "NFL news roundup: Breece Hall strains groin at Jets practice; Najee Harris visits Giants NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. practice monday per local reports signings cb isaiah bolden roster cuts ol hollin pierce signings ol nick zakelj signed to a one year deal dl victor dimukeje signed to a one year deal roster cuts rb khalil herbert ol kion smith injuries rb christian mccaffrey tightness is not considered to be dealing with a serious injury however it is legitimate and not a hold in for a contract extension nfl network insider ian rapoport reported signings rb anthony hankerson wr julian hicks lb power echols ros",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ],
       "component_delta": null,
@@ -887,10 +967,25 @@
       "player": "Drake London",
       "pos": "WR",
       "team": "Atlanta Falcons",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_LEAGUE",
+          "headline": "Fantasy football buzz: What Tua Tagovailoa being named starter means for Falcons",
+          "matched_context": "fantasy football buzz what tua tagovailoa being named starter means for falcons matt bowen looks at what tua tagovailoa starting means for bijan robinson drake london and kyle pitts",
+          "description": "Matt Bowen looks at what Tua Tagovailoa starting means for Bijan Robinson, Drake London and Kyle Pitts Sr.",
+          "published": "2026-09-07T23:18:39Z",
+          "url": "https://www.espn.com/fantasy/football/story/_/id/40699880/fantasy-football-injuries-position-battles-nfl-news-analysis",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "ATL",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.09,
@@ -906,21 +1001,28 @@
           "sustainability": 9
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "fantasy football buzz what tua tagovailoa being named starter means for falcons matt bowen looks at what tua tagovailoa starting means for bijan robinson drake london and kyle pitts",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.09,
       "proposed_true_value_rank": 16,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Atlanta Falcons"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Chase Brown",
@@ -1043,10 +1145,25 @@
       "player": "Brock Bowers",
       "pos": "TE",
       "team": "Las Vegas Raiders",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "2026 NFL season: Predicting stat leaders in 11 major categories",
+          "matched_context": "2026 NFL season: Predicting stat leaders in 11 major categories Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories. o score editor s update green bay s josh jacobs originally ranked fourth in this category but was removed after the nfl placed jacobs on the commissioner s exempt list on sunday receptions rest of top five 2 puka nacua 3 amon ra st brown 4 brock bowers 5 jaxon smith njigba chase sat a game in 2025 and still paced the nfl with 185 targets he had to deal with the arduous journey from jake browning to joe flacco amid joe burrow s injury and still trailed nacua the receptions leader with 129 s seattle figures things out under first time offensive coordinator brian fleury regardless he ll be the focal point of the seahawks passing attack receiving yards rest of top five 2 ja 39 marr chase 3 amon ra st brown 4 justin jefferson 5 brock bowers even if nacua doesn t end up with the most receptions in the league he always makes the most of his opportunities he currently holds the all time record with an average of 95 3 receiving yards per game he s also outperformed chase twice in",
+          "description": "Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories.",
+          "published": "2026-08-28T12:30:51.554Z",
+          "url": "https://www.nfl.com/news/2026-nfl-season-predicting-stat-leaders-in-11-major-categories",
+          "match_evidence": null,
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
+          "team": "LV",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.26,
@@ -1062,21 +1179,29 @@
           "sustainability": 9.2
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "2026 NFL season: Predicting stat leaders in 11 major categories Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories. o score editor s update green bay s josh jacobs originally ranked fourth in this category but was removed after the nfl placed jacobs on the commissioner s exempt list on sunday receptions rest of top five 2 puka nacua 3 amon ra st brown 4 brock bowers 5 jaxon smith njigba chase sat a game in 2025 and still paced the nfl with 185 targets he had to deal with the arduous journey from jake browning to joe flacco amid joe burrow s injury and still trailed nacua the receptions leader with 129 s seattle figures things out under first time offensive coordinator brian fleury regardless he ll be the focal point of the seahawks passing attack receiving yards rest of top five 2 ja 39 marr chase 3 amon ra st brown 4 justin jefferson 5 brock bowers even if nacua doesn t end up with the most receptions in the league he always makes the most of his opportunities he currently holds the all time record with an average of 95 3 receiving yards per game he s also outperformed chase twice in",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.26,
       "proposed_true_value_rank": 24,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Las Vegas Raiders"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Kenneth Walker III",
@@ -1663,20 +1788,6 @@
           "description": "Is Matthew Golden poised to break out in Year 2? How does Patrick Mahomes look in his return from knee surgery? Are DJ Moore and Josh Allen jelling? With training camps in full swing across the NFL, Kevin Patra spotlights the most interesting developments for all 32 teams.",
           "published": "2026-08-06T22:32:50.685Z",
           "url": "https://www.nfl.com/news/2026-nfl-training-camp-early-takeaways-for-all-32-teams",
-          "match_evidence": null,
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
-          "team": "BUF",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "TRANSITION_INTELLIGENCE",
-          "headline": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27;",
-          "matched_context": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27; NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. actice next week after leaving wednesday s session early due to an undisclosed injury head coach jesse minter said cb nate wiggins could return to practice next week after suffering a left leg injury on tuesday per minter preseason news qb josh allen and all of buffalo s healthy starters will play in a limited capacity in saturday s home preseason opener against the panthers head coach joe brady said injuries rb ty johnson is dealing with a lower body injury per brady c connor mcgovern",
-          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
-          "published": "2026-08-13T15:41:16.817Z",
-          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-thursday-aug-13",
           "match_evidence": null,
           "evidence_lane": "material_news_signals",
           "evidence_scope": "DIRECT_PLAYER_TRANSITION",
@@ -2640,20 +2751,6 @@
       "team_context_only": false,
       "evidence_summary": [
         {
-          "source": "NFL.com",
-          "headline": "Rams HC Sean McVay expects WR Puka Nacua, OL Alaric Jackson to play in Week 1 vs. 49ers",
-          "matched_context": "l a s offseason program jackson was arrested on suspicion of felony domestic violence on june 9 on june 13 his case was assigned for a pre filing diversion that would allow him to potentially avoid criminal charges other players green bay packers running back josh jacobs and denver broncos linebacker jonathon cooper had their respective legal situations from the offseason reviewed by the nfl and were placed on the commissioner s exempt list on aug 30 mcvay also provided practice updates on the rams two most high profile defensive linemen aaron",
-          "description": "Sean McVay does not foresee wide receiver Puka Nacuaor offensive tackle Alaric Jackson being unavailable for the Los Angeles Rams&#x27; Week 1 game against the San Francisco 49ers in Australia. ",
-          "published": "2026-09-06T23:16:37.986Z",
-          "url": "https://www.nfl.com/news/rams-hc-sean-mcvay-expects-wr-puka-nacua-ol-alaric-jackson-to-play-in-week-1-vs-49ers",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "GB",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "ESPN_TRANSACTIONS",
           "headline": "Transaction: Acquired a 2028 sixth-round draft pick from Miami in exchange for QB Kyle McCord. Acquired TE Mark Redman from the Los Angeles Rams in exchange for a 2028 seventh-round draft pick. Placed RB Josh Jacobs on the commissioner exempt list.",
           "matched_context": "transaction acquired a 2028 sixth round draft pick from miami in exchange for qb kyle mccord acquired te mark redman from the los angeles rams in exchange for a 2028 seventh round draft pick placed rb josh jacobs on the commissioner exempt list acquired a 2028 sixth round draft pick from miami in exchange for qb kyle mccord acquired te mark redman from the los angeles rams in exchange for a 2028 seventh round draft pick placed rb josh jacobs on the commissioner exempt list",
@@ -2711,7 +2808,7 @@
           "sustainability": 7.6
         }
       },
-      "changed_fact": "l a s offseason program jackson was arrested on suspicion of felony domestic violence on june 9 on june 13 his case was assigned for a pre filing diversion that would allow him to potentially avoid criminal charges other players green bay packers running back josh jacobs and denver broncos linebacker jonathon cooper had their respective legal situations from the offseason reviewed by the nfl and were placed on the commissioner s exempt list on aug 30 mcvay also provided practice updates on the rams two most high profile defensive linemen aaron",
+      "changed_fact": "transaction acquired a 2028 sixth round draft pick from miami in exchange for qb kyle mccord acquired te mark redman from the los angeles rams in exchange for a 2028 seventh round draft pick placed rb josh jacobs on the commissioner exempt list acquired a 2028 sixth round draft pick from miami in exchange for qb kyle mccord acquired te mark redman from the los angeles rams in exchange for a 2028 seventh round draft pick placed rb josh jacobs on the commissioner exempt list",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -2849,6 +2946,20 @@
           "description": "As we hurtle toward the 2026 NFL season, Nick Shook breaks down the top AFC North training camp storylines to monitor for the Baltimore Ravens, Cincinnati Bengals, Cleveland Browns and Pittsburgh Steelers.",
           "published": "2026-07-07T15:36:16.541Z",
           "url": "https://www.nfl.com/news/afc-north-training-camp-2026-preview-ravens-bengals-browns-steelers",
+          "match_evidence": null,
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
+          "team": "CIN",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "2026 NFL season: Predicting stat leaders in 11 major categories",
+          "matched_context": "2026 NFL season: Predicting stat leaders in 11 major categories Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories. is joe burrow poised to bounce back with a prolific passing season can myles garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons bobby kownack predicts the nfl x27 s 2026 leaders in 11 major statistic categories receptions rest of top five 2 puka nacua 3 amon ra st brown 4 brock bowers 5 jaxon smith njigba chase sat a game in 2025 and still paced the nfl with 185 targets he had to deal with the arduous journey from jake browning to joe flacco amid joe burrow s injury and still trailed nacua the receptions leader with 129 by just four catches the bengals throw a ton and burrow targets chase a ton which after a little rudimentary math equates to a ton of catches for chase assuming both sides of",
+          "description": "Is Joe Burrow poised to bounce back with a prolific passing season? Can Myles Garrett accomplish the rare feat of pacing the league in sacks in consecutive seasons? Bobby Kownack predicts the NFL&#x27;s 2026 leaders in 11 major statistic categories.",
+          "published": "2026-08-28T12:30:51.554Z",
+          "url": "https://www.nfl.com/news/2026-nfl-season-predicting-stat-leaders-in-11-major-categories",
           "match_evidence": null,
           "evidence_lane": "material_news_signals",
           "evidence_scope": "DIRECT_PLAYER_TRANSITION",
@@ -3216,20 +3327,6 @@
         },
         {
           "source": "TRANSITION_INTELLIGENCE",
-          "headline": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27;",
-          "matched_context": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27; NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. in thursday s preseason game vs the raiders after suffering a rib injury in last week s hall of fame game nfl network insider ian rapoport reported head coach mike lafleur said after the game that there is no concern over beck s injury rb jeremiyah love injured his ankle in thursday s preseason game but it isn t believed to be serious lafleur said g chase bisontis will have tests on the knee he injured in thursday s preseason game but lafleur described it as not good in his postgame news",
-          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
-          "published": "2026-08-13T15:41:16.817Z",
-          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-thursday-aug-13",
-          "match_evidence": null,
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
-          "team": "ARI",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFL news roundup: Vikings&#x27; Jamal Adams knee injury is &#x27;not good&#x27;; Texans sign QB",
           "matched_context": "NFL news roundup: Vikings&#x27; Jamal Adams knee injury is &#x27;not good&#x27;; Texans sign QB NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. listed in alphabetical order injuries rb james conner is progressing in his return from last year s season ending foot injury but there is no timeline on when he ll be able to participate in 11 on 11 activities per head coach mike lafleur rb jeremiyah love will be sidelined this week as he deals with an ankle injury suffered in thursday s preseason game against the raiders per lafleur te jameson geers was placed on injured reserve ol chase bisontis knee was placed on ir lb austin keys was placed on",
           "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
@@ -3372,20 +3469,6 @@
       "team_context_only": false,
       "evidence_summary": [
         {
-          "source": "NFL.com",
-          "headline": "Cam Skattebo back from injury, ready to give Giants fans more &#x27;moments&#x27; in 2026",
-          "matched_context": "cam skattebo back from injury ready to give giants fans more x27 moments x27 in 2026 giants second year running back cam skattebo joined thursday x27 s episode of the nfl report to discuss his return from last year x27 s season ending leg injury",
-          "description": "Giants second-year running back Cam Skattebo joined Thursday&#x27;s episode of \"The NFL Report\" to discuss his return from last year&#x27;s season-ending leg injury.",
-          "published": "2026-09-03T17:45:26.778Z",
-          "url": "https://www.nfl.com/news/cam-skattebo-back-from-injury-ready-to-give-giants-fans-more-moments-in-2026",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "NYG",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFC East training camp 2026 preview: Top storylines for Commanders, Cowboys, Eagles, Giants",
           "matched_context": "NFC East training camp 2026 preview: Top storylines for Commanders, Cowboys, Eagles, Giants As we hurtle toward the 2026 NFL season, Grant Gordon breaks down the top NFC East training camp storylines to monitor for the Dallas Cowboys, New York Giants, Philadelphia Eagles and Washington Commanders. cially problematic considering the team traded away standout defensive tackle dexter lawrence abdul carter sprained his ankle in june while top receivers malik nabers knee and darius slayton core muscle surgery and second year running back cam skattebo ankle are on the mend as well monitoring the availability of nabers and skattebo for week 1 will carry on through the summer even though the latter has deemed himself a sure bet for the opener with harbaugh reputed to run tough practices t",
@@ -3415,7 +3498,7 @@
           "sustainability": 8.5
         }
       },
-      "changed_fact": "cam skattebo back from injury ready to give giants fans more x27 moments x27 in 2026 giants second year running back cam skattebo joined thursday x27 s episode of the nfl report to discuss his return from last year x27 s season ending leg injury",
+      "changed_fact": "NFC East training camp 2026 preview: Top storylines for Commanders, Cowboys, Eagles, Giants As we hurtle toward the 2026 NFL season, Grant Gordon breaks down the top NFC East training camp storylines to monitor for the Dallas Cowboys, New York Giants, Philadelphia Eagles and Washington Commanders. cially problematic considering the team traded away standout defensive tackle dexter lawrence abdul carter sprained his ankle in june while top receivers malik nabers knee and darius slayton core muscle surgery and second year running back cam skattebo ankle are on the mend as well monitoring the availability of nabers and skattebo for week 1 will carry on through the summer even though the latter has deemed himself a sure bet for the opener with harbaugh reputed to run tough practices t",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -3804,25 +3887,10 @@
       "player": "Caleb Williams",
       "pos": "QB",
       "team": "Chicago Bears",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "TRANSITION_INTELLIGENCE",
-          "headline": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27;",
-          "matched_context": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27; NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. y injuries rb chuba hubbard hamstring did not practice on thursday and is considered week to week head coach dave canales said he s very confident hubbard will be ready for week 1 lb patrick jones illness sat out practice preseason news qb caleb williams will not play in saturday s preseason opener against the browns per head coach ben johnson tyson bagent will start for chicago signings cb jeremiah mcclendon roster cuts cb tyron herring was waived with an injury designation tryouts lb za",
-          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
-          "published": "2026-08-13T15:41:16.817Z",
-          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-thursday-aug-13",
-          "match_evidence": null,
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
-          "team": "CHI",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.142,
@@ -3838,28 +3906,21 @@
           "sustainability": 8.8
         }
       },
-      "changed_fact": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27; NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. y injuries rb chuba hubbard hamstring did not practice on thursday and is considered week to week head coach dave canales said he s very confident hubbard will be ready for week 1 lb patrick jones illness sat out practice preseason news qb caleb williams will not play in saturday s preseason opener against the browns per head coach ben johnson tyson bagent will start for chicago signings cb jeremiah mcclendon roster cuts cb tyron herring was waived with an injury designation tryouts lb za",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.142,
       "proposed_true_value_rank": 48,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Chicago Bears"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Jayden Daniels",
@@ -3943,10 +4004,25 @@
       "player": "Kyle Pitts",
       "pos": "TE",
       "team": "Atlanta Falcons",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_LEAGUE",
+          "headline": "Fantasy football buzz: What Tua Tagovailoa being named starter means for Falcons",
+          "matched_context": "fantasy football buzz what tua tagovailoa being named starter means for falcons matt bowen looks at what tua tagovailoa starting means for bijan robinson drake london and kyle pitts",
+          "description": "Matt Bowen looks at what Tua Tagovailoa starting means for Bijan Robinson, Drake London and Kyle Pitts Sr.",
+          "published": "2026-09-07T23:18:39Z",
+          "url": "https://www.espn.com/fantasy/football/story/_/id/40699880/fantasy-football-injuries-position-battles-nfl-news-analysis",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "ATL",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "QB WATCH",
         "score": 8.6,
@@ -3962,21 +4038,28 @@
           "sustainability": 8.5
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "fantasy football buzz what tua tagovailoa being named starter means for falcons matt bowen looks at what tua tagovailoa starting means for bijan robinson drake london and kyle pitts",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.6,
       "proposed_true_value_rank": 79,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Atlanta Falcons"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Marvin Harrison Jr.",
@@ -4559,20 +4642,6 @@
         },
         {
           "source": "TRANSITION_INTELLIGENCE",
-          "headline": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27;",
-          "matched_context": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27; NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. e an arm contusion and not too serious head coach dan campbell said roster cuts te rj maryland was waived from injured reserve with an injury settlement roster cuts lb sione takitaki was released with an injury settlement preseason news qb patrick mahomes will not play in saturday s preseason game per head coach andy reid justin fields garrett nussmeier and chris oladokun will split snaps roster cuts db bryce phillips injuries de myles garrett knee did not practice on thursday per the los a",
-          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
-          "published": "2026-08-13T15:41:16.817Z",
-          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-thursday-aug-13",
-          "match_evidence": null,
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
-          "team": "KC",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFL news roundup: FA RB Kareem Hunt visits Lions; Calvin Austin carted off at Giants practice",
           "matched_context": "NFL news roundup: FA RB Kareem Hunt visits Lions; Calvin Austin carted off at Giants practice NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. t jacksonville will likely hold thomas out until its week 1 game trades g joshua ezeuduis being acquired in a trade with the giants in exchange for a 2028 seventh round pick nfl network s ian rapoport and mike garafolo reported injuries qb patrick mahomes told reporters that he has hit all of his checkpoints in his return from acl surgery the more we practice the better i feel mahomes added rb kenneth walker foot is not expected to practice tuesday wr jeff caldwell reverted back to injured",
           "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
@@ -4621,7 +4690,6 @@
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ],
       "component_delta": null,
@@ -4647,6 +4715,20 @@
       "meaningful_evidence": true,
       "team_context_only": false,
       "evidence_summary": [
+        {
+          "source": "NFL.com",
+          "headline": "NFL news roundup: Giants release WR Darius Slayton; Colts&#x27; Alec Pierce (ankle) to play Week 1",
+          "matched_context": "nfl news roundup giants release wr darius slayton colts x27 alec pierce ankle to play week 1 nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
+          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
+          "published": "2026-09-07T15:37:46.188Z",
+          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-monday-sept-7",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "IND",
+          "source_team": null,
+          "context_lanes": null
+        },
         {
           "source": "NFL.com",
           "headline": "NFL news roundup: Ja&#x27;Marr Chase (knee) limited at practice; Colts hope Alec Pierce can play Week 1",
@@ -4747,7 +4829,7 @@
           "sustainability": 8.3
         }
       },
-      "changed_fact": "nfl news roundup ja x27 marr chase knee limited at practice colts hope alec pierce can play week 1 nfl com keeps you up to date with all of the latest league news from around the nfl",
+      "changed_fact": "nfl news roundup giants release wr darius slayton colts x27 alec pierce ankle to play week 1 nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -5406,11 +5488,11 @@
       "evidence_summary": [
         {
           "source": "NFL.com",
-          "headline": "Niners arrive in Melbourne after 15-hour flight, to spend week acclimating before Rams game",
-          "matched_context": "team s 200 member traveling party touched down on friday morning after a 15 hour chartered qantas flight and will spend a week acclimating before facing the rams in front of an expected sold out crowd at the mcg the niners arrived with injured stars george kittle and nick bosa who both returned to practice and are hoping to play in the game san francisco will be without defensive end sam okuayinonu who injured his foot in practice this week okuayinonu has been ruled out for the game he had three sacks",
-          "description": "The 49ers have arrived in Melbourne for their season-opening NFL game against the Rams at the Melbourne Cricket Ground on Sept. 11.",
-          "published": "2026-09-04T12:43:03.835Z",
-          "url": "https://www.nfl.com/news/niners-arrive-melbourne-historic-nfl-game-rams",
+          "headline": "Kyle Shanahan, 49ers &#x27;fired up&#x27; to play in Australia despite losing L.A. &#x27;home game&#x27; vs. Rams",
+          "matched_context": "the first practice day of a game week but opted against it because the rams don t have to do it until they practice on monday in california which will be tuesday in australia so any updates on the status of players like tight end george kittle and defensive end nick bosa will have to wait because we re technically in the future from where we re from and the rams are in the present i don t have to talk about injuries until tomorrow shanahan said so i m not talking",
+          "description": "The 49ers have arrived in Australia, mostly gotten over the impact of the long flight and now are getting prepared to open their season Friday in Melbourne against the Rams.",
+          "published": "2026-09-07T12:44:44.633Z",
+          "url": "https://www.nfl.com/news/kyle-shanahan-49ers-fired-up-australia-home-game-rams",
           "match_evidence": "FULL_NAME_BODY_WINDOW",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
@@ -5420,11 +5502,11 @@
         },
         {
           "source": "NFL.com",
-          "headline": "Christian McCaffrey: Absence from practices was &#x27;part of the plan from the jump&#x27; ",
-          "matched_context": "george kittle getting activated from the physically unable to perform list wasn t the only positive news from san francisco on sunday star 49ers running back christian mccaffrey also returned to the practice field cmc participated in team drills for the first time since aug 8 as",
-          "description": "San Francisco 49ers running back Christian McCaffrey returned to practice on Sunday for the first time since Aug. 8. ",
-          "published": "2026-08-24T11:43:55.182Z",
-          "url": "https://www.nfl.com/news/christian-mccaffrey-absence-from-practices-was-part-of-the-plan-from-the-jump",
+          "headline": "Niners arrive in Melbourne after 15-hour flight, to spend week acclimating before Rams game",
+          "matched_context": "team s 200 member traveling party touched down on friday morning after a 15 hour chartered qantas flight and will spend a week acclimating before facing the rams in front of an expected sold out crowd at the mcg the niners arrived with injured stars george kittle and nick bosa who both returned to practice and are hoping to play in the game san francisco will be without defensive end sam okuayinonu who injured his foot in practice this week okuayinonu has been ruled out for the game he had three sacks",
+          "description": "The 49ers have arrived in Melbourne for their season-opening NFL game against the Rams at the Melbourne Cricket Ground on Sept. 11.",
+          "published": "2026-09-04T12:43:03.835Z",
+          "url": "https://www.nfl.com/news/niners-arrive-melbourne-historic-nfl-game-rams",
           "match_evidence": "FULL_NAME_BODY_WINDOW",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
@@ -5532,7 +5614,7 @@
           "sustainability": 7.5
         }
       },
-      "changed_fact": "team s 200 member traveling party touched down on friday morning after a 15 hour chartered qantas flight and will spend a week acclimating before facing the rams in front of an expected sold out crowd at the mcg the niners arrived with injured stars george kittle and nick bosa who both returned to practice and are hoping to play in the game san francisco will be without defensive end sam okuayinonu who injured his foot in practice this week okuayinonu has been ruled out for the game he had three sacks",
+      "changed_fact": "the first practice day of a game week but opted against it because the rams don t have to do it until they practice on monday in california which will be tuesday in australia so any updates on the status of players like tight end george kittle and defensive end nick bosa will have to wait because we re technically in the future from where we re from and the rams are in the present i don t have to talk about injuries until tomorrow shanahan said so i m not talking",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -7026,20 +7108,6 @@
       "evidence_summary": [
         {
           "source": "TRANSITION_INTELLIGENCE",
-          "headline": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27;",
-          "matched_context": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27; NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. lower body injury per brady cb maxwell hairston is dealing with a lower body injury per brady s cole bishop is dealing with a lower body injury per brady s chauncey gardner johnson is dealing with a lower body injury per brady injuries rb chuba hubbard hamstring did not practice on thursday and is considered week to week head coach dave canales said he s very confident hubbard will be ready for week 1 lb patrick jones illness sat out practice preseason news qb caleb williams will not pla",
-          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
-          "published": "2026-08-13T15:41:16.817Z",
-          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-thursday-aug-13",
-          "match_evidence": null,
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
-          "team": "CAR",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFL news roundup: Cardinals&#x27; Josh Sweat activated off PUP list; Bengals cut OT",
           "matched_context": "NFL news roundup: Cardinals&#x27; Josh Sweat activated off PUP list; Bengals cut OT NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. loa during monday s practice injuries c danny pinter s knee injury is confirmed to be season ending coach jesse minter said pinter suffered a torn patellar tendon in practice last week nfl network insider mike garafolo reported injuries rb chuba hubbard hamstring is expected to be ready for week 1 coach dave canales told reporters hubbard has not played in a preseason game after straining his hamstring earlier in training camp roster cuts ot cody ford retirements veteran te c j uzomah is",
           "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
@@ -7068,7 +7136,7 @@
           "sustainability": 7.9
         }
       },
-      "changed_fact": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27; NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. lower body injury per brady cb maxwell hairston is dealing with a lower body injury per brady s cole bishop is dealing with a lower body injury per brady s chauncey gardner johnson is dealing with a lower body injury per brady injuries rb chuba hubbard hamstring did not practice on thursday and is considered week to week head coach dave canales said he s very confident hubbard will be ready for week 1 lb patrick jones illness sat out practice preseason news qb caleb williams will not pla",
+      "changed_fact": "NFL news roundup: Cardinals&#x27; Josh Sweat activated off PUP list; Bengals cut OT NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. loa during monday s practice injuries c danny pinter s knee injury is confirmed to be season ending coach jesse minter said pinter suffered a torn patellar tendon in practice last week nfl network insider mike garafolo reported injuries rb chuba hubbard hamstring is expected to be ready for week 1 coach dave canales told reporters hubbard has not played in a preseason game after straining his hamstring earlier in training camp roster cuts ot cody ford retirements veteran te c j uzomah is",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -7430,6 +7498,20 @@
       "team_context_only": false,
       "evidence_summary": [
         {
+          "source": "NFL.com",
+          "headline": "Kyle Shanahan, 49ers &#x27;fired up&#x27; to play in Australia despite losing L.A. &#x27;home game&#x27; vs. Rams",
+          "matched_context": "end sam okuayinonu broke his foot at the team s last practice before leaving on wednesday he was placed on injured reserve and will miss most of the season the niners kept the same eight captains for the season that they had last year quarterback brock purdy will be joined by mccaffrey kittle bosa kyle juszczyk trent williams fred warner and deommodore lenoir copyright 2026 by the associated press",
+          "description": "The 49ers have arrived in Australia, mostly gotten over the impact of the long flight and now are getting prepared to open their season Friday in Melbourne against the Rams.",
+          "published": "2026-09-07T12:44:44.633Z",
+          "url": "https://www.nfl.com/news/kyle-shanahan-49ers-fired-up-australia-home-game-rams",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "SF",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFL news roundup: Falcons sign DE Za&#x27;Darius Smith; Giants add RB Najee Harris on one-year deal",
           "matched_context": "NFL news roundup: Falcons sign DE Za&#x27;Darius Smith; Giants add RB Najee Harris on one-year deal NFL.com keeps you up to date with all of the latest league news from around the NFL.  ek 1 but is progressing well in his recovery from his torn acl shanahan said preseason news the 49ers expect a number of starters to play in thursday s preseason game against the chargers and there s a good chance that includes quarterback brock purdy shanahan said tryouts db trevon diggs roster cuts db chase lucas was released from injured reserve with an injury settlement injuries rb kadarius calloway reverted to injured reserve after being waived with an injury designation wr jalen m",
@@ -7459,7 +7541,7 @@
           "sustainability": 9
         }
       },
-      "changed_fact": "NFL news roundup: Falcons sign DE Za&#x27;Darius Smith; Giants add RB Najee Harris on one-year deal NFL.com keeps you up to date with all of the latest league news from around the NFL.  ek 1 but is progressing well in his recovery from his torn acl shanahan said preseason news the 49ers expect a number of starters to play in thursday s preseason game against the chargers and there s a good chance that includes quarterback brock purdy shanahan said tryouts db trevon diggs roster cuts db chase lucas was released from injured reserve with an injury settlement injuries rb kadarius calloway reverted to injured reserve after being waived with an injury designation wr jalen m",
+      "changed_fact": "end sam okuayinonu broke his foot at the team s last practice before leaving on wednesday he was placed on injured reserve and will miss most of the season the niners kept the same eight captains for the season that they had last year quarterback brock purdy will be joined by mccaffrey kittle bosa kyle juszczyk trent williams fred warner and deommodore lenoir copyright 2026 by the associated press",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -7531,20 +7613,6 @@
       "team_context_only": false,
       "evidence_summary": [
         {
-          "source": "NFL.com",
-          "headline": "Colts&#x27; Keenan Allen stays mum on arrest; Anthony Richardson wins backup quarterback job",
-          "matched_context": "be with the indianapolis colts preparing for the sept 13 season opener against the baltimore ravens even if they are playing very different roles though coach shane steichen was essentially mum on allen s situation he wasted no time declaring richardson the top backup to daniel jones for the second straight year this time richardson beat out riley leonard who finished his rookie year by starting last season s finale i thought anthony played some better ball in the preseason steichen said i think both of them had pretty good camps there",
-          "description": "Colts receiver Keenan Allen and quarterback Anthony Richardson tried to keep Thursday&#x27;s talk centered on football.",
-          "published": "2026-09-03T19:17:33.817Z",
-          "url": "https://www.nfl.com/news/colts-keenan-allen-mum-arrest-anthony-richardson-backup-quarterback-job",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "IND",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "ESPN_LEAGUE",
           "headline": "Colts' Daniel Jones has one box left to check in dramatic return",
           "matched_context": "colts daniel jones has one box left to check in dramatic return when the quarterback faces the ravens in week 1 it will be yet another attempt to rise from disappointment",
@@ -7602,7 +7670,7 @@
           "sustainability": 7.8
         }
       },
-      "changed_fact": "be with the indianapolis colts preparing for the sept 13 season opener against the baltimore ravens even if they are playing very different roles though coach shane steichen was essentially mum on allen s situation he wasted no time declaring richardson the top backup to daniel jones for the second straight year this time richardson beat out riley leonard who finished his rookie year by starting last season s finale i thought anthony played some better ball in the preseason steichen said i think both of them had pretty good camps there",
+      "changed_fact": "colts daniel jones has one box left to check in dramatic return when the quarterback faces the ravens in week 1 it will be yet another attempt to rise from disappointment",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -7691,10 +7759,25 @@
       "player": "Brian Robinson Jr.",
       "pos": "RB",
       "team": "Atlanta Falcons",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
-      "team_context_only": false,
-      "evidence_summary": [],
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
+      "team_context_only": true,
+      "evidence_summary": [
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "Fantasy football buzz: What Tua Tagovailoa being named starter means for Falcons",
+          "matched_context": "Fantasy football buzz: What Tua Tagovailoa being named starter means for Falcons Matt Bowen looks at what Tua Tagovailoa starting means for Bijan Robinson, Drake London and Kyle Pitts Sr.",
+          "description": "Matt Bowen looks at what Tua Tagovailoa starting means for Bijan Robinson, Drake London and Kyle Pitts Sr.",
+          "published": "2026-09-07T23:18:39Z",
+          "url": "https://www.espn.com/fantasy/football/story/_/id/40699880/fantasy-football-injuries-position-battles-nfl-news-analysis",
+          "match_evidence": null,
+          "evidence_lane": "material_team_context_signals",
+          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
+          "team": "ATL",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "CLEAR BACKUP ROLE",
         "score": 6.9,
@@ -7710,21 +7793,28 @@
           "sustainability": 8.1
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "Fantasy football buzz: What Tua Tagovailoa being named starter means for Falcons Matt Bowen looks at what Tua Tagovailoa starting means for Bijan Robinson, Drake London and Kyle Pitts Sr.",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 6.9,
       "proposed_true_value_rank": 141,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Atlanta Falcons"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Keaton Mitchell",
@@ -8475,6 +8565,20 @@
       "team_context_only": false,
       "evidence_summary": [
         {
+          "source": "NFL.com",
+          "headline": "Rams leaning into villain role ahead of 2026 season: &#x27;These other teams probably hate us&#x27;",
+          "matched_context": "probably hate us rams safety quentin lake said via the los angeles times they think we re like the new dodgers or something like that there s good reason for others to dislike the rams in 2026 they feature the reigning nfl mvp in quarterback matthew stafford completed a blockbuster trade for defensive player of the year myles garrett and topped their sundae by welcoming back all pro defensive tackle aaron donald from retirement at the end of august it s not quite a dream team but it s certainly a squad",
+          "description": "There&#x27;s good reason for others to dislike the Rams in 2026. They feature the reigning NFL MVP, completed a blockbuster trade for Myles Garrett, and topped their sundae by welcoming back Aaron Donald.",
+          "published": "2026-09-07T15:16:00.927Z",
+          "url": "https://www.nfl.com/news/rams-leaning-into-villain-role-2026-these-other-teams-probably-hate-us",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "LA",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFC West training camp 2026 preview: Top storylines for 49ers, Cardinals, Rams, Seahawks",
           "matched_context": "NFC West training camp 2026 preview: Top storylines for 49ers, Cardinals, Rams, Seahawks As we hurtle toward the 2026 NFL season, Grant Gordon breaks down the top NFC West training camp storylines to monitor for the Arizona Cardinals, Los Angeles Rams, San Francisco 49ers and Seattle Seahawks. mself after a stint in rehab l a already caused a stir when it shocked the nfl world by drafting quarterback ty simpson with the 13th overall pick simpson who remains unsigned is battling it out with stetson bennett to back up reigning mvp matthew stafford who s coming back for his age 38 season there were also trade rumblings regarding davante adams but it seems like those are in the past meanwhile the rams added cornerbacks trent mcduffie and jaylen watson from the chiefs corners who shine",
@@ -8504,12 +8608,13 @@
           "sustainability": 9
         }
       },
-      "changed_fact": "NFC West training camp 2026 preview: Top storylines for 49ers, Cardinals, Rams, Seahawks As we hurtle toward the 2026 NFL season, Grant Gordon breaks down the top NFC West training camp storylines to monitor for the Arizona Cardinals, Los Angeles Rams, San Francisco 49ers and Seattle Seahawks. mself after a stint in rehab l a already caused a stir when it shocked the nfl world by drafting quarterback ty simpson with the 13th overall pick simpson who remains unsigned is battling it out with stetson bennett to back up reigning mvp matthew stafford who s coming back for his age 38 season there were also trade rumblings regarding davante adams but it seems like those are in the past meanwhile the rams added cornerbacks trent mcduffie and jaylen watson from the chiefs corners who shine",
+      "changed_fact": "probably hate us rams safety quentin lake said via the los angeles times they think we re like the new dodgers or something like that there s good reason for others to dislike the rams in 2026 they feature the reigning nfl mvp in quarterback matthew stafford completed a blockbuster trade for defensive player of the year myles garrett and topped their sundae by welcoming back all pro defensive tackle aaron donald from retirement at the end of august it s not quite a dream team but it s certainly a squad",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
         "ceiling",
+        "role_volume",
         "offensive_environment"
       ],
       "component_delta": null,
@@ -8542,20 +8647,6 @@
           "description": "As we hurtle toward the 2026 NFL season, Nick Shook breaks down the top NFC South training camp storylines to monitor for the Atlanta Falcons, Carolina Panthers, New Orleans Saints and Tampa Bay Buccaneers.",
           "published": "2026-07-15T16:01:11.834Z",
           "url": "https://www.nfl.com/news/nfc-south-training-camp-2026-preview-falcons-panthers-saints-buccaneers",
-          "match_evidence": null,
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
-          "team": "NO",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "TRANSITION_INTELLIGENCE",
-          "headline": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27;",
-          "matched_context": "NFL news roundup: Cardinals rookie guard Chase Bisontis&#x27; knee injury is &#x27;not good&#x27; NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. he team website no 13 overall pick ty simpson will also get snaps signings lb monty rice signings rb jamycal hasty injuries rb terrell jennings was placed on injured reserve rb myles montgomery reverted to ir after being waived injuries wr jordyn tyson the no 8 overall pick of the 2026 nfl draft exited practice with an apparent leg injury and did not return preseason news qb spencer rattler will start saturday s preseason game against the jaguars per head coach kellen moore signings db u",
-          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
-          "published": "2026-08-13T15:41:16.817Z",
-          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-thursday-aug-13",
           "match_evidence": null,
           "evidence_lane": "material_news_signals",
           "evidence_scope": "DIRECT_PLAYER_TRANSITION",
@@ -8627,7 +8718,6 @@
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ],
       "component_delta": null,
