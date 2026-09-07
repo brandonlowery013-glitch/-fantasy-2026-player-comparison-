@@ -137,8 +137,6 @@ jobs:
           PATCH=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').current_update_layer")
           FILES=("$PATCH" guardrails/live-news-model-application-report.json guardrails/current-football-review.json analysis/substantive-component-recalculation-current.json analysis/full-universe-reconciliation-taxonomy-current.json)
 
-          # git diff alone ignores untracked generated files. status catches tracked,
-          # modified, deleted, and newly-created evidence files.
           if [ -z "$(git status --porcelain -- "${FILES[@]}")" ]; then
             echo 'No persistence changes; latest committed news/model state remains canonical.'
             echo 'changed=false' >> "$GITHUB_OUTPUT"
@@ -160,15 +158,28 @@ jobs:
           git commit -m "Persist live 166-player news model impact"
           git push --set-upstream origin "$BRANCH"
 
-          PR_URL=$(gh pr list --base main --head "$BRANCH" --state open --json url --jq '.[0].url // empty')
-          if [ -z "$PR_URL" ]; then
-            PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Persist live 166-player news model impact" --body "Automated live-news ingestion for the canonical 166-player model. Writes dated news state and Current Model Impact into the canonical current update layer; when a run has no newer material player news, the most recent material news state is retained. Static evaluations, canonical boards, and CTD interface are not mutated. Untracked admissions are handled by the separate universe-admission pipeline. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
+          EXISTING_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&base=main&head=${GITHUB_REPOSITORY_OWNER}:${BRANCH}" --jq '.[0].number // empty')
+          if [ -n "$EXISTING_NUMBER" ]; then
+            PR_NUMBER="$EXISTING_NUMBER"
+          else
+            BODY="Automated live-news ingestion for the canonical 166-player model. Writes dated news state and Current Model Impact into the canonical current update layer; when a run has no newer material player news, the most recent material news state is retained. Static evaluations, canonical boards, and CTD interface are not mutated. Untracked admissions are handled by the separate universe-admission pipeline. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
+            PR_NUMBER=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pulls" -f title='Persist live 166-player news model impact' -f head="$BRANCH" -f base='main' -f body="$BODY" --jq '.number')
           fi
 
-          test -n "$PR_URL"
+          test -n "$PR_NUMBER"
+          PR_STATE=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.state')
+          PR_HEAD=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.ref')
+          PR_BASE=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.base.ref')
+          if [ "$PR_STATE" != 'open' ] || [ "$PR_HEAD" != "$BRANCH" ] || [ "$PR_BASE" != 'main' ]; then
+            echo "FAIL: persistence PR verification failed: number=${PR_NUMBER} state=${PR_STATE} head=${PR_HEAD} base=${PR_BASE}"
+            exit 1
+          fi
+
+          PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}"
           echo 'changed=true' >> "$GITHUB_OUTPUT"
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
-          echo "Persisted validated update through $PR_URL"
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "Persisted validated update through verified open PR $PR_URL"
 
       - name: Auto-merge scheduled generated update only after required checks
         if: steps.persist.outputs.changed == 'true' && github.event_name == 'schedule'
