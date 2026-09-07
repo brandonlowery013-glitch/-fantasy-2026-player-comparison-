@@ -6,11 +6,13 @@ on:
     - cron: '15 */6 * * *'
   pull_request:
     paths:
+      - 'scripts/adjudicate-live-news-current-model.mjs'
       - 'scripts/apply-live-news-to-current-model.mjs'
       - '.github/workflows/live-news-model-ingestion.yml'
   push:
     branches: [main]
     paths:
+      - 'scripts/adjudicate-live-news-current-model.mjs'
       - 'scripts/apply-live-news-to-current-model.mjs'
       - '.github/workflows/live-news-model-ingestion.yml'
 
@@ -58,7 +60,6 @@ jobs:
           BRANCH='production/live-news-model-current'
           PATCH=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').current_update_layer")
           OWNER="${GITHUB_REPOSITORY_OWNER}"
-
           if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
             git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH"
             OPEN_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&base=main&head=${OWNER}:${BRANCH}" --jq '.[0].number // empty')
@@ -91,7 +92,7 @@ jobs:
           const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
           const rows=review.players||[];
           const names=rows.map(x=>x.player);
-          const nameSet=new Set(names), canonicalSet=new Set(canonical);
+          const nameSet=new Set(names),canonicalSet=new Set(canonical);
           const missing=canonical.filter(x=>!nameSet.has(x));
           const extra=names.filter(x=>!canonicalSet.has(x));
           if(canonical.length!==166||canonicalSet.size!==166) throw new Error('Canonical 166-player universe invalid');
@@ -99,41 +100,42 @@ jobs:
           if(review.materiality_filter?.name_collision_regression_tests!==true||review.source_quality?.name_collision_regression_tests!==true) throw new Error('Name-collision regression guard did not run');
           if(Number(review.source_quality?.espn_player_news_calls)<150) throw new Error(`ESPN player-news coverage too low: ${review.source_quality?.espn_player_news_calls}`);
           if(Number(review.source_quality?.espn_modeled_athlete_ids_resolved)<150) throw new Error(`Modeled ESPN athlete-ID coverage too low: ${review.source_quality?.espn_modeled_athlete_ids_resolved}`);
-          for(const r of rows){
-            if(!r.reviewed_at) throw new Error(`${r.player} missing reviewed_at`);
-            if(!Array.isArray(r.categories_checked)||!r.categories_checked.length) throw new Error(`${r.player} missing categories_checked`);
-          }
+          for(const r of rows){if(!r.reviewed_at)throw new Error(`${r.player} missing reviewed_at`);if(!Array.isArray(r.categories_checked)||!r.categories_checked.length)throw new Error(`${r.player} missing categories_checked`);}
           console.log(JSON.stringify({result:'PASS',tracked_players:166,untracked_admissions:'NON_BLOCKING_IN_THIS_WORKFLOW'},null,2));
           NODE
 
-      - name: Build materiality and quantitative model-impact proposals
+      - name: Build quantitative evidence and autonomous model decisions
         run: |
           node scripts/test-substantive-football-context-parser.mjs
           node scripts/collect-substantive-football-context.mjs
           node scripts/build-substantive-football-context-inputs.mjs
           node scripts/build-substantive-component-recalculation-v2.mjs
-          node scripts/build-substantive-rank-proposals.mjs
           node scripts/build-full-universe-reconciliation-taxonomy.mjs
+          node scripts/adjudicate-live-news-current-model.mjs
 
-      - name: Feed accepted live news into canonical current-model layer
+      - name: Apply adjudicated decisions to canonical current-model layer
         run: node scripts/apply-live-news-to-current-model.mjs
 
-      - name: Verify model write and interface isolation
+      - name: Verify decision write, self-audit, and interface isolation
         run: |
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
           const report=JSON.parse(fs.readFileSync('guardrails/live-news-model-application-report.json','utf8'));
+          const decisions=JSON.parse(fs.readFileSync('analysis/live-news-decision-audit-current.json','utf8'));
           const patch=JSON.parse(fs.readFileSync(src.current_update_layer,'utf8'));
-          if(report.result!=='PASS'||report.universe!==166) throw new Error('Live news model application did not PASS for 166 players');
-          if(patch.live_news_model_sync?.players!==166) throw new Error('Canonical current-model layer did not receive 166-player live-news sync');
+          if(report.result!=='PASS'||report.universe!==166||report.decision_self_audit!=='PASS') throw new Error('Live news decision application did not PASS for 166 players');
+          if(decisions.universe!==166||decisions.counts?.self_audit_errors!==0) throw new Error('Decision self-audit did not PASS');
+          if(patch.live_news_model_sync?.players!==166||patch.live_news_model_sync?.decision_policy!=='DECIDE_THEN_SELF_AUDIT') throw new Error('Canonical current-model layer did not receive decision sync');
           const rows=Object.values(patch.players||{});
           if(rows.length!==166) throw new Error(`Current-model layer coverage ${rows.length}/166`);
-          if(rows.some(p=>!p.currentModelImpact||!p.newsFeedState)) throw new Error('At least one player lacks currentModelImpact/newsFeedState after ingestion');
+          if(rows.some(p=>!p.currentModelImpact||!p.currentModelDecision||!p.newsFeedState)) throw new Error('At least one player lacks currentModelImpact/currentModelDecision/newsFeedState after ingestion');
+          const material=rows.filter(p=>p.currentModelImpact.material);
+          if(material.some(p=>p.currentModelDecision.status!=='ADJUDICATED'||p.currentModelDecision.self_audit!=='PASS')) throw new Error('At least one material update reached persistence without an adjudicated PASS decision');
           console.log(JSON.stringify(report,null,2));
           NODE
           if ! git diff --quiet -- players*.json canonicalBoards2026.json index.html; then
-            echo 'FAIL: live-news ingestion touched frozen canonical ranks/boards or interface.'
+            echo 'FAIL: live-news decision layer touched static player evaluations, canonical boards, or interface.'
             git diff -- players*.json canonicalBoards2026.json index.html
             exit 1
           fi
@@ -141,7 +143,7 @@ jobs:
       - name: Run hard guardrail QA
         run: node scripts/run-guardrail-qa.mjs
 
-      - name: Upload live-test evidence
+      - name: Upload live-decision evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -151,10 +153,11 @@ jobs:
             guardrails/live-news-model-application-report.json
             analysis/substantive-component-recalculation-current.json
             analysis/full-universe-reconciliation-taxonomy-current.json
+            analysis/live-news-decision-audit-current.json
             current162patch-2026-08-24.json
           if-no-files-found: error
 
-      - name: Persist validated model-news update through protected PR
+      - name: Persist validated model-news decision update through protected PR
         id: persist
         if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
@@ -163,81 +166,47 @@ jobs:
         run: |
           set -euo pipefail
           PATCH=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').current_update_layer")
-          FILES=("$PATCH" guardrails/live-news-model-application-report.json guardrails/current-football-review.json analysis/substantive-component-recalculation-current.json analysis/full-universe-reconciliation-taxonomy-current.json)
+          FILES=("$PATCH" guardrails/live-news-model-application-report.json guardrails/current-football-review.json analysis/substantive-component-recalculation-current.json analysis/full-universe-reconciliation-taxonomy-current.json analysis/live-news-decision-audit-current.json)
           BRANCH='production/live-news-model-current'
           OWNER="${GITHUB_REPOSITORY_OWNER}"
-          BODY="Automated live-news ingestion for the canonical 166-player model. Writes dated news state and Current Model Impact into the canonical current update layer; when a run has no newer material player news, the most recent material news state is retained. Static evaluations, canonical boards, and CTD interface are not mutated. Untracked admissions are handled by the separate universe-admission pipeline. Latest source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
-
+          BODY="Automated live-news ingestion for the canonical 166-player model. Material evidence is converted into an explicit current-model decision, self-audited, Guardrail-QA validated, and persisted. Static player evaluations, canonical boards, and CTD interface are not mutated. Latest source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
           EXISTING_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&base=main&head=${OWNER}:${BRANCH}" --jq '.[0].number // empty')
-
           if [ -z "$(git status --porcelain -- "${FILES[@]}")" ]; then
             if [ -n "$EXISTING_NUMBER" ]; then
               gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${EXISTING_NUMBER}" -f body="$BODY" >/dev/null
               gh workflow run guardrail-qa.yml --ref "$BRANCH"
               PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${EXISTING_NUMBER}"
-              echo 'changed=true' >> "$GITHUB_OUTPUT"
-              echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
-              echo "pr_number=$EXISTING_NUMBER" >> "$GITHUB_OUTPUT"
-              echo "No new file delta, but existing persistence PR #${EXISTING_NUMBER} remains active; re-dispatched required Guardrail QA."
+              echo 'changed=true' >> "$GITHUB_OUTPUT";echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT";echo "pr_number=$EXISTING_NUMBER" >> "$GITHUB_OUTPUT"
             else
-              echo 'No persistence changes; latest committed news/model state remains canonical.'
-              echo 'changed=false' >> "$GITHUB_OUTPUT"
+              echo 'No persistence changes; latest committed news/model decision state remains canonical.';echo 'changed=false' >> "$GITHUB_OUTPUT"
             fi
             exit 0
           fi
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-            git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH"
-          fi
-
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH";fi
           git checkout -B "$BRANCH"
           git add -- "${FILES[@]}"
-
           if git diff --cached --quiet; then
             if [ -n "$EXISTING_NUMBER" ]; then
               gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${EXISTING_NUMBER}" -f body="$BODY" >/dev/null
               gh workflow run guardrail-qa.yml --ref "$BRANCH"
               PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${EXISTING_NUMBER}"
-              echo 'changed=true' >> "$GITHUB_OUTPUT"
-              echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
-              echo "pr_number=$EXISTING_NUMBER" >> "$GITHUB_OUTPUT"
-            else
-              echo 'changed=false' >> "$GITHUB_OUTPUT"
-            fi
+              echo 'changed=true' >> "$GITHUB_OUTPUT";echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT";echo "pr_number=$EXISTING_NUMBER" >> "$GITHUB_OUTPUT"
+            else echo 'changed=false' >> "$GITHUB_OUTPUT";fi
             exit 0
           fi
-
-          git commit -m "Persist live 166-player news model impact"
+          git commit -m "Persist live 166-player news model decisions"
           git push --force-with-lease --set-upstream origin "$BRANCH"
-
-          if [ -n "$EXISTING_NUMBER" ]; then
-            PR_NUMBER="$EXISTING_NUMBER"
-            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" -f body="$BODY" >/dev/null
-          else
-            PR_NUMBER=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pulls" -f title='Persist live 166-player news model impact' -f head="$BRANCH" -f base='main' -f body="$BODY" --jq '.number')
-          fi
-
+          if [ -n "$EXISTING_NUMBER" ]; then PR_NUMBER="$EXISTING_NUMBER";gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" -f body="$BODY" >/dev/null;else PR_NUMBER=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pulls" -f title='Persist live 166-player news model decisions' -f head="$BRANCH" -f base='main' -f body="$BODY" --jq '.number');fi
           test -n "$PR_NUMBER"
-          PR_STATE=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.state')
-          PR_HEAD=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.ref')
-          PR_BASE=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.base.ref')
-          if [ "$PR_STATE" != 'open' ] || [ "$PR_HEAD" != "$BRANCH" ] || [ "$PR_BASE" != 'main' ]; then
-            echo "FAIL: persistence PR verification failed: number=${PR_NUMBER} state=${PR_STATE} head=${PR_HEAD} base=${PR_BASE}"
-            exit 1
-          fi
-
+          PR_STATE=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.state');PR_HEAD=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.ref');PR_BASE=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.base.ref')
+          if [ "$PR_STATE" != 'open' ] || [ "$PR_HEAD" != "$BRANCH" ] || [ "$PR_BASE" != 'main' ]; then echo "FAIL: persistence PR verification failed: number=${PR_NUMBER} state=${PR_STATE} head=${PR_HEAD} base=${PR_BASE}";exit 1;fi
           gh workflow run guardrail-qa.yml --ref "$BRANCH"
-
           PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}"
-          echo 'changed=true' >> "$GITHUB_OUTPUT"
-          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
-          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
-          echo "Persisted validated update through verified open PR $PR_URL and dispatched required Guardrail QA."
+          echo 'changed=true' >> "$GITHUB_OUTPUT";echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT";echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
-      - name: Auto-merge scheduled generated update only after required checks
+      - name: Auto-merge scheduled generated update only after current required check
         if: steps.persist.outputs.changed == 'true' && github.event_name == 'schedule'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -246,24 +215,37 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          LAST_DISPATCH_SHA=''
+          LAST_FAILURE_RETRY_SHA=''
           for i in $(seq 1 180); do
-            MERGE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
+            PR_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
+            PR_STATE=$(printf '%s' "$PR_JSON" | jq -r '.state')
+            if [ "$PR_STATE" != 'open' ]; then
+              MERGED=$(printf '%s' "$PR_JSON" | jq -r '.merged')
+              if [ "$MERGED" = 'true' ]; then echo "Live-news decision PR #${PR_NUMBER} is merged.";exit 0;fi
+              echo "Live-news decision PR #${PR_NUMBER} is no longer open and was not merged.";exit 1
+            fi
+            MERGE_SHA=$(printf '%s' "$PR_JSON" | jq -r '.merge_commit_sha // empty')
+            HEAD_REF=$(printf '%s' "$PR_JSON" | jq -r '.head.ref')
             if [ -n "$MERGE_SHA" ]; then
-              CHECK=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${MERGE_SHA}/check-runs" \
-                --jq '[.check_runs[] | select(.name=="guardrail-qa" and .app.id==15368)] | sort_by(.started_at // .created_at) | last // {}')
-              CONCLUSION=$(printf '%s' "$CHECK" | jq -r '.conclusion // empty')
-              STATUS=$(printf '%s' "$CHECK" | jq -r '.status // empty')
+              CHECK=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${MERGE_SHA}/check-runs" --jq '[.check_runs[] | select(.name=="guardrail-qa" and .app.id==15368)] | sort_by(.started_at // .created_at) | last // {}')
+              CONCLUSION=$(printf '%s' "$CHECK" | jq -r '.conclusion // empty');STATUS=$(printf '%s' "$CHECK" | jq -r '.status // empty')
               if [ "$CONCLUSION" = 'success' ]; then
-                echo "Required guardrail-qa passed on protected synthetic merge ${MERGE_SHA}."
-                gh pr merge "$PR_URL" --merge --delete-branch
-                exit 0
+                CURRENT_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
+                if [ "$CURRENT_SHA" != "$MERGE_SHA" ]; then echo "Protected merge moved from ${MERGE_SHA} to ${CURRENT_SHA}; revalidating.";continue;fi
+                echo "Required guardrail-qa passed on current protected synthetic merge ${MERGE_SHA}."
+                if gh pr merge "$PR_URL" --merge --delete-branch; then exit 0;fi
+                echo 'Merge rejected after validated check; revalidating current synthetic merge.';sleep 10;continue
+              elif [ "$STATUS" = 'completed' ] && [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != 'success' ]; then
+                if [ "$MERGE_SHA" != "$LAST_FAILURE_RETRY_SHA" ]; then echo "Guardrail ${CONCLUSION} on ${MERGE_SHA}; redispatching once for exact current merge.";gh workflow run guardrail-qa.yml --ref "$HEAD_REF";LAST_FAILURE_RETRY_SHA="$MERGE_SHA";LAST_DISPATCH_SHA="$MERGE_SHA";sleep 10;continue;fi
+                echo "Guardrail remained ${CONCLUSION} on ${MERGE_SHA} after one retry.";exit 1
               fi
-              if [ "$STATUS" = 'completed' ] && [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != 'success' ]; then
-                echo "Required guardrail-qa completed with ${CONCLUSION} on ${MERGE_SHA}."
-                exit 1
+              if [ "$MERGE_SHA" != "$LAST_DISPATCH_SHA" ]; then
+                CHECK_COUNT=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${MERGE_SHA}/check-runs" --jq '[.check_runs[] | select(.name=="guardrail-qa" and .app.id==15368)] | length')
+                if [ "$CHECK_COUNT" = '0' ]; then echo "No guardrail on current merge ${MERGE_SHA}; dispatching.";gh workflow run guardrail-qa.yml --ref "$HEAD_REF";LAST_DISPATCH_SHA="$MERGE_SHA";fi
               fi
             fi
             sleep 10
           done
-          echo 'Required guardrail-qa did not reach success on the protected synthetic merge within 30 minutes.'
+          echo 'Required guardrail-qa did not reach a stable mergeable protected synthetic commit within 30 minutes.'
           exit 1
