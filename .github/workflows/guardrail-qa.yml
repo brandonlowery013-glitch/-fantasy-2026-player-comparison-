@@ -23,7 +23,16 @@ jobs:
           set -euo pipefail
           TARGET_SHA='${{ github.sha }}'
           PR_NUMBER=''
-          if [ '${{ github.event_name }}' = 'workflow_dispatch' ]; then
+
+          if [ '${{ github.event_name }}' = 'pull_request' ]; then
+            PR_NUMBER='${{ github.event.pull_request.number }}'
+            TARGET_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
+            if [ -z "$TARGET_SHA" ]; then
+              echo "FAIL: pull request #${PR_NUMBER} has no synthetic merge commit SHA."
+              exit 1
+            fi
+            echo "Pull-request QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA}."
+          elif [ '${{ github.event_name }}' = 'workflow_dispatch' ]; then
             PR_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&head=${GITHUB_REPOSITORY_OWNER}:${GITHUB_REF_NAME}" --jq '.[0].number // empty')
             if [ -n "$PR_NUMBER" ]; then
               TARGET_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
@@ -34,6 +43,7 @@ jobs:
               echo "Workflow-dispatch QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA}."
             fi
           fi
+
           echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
@@ -138,7 +148,7 @@ jobs:
         run: node scripts/run-guardrail-qa.mjs
 
       - name: Publish required check on protected synthetic merge
-        if: github.event_name == 'workflow_dispatch' && steps.target.outputs.pr_number != ''
+        if: steps.target.outputs.pr_number != ''
         env:
           GH_TOKEN: ${{ github.token }}
           TARGET_SHA: ${{ steps.target.outputs.target_sha }}
