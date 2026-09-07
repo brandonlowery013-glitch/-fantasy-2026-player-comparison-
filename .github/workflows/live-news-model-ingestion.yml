@@ -1,0 +1,137 @@
+name: Live News Model Ingestion
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 */6 * * *'
+  pull_request:
+    paths:
+      - 'scripts/apply-live-news-to-current-model.mjs'
+      - '.github/workflows/live-news-model-ingestion.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/apply-live-news-to-current-model.mjs'
+      - '.github/workflows/live-news-model-ingestion.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  actions: read
+
+jobs:
+  live-news-model-ingestion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'main' || github.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Hard-lock canonical universe to 166
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          if(Number(src.active_player_model)!==166) throw new Error(`Expected canonical universe 166, got ${src.active_player_model}`);
+          let names=[];
+          for(let i=0;i<Number(src.runtime_player_shards);i++) names.push(...require(`./players${i}.json`).map(p=>p.n));
+          if(names.length!==166||new Set(names).size!==166) throw new Error(`Loaded player universe ${names.length}/${new Set(names).size}, expected 166/166`);
+          console.log(JSON.stringify({result:'PASS',players:166,shards:src.runtime_player_shards},null,2));
+          NODE
+
+      - name: Collect current live football news and context
+        run: |
+          node scripts/build-live-full-universe-review-v2.mjs
+          node scripts/normalize-nfl-article-bodies.mjs
+          node scripts/filter-live-review-materiality.mjs
+          node scripts/build-transition-intelligence-review.mjs
+          node scripts/enrich-transition-from-unified-evidence.mjs
+          node scripts/integrate-transition-intelligence.mjs
+          node scripts/triage-untracked-candidates.mjs
+          node scripts/stage-admission-requests.mjs
+          node scripts/validate-full-universe-news-review.mjs
+
+      - name: Build materiality and quantitative model-impact proposals
+        run: |
+          node scripts/test-substantive-football-context-parser.mjs
+          node scripts/collect-substantive-football-context.mjs
+          node scripts/build-substantive-football-context-inputs.mjs
+          node scripts/build-substantive-component-recalculation-v2.mjs
+          node scripts/build-substantive-rank-proposals.mjs
+          node scripts/build-full-universe-reconciliation-taxonomy.mjs
+
+      - name: Feed accepted live news into canonical current-model layer
+        run: node scripts/apply-live-news-to-current-model.mjs
+
+      - name: Verify model write and interface isolation
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const report=JSON.parse(fs.readFileSync('guardrails/live-news-model-application-report.json','utf8'));
+          const patch=JSON.parse(fs.readFileSync(src.current_update_layer,'utf8'));
+          if(report.result!=='PASS'||report.universe!==166) throw new Error('Live news model application did not PASS for 166 players');
+          if(patch.live_news_model_sync?.players!==166) throw new Error('Canonical current-model layer did not receive 166-player live-news sync');
+          const rows=Object.values(patch.players||{});
+          if(rows.length!==166) throw new Error(`Current-model layer coverage ${rows.length}/166`);
+          if(rows.some(p=>!p.currentModelImpact||!p.newsFeedState)) throw new Error('At least one player lacks currentModelImpact/newsFeedState after ingestion');
+          console.log(JSON.stringify(report,null,2));
+          NODE
+          if ! git diff --quiet -- players*.json canonicalBoards2026.json index.html; then
+            echo 'FAIL: live-news ingestion touched frozen canonical ranks/boards or interface.'
+            git diff -- players*.json canonicalBoards2026.json index.html
+            exit 1
+          fi
+
+      - name: Run hard guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+
+      - name: Upload live-test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-news-model-ingestion-166
+          path: |
+            guardrails/current-football-review.json
+            guardrails/full-universe-news-review-report.json
+            guardrails/live-news-model-application-report.json
+            analysis/substantive-component-recalculation-current.json
+            analysis/full-universe-reconciliation-taxonomy-current.json
+            current162patch-2026-08-24.json
+          if-no-files-found: error
+
+      - name: Persist validated scheduled model-news update through protected PR
+        id: persist
+        if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          PATCH=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').current_update_layer")
+          FILES=("$PATCH" guardrails/live-news-model-application-report.json guardrails/current-football-review.json guardrails/full-universe-news-review-report.json analysis/substantive-component-recalculation-current.json analysis/full-universe-reconciliation-taxonomy-current.json)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "${FILES[@]}"
+          if git diff --cached --quiet; then echo 'changed=false' >> "$GITHUB_OUTPUT"; exit 0; fi
+          BRANCH="production/live-news-model-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$BRANCH"
+          git commit -m "Persist live 166-player news model impact"
+          git push origin "$BRANCH"
+          PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Persist live 166-player news model impact" --body "Automated live-news ingestion for the canonical 166-player model. Writes dated news state and Current Model Impact into the canonical current update layer; static evaluations, canonical boards, and CTD interface are not mutated. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Auto-merge scheduled generated update only after required checks
+        if: steps.persist.outputs.changed == 'true' && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.persist.outputs.pr_url }}
+        shell: bash
+        run: |
+          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
+          gh pr merge "$PR_URL" --merge --delete-branch
