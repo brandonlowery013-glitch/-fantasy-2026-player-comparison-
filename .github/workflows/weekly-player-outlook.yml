@@ -1,0 +1,121 @@
+name: Weekly Player Outlook
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Live News Model Ingestion"]
+    types: [completed]
+  pull_request:
+    paths:
+      - 'scripts/build-weekly-player-outlook.mjs'
+      - '.github/workflows/weekly-player-outlook.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  actions: read
+
+jobs:
+  weekly-player-outlook:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Hard-lock canonical universe to 166
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          if(Number(src.active_player_model)!==166) throw new Error(`Expected 166 canonical players, got ${src.active_player_model}`);
+          let names=[];
+          for(let i=0;i<Number(src.runtime_player_shards);i++) names.push(...require(`./players${i}.json`).map(p=>p.n));
+          if(names.length!==166||new Set(names).size!==166) throw new Error(`Loaded ${names.length}/${new Set(names).size}, expected 166/166`);
+          NODE
+
+      - name: Refresh current player news context for outlook build
+        if: github.event_name != 'workflow_run'
+        run: |
+          node scripts/build-live-full-universe-review-v2.mjs
+          node scripts/normalize-nfl-article-bodies.mjs
+          node scripts/filter-live-review-materiality.mjs
+          node scripts/validate-full-universe-news-review.mjs
+
+      - name: Build Yahoo-ESPN-style weekly player outlook layer
+        run: node scripts/build-weekly-player-outlook.mjs
+
+      - name: Verify 166-player outlook contract
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const out=JSON.parse(fs.readFileSync('data/weekly/weekly-player-outlook-2026.json','utf8'));
+          const report=JSON.parse(fs.readFileSync('guardrails/weekly-player-outlook-report.json','utf8'));
+          const names=Object.keys(out.players||{});
+          if(out.universe!==166||names.length!==166||new Set(names).size!==166) throw new Error(`Weekly outlook coverage ${names.length}/166`);
+          if(report.result!=='PASS'||report.players!==166) throw new Error('Weekly outlook report did not PASS');
+          for(const [name,p] of Object.entries(out.players)){
+            if(!p.current_outlook) throw new Error(`${name} missing current outlook`);
+            if(!['MATERIAL_NEWS','NEWS_PRESENT','NO_MATERIAL_NEWS'].includes(p.news_state)) throw new Error(`${name} invalid news state`);
+            if(p.news_state==='NO_MATERIAL_NEWS'&&p.latest_news) throw new Error(`${name} no-news state contains a news item`);
+            if(p.last_game&&p.last_game.completed!==true) throw new Error(`${name} last_game is not completed`);
+          }
+          console.log(JSON.stringify(report,null,2));
+          NODE
+
+      - name: Prove outlook build did not mutate model or CTD interface
+        run: |
+          if ! git diff --quiet -- players*.json canonicalBoards2026.json MODEL_SOURCE_OF_TRUTH.json index.html; then
+            echo 'FAIL: weekly outlook mutated canonical model/boards/interface.'
+            git diff -- players*.json canonicalBoards2026.json MODEL_SOURCE_OF_TRUTH.json index.html
+            exit 1
+          fi
+
+      - name: Run hard guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+
+      - name: Upload weekly outlook evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-player-outlook-166
+          path: |
+            data/weekly/weekly-player-outlook-2026.json
+            guardrails/weekly-player-outlook-report.json
+          if-no-files-found: error
+
+      - name: Persist successful generated outlook through protected PR
+        id: persist
+        if: github.event_name == 'workflow_run' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          FILES=(data/weekly/weekly-player-outlook-2026.json guardrails/weekly-player-outlook-report.json)
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "${FILES[@]}"
+          if git diff --cached --quiet; then echo 'changed=false' >> "$GITHUB_OUTPUT"; exit 0; fi
+          BRANCH="production/weekly-player-outlook-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$BRANCH"
+          git commit -m "Refresh 166-player weekly outlook"
+          git push origin "$BRANCH"
+          PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Refresh 166-player weekly outlook" --body "Automated 166-player weekly outlook refresh. Real dated news remains news; quiet players receive Current Outlook plus next opponent; after games, last-game stats and PPR points are included. Static evaluations, boards and CTD interface are untouched. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Auto-merge generated outlook only after required checks
+        if: steps.persist.outputs.changed == 'true' && github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.persist.outputs.pr_url }}
+        shell: bash
+        run: |
+          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
+          gh pr merge "$PR_URL" --merge --delete-branch
