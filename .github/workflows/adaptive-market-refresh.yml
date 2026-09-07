@@ -140,6 +140,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Revalidate any newly generated protected merge SHA instead of relying on a stale success.
           LAST_DISPATCH_SHA=''
           for i in $(seq 1 180); do
             PR_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
