@@ -112,20 +112,31 @@ jobs:
         shell: bash
         run: |
           FILES=(data/weekly/weekly-player-outlook-2026.json guardrails/weekly-player-outlook-report.json)
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --unset-all remote.origin.promisor || true
-          git config --unset-all remote.origin.partialclonefilter || true
-          git fetch --force --prune --no-filter origin '+refs/heads/main:refs/remotes/origin/main'
+          if git diff --quiet HEAD -- "${FILES[@]}"; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           BRANCH="production/weekly-player-outlook-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          BASE=$(git rev-parse HEAD)
-          git switch -c "$BRANCH" "$BASE"
-          git add -- "${FILES[@]}"
-          if git diff --cached --quiet; then echo 'changed=false' >> "$GITHUB_OUTPUT"; exit 0; fi
-          git commit -m "Refresh 166-player weekly outlook"
-          git push --set-upstream origin "HEAD:refs/heads/$BRANCH"
+          BASE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq '.object.sha')
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/heads/${BRANCH}" -f sha="$BASE_SHA" >/dev/null
+
+          for f in "${FILES[@]}"; do
+            if git diff --quiet HEAD -- "$f"; then
+              continue
+            fi
+            REMOTE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${f}?ref=${BRANCH}" --jq '.sha' 2>/dev/null || true)
+            base64 -w0 "$f" > /tmp/ctd-content.b64
+            if [ -n "$REMOTE_SHA" ]; then
+              jq -n --rawfile content /tmp/ctd-content.b64 --arg message "Refresh 166-player weekly outlook: ${f}" --arg branch "$BRANCH" --arg sha "$REMOTE_SHA" '{message:$message,content:$content,branch:$branch,sha:$sha}' > /tmp/ctd-request.json
+            else
+              jq -n --rawfile content /tmp/ctd-content.b64 --arg message "Refresh 166-player weekly outlook: ${f}" --arg branch "$BRANCH" '{message:$message,content:$content,branch:$branch}' > /tmp/ctd-request.json
+            fi
+            gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${f}" --input /tmp/ctd-request.json >/dev/null
+          done
+
           PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Refresh 166-player weekly outlook" --body "Automated 166-player weekly outlook refresh. Real dated news remains news; quiet players receive Current Outlook plus next opponent; after games, last-game stats and PPR points are included. Static evaluations, boards and CTD interface are untouched. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
-          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
 
       - name: Auto-merge generated outlook only after required checks
