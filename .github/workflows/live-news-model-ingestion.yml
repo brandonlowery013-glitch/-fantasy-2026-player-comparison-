@@ -136,12 +136,16 @@ jobs:
           FILES=("$PATCH" guardrails/live-news-model-application-report.json guardrails/current-football-review.json analysis/substantive-component-recalculation-current.json analysis/full-universe-reconciliation-taxonomy-current.json)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --unset-all remote.origin.promisor || true
+          git config --unset-all remote.origin.partialclonefilter || true
+          git fetch --force --prune --no-filter origin '+refs/heads/main:refs/remotes/origin/main'
+          BRANCH="production/live-news-model-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          BASE=$(git rev-parse HEAD)
+          git switch -c "$BRANCH" "$BASE"
           git add -- "${FILES[@]}"
           if git diff --cached --quiet; then echo 'changed=false' >> "$GITHUB_OUTPUT"; exit 0; fi
-          BRANCH="production/live-news-model-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          git switch -c "$BRANCH"
           git commit -m "Persist live 166-player news model impact"
-          git push origin "$BRANCH"
+          git push --set-upstream origin "HEAD:refs/heads/$BRANCH"
           PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Persist live 166-player news model impact" --body "Automated live-news ingestion for the canonical 166-player model. Writes dated news state and Current Model Impact into the canonical current update layer; static evaluations, canonical boards, and CTD interface are not mutated. Untracked admissions are handled by the separate universe-admission pipeline. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
           echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
