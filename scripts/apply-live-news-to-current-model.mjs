@@ -1,4 +1,4 @@
-// Acceptance trigger: consecutive real production live-news persistence run 2.
+// Acceptance trigger: post-PR-237 synthetic-merge guardrail production proof.
 import fs from 'node:fs';
 import path from 'node:path';
 
