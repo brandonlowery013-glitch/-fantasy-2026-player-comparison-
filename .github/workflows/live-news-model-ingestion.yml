@@ -63,10 +63,11 @@ jobs:
           const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
           const rows=review.players||[];
           const names=rows.map(x=>x.player);
-          const missing=canonical.filter(x=>!new Set(names).has(x));
-          const extra=names.filter(x=>!new Set(canonical).has(x));
-          if(canonical.length!==166||new Set(canonical).size!==166) throw new Error('Canonical 166-player universe invalid');
-          if(rows.length!==166||new Set(names).size!==166||missing.length||extra.length) throw new Error(`Tracked review coverage failed: rows=${rows.length}, unique=${new Set(names).size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
+          const nameSet=new Set(names), canonicalSet=new Set(canonical);
+          const missing=canonical.filter(x=>!nameSet.has(x));
+          const extra=names.filter(x=>!canonicalSet.has(x));
+          if(canonical.length!==166||canonicalSet.size!==166) throw new Error('Canonical 166-player universe invalid');
+          if(rows.length!==166||nameSet.size!==166||missing.length||extra.length) throw new Error(`Tracked review coverage failed: rows=${rows.length}, unique=${nameSet.size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
           if(review.materiality_filter?.name_collision_regression_tests!==true||review.source_quality?.name_collision_regression_tests!==true) throw new Error('Name-collision regression guard did not run');
           if(Number(review.source_quality?.espn_player_news_calls)<150) throw new Error(`ESPN player-news coverage too low: ${review.source_quality?.espn_player_news_calls}`);
           if(Number(review.source_quality?.espn_modeled_athlete_ids_resolved)<150) throw new Error(`Modeled ESPN athlete-ID coverage too low: ${review.source_quality?.espn_modeled_athlete_ids_resolved}`);
@@ -125,7 +126,7 @@ jobs:
             current162patch-2026-08-24.json
           if-no-files-found: error
 
-      - name: Persist validated scheduled model-news update through protected PR
+      - name: Persist validated model-news update through protected PR
         id: persist
         if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
@@ -134,20 +135,31 @@ jobs:
         run: |
           PATCH=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').current_update_layer")
           FILES=("$PATCH" guardrails/live-news-model-application-report.json guardrails/current-football-review.json analysis/substantive-component-recalculation-current.json analysis/full-universe-reconciliation-taxonomy-current.json)
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --unset-all remote.origin.promisor || true
-          git config --unset-all remote.origin.partialclonefilter || true
-          git fetch --force --prune --no-filter origin '+refs/heads/main:refs/remotes/origin/main'
+          if git diff --quiet HEAD -- "${FILES[@]}"; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           BRANCH="production/live-news-model-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          BASE=$(git rev-parse HEAD)
-          git switch -c "$BRANCH" "$BASE"
-          git add -- "${FILES[@]}"
-          if git diff --cached --quiet; then echo 'changed=false' >> "$GITHUB_OUTPUT"; exit 0; fi
-          git commit -m "Persist live 166-player news model impact"
-          git push --set-upstream origin "HEAD:refs/heads/$BRANCH"
+          BASE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq '.object.sha')
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/heads/${BRANCH}" -f sha="$BASE_SHA" >/dev/null
+
+          for f in "${FILES[@]}"; do
+            if git diff --quiet HEAD -- "$f"; then
+              continue
+            fi
+            REMOTE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${f}?ref=${BRANCH}" --jq '.sha' 2>/dev/null || true)
+            base64 -w0 "$f" > /tmp/ctd-content.b64
+            if [ -n "$REMOTE_SHA" ]; then
+              jq -n --rawfile content /tmp/ctd-content.b64 --arg message "Persist live 166-player news model impact: ${f}" --arg branch "$BRANCH" --arg sha "$REMOTE_SHA" '{message:$message,content:$content,branch:$branch,sha:$sha}' > /tmp/ctd-request.json
+            else
+              jq -n --rawfile content /tmp/ctd-content.b64 --arg message "Persist live 166-player news model impact: ${f}" --arg branch "$BRANCH" '{message:$message,content:$content,branch:$branch}' > /tmp/ctd-request.json
+            fi
+            gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${f}" --input /tmp/ctd-request.json >/dev/null
+          done
+
           PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Persist live 166-player news model impact" --body "Automated live-news ingestion for the canonical 166-player model. Writes dated news state and Current Model Impact into the canonical current update layer; static evaluations, canonical boards, and CTD interface are not mutated. Untracked admissions are handled by the separate universe-admission pipeline. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
-          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
 
       - name: Auto-merge scheduled generated update only after required checks
