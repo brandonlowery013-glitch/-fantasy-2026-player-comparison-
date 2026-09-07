@@ -182,10 +182,35 @@ jobs:
             fi
             exit 0
           fi
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH";fi
-          git checkout -B "$BRANCH"
+          git fetch origin main:refs/remotes/origin/main
+          TMP_DIR=$(mktemp -d)
+          trap 'rm -rf "$TMP_DIR"' EXIT
+          for f in "${FILES[@]}"; do
+            mkdir -p "$TMP_DIR/$(dirname "$f")"
+            cp "$f" "$TMP_DIR/$f"
+          done
+
+          REMOTE_EXISTS=false
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            REMOTE_EXISTS=true
+            git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH"
+          fi
+
+          # Build the persistence head from current main so stale generated history cannot leak into the PR.
+          # If the stable branch has diverged, record it as a second parent with an ours merge. This makes
+          # the next update a normal fast-forward of the stable branch without rewriting branch history.
+          git checkout -B "$BRANCH" refs/remotes/origin/main
+          if [ "$REMOTE_EXISTS" = true ] && ! git merge-base --is-ancestor "refs/remotes/origin/$BRANCH" HEAD; then
+            git merge --no-ff -s ours "refs/remotes/origin/$BRANCH" -m "Reconcile live-news persistence history with main"
+          fi
+
+          for f in "${FILES[@]}"; do
+            mkdir -p "$(dirname "$f")"
+            cp "$TMP_DIR/$f" "$f"
+          done
           git add -- "${FILES[@]}"
           if git diff --cached --quiet; then
             if [ -n "$EXISTING_NUMBER" ]; then
@@ -193,21 +218,35 @@ jobs:
               gh workflow run guardrail-qa.yml --ref "$BRANCH"
               PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${EXISTING_NUMBER}"
               echo 'changed=true' >> "$GITHUB_OUTPUT";echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT";echo "pr_number=$EXISTING_NUMBER" >> "$GITHUB_OUTPUT"
-            else echo 'changed=false' >> "$GITHUB_OUTPUT";fi
+            else
+              echo 'No persistence delta after branch reconciliation.'
+              echo 'changed=false' >> "$GITHUB_OUTPUT"
+            fi
             exit 0
           fi
+
           git commit -m "Persist live 166-player news model decisions"
-          git push --force-with-lease --set-upstream origin "$BRANCH"
-          if [ -n "$EXISTING_NUMBER" ]; then PR_NUMBER="$EXISTING_NUMBER";gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" -f body="$BODY" >/dev/null;else PR_NUMBER=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pulls" -f title='Persist live 166-player news model decisions' -f head="$BRANCH" -f base='main' -f body="$BODY" --jq '.number');fi
+          git push --set-upstream origin "$BRANCH"
+          if [ -n "$EXISTING_NUMBER" ]; then
+            PR_NUMBER="$EXISTING_NUMBER"
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" -f body="$BODY" >/dev/null
+          else
+            PR_NUMBER=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pulls" -f title='Persist live 166-player news model decisions' -f head="$BRANCH" -f base='main' -f body="$BODY" --jq '.number')
+          fi
           test -n "$PR_NUMBER"
-          PR_STATE=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.state');PR_HEAD=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.ref');PR_BASE=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.base.ref')
-          if [ "$PR_STATE" != 'open' ] || [ "$PR_HEAD" != "$BRANCH" ] || [ "$PR_BASE" != 'main' ]; then echo "FAIL: persistence PR verification failed: number=${PR_NUMBER} state=${PR_STATE} head=${PR_HEAD} base=${PR_BASE}";exit 1;fi
+          PR_STATE=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.state')
+          PR_HEAD=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.ref')
+          PR_BASE=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.base.ref')
+          if [ "$PR_STATE" != 'open' ] || [ "$PR_HEAD" != "$BRANCH" ] || [ "$PR_BASE" != 'main' ]; then
+            echo "FAIL: persistence PR verification failed: number=${PR_NUMBER} state=${PR_STATE} head=${PR_HEAD} base=${PR_BASE}"
+            exit 1
+          fi
           gh workflow run guardrail-qa.yml --ref "$BRANCH"
           PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}"
           echo 'changed=true' >> "$GITHUB_OUTPUT";echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT";echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
-      - name: Auto-merge scheduled generated update only after current required check
-        if: steps.persist.outputs.changed == 'true' && github.event_name == 'schedule'
+      - name: Auto-merge generated update only after current required check
+        if: steps.persist.outputs.changed == 'true' && (github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         env:
           GH_TOKEN: ${{ github.token }}
           PR_URL: ${{ steps.persist.outputs.pr_url }}
