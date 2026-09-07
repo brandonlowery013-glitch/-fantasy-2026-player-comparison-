@@ -18,7 +18,7 @@ permissions:
   contents: write
   pull-requests: write
   checks: read
-  actions: read
+  actions: write
 
 jobs:
   live-news-model-ingestion:
@@ -175,11 +175,16 @@ jobs:
             exit 1
           fi
 
+          # Events created by GITHUB_TOKEN do not recursively start workflows.
+          # Explicitly dispatch Guardrail QA against the generated branch so the
+          # protected PR receives its required guardrail-qa check context.
+          gh workflow run guardrail-qa.yml --ref "$BRANCH"
+
           PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}"
           echo 'changed=true' >> "$GITHUB_OUTPUT"
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
-          echo "Persisted validated update through verified open PR $PR_URL"
+          echo "Persisted validated update through verified open PR $PR_URL and dispatched required Guardrail QA."
 
       - name: Auto-merge scheduled generated update only after required checks
         if: steps.persist.outputs.changed == 'true' && github.event_name == 'schedule'
@@ -188,5 +193,14 @@ jobs:
           PR_URL: ${{ steps.persist.outputs.pr_url }}
         shell: bash
         run: |
+          found=false
+          for i in $(seq 1 60); do
+            if gh pr checks "$PR_URL" --required 2>&1 | grep -q "guardrail-qa"; then found=true; break; fi
+            sleep 10
+          done
+          if [ "$found" != "true" ]; then
+            echo "Required guardrail-qa check did not appear."
+            exit 1
+          fi
           timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
           gh pr merge "$PR_URL" --merge --delete-branch
