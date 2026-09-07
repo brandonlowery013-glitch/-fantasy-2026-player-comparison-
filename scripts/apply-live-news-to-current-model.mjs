@@ -1,3 +1,4 @@
+// Acceptance proof 1: post-merge autonomous live-news production test.
 import fs from 'node:fs';
 import path from 'node:path';
 
