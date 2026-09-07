@@ -114,12 +114,16 @@ jobs:
           FILES=(data/weekly/weekly-player-outlook-2026.json guardrails/weekly-player-outlook-report.json)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --unset-all remote.origin.promisor || true
+          git config --unset-all remote.origin.partialclonefilter || true
+          git fetch --force --prune --no-filter origin '+refs/heads/main:refs/remotes/origin/main'
+          BRANCH="production/weekly-player-outlook-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          BASE=$(git rev-parse HEAD)
+          git switch -c "$BRANCH" "$BASE"
           git add -- "${FILES[@]}"
           if git diff --cached --quiet; then echo 'changed=false' >> "$GITHUB_OUTPUT"; exit 0; fi
-          BRANCH="production/weekly-player-outlook-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          git switch -c "$BRANCH"
           git commit -m "Refresh 166-player weekly outlook"
-          git push origin "$BRANCH"
+          git push --set-upstream origin "HEAD:refs/heads/$BRANCH"
           PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Refresh 166-player weekly outlook" --body "Automated 166-player weekly outlook refresh. Real dated news remains news; quiet players receive Current Outlook plus next opponent; after games, last-game stats and PPR points are included. Static evaluations, boards and CTD interface are untouched. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
           echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
