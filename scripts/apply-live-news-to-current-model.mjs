@@ -1,3 +1,4 @@
+// FIRE DRILL TRIGGER: live-news retention verification run 1 — test branch only; no logic change.
 // Acceptance trigger: post-PR-237 synthetic-merge guardrail production proof.
 import fs from 'node:fs';
 import path from 'node:path';
