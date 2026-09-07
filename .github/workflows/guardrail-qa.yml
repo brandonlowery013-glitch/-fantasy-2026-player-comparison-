@@ -5,13 +5,42 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
 jobs:
   guardrail-qa:
     runs-on: ubuntu-latest
     steps:
+      - name: Resolve exact protected merge target
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET_SHA='${{ github.sha }}'
+          PR_NUMBER=''
+          if [ '${{ github.event_name }}' = 'workflow_dispatch' ]; then
+            PR_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&head=${GITHUB_REPOSITORY_OWNER}:${GITHUB_REF_NAME}" --jq '.[0].number // empty')
+            if [ -n "$PR_NUMBER" ]; then
+              TARGET_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
+              if [ -z "$TARGET_SHA" ]; then
+                echo "FAIL: open PR #${PR_NUMBER} has no synthetic merge commit SHA."
+                exit 1
+              fi
+              echo "Workflow-dispatch QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA}."
+            fi
+          fi
+          echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
       - name: Checkout full history for drift comparison
         uses: actions/checkout@v4
         with:
+          ref: ${{ steps.target.outputs.target_sha }}
           fetch-depth: 0
       - name: Use Node
         uses: actions/setup-node@v4
@@ -107,6 +136,26 @@ jobs:
         run: node scripts/build-ev-shadow-layer.mjs --check
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
+
+      - name: Publish required check on protected synthetic merge
+        if: github.event_name == 'workflow_dispatch' && steps.target.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ steps.target.outputs.target_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/check-runs" \
+            -f name='guardrail-qa' \
+            -f head_sha="$TARGET_SHA" \
+            -f status='completed' \
+            -f conclusion='success' \
+            -f details_url="$RUN_URL" \
+            -f output[title]='Guardrail QA passed' \
+            -f output[summary]='Full Guardrail QA passed against the exact synthetic merge commit required by Main Guardrail Protection.' >/dev/null
+          echo "Published required guardrail-qa check on protected merge SHA ${TARGET_SHA}."
+
       - name: Upload guardrail reports
         if: always()
         uses: actions/upload-artifact@v4
