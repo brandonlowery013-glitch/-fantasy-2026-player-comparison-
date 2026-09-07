@@ -22,6 +22,7 @@ permissions:
   contents: write
   pull-requests: write
   checks: read
+  actions: write
 
 concurrency:
   group: weekly-production-orchestration
@@ -126,7 +127,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          pr_url=$(gh pr create --base main --head "${{ steps.persist.outputs.branch }}" --title "Production: adaptive pregame market refresh" --body "Automated pregame spread/total/moneyline refresh selected by time-to-kickoff cadence. Market data remains downstream-only and stale-week isolation remains enforced. Required Guardrail QA must pass before merge.")
+          branch="${{ steps.persist.outputs.branch }}"
+          pr_url=$(gh pr create --base main --head "$branch" --title "Production: adaptive pregame market refresh" --body "Automated pregame spread/total/moneyline refresh selected by time-to-kickoff cadence. Market data remains downstream-only and stale-week isolation remains enforced. Required Guardrail QA must pass before merge.")
+          # A PR created with GITHUB_TOKEN does not recursively trigger PR workflows,
+          # so explicitly dispatch the required Guardrail QA on this exact head ref.
+          gh workflow run guardrail-qa.yml --ref "$branch"
           echo "url=$pr_url" >> "$GITHUB_OUTPUT"
       - name: Wait for guardrail and merge adaptive market state
         if: steps.persist.outputs.changed == 'true'
