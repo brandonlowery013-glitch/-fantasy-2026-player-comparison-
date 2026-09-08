@@ -13,8 +13,8 @@ const structuredSubjectMatches=(signal,name)=>[signal?.player,signal?.player_nam
 function boundSignalView(name,signal){
   const fields=[signal?.headline,signal?.description,signal?.body_text,signal?.matched_context].filter(Boolean);
   let excerpts=[];
-  if(structuredSubjectMatches(signal,name))excerpts=fields;
-  else for(const field of fields)for(const clause of splitClauses(field))if(mentionsFullName(clause,name))excerpts.push(clause);
+  for(const field of fields)for(const clause of splitClauses(field))if(mentionsFullName(clause,name))excerpts.push(clause);
+  if(!excerpts.length&&(structuredSubjectMatches(signal,name)||signal?.source==='ESPN_PLAYER'))excerpts=fields;
   excerpts=[...new Set(excerpts.map(x=>String(x).trim()).filter(Boolean))];
   if(!excerpts.length)return null;
   return {summary:excerpts.slice(0,3).join(' | ').slice(0,700),source:signal?.url||signal?.source||null,published:signal?.published||null};
@@ -54,6 +54,7 @@ for(const name of names){
   const sources=boundViews.slice(0,5).map(x=>x.source).filter(Boolean);
   if(candidateMaterial&&d.status!=='ADJUDICATED') throw new Error(`${name}: candidate material evidence reached apply layer without an adjudicated decision`);
   if(d.binding_status==='UNBOUND_MATERIAL_EVIDENCE'&&(d.player_effect!=='HOLD'||d.season_long_effect!=='HOLD')) throw new Error(`${name}: unbound evidence attempted a model move`);
+  if(d.binding_status==='PLAYER_SPECIFIC'&&candidateMaterial&&!boundViews.length)throw new Error(`${name}: adjudicator accepted player-specific evidence but apply layer could not bind a news excerpt`);
 
   p.currentModelDecision={updated_at:now,status:d.status,horizon:d.horizon,player_effect:d.player_effect,near_term_projection:d.near_term_projection||'HOLD',season_long_effect:d.season_long_effect,confidence:d.confidence,binding_status:d.binding_status||null,reason:d.reason,connected_player_effects:d.connected_player_effects||[],self_audit:'PASS'};
   p.currentModelImpact={updated_at:now,review_status:r?.status||'REVIEWED_NO_CHANGE',taxonomy:t?.taxonomy||'NO_MATERIAL_UPDATE',candidate_material:!!candidateMaterial,material:!!acceptedMaterial,binding_status:d.binding_status||null,reason:acceptedMaterial?(r?.reason||null):null,source_summary:acceptedMaterial?(r?.source_summary||null):null,headlines:summaries,sources,implicated_components:acceptedMaterial?(c?.implicated_components||[]):[],projection_readiness:acceptedMaterial?(c?.projection_readiness||null):null,numeric_status:acceptedMaterial?(c?.status||'NOT_TRIGGERED'):'NOT_TRIGGERED',proposed_projected_ppr:acceptedMaterial?(c?.proposed_projected_ppr??null):null,proposed_score:acceptedMaterial?(c?.proposed_score??null):null,proposed_true_value_rank:acceptedMaterial?(c?.proposed_true_value_rank??null):null,score_delta:acceptedMaterial?(c?.score_delta??0):0,decision:p.currentModelDecision};
@@ -78,7 +79,7 @@ for(const name of names){
 }
 patch.updated=now.slice(0,10);
 patch.model=`single 166-player active board — live news/model decisions synced ${now}`;
-patch.live_news_model_sync={updated_at:now,players:166,material_players:material,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_policy:'PLAYER_SPECIFIC_BINDING_THEN_DECIDE_THEN_SELF_AUDIT',source_review:'guardrails/current-football-review.json',taxonomy:'analysis/full-universe-reconciliation-taxonomy-current.json',recalculation:'analysis/substantive-component-recalculation-current.json',adjudication:'analysis/live-news-decision-audit-current.json'};
+patch.live_news_model_sync={updated_at:now,players:166,material_players:material,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_policy:'DECIDE_THEN_SELF_AUDIT',evidence_binding_policy:'PLAYER_SPECIFIC_CLAUSE_OR_ATHLETE_BOUND',source_review:'guardrails/current-football-review.json',taxonomy:'analysis/full-universe-reconciliation-taxonomy-current.json',recalculation:'analysis/substantive-component-recalculation-current.json',adjudication:'analysis/live-news-decision-audit-current.json'};
 write(patchPath,patch);
 write('guardrails/live-news-model-application-report.json',{result:'PASS',generated_at:now,universe:166,patch:patchPath,material_players:material,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_self_audit:'PASS',static_evaluation_mutated:false});
 console.log(JSON.stringify({result:'PASS',universe:166,material_players:material,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_self_audit:'PASS',patch:patchPath},null,2));
