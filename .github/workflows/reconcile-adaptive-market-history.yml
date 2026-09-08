@@ -1,21 +1,12 @@
 name: Reconcile Adaptive Market History
-# Branch-only recovery run: keep PR fanout out of the reconciliation path.
 
 on:
-  push:
-    branches:
-      - fix/reconcile-adaptive-market-history
-    paths:
-      - 'scripts/reconcile-adaptive-market-history.mjs'
-      - '.github/workflows/reconcile-adaptive-market-history.yml'
+  pull_request:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
   contents: write
-
-concurrency:
-  group: adaptive-market-history-reconciliation
-  cancel-in-progress: false
 
 jobs:
   reconcile:
