@@ -61,17 +61,29 @@ function evaluateSnapshot(game,s,prob){
 }
 
 const self=process.argv.includes('--self-test'),src=self?synthetic():{projections,markets};
+const compactRecovery=!self&&process.env.RECOVERY_COMPACT_HISTORY==='1';
 const blocked=[],archivedMarketGamesSkipped=[],buildErrors=[],games={};
+let historicalSnapshotsConsidered=0;
 if(src.projections.sportsbook_inputs_used!==false)blocked.push('Step 14 football projections show market contamination');
 if(src.markets.market_context_only!==true||src.markets.probability_fit_input!==false)blocked.push('Market snapshot contract flags invalid');
 for(const [gameId,mg] of Object.entries(src.markets.games||{})){
   const game=src.projections.games?.[gameId];
+  const allSnapshots=Array.isArray(mg.snapshots)?mg.snapshots:[];
+  historicalSnapshotsConsidered+=allSnapshots.length;
   if(!game){
-    archivedMarketGamesSkipped.push({game_id:gameId,week:mg.week??null,snapshot_count:Array.isArray(mg.snapshots)?mg.snapshots.length:0,reason:'No current Step 14 projection; historical ledger retained but current recommendation rebuild skipped'});
+    archivedMarketGamesSkipped.push({game_id:gameId,week:mg.week??null,snapshot_count:allSnapshots.length,reason:'No current Step 14 projection; historical ledger retained but current recommendation rebuild skipped'});
     continue;
   }
   if(game.sportsbook_inputs_used!==false){blocked.push(`${gameId} football projection market contamination`);continue;}
   const kickoff=Date.parse(mg.kickoff||game.event_start),evaluations=[];
+  let snapshotsToEvaluate=allSnapshots;
+  if(compactRecovery){
+    const eligible=allSnapshots.filter(s=>{
+      const captured=Date.parse(s.captured_at);
+      return s.snapshot_kind!=='CLOSE'&&Number.isFinite(captured)&&Number.isFinite(kickoff)&&captured<=kickoff;
+    }).sort((a,b)=>Date.parse(a.captured_at)-Date.parse(b.captured_at));
+    snapshotsToEvaluate=eligible.length?[eligible.at(-1)]:[];
+  }
   let prob;
   try{
     const draws=simulateGameDistribution(gameId,game);
@@ -80,7 +92,7 @@ for(const [gameId,mg] of Object.entries(src.markets.games||{})){
     const detail={stage:'simulate_game_distribution',game_id:gameId,message:error instanceof Error?error.message:String(error)};
     buildErrors.push(detail);blocked.push(`${gameId} rebuild error: ${detail.message}`);continue;
   }
-  for(const s of mg.snapshots||[]){
+  for(const s of snapshotsToEvaluate){
     const captured=Date.parse(s.captured_at),eligible=s.snapshot_kind!=='CLOSE'&&Number.isFinite(captured)&&Number.isFinite(kickoff)&&captured<=kickoff;
     try{
       evaluations.push({snapshot_id:s.snapshot_id,snapshot_kind:s.snapshot_kind,book:s.book,captured_at:s.captured_at,source:s.source,eligible_for_current_recommendation:eligible,market:{home_spread:s.home_spread??null,home_spread_price:s.home_spread_price??null,away_spread_price:s.away_spread_price??null,total:s.total??null,over_price:s.over_price??null,under_price:s.under_price??null,home_moneyline:s.home_moneyline??null,away_moneyline:s.away_moneyline??null},markets:evaluateSnapshot(game,s,prob)});
@@ -106,8 +118,8 @@ if(self){
 }
 
 const now=new Date().toISOString();
-const out={schema_version:'1.0.0',season:2026,week:src.projections.week??null,status:blocked.length?'BLOCKED':Object.keys(games).length?'SHADOW_ONLY':'AWAITING_GAME_MARKET_SNAPSHOTS',mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,fair_market_method:contract.fair_market_method,recommendation_policy:contract.recommendation_policy,generated_at:now,archived_market_games_skipped:archivedMarketGamesSkipped,build_errors:buildErrors,games};
-const report={generated_at:now,result:blocked.length?'BLOCKED':'PASS',game_count:Object.keys(games).length,snapshot_evaluations:Object.values(games).reduce((n,g)=>n+g.snapshot_evaluations.length,0),archived_market_games_skipped:archivedMarketGamesSkipped.length,archived_market_game_details:archivedMarketGamesSkipped,build_error_count:buildErrors.length,build_errors:buildErrors,mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,blocked,safeguards:contract.locked_rules};
+const out={schema_version:'1.0.0',season:2026,week:src.projections.week??null,status:blocked.length?'BLOCKED':Object.keys(games).length?'SHADOW_ONLY':'AWAITING_GAME_MARKET_SNAPSHOTS',mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,fair_market_method:contract.fair_market_method,recommendation_policy:contract.recommendation_policy,generated_at:now,recovery_compact_history:compactRecovery,archived_market_games_skipped:archivedMarketGamesSkipped,build_errors:buildErrors,games};
+const report={generated_at:now,result:blocked.length?'BLOCKED':'PASS',game_count:Object.keys(games).length,historical_snapshots_considered:historicalSnapshotsConsidered,snapshot_evaluations:Object.values(games).reduce((n,g)=>n+g.snapshot_evaluations.length,0),recovery_compact_history:compactRecovery,archived_market_games_skipped:archivedMarketGamesSkipped.length,archived_market_game_details:archivedMarketGamesSkipped,build_error_count:buildErrors.length,build_errors:buildErrors,mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,blocked,safeguards:contract.locked_rules};
 write('guardrails/game-market-recommendation-report.json',report);
 if(!self)write('data/market/weekly-game-market-recommendations-2026.json',out);
 console.log(JSON.stringify(report,null,2));
