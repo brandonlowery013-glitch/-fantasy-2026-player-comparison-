@@ -1,21 +1,13 @@
 // Acceptance proof 2: consecutive post-merge autonomous live-news production test.
 import fs from 'node:fs';
 import path from 'node:path';
+import {directPlayerFragments} from './live-news-evidence-binding.mjs';
 
 const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const write=(p,x)=>{const f=path.join(root,p);fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,JSON.stringify(x,null,2)+'\n');};
-const lower=x=>String(x||'').toLowerCase();
-const esc=s=>String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-const splitClauses=t=>String(t||'').split(/(?<=[.!?;])\s+|\n+|\s+[—–-]\s+/).map(x=>x.trim()).filter(Boolean);
-const mentionsFullName=(text,name)=>{const n=lower(name).trim();return !!n&&new RegExp(`(^|[^a-z])${esc(n)}([^a-z]|$)`,'i').test(lower(text));};
-const structuredSubjectMatches=(signal,name)=>[signal?.player,signal?.player_name,signal?.subject,signal?.athlete].some(x=>x&&lower(x).trim()===lower(name).trim());
-function boundSignalView(name,signal){
-  const fields=[signal?.headline,signal?.description,signal?.body_text,signal?.matched_context].filter(Boolean);
-  let excerpts=[];
-  for(const field of fields)for(const clause of splitClauses(field))if(mentionsFullName(clause,name))excerpts.push(clause);
-  if(!excerpts.length&&(structuredSubjectMatches(signal,name)||signal?.source==='ESPN_PLAYER'))excerpts=fields;
-  excerpts=[...new Set(excerpts.map(x=>String(x).trim()).filter(Boolean))];
+function boundSignalView(player,signal,canonical){
+  const excerpts=directPlayerFragments(player,signal,canonical);
   if(!excerpts.length)return null;
   return {summary:excerpts.slice(0,3).join(' | ').slice(0,700),source:signal?.url||signal?.source||null,published:signal?.published||null};
 }
@@ -26,6 +18,7 @@ if(expected!==166) throw new Error(`Canonical universe must be 166; found ${expe
 let active=[];for(let i=0;i<Number(source.runtime_player_shards);i++) active.push(...read(`players${i}.json`));
 const names=active.map(p=>p.n);
 if(active.length!==166||new Set(names).size!==166) throw new Error(`Loaded canonical universe is not 166 unique players: ${active.length}/${new Set(names).size}`);
+const activeByName=new Map(active.map(p=>[p.n,p]));
 const review=read('guardrails/current-football-review.json');
 const taxonomy=read('analysis/full-universe-reconciliation-taxonomy-current.json');
 const recalc=read('analysis/substantive-component-recalculation-current.json');
@@ -43,12 +36,12 @@ if(decisionBy.size!==166||adjudication.counts?.self_audit_errors!==0) throw new 
 const now=new Date().toISOString();
 let material=0,directMaterial=0,connectedMaterial=0,connectedReview=0,numeric=0,noChange=0,preservedNews=0,adjudicatedCount=0,unboundSuppressed=0;
 for(const name of names){
-  const p=patch.players[name],r=reviewBy.get(name),t=taxBy.get(name)||null,c=calcBy.get(name)||null,d=decisionBy.get(name);
+  const player=activeByName.get(name),p=patch.players[name],r=reviewBy.get(name),t=taxBy.get(name)||null,c=calcBy.get(name)||null,d=decisionBy.get(name);
   if(!d) throw new Error(`Missing adjudicated current-model decision for ${name}`);
   const previousNews=p.newsFeedState&&typeof p.newsFeedState==='object'?p.newsFeedState:null;
   const signals=Array.isArray(r?.material_news_signals)?r.material_news_signals:[];
   const candidateMaterial=r?.status==='MATERIAL_CHANGE'||signals.length>0||(t&&t.taxonomy!=='NO_MATERIAL_UPDATE');
-  const boundViews=signals.map(s=>boundSignalView(name,s)).filter(Boolean);
+  const boundViews=signals.map(s=>boundSignalView(player,s,active)).filter(Boolean);
   const acceptedDirectMaterial=candidateMaterial&&d.binding_status==='PLAYER_SPECIFIC'&&boundViews.length>0;
   const hasConnected=Array.isArray(d.connected_player_effects)&&d.connected_player_effects.length>0;
   const acceptedConnectedImpact=candidateMaterial&&d.binding_status==='CONNECTED_PLAYER_CONTEXT'&&hasConnected;
@@ -71,7 +64,6 @@ for(const name of names){
     if(acceptedConnectedImpact){connectedMaterial++;if(!connectedDirectional)connectedReview++;}
   } else noChange++;
 
-  // Only direct player-specific news may replace the player's news feed. Connected QB/team context belongs in Current Model Impact/Outlook.
   if(acceptedDirectMaterial){
     p.newsFeedState={updated_at:now,last_reviewed_at:now,reviewed:true,material:true,latest_headlines:summaries,sources};
     p.ns=`${now.slice(0,10)} LIVE NEWS MODEL DECISION`;
@@ -90,7 +82,7 @@ for(const name of names){
 }
 patch.updated=now.slice(0,10);
 patch.model=`single 166-player active board — live news/model decisions synced ${now}`;
-patch.live_news_model_sync={updated_at:now,players:166,material_players:material,direct_material_players:directMaterial,connected_context_players:connectedMaterial,connected_context_review_only:connectedReview,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_policy:'DECIDE_THEN_SELF_AUDIT',evidence_binding_policy:'PLAYER_SPECIFIC_DIRECT_NEWS_OR_VERIFIED_CAUSAL_CONNECTED_QB_CONTEXT',connected_context_policy:'SAME_TEAM_QB_OUT_OR_RETURN_MAY CHANGE NEAR_TERM OUTLOOK; STARTER CHANGE ALONE IS REVIEW_ONLY; CONNECTED EVIDENCE NEVER OVERWRITES PLAYER NEWSFEED',source_review:'guardrails/current-football-review.json',taxonomy:'analysis/full-universe-reconciliation-taxonomy-current.json',recalculation:'analysis/substantive-component-recalculation-current.json',adjudication:'analysis/live-news-decision-audit-current.json'};
+patch.live_news_model_sync={updated_at:now,players:166,material_players:material,direct_material_players:directMaterial,connected_context_players:connectedMaterial,connected_context_review_only:connectedReview,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_policy:'DECIDE_THEN_SELF_AUDIT',evidence_binding_policy:'SUBJECT_AWARE_PLAYER_EVENT_FRAGMENTS_OR_VERIFIED_CAUSAL_CONNECTED_QB_CONTEXT',connected_context_policy:'SAME_TEAM_QB OUT/RETURN MAY CHANGE NEAR_TERM OUTLOOK; STARTER CHANGE ALONE IS REVIEW_ONLY; CONNECTED EVIDENCE NEVER OVERWRITES PLAYER NEWSFEED',source_review:'guardrails/current-football-review.json',taxonomy:'analysis/full-universe-reconciliation-taxonomy-current.json',recalculation:'analysis/substantive-component-recalculation-current.json',adjudication:'analysis/live-news-decision-audit-current.json'};
 write(patchPath,patch);
 write('guardrails/live-news-model-application-report.json',{result:'PASS',generated_at:now,universe:166,patch:patchPath,material_players:material,direct_material_players:directMaterial,connected_context_players:connectedMaterial,connected_context_review_only:connectedReview,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_self_audit:'PASS',static_evaluation_mutated:false});
 console.log(JSON.stringify({result:'PASS',universe:166,material_players:material,direct_material_players:directMaterial,connected_context_players:connectedMaterial,connected_context_review_only:connectedReview,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_self_audit:'PASS',patch:patchPath},null,2));
