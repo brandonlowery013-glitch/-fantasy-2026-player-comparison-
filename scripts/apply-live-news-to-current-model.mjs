@@ -40,7 +40,10 @@ for(const name of names){
   if(!d) throw new Error(`Missing adjudicated current-model decision for ${name}`);
   const previousNews=p.newsFeedState&&typeof p.newsFeedState==='object'?p.newsFeedState:null;
   const signals=Array.isArray(r?.material_news_signals)?r.material_news_signals:[];
-  const candidateMaterial=r?.status==='MATERIAL_CHANGE'||signals.length>0||(t&&t.taxonomy!=='NO_MATERIAL_UPDATE');
+  // Keep the apply-layer material gate identical to the adjudicator. Taxonomy rows
+  // such as MATERIAL_HOLD are annotations/reconciliation context and must not
+  // promote REVIEWED_NO_CHANGE evidence into a new material-news decision.
+  const candidateMaterial=r?.status==='MATERIAL_CHANGE'||signals.length>0;
   const boundViews=signals.map(s=>boundSignalView(player,s,active)).filter(Boolean);
   const acceptedDirectMaterial=candidateMaterial&&d.binding_status==='PLAYER_SPECIFIC'&&boundViews.length>0;
   const hasConnected=Array.isArray(d.connected_player_effects)&&d.connected_player_effects.length>0;
