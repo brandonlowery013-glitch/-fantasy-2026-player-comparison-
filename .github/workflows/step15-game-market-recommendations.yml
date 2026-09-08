@@ -75,8 +75,26 @@ jobs:
       - name: Validate recovered append-only ledger
         run: node scripts/validate-weekly-matchup-market-snapshots.mjs
       - name: Rebuild game-market recommendations
+        id: rebuild_game_market
+        continue-on-error: true
         timeout-minutes: 10
         run: node scripts/build-game-market-recommendations.mjs
+      - name: Persist exact game-market rebuild diagnostic
+        if: steps.rebuild_game_market.outcome == 'failure'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add guardrails/game-market-recommendation-report.json
+          if git diff --cached --quiet; then
+            echo 'No diagnostic delta to persist.'
+          else
+            git commit -m 'Persist recovery rebuild diagnostic [skip ci]'
+            git push origin HEAD:fix/reconcile-adaptive-market-history
+          fi
+      - name: Stop recovery on game-market rebuild failure
+        if: steps.rebuild_game_market.outcome == 'failure'
+        run: exit 1
       - name: Rebuild player-prop recommendations
         timeout-minutes: 5
         run: node scripts/build-player-prop-recommendations.mjs
