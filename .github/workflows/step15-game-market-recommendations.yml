@@ -55,3 +55,66 @@ jobs:
           git add data/market/weekly-game-market-recommendations-2026.json
           git commit -m "Refresh weekly game market recommendations"
           git push origin HEAD:main
+
+  reconcile-adaptive-market-history:
+    if: github.event_name == 'pull_request' && github.head_ref == 'fix/reconcile-adaptive-market-history'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/reconcile-adaptive-market-history
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Fetch every adaptive market production branch
+        run: git fetch origin '+refs/heads/production/adaptive-market-*:refs/remotes/origin/production/adaptive-market-*'
+      - name: Union historical game-market snapshot IDs
+        run: node scripts/reconcile-adaptive-market-history.mjs
+      - name: Validate recovered append-only ledger
+        run: node scripts/validate-weekly-matchup-market-snapshots.mjs
+      - name: Rebuild game-market recommendations
+        timeout-minutes: 10
+        run: node scripts/build-game-market-recommendations.mjs
+      - name: Rebuild player-prop recommendations
+        timeout-minutes: 5
+        run: node scripts/build-player-prop-recommendations.mjs
+      - name: Rebuild unified opportunities when distributions exist
+        timeout-minutes: 5
+        run: |
+          if [ -f data/probability/generated/weekly-probability-distributions-2026.json ]; then
+            node scripts/build-unified-opportunity-engine.mjs
+          else
+            echo 'No weekly probability distributions; skipping unified opportunity rebuild.'
+          fi
+      - name: Rebuild weekly parlay recommendations
+        timeout-minutes: 5
+        run: node scripts/build-weekly-parlay-recommendations.mjs
+      - name: Rebuild final betting UI feed
+        timeout-minutes: 5
+        run: node scripts/build-final-betting-ui-feed.mjs
+      - name: Validate final betting pipeline
+        timeout-minutes: 5
+        run: node scripts/validate-final-betting-pipeline-step4.mjs
+      - name: Run hard Guardrail QA
+        timeout-minutes: 5
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Persist reconciled state on recovery branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market/weekly-matchup-market-snapshots-2026.json \
+                  data/market/weekly-game-market-recommendations-2026.json \
+                  data/market/player-prop-recommendations-2026.json \
+                  data/market/unified-opportunities-2026.json \
+                  data/market/parlay-recommendations-2026.json \
+                  data/market/final-betting-ui-feed-2026.json \
+                  analysis/adaptive-market-history-reconciliation.json
+          if git diff --cached --quiet; then
+            echo 'No reconciliation delta.'
+            exit 0
+          fi
+          git commit -m 'Reconcile adaptive market history [skip ci]'
+          git push origin HEAD:fix/reconcile-adaptive-market-history
