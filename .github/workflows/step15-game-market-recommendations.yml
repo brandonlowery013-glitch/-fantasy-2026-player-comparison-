@@ -136,25 +136,34 @@ jobs:
             analysis/adaptive-market-history-reconciliation.json
             guardrails/game-market-recommendation-report.json
           )
+
+          # Preserve the validated outputs outside the worktree before refreshing
+          # the recovery branch. This prevents branch movement during CI from
+          # destroying or conflicting with the just-rebuilt files.
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
           for file in "${files[@]}"; do
             if [ -e "$file" ]; then
-              git add "$file"
+              mkdir -p "$tmp/$(dirname "$file")"
+              cp -a "$file" "$tmp/$file"
             else
               echo "Optional recovery output absent: $file"
             fi
           done
+
+          git fetch origin fix/reconcile-adaptive-market-history
+          git reset --hard origin/fix/reconcile-adaptive-market-history
+          git clean -fd
+
+          cp -a "$tmp"/. .
+          for file in "${files[@]}"; do
+            [ -e "$file" ] && git add "$file"
+          done
+
           if git diff --cached --quiet; then
             echo 'No reconciliation delta.'
             exit 0
           fi
+
           git commit -m 'Reconcile adaptive market history [skip ci]'
-          # Rebuild/QA may leave unrelated generated files dirty. The intended
-          # recovery outputs are now safely in the commit, so clean the runner
-          # before rebasing onto any branch movement that happened during CI.
-          git reset --hard HEAD
-          git clean -fd
-          git fetch origin fix/reconcile-adaptive-market-history
-          if ! git merge-base --is-ancestor origin/fix/reconcile-adaptive-market-history HEAD; then
-            git rebase origin/fix/reconcile-adaptive-market-history
-          fi
           git push origin HEAD:fix/reconcile-adaptive-market-history
