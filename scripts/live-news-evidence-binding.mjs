@@ -17,10 +17,13 @@ export function splitEventFragments(text){
     .split(/(?<=[.!?;|])\s+|\n+|\s+[—–]\s+/)
     .map(x=>x.trim()).filter(Boolean);
   const out=[];
-  // Split chained roster/availability actions, but do NOT split on "named":
-  // "what Tua being named starter means for Bijan" must stay intact so it can
-  // be recognized as connected context instead of a direct Bijan starter claim.
-  const actionBoundary=/\s+(?:,\s*)?(?:and\s+|then\s+)?(?=(?:signed|re-signed|extended|placed|waived|released|activated|traded|claimed|designated|elevated|promoted|ruled|suspended|benched)\b)/ig;
+  // Split chained roster/availability actions only at an explicit conjunction.
+  // Do not split a subject from its own predicate (for example
+  // "Tua Tagovailoa ruled out"), because that destroys connected-player
+  // event binding. Also do NOT split on "named": "what Tua being named
+  // starter means for Bijan" must stay intact so it is connected context,
+  // not a direct Bijan starter claim.
+  const actionBoundary=/\s+(?:,\s*)?(?:and\s+|then\s+)(?=(?:signed|re-signed|extended|placed|waived|released|activated|traded|claimed|designated|elevated|promoted|ruled|suspended|benched)\b)/ig;
   for(const piece of first){
     for(const sub of piece.split(actionBoundary).map(x=>x.trim()).filter(Boolean))out.push(sub);
   }
