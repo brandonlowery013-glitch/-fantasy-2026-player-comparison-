@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {simulateGameDistribution,outcomeProbabilities,moneylineProbabilities,evaluateTwoWay,recommendation} from '../lib/game-market-probability.mjs';
+import {simulateGameDistribution,moneylineProbabilities,evaluateTwoWay,recommendation} from '../lib/game-market-probability.mjs';
 
 const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
@@ -18,14 +18,24 @@ function synthetic(){return {
   ]}}}
 };}
 
+function lowerBound(a,x){let lo=0,hi=a.length;while(lo<hi){const mid=(lo+hi)>>1;if(a[mid]<x)lo=mid+1;else hi=mid;}return lo;}
+function upperBound(a,x){let lo=0,hi=a.length;while(lo<hi){const mid=(lo+hi)>>1;if(a[mid]<=x)lo=mid+1;else hi=mid;}return lo;}
+function sortedOutcomeProbabilities(values,threshold,direction){
+  const t=Number(threshold),n=values.length,lt=lowerBound(values,t),le=upperBound(values,t),push=le-lt;
+  const win=direction==='OVER'?n-le:lt;
+  const loss=direction==='OVER'?lt:n-le;
+  const den=win+loss;
+  return {win_probability:win/n,push_probability:push/n,loss_probability:loss/n,conditional_win_probability:den?win/den:null};
+}
+
 function makeProbabilityCache(draws){
-  const margins=draws.map(d=>d.margin),totals=draws.map(d=>d.total);
+  const margins=draws.map(d=>d.margin).sort((a,b)=>a-b),totals=draws.map(d=>d.total).sort((a,b)=>a-b);
   const spread=new Map(),total=new Map();
   const mlHome=moneylineProbabilities(draws,'HOME'),mlAway=moneylineProbabilities(draws,'AWAY');
   const outcomes=(kind,threshold,direction)=>{
     const cache=kind==='spread'?spread:total;
     const key=`${Number(threshold)}|${direction}`;
-    if(!cache.has(key))cache.set(key,outcomeProbabilities(kind==='spread'?margins:totals,Number(threshold),direction));
+    if(!cache.has(key))cache.set(key,sortedOutcomeProbabilities(kind==='spread'?margins:totals,Number(threshold),direction));
     return cache.get(key);
   };
   return {outcomes,mlHome,mlAway};
