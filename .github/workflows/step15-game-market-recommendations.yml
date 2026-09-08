@@ -123,19 +123,33 @@ jobs:
       - name: Persist reconciled state on recovery branch
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/market/weekly-matchup-market-snapshots-2026.json \
-                  data/market/weekly-game-market-recommendations-2026.json \
-                  data/market/player-prop-recommendations-2026.json \
-                  data/market/unified-opportunities-2026.json \
-                  data/market/parlay-recommendations-2026.json \
-                  data/market/final-betting-ui-feed-2026.json \
-                  analysis/adaptive-market-history-reconciliation.json \
-                  guardrails/game-market-recommendation-report.json
+          files=(
+            data/market/weekly-matchup-market-snapshots-2026.json
+            data/market/weekly-game-market-recommendations-2026.json
+            data/market/player-prop-recommendations-2026.json
+            data/market/unified-opportunities-2026.json
+            data/market/parlay-recommendations-2026.json
+            data/market/final-betting-ui-feed-2026.json
+            analysis/adaptive-market-history-reconciliation.json
+            guardrails/game-market-recommendation-report.json
+          )
+          for file in "${files[@]}"; do
+            if [ -e "$file" ]; then
+              git add "$file"
+            else
+              echo "Optional recovery output absent: $file"
+            fi
+          done
           if git diff --cached --quiet; then
             echo 'No reconciliation delta.'
             exit 0
           fi
           git commit -m 'Reconcile adaptive market history [skip ci]'
+          git fetch origin fix/reconcile-adaptive-market-history
+          if ! git merge-base --is-ancestor origin/fix/reconcile-adaptive-market-history HEAD; then
+            git rebase origin/fix/reconcile-adaptive-market-history
+          fi
           git push origin HEAD:fix/reconcile-adaptive-market-history
