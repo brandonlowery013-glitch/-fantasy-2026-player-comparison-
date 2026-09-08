@@ -78,6 +78,8 @@ jobs:
         id: rebuild_game_market
         continue-on-error: true
         timeout-minutes: 10
+        env:
+          RECOVERY_COMPACT_HISTORY: '1'
         run: node scripts/build-game-market-recommendations.mjs
       - name: Persist exact game-market rebuild diagnostic
         if: steps.rebuild_game_market.outcome == 'failure'
