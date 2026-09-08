@@ -12,6 +12,7 @@ permissions:
 jobs:
   reconcile:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,17 +26,31 @@ jobs:
         run: node scripts/reconcile-adaptive-market-history.mjs
       - name: Validate recovered append-only ledger
         run: node scripts/validate-weekly-matchup-market-snapshots.mjs
-      - name: Rebuild current downstream betting outputs from recovered ledger
+      - name: Rebuild game-market recommendations
+        timeout-minutes: 5
+        run: node scripts/build-game-market-recommendations.mjs
+      - name: Rebuild player-prop recommendations
+        timeout-minutes: 5
+        run: node scripts/build-player-prop-recommendations.mjs
+      - name: Rebuild unified opportunities when distributions exist
+        timeout-minutes: 5
         run: |
-          node scripts/build-game-market-recommendations.mjs
-          node scripts/build-player-prop-recommendations.mjs
           if [ -f data/probability/generated/weekly-probability-distributions-2026.json ]; then
             node scripts/build-unified-opportunity-engine.mjs
+          else
+            echo 'No weekly probability distributions; skipping unified opportunity rebuild.'
           fi
-          node scripts/build-weekly-parlay-recommendations.mjs
-          node scripts/build-final-betting-ui-feed.mjs
-          node scripts/validate-final-betting-pipeline-step4.mjs
+      - name: Rebuild weekly parlay recommendations
+        timeout-minutes: 5
+        run: node scripts/build-weekly-parlay-recommendations.mjs
+      - name: Rebuild final betting UI feed
+        timeout-minutes: 5
+        run: node scripts/build-final-betting-ui-feed.mjs
+      - name: Validate final betting pipeline
+        timeout-minutes: 5
+        run: node scripts/validate-final-betting-pipeline-step4.mjs
       - name: Run hard Guardrail QA
+        timeout-minutes: 5
         run: node scripts/run-guardrail-qa.mjs
       - name: Persist reconciled state on recovery branch
         shell: bash
