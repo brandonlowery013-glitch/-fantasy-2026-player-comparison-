@@ -148,6 +148,11 @@ jobs:
             exit 0
           fi
           git commit -m 'Reconcile adaptive market history [skip ci]'
+          # Rebuild/QA may leave unrelated generated files dirty. The intended
+          # recovery outputs are now safely in the commit, so clean the runner
+          # before rebasing onto any branch movement that happened during CI.
+          git reset --hard HEAD
+          git clean -fd
           git fetch origin fix/reconcile-adaptive-market-history
           if ! git merge-base --is-ancestor origin/fix/reconcile-adaptive-market-history HEAD; then
             git rebase origin/fix/reconcile-adaptive-market-history
