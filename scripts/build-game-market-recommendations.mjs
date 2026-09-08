@@ -18,8 +18,8 @@ function synthetic(){return {
   ]}}}
 };}
 
-function evaluateSnapshot(gameId,game,s){
-  const draws=simulateGameDistribution(gameId,game),margins=draws.map(d=>d.margin),totals=draws.map(d=>d.total),results={};
+function evaluateSnapshot(gameId,game,s,draws){
+  const gameDraws=draws||simulateGameDistribution(gameId,game),margins=gameDraws.map(d=>d.margin),totals=gameDraws.map(d=>d.total),results={};
   if(Number.isFinite(Number(s.home_spread))&&s.home_spread_price!=null&&s.away_spread_price!=null){
     const threshold=-Number(s.home_spread);
     const ev=evaluateTwoWay({sideA:outcomeProbabilities(margins,threshold,'OVER'),sideB:outcomeProbabilities(margins,threshold,'UNDER'),sideAOdds:s.home_spread_price,sideBOdds:s.away_spread_price,thresholds:{home_spread:Number(s.home_spread),home_cover_margin_threshold:threshold}});
@@ -31,7 +31,7 @@ function evaluateSnapshot(gameId,game,s){
     results.total={...roundObj(ev),recommendation:recommendation(ev,contract.recommendation_policy,{side_a:`OVER ${line}`,side_b:`UNDER ${line}`})};
   }
   if(s.home_moneyline!=null&&s.away_moneyline!=null){
-    const ev=evaluateTwoWay({sideA:moneylineProbabilities(draws,'HOME'),sideB:moneylineProbabilities(draws,'AWAY'),sideAOdds:s.home_moneyline,sideBOdds:s.away_moneyline,thresholds:null});
+    const ev=evaluateTwoWay({sideA:moneylineProbabilities(gameDraws,'HOME'),sideB:moneylineProbabilities(gameDraws,'AWAY'),sideAOdds:s.home_moneyline,sideBOdds:s.away_moneyline,thresholds:null});
     results.moneyline={...roundObj(ev),recommendation:recommendation(ev,contract.recommendation_policy,{side_a:`${game.home_team} ML`,side_b:`${game.away_team} ML`})};
   }
   return results;
@@ -46,9 +46,10 @@ for(const [gameId,mg] of Object.entries(src.markets.games||{})){
   if(!game){blocked.push(`${gameId} has market snapshots but no Step 14 football projection`);continue;}
   if(game.sportsbook_inputs_used!==false){blocked.push(`${gameId} football projection market contamination`);continue;}
   const kickoff=Date.parse(mg.kickoff||game.event_start),evaluations=[];
+  const draws=simulateGameDistribution(gameId,game);
   for(const s of mg.snapshots||[]){
     const captured=Date.parse(s.captured_at),eligible=s.snapshot_kind!=='CLOSE'&&Number.isFinite(captured)&&Number.isFinite(kickoff)&&captured<=kickoff;
-    evaluations.push({snapshot_id:s.snapshot_id,snapshot_kind:s.snapshot_kind,book:s.book,captured_at:s.captured_at,source:s.source,eligible_for_current_recommendation:eligible,market:{home_spread:s.home_spread??null,home_spread_price:s.home_spread_price??null,away_spread_price:s.away_spread_price??null,total:s.total??null,over_price:s.over_price??null,under_price:s.under_price??null,home_moneyline:s.home_moneyline??null,away_moneyline:s.away_moneyline??null},markets:evaluateSnapshot(gameId,game,s)});
+    evaluations.push({snapshot_id:s.snapshot_id,snapshot_kind:s.snapshot_kind,book:s.book,captured_at:s.captured_at,source:s.source,eligible_for_current_recommendation:eligible,market:{home_spread:s.home_spread??null,home_spread_price:s.home_spread_price??null,away_spread_price:s.away_spread_price??null,total:s.total??null,over_price:s.over_price??null,under_price:s.under_price??null,home_moneyline:s.home_moneyline??null,away_moneyline:s.away_moneyline??null},markets:evaluateSnapshot(gameId,game,s,draws)});
   }
   const eligible=evaluations.filter(x=>x.eligible_for_current_recommendation).sort((a,b)=>Date.parse(a.captured_at)-Date.parse(b.captured_at));
   const latest=eligible.at(-1)||null;
