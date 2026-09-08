@@ -1,0 +1,86 @@
+name: Debug Live News Step 14
+
+on:
+  push:
+    branches:
+      - fix/live-news-player-specific-adjudication
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolate-step-14:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Hard-lock canonical universe to 166
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          if(Number(src.active_player_model)!==166) throw new Error(`Expected canonical universe 166, got ${src.active_player_model}`);
+          let names=[];
+          for(let i=0;i<Number(src.runtime_player_shards);i++) names.push(...require(`./players${i}.json`).map(p=>p.n));
+          if(names.length!==166||new Set(names).size!==166) throw new Error(`Loaded player universe ${names.length}/${new Set(names).size}, expected 166/166`);
+          console.log(JSON.stringify({result:'PASS',players:166},null,2));
+          NODE
+
+      - name: Build live 166-player review
+        run: |
+          node scripts/build-live-full-universe-review-v2.mjs
+          node scripts/normalize-nfl-article-bodies.mjs
+          node scripts/filter-live-review-materiality.mjs
+          node scripts/build-transition-intelligence-review.mjs
+          node scripts/enrich-transition-from-unified-evidence.mjs
+          node scripts/integrate-transition-intelligence.mjs
+
+      - name: Validate tracked 166-player coverage
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          let canonical=[];
+          for(let i=0;i<Number(src.runtime_player_shards);i++) canonical.push(...require(`./players${i}.json`).map(p=>p.n));
+          const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
+          const rows=review.players||[];
+          const names=rows.map(x=>x.player);
+          const nameSet=new Set(names), canonicalSet=new Set(canonical);
+          if(rows.length!==166||nameSet.size!==166||canonical.length!==166||canonicalSet.size!==166) throw new Error('166-player coverage failed');
+          NODE
+
+      - name: Test substantive football context parser
+        run: node scripts/test-substantive-football-context-parser.mjs
+
+      - name: Collect substantive football context
+        run: node scripts/collect-substantive-football-context.mjs
+
+      - name: Build substantive football context inputs
+        run: node scripts/build-substantive-football-context-inputs.mjs
+
+      - name: Build substantive component recalculation v2
+        run: node scripts/build-substantive-component-recalculation-v2.mjs
+
+      - name: Build full-universe reconciliation taxonomy
+        run: node scripts/build-full-universe-reconciliation-taxonomy.mjs
+
+      - name: Adjudicate live news current model
+        run: node scripts/adjudicate-live-news-current-model.mjs
+
+      - name: Upload failure diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-live-news-step14
+          path: |
+            guardrails/current-football-review.json
+            analysis/substantive-component-recalculation-current.json
+            analysis/full-universe-reconciliation-taxonomy-current.json
+            analysis/live-news-decision-audit-current.json
+          if-no-files-found: warn
