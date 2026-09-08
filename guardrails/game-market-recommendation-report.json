@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-09-08T18:51:27.475Z",
+  "result": "PASS",
+  "game_count": 16,
+  "snapshot_evaluations": 212893,
+  "archived_market_games_skipped": 0,
+  "archived_market_game_details": [],
+  "build_error_count": 0,
+  "build_errors": [],
+  "mode": "SHADOW_ONLY",
+  "actionable": false,
+  "football_projection_mutation_allowed": false,
+  "blocked": [],
+  "safeguards": [
+    "The Step 14 football forecast is generated before and independently of sportsbook market data.",
+    "Market movement never rewrites the Step 14 projected score, margin, total, win probability, or football distribution.",
+    "Each market snapshot is evaluated at its own line and price so recommendations may change as price changes without changing the football forecast.",
+    "Two-way sportsbook prices are de-vigged with the Step 13 proportional method before model-vs-market probability edge is measured.",
+    "Spread and total push probability is modeled explicitly; model conditional win probability excludes pushes for fair-market comparison and push-aware EV treats pushes as zero return.",
+    "Moneyline tie probability is treated as a push/refund for two-way NFL moneyline evaluation.",
+    "A PICK requires probability edge, EV, and model conditional win probability to all clear the locked minimums; otherwise the output is PASS.",
+    "A recommendation is descriptive SHADOW_ONLY output and cannot place a wager, size a stake, or mutate football projections.",
+    "Closing prices are reserved for CLV/backtest evaluation and cannot be retroactively substituted for the price available at recommendation time.",
+    "Missing or incomplete two-sided prices produce no recommendation rather than an inferred market price."
+  ]
+}
