@@ -20,6 +20,7 @@ permissions:
   contents: write
   pull-requests: write
   checks: read
+  statuses: read
   actions: write
 
 concurrency:
@@ -50,28 +51,9 @@ jobs:
           console.log(JSON.stringify({result:'PASS',players:166,shards:src.runtime_player_shards},null,2));
           NODE
 
-      - name: Reconcile any in-flight accepted canonical news state
+      - name: Use protected main as the canonical starting state
         if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          BRANCH='production/live-news-model-current'
-          PATCH=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').current_update_layer")
-          OWNER="${GITHUB_REPOSITORY_OWNER}"
-          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-            git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH"
-            OPEN_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&base=main&head=${OWNER}:${BRANCH}" --jq '.[0].number // empty')
-            if [ -n "$OPEN_NUMBER" ]; then
-              git checkout "refs/remotes/origin/$BRANCH" -- "$PATCH"
-              echo "Reconciled canonical current-update layer from in-flight persistence PR #${OPEN_NUMBER}."
-            else
-              echo 'Stable persistence branch exists without an open PR; main remains the reconciliation source.'
-            fi
-          else
-            echo 'No in-flight persistence branch; main is the reconciliation source.'
-          fi
+        run: echo 'Serialized production runs start from protected main; stale generated branches are never reconciled into the current-model layer.'
 
       - name: Collect current live football news and context
         run: |
@@ -157,7 +139,7 @@ jobs:
             current162patch-2026-08-24.json
           if-no-files-found: error
 
-      - name: Persist validated model-news decision update through protected PR
+      - name: Persist validated model-news decision update through guarded PR
         id: persist
         if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         env:
@@ -167,124 +149,101 @@ jobs:
           set -euo pipefail
           PATCH=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').current_update_layer")
           FILES=("$PATCH" guardrails/live-news-model-application-report.json guardrails/current-football-review.json analysis/substantive-component-recalculation-current.json analysis/full-universe-reconciliation-taxonomy-current.json analysis/live-news-decision-audit-current.json)
-          BRANCH='production/live-news-model-current'
-          OWNER="${GITHUB_REPOSITORY_OWNER}"
-          BODY="Automated live-news ingestion for the canonical 166-player model. Material evidence is converted into an explicit current-model decision, self-audited, Guardrail-QA validated, and persisted. Static player evaluations, canonical boards, and CTD interface are not mutated. Latest source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
-          EXISTING_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&base=main&head=${OWNER}:${BRANCH}" --jq '.[0].number // empty')
-          if [ -z "$(git status --porcelain -- "${FILES[@]}")" ]; then
-            if [ -n "$EXISTING_NUMBER" ]; then
-              gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${EXISTING_NUMBER}" -f body="$BODY" >/dev/null
-              gh workflow run guardrail-qa.yml --ref "$BRANCH"
-              PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${EXISTING_NUMBER}"
-              echo 'changed=true' >> "$GITHUB_OUTPUT";echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT";echo "pr_number=$EXISTING_NUMBER" >> "$GITHUB_OUTPUT"
-            else
-              echo 'No persistence changes; latest committed news/model decision state remains canonical.';echo 'changed=false' >> "$GITHUB_OUTPUT"
-            fi
-            exit 0
-          fi
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main:refs/remotes/origin/main
-          TMP_DIR=$(mktemp -d)
-          trap 'rm -rf "$TMP_DIR"' EXIT
-          for f in "${FILES[@]}"; do
-            mkdir -p "$TMP_DIR/$(dirname "$f")"
-            cp "$f" "$TMP_DIR/$f"
-          done
-
-          REMOTE_EXISTS=false
-          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-            REMOTE_EXISTS=true
-            git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH"
-          fi
-
-          # Build the persistence head from current main so stale generated history cannot leak into the PR.
-          # If the stable branch has diverged, record it as a second parent with an ours merge. This makes
-          # the next update a normal fast-forward of the stable branch without rewriting branch history.
-          git checkout -B "$BRANCH" refs/remotes/origin/main
-          if [ "$REMOTE_EXISTS" = true ] && ! git merge-base --is-ancestor "refs/remotes/origin/$BRANCH" HEAD; then
-            git merge --no-ff -s ours "refs/remotes/origin/$BRANCH" -m "Reconcile live-news persistence history with main"
-          fi
-
-          for f in "${FILES[@]}"; do
-            mkdir -p "$(dirname "$f")"
-            cp "$TMP_DIR/$f" "$f"
-          done
           git add -- "${FILES[@]}"
           if git diff --cached --quiet; then
-            if [ -n "$EXISTING_NUMBER" ]; then
-              gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${EXISTING_NUMBER}" -f body="$BODY" >/dev/null
-              gh workflow run guardrail-qa.yml --ref "$BRANCH"
-              PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${EXISTING_NUMBER}"
-              echo 'changed=true' >> "$GITHUB_OUTPUT";echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT";echo "pr_number=$EXISTING_NUMBER" >> "$GITHUB_OUTPUT"
-            else
-              echo 'No persistence delta after branch reconciliation.'
-              echo 'changed=false' >> "$GITHUB_OUTPUT"
-            fi
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            echo 'No live-news persistence changes; protected main remains canonical.'
             exit 0
           fi
 
-          git commit -m "Persist live 166-player news model decisions"
+          BRANCH="production/live-news-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$BRANCH"
+          git commit -m "Persist live 166-player news model decisions [skip ci]"
           git push --set-upstream origin "$BRANCH"
-          if [ -n "$EXISTING_NUMBER" ]; then
-            PR_NUMBER="$EXISTING_NUMBER"
-            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" -f body="$BODY" >/dev/null
-          else
-            PR_NUMBER=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pulls" -f title='Persist live 166-player news model decisions' -f head="$BRANCH" -f base='main' -f body="$BODY" --jq '.number')
-          fi
-          test -n "$PR_NUMBER"
-          PR_STATE=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.state')
-          PR_HEAD=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.ref')
-          PR_BASE=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.base.ref')
-          if [ "$PR_STATE" != 'open' ] || [ "$PR_HEAD" != "$BRANCH" ] || [ "$PR_BASE" != 'main' ]; then
-            echo "FAIL: persistence PR verification failed: number=${PR_NUMBER} state=${PR_STATE} head=${PR_HEAD} base=${PR_BASE}"
-            exit 1
-          fi
-          gh workflow run guardrail-qa.yml --ref "$BRANCH"
-          PR_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/pull/${PR_NUMBER}"
-          echo 'changed=true' >> "$GITHUB_OUTPUT";echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT";echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
-      - name: Auto-merge generated update only after current required check
-        if: steps.persist.outputs.changed == 'true' && (github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+          PR_URL=$(gh pr create \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head "$BRANCH" \
+            --title 'Persist live 166-player news model decisions' \
+            --body "Automated live-news ingestion for the canonical 166-player model. Material evidence is converted into an explicit current-model decision, self-audited, hard-Guardrail validated, and persisted. Static player evaluations, canonical boards, and CTD interface are not mutated. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
+          PR_NUMBER="${PR_URL##*/}"
+          test -n "$PR_NUMBER"
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "Opened protected live-news update PR #${PR_NUMBER} from ${BRANCH}."
+
+      - name: Run Guardrail QA on exact live-news update branch
+        if: steps.persist.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_URL: ${{ steps.persist.outputs.pr_url }}
+          BRANCH: ${{ steps.persist.outputs.branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run guardrail-qa.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+
+          RUN_ID=''
+          for _ in $(seq 1 60); do
+            RUN_ID=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow guardrail-qa.yml \
+              --branch "$BRANCH" \
+              --event workflow_dispatch \
+              --limit 10 \
+              --json databaseId,createdAt \
+              --jq --arg t "$DISPATCHED_AT" '[.[] | select(.createdAt >= $t)] | sort_by(.createdAt) | last | .databaseId // empty')
+            [ -n "$RUN_ID" ] && break
+            sleep 5
+          done
+
+          if [ -z "$RUN_ID" ]; then
+            echo 'FAIL: dispatched Guardrail QA run was not discoverable.'
+            exit 1
+          fi
+
+          echo "Guardrail QA run: ${RUN_ID}"
+          for _ in $(seq 1 360); do
+            STATUS=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json status --jq '.status')
+            if [ "$STATUS" = 'completed' ]; then
+              CONCLUSION=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion --jq '.conclusion')
+              if [ "$CONCLUSION" != 'success' ]; then
+                echo "FAIL: Guardrail QA concluded ${CONCLUSION}."
+                exit 1
+              fi
+              echo 'Guardrail QA passed.'
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo 'FAIL: timed out waiting for Guardrail QA.'
+          exit 1
+
+      - name: Merge validated live-news state PR
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.persist.outputs.pr_number }}
         shell: bash
         run: |
           set -euo pipefail
-          LAST_DISPATCH_SHA=''
-          LAST_FAILURE_RETRY_SHA=''
-          for i in $(seq 1 180); do
-            PR_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
-            PR_STATE=$(printf '%s' "$PR_JSON" | jq -r '.state')
-            if [ "$PR_STATE" != 'open' ]; then
-              MERGED=$(printf '%s' "$PR_JSON" | jq -r '.merged')
-              if [ "$MERGED" = 'true' ]; then echo "Live-news decision PR #${PR_NUMBER} is merged.";exit 0;fi
-              echo "Live-news decision PR #${PR_NUMBER} is no longer open and was not merged.";exit 1
+          for _ in $(seq 1 30); do
+            STATE=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state --jq '.state')
+            if [ "$STATE" = 'MERGED' ]; then
+              echo "PR #${PR_NUMBER} already merged."
+              exit 0
             fi
-            MERGE_SHA=$(printf '%s' "$PR_JSON" | jq -r '.merge_commit_sha // empty')
-            HEAD_REF=$(printf '%s' "$PR_JSON" | jq -r '.head.ref')
-            if [ -n "$MERGE_SHA" ]; then
-              CHECK=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${MERGE_SHA}/check-runs" --jq '[.check_runs[] | select(.name=="guardrail-qa" and .app.id==15368)] | sort_by(.started_at // .created_at) | last // {}')
-              CONCLUSION=$(printf '%s' "$CHECK" | jq -r '.conclusion // empty');STATUS=$(printf '%s' "$CHECK" | jq -r '.status // empty')
-              if [ "$CONCLUSION" = 'success' ]; then
-                CURRENT_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
-                if [ "$CURRENT_SHA" != "$MERGE_SHA" ]; then echo "Protected merge moved from ${MERGE_SHA} to ${CURRENT_SHA}; revalidating.";continue;fi
-                echo "Required guardrail-qa passed on current protected synthetic merge ${MERGE_SHA}."
-                if gh pr merge "$PR_URL" --merge --delete-branch; then exit 0;fi
-                echo 'Merge rejected after validated check; revalidating current synthetic merge.';sleep 10;continue
-              elif [ "$STATUS" = 'completed' ] && [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != 'success' ]; then
-                if [ "$MERGE_SHA" != "$LAST_FAILURE_RETRY_SHA" ]; then echo "Guardrail ${CONCLUSION} on ${MERGE_SHA}; redispatching once for exact current merge.";gh workflow run guardrail-qa.yml --ref "$HEAD_REF";LAST_FAILURE_RETRY_SHA="$MERGE_SHA";LAST_DISPATCH_SHA="$MERGE_SHA";sleep 10;continue;fi
-                echo "Guardrail remained ${CONCLUSION} on ${MERGE_SHA} after one retry.";exit 1
-              fi
-              if [ "$MERGE_SHA" != "$LAST_DISPATCH_SHA" ]; then
-                CHECK_COUNT=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${MERGE_SHA}/check-runs" --jq '[.check_runs[] | select(.name=="guardrail-qa" and .app.id==15368)] | length')
-                if [ "$CHECK_COUNT" = '0' ]; then echo "No guardrail on current merge ${MERGE_SHA}; dispatching.";gh workflow run guardrail-qa.yml --ref "$HEAD_REF";LAST_DISPATCH_SHA="$MERGE_SHA";fi
-              fi
+            if gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --squash --delete-branch; then
+              echo "Merged validated live-news PR #${PR_NUMBER}."
+              exit 0
             fi
+            echo 'Merge not ready yet; waiting for protected required checks.'
             sleep 10
           done
-          echo 'Required guardrail-qa did not reach a stable mergeable protected synthetic commit within 30 minutes.'
+          echo "FAIL: validated live-news PR #${PR_NUMBER} did not become mergeable before timeout."
           exit 1
