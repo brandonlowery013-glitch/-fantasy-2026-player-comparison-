@@ -15,6 +15,10 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
+  actions: write
+  checks: read
+  statuses: read
 
 concurrency:
   group: automatic-nfl-event-ingestion
@@ -53,14 +57,118 @@ jobs:
         run: node scripts/build-nfl-event-ingestion.mjs
       - name: Revalidate normalized event ledger
         run: node scripts/validate-nfl-event-ingestion.mjs
-      - name: Commit event state only when changed
+
+      - name: Persist event state through protected PR
+        id: persist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/ingestion/nfl-event-ledger-2026.json data/ingestion/nfl-event-state-2026.json
+
           if git diff --cached --quiet; then
             echo "No event-state changes."
-          else
-            git commit -m "Update automatic NFL event state [skip ci]"
-            git push origin HEAD:main
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+
+          BRANCH="production/nfl-event-ingestion-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$BRANCH"
+          git commit -m "Update automatic NFL event state [skip ci]"
+          git push --set-upstream origin "$BRANCH"
+
+          PR_NUMBER=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$BRANCH" --base main --json number --jq '.[0].number // empty')
+          if [ -z "$PR_NUMBER" ]; then
+            PR_URL=$(gh pr create \
+              --repo "$GITHUB_REPOSITORY" \
+              --base main \
+              --head "$BRANCH" \
+              --title "Update automatic NFL event state" \
+              --body "Automated event-ledger/state refresh. Merge only after the full Guardrail QA validates the protected synthetic merge target.")
+            PR_NUMBER="${PR_URL##*/}"
+          fi
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "Opened protected update PR #${PR_NUMBER} from ${BRANCH}."
+
+      - name: Run Guardrail QA on exact protected merge target
+        if: steps.persist.outputs.changed == 'true'
+        id: guardrail
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.persist.outputs.branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run guardrail-qa.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+
+          RUN_ID=""
+          for _ in $(seq 1 60); do
+            RUN_ID=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow guardrail-qa.yml \
+              --branch "$BRANCH" \
+              --event workflow_dispatch \
+              --limit 10 \
+              --json databaseId,createdAt \
+              --jq --arg t "$DISPATCHED_AT" '[.[] | select(.createdAt >= $t)] | sort_by(.createdAt) | last | .databaseId // empty')
+            [ -n "$RUN_ID" ] && break
+            sleep 5
+          done
+
+          if [ -z "$RUN_ID" ]; then
+            echo "FAIL: dispatched Guardrail QA run was not discoverable."
+            exit 1
+          fi
+
+          echo "Guardrail QA run: ${RUN_ID}"
+          for _ in $(seq 1 360); do
+            STATUS=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json status --jq '.status')
+            if [ "$STATUS" = "completed" ]; then
+              CONCLUSION=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion --jq '.conclusion')
+              if [ "$CONCLUSION" != "success" ]; then
+                echo "FAIL: Guardrail QA concluded ${CONCLUSION}."
+                exit 1
+              fi
+              echo "Guardrail QA passed."
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "FAIL: timed out waiting for Guardrail QA."
+          exit 1
+
+      - name: Merge validated event-state PR
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.persist.outputs.pr_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for _ in $(seq 1 30); do
+            STATE=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state --jq '.state')
+            if [ "$STATE" = "MERGED" ]; then
+              echo "PR #${PR_NUMBER} already merged."
+              exit 0
+            fi
+
+            if gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --squash --delete-branch; then
+              echo "Merged validated event-state PR #${PR_NUMBER}."
+              exit 0
+            fi
+
+            echo "Merge not ready yet; waiting for protected required checks."
+            sleep 10
+          done
+
+          echo "FAIL: validated PR #${PR_NUMBER} did not become mergeable before timeout."
+          exit 1
