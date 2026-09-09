@@ -2,18 +2,30 @@ import fs from 'node:fs';
 
 const decisionPath='guardrails/step3e-approved-changes-2026-08-30.json';
 const patchPath='current162patch-2026-08-24.json';
+const sourcePath='MODEL_SOURCE_OF_TRUTH.json';
 const universeCfg=JSON.parse(fs.readFileSync('guardrails/guardrails-config.json','utf8'));
 const expectedPlayerCount=Number(universeCfg.authoritative_player_count);
 if(!fs.existsSync(decisionPath)) throw new Error('Step 3E requires the Aug. 30 approved decision ledger');
 if(!fs.existsSync(patchPath)) throw new Error('Step 3E requires the active runtime overlay');
+if(!fs.existsSync(sourcePath)) throw new Error('Step 3E requires the model source-of-truth declaration');
 
 const d=JSON.parse(fs.readFileSync(decisionPath,'utf8'));
 const patch=JSON.parse(fs.readFileSync(patchPath,'utf8'));
+const source=JSON.parse(fs.readFileSync(sourcePath,'utf8'));
 const decisions=d.decisions||[];
 if(d.supersedes_prior_noop!==true) throw new Error('Step 3E Aug. 30 ledger must explicitly supersede the prior no-op');
 if(decisions.length!==5) throw new Error(`Step 3E expected five adjudicated review cases; found ${decisions.length}`);
 if(Number(d.direct_changes)!==2||Number(d.connected_changes_count)!==1||Number(d.holds)!==3) throw new Error('Step 3E decision counts do not match the approved Aug. 30 adjudication');
-if(patch.step3e_status!=='APPLIED_APPROVED_CHANGES') throw new Error('Active runtime overlay no longer retains the approved Step 3E state');
+
+// Step 3E is historical. Later approved recalibrations legitimately replace the original
+// APPLIED_APPROVED_CHANGES marker, so prove preservation instead of requiring a stale literal.
+const directState=patch.step3e_status==='APPLIED_APPROVED_CHANGES';
+const preservedState=String(patch.step3e_status||'').startsWith('PRESERVED_WITH_');
+const sourcePreservesStep3E=/approved Step 3E changes preserved/i.test(String(source.step3e_state||''));
+if(!directState&&!(preservedState&&sourcePreservesStep3E)) {
+  throw new Error(`Active runtime overlay does not prove approved Step 3E preservation (status=${patch.step3e_status||'MISSING'})`);
+}
+if(Number(source.active_player_model)!==expectedPlayerCount) throw new Error(`Source-of-truth universe mismatch: ${source.active_player_model} != ${expectedPlayerCount}`);
 const patchPlayers=patch.players||{};
 if(Object.keys(patchPlayers).length!==expectedPlayerCount) throw new Error(`Step 3E runtime overlay must synchronize all ${expectedPlayerCount} active players`);
 
@@ -40,6 +52,8 @@ const report={
   connected_changes:1,
   holds:3,
   current_overlay_updated:patch.updated,
+  current_overlay_step3e_status:patch.step3e_status,
+  source_of_truth_step3e_preserved:sourcePreservesStep3E,
   live_player_overlay_modified:true,
   adjudicated_players_present:true,
   contiguous_overall_ranks:true,

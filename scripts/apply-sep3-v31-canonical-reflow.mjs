@@ -3,12 +3,29 @@ import {execSync} from 'node:child_process';
 const R=p=>JSON.parse(fs.readFileSync(p,'utf8'));const W=(p,x)=>fs.writeFileSync(p,JSON.stringify(x,null,2)+'\n');
 const INPUT='analysis/material-hold-canonical-apply-input-2026-09-05.json';
 const QA='analysis/material-hold-canonical-apply-qa-2026-09-05.json';
+const LEGACY_V31_QA='analysis/sep3-v31-canonical-apply-qa.json';
 const TARGET_STATUS='authoritative_current_2026_09_05_material_hold_recalibrated';
+const SUPERSEDING_STATUS='authoritative_current_2026_09_05_post_overall_audit_recalibrated';
 const weights={pd:.35,ce:.20,r:.15,e:.10,a:.10,rl:.05,su:.05};
 const rd=(x,n=6)=>+Number(x).toFixed(n);const approx=(a,b,eps=1e-6)=>Math.abs(+a-+b)<=eps;
 if(!fs.existsSync(INPUT))throw Error('material-hold calibration input missing');
 const src=R('MODEL_SOURCE_OF_TRUTH.json'),inp=R(INPUT),patch=R(src.current_update_layer);
 if(inp.approval!=='USER_APPROVED_MATERIAL_HOLD_CALIBRATION'||inp.universe!==src.active_player_model||inp.reviewed_holds!==19||inp.changed_players!==7||inp.rows.length!==7)throw Error('approval/input gate');
+
+// This workflow is historical and still runs on every PR. Never replay its Sep-5 values over
+// the later approved post-Overall canonical state. Prove that the earlier V3.1 migration was
+// completed and that the superseding 166-player source-of-truth is intact, then no-op.
+if(src.status===SUPERSEDING_STATUS){
+  if(src.active_player_model!==166)throw Error('superseding canonical state is not the 166-player universe');
+  if(!fs.existsSync(LEGACY_V31_QA))throw Error('superseding canonical state is missing the historical Sep 3 V3.1 QA evidence');
+  const q=R(LEGACY_V31_QA);
+  if(q.players!==166||q.changed!==35||q.errors?.length!==0||!q.overall_unique||!q.true_value_unique||!q.projections_unchanged)throw Error('historical Sep 3 V3.1 QA evidence is not clean');
+  const boards=R('canonicalBoards2026.json');
+  if(boards.active_players!==166||boards.overall?.length!==166||boards.trueValue?.length!==166)throw Error('superseding canonical boards are not synchronized to 166 players');
+  console.log(JSON.stringify({result:'SUPERSEDED_BY_NEWER_CANONICAL_STATE',status:src.status,players:166,historical_v31_changed:q.changed},null,2));
+  process.exit(0);
+}
+
 if(src.status===TARGET_STATUS&&fs.existsSync(QA)){
   const q=R(QA);if(q.players===src.active_player_model&&q.changed===7&&q.reviewed_holds===19&&q.errors?.length===0&&q.overall_unchanged&&q.market_unchanged&&q.projections_unchanged){console.log(JSON.stringify({result:'ALREADY_APPLIED',players:q.players,changed:q.changed,reviewed_holds:q.reviewed_holds},null,2));process.exit(0)}
 }
@@ -16,7 +33,7 @@ let shards=[],players=[];for(let i=0;i<src.runtime_player_shards;i++){const f=`p
 if(players.length!==src.active_player_model||new Set(players.map(p=>p.n)).size!==players.length)throw Error('universe mismatch');
 const by=new Map(players.map(p=>[p.n,p]));for(const p of players)Object.assign(p,patch.players?.[p.n]||{});
 const snap=p=>({o:p.o,tr:p.tr,s:+p.s,pd:+p.pd,ce:+p.ce,r:+p.r,e:+p.e,a:+p.a,rl:+p.rl,su:+p.su,mp:p.mp,px:p.px,ad:p.ad,fw:p.fw});
-const old=Object.fromEntries(players.map(p=>[p.n,snap(p)]));const inputBy=new Map(inp.rows.map(x=>[x.player,x]));
+const old=Object.fromEntries(players.map(p=>[p.n,snap(p)]));
 const errs=[];
 for(const n of inp.zero_delta_resolutions){if(!by.has(n))errs.push(`missing zero-delta player ${n}`)}
 for(const x of inp.rows){

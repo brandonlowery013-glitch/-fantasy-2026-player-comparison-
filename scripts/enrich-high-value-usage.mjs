@@ -15,14 +15,34 @@ function parseCsv(text){const rs=[];let row=[],f='',q=false;for(let i=0;i<text.l
 const num=v=>v===''||v==null||Number.isNaN(Number(v))?null:Number(v);
 const truth=v=>v===1||v==='1'||v===true||String(v).toLowerCase()==='true';
 const val=(r,...ks)=>{for(const k of ks){if(r[k]!==undefined&&r[k]!==null&&r[k]!=='')return r[k]}return null};
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function fetchWithRetry(url,label,{attempts=4,baseDelayMs=1000}={}){
+  let lastStatus=null,lastError=null;
+  for(let attempt=1;attempt<=attempts;attempt++){
+    try{
+      const res=await fetch(url,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});
+      if(res.ok) return res;
+      lastStatus=res.status;
+      const retryable=res.status===408||res.status===429||res.status>=500;
+      if(!retryable||attempt===attempts) break;
+      console.warn(`WARN: ${label} returned HTTP ${res.status}; retry ${attempt}/${attempts-1} after backoff.`);
+    }catch(err){
+      lastError=err;
+      if(attempt===attempts) break;
+      console.warn(`WARN: ${label} fetch failed (${err?.message||err}); retry ${attempt}/${attempts-1} after backoff.`);
+    }
+    await sleep(baseDelayMs*attempt);
+  }
+  const detail=lastStatus!=null?`HTTP ${lastStatus}`:(lastError?.message||'unknown network error');
+  throw new Error(`Failed ${label} after ${attempts} attempts: ${detail}`);
+}
 
 const canonicalByNorm=new Map();
 for(let i=0;i<13;i++) for(const p of JSON.parse(fs.readFileSync(path.join(root,`players${i}.json`),'utf8'))) canonicalByNorm.set(norm(p.n),p.n);
 const canonical=name=>{const k=norm(name);return canonicalByNorm.get(k)||canonicalByNorm.get(aliases[k]||'')||null};
 
 const playersUrl='https://github.com/nflverse/nflverse-data/releases/download/players/players.csv';
-const playersRes=await fetch(playersUrl,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});
-if(!playersRes.ok) throw new Error(`Failed nflverse players: ${playersRes.status}`);
+const playersRes=await fetchWithRetry(playersUrl,'nflverse players');
 const playersCsv=parseCsv(await playersRes.text());
 const idToCanon=new Map();
 const shortToCanon=new Map();
@@ -53,8 +73,7 @@ function rec(player,season,week){const k=`${player}|${season}|${week}`;if(!agg.h
 let pbpPlaysUsed=0,identifiedPassers=0,identifiedRushers=0,identifiedReceivers=0,conversionPlaysExcluded=0;
 for(const season of seasons){
   const url=`https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_${season}.csv.gz`;
-  const res=await fetch(url,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});
-  if(!res.ok) throw new Error(`Failed nflverse PBP ${season}: ${res.status}`);
+  const res=await fetchWithRetry(url,`nflverse PBP ${season}`);
   const buf=Buffer.from(await res.arrayBuffer());
   const text=zlib.gunzipSync(buf).toString('utf8');
   sourceFiles.push({type:'pbp',season,url,compressed_bytes:buf.length});
