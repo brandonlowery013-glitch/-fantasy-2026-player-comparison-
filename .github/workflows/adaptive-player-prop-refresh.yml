@@ -19,7 +19,9 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write
   checks: read
+  statuses: read
 
 concurrency:
   group: adaptive-player-prop-refresh
@@ -60,8 +62,11 @@ jobs:
         run: node scripts/validate-player-prop-market-snapshots.mjs
       - name: Persist adaptive player prop state through guarded PR
         id: persist
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
+          set -euo pipefail
           paths=(
             data/market/player-prop-market-snapshots-2026.json
             data/market/adaptive-player-prop-refresh-status-2026.json
@@ -71,38 +76,103 @@ jobs:
           git add "${paths[@]}"
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No adaptive player-prop state changes."
             exit 0
           fi
+
           branch="production/adaptive-props-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git switch -c "$branch"
-          git commit -m "Refresh adaptive player prop state"
-          git push origin "HEAD:$branch"
+          git commit -m "Refresh adaptive player prop state [skip ci]"
+          git push --set-upstream origin "$branch"
+
+          PR_NUMBER=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$branch" --base main --json number --jq '.[0].number // empty')
+          if [ -z "$PR_NUMBER" ]; then
+            PR_URL=$(gh pr create \
+              --repo "$GITHUB_REPOSITORY" \
+              --base main \
+              --head "$branch" \
+              --title "Production: adaptive player prop refresh" \
+              --body "Automated player-prop discovery and refresh. Before T-48h, event-market availability is checked every six hours until the first prop snapshot is captured, then the game sleeps until T-48h. Active refresh is per-game kickoff: 3h at 48-24h, 90m at 24-6h, 30m at 6-1h, and 15m in the final hour. Market data remains downstream-only. Merge only after the full Guardrail QA validates the protected update target.")
+            PR_NUMBER="${PR_URL##*/}"
+          fi
+
           echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
-      - name: Open guarded player prop PR
-        id: state_pr
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "Opened protected player-prop update PR #${PR_NUMBER} from ${branch}."
+
+      - name: Run Guardrail QA on exact player-prop update branch
         if: steps.persist.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.persist.outputs.branch }}
         shell: bash
         run: |
-          pr_url=$(gh pr create --base main --head "${{ steps.persist.outputs.branch }}" --title "Production: adaptive player prop refresh" --body "Automated player-prop discovery and refresh. Before T-48h, event-market availability is checked every six hours until the first prop snapshot is captured, then the game sleeps until T-48h. Active refresh is per-game kickoff: 3h at 48-24h, 90m at 24-6h, 30m at 6-1h, and 15m in the final hour. Market data remains downstream-only. Required Guardrail QA must pass before merge.")
-          echo "url=$pr_url" >> "$GITHUB_OUTPUT"
-      - name: Wait for guardrail and merge player prop state
-        if: steps.persist.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_URL: ${{ steps.state_pr.outputs.url }}
-        shell: bash
-        run: |
-          found=false
-          for i in $(seq 1 60); do
-            if gh pr checks "$PR_URL" --required 2>&1 | grep -q "guardrail-qa"; then found=true; break; fi
-            sleep 10
+          set -euo pipefail
+          DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run guardrail-qa.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+
+          RUN_ID=""
+          for _ in $(seq 1 60); do
+            RUN_ID=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow guardrail-qa.yml \
+              --branch "$BRANCH" \
+              --event workflow_dispatch \
+              --limit 10 \
+              --json databaseId,createdAt \
+              --jq --arg t "$DISPATCHED_AT" '[.[] | select(.createdAt >= $t)] | sort_by(.createdAt) | last | .databaseId // empty')
+            [ -n "$RUN_ID" ] && break
+            sleep 5
           done
-          if [ "$found" != "true" ]; then
-            echo "Required guardrail-qa check did not appear."
+
+          if [ -z "$RUN_ID" ]; then
+            echo "FAIL: dispatched Guardrail QA run was not discoverable."
             exit 1
           fi
-          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
-          gh pr merge "$PR_URL" --merge --delete-branch
+
+          echo "Guardrail QA run: ${RUN_ID}"
+          for _ in $(seq 1 360); do
+            STATUS=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json status --jq '.status')
+            if [ "$STATUS" = "completed" ]; then
+              CONCLUSION=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion --jq '.conclusion')
+              if [ "$CONCLUSION" != "success" ]; then
+                echo "FAIL: Guardrail QA concluded ${CONCLUSION}."
+                exit 1
+              fi
+              echo "Guardrail QA passed."
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo "FAIL: timed out waiting for Guardrail QA."
+          exit 1
+
+      - name: Merge validated player-prop state PR
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.persist.outputs.pr_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for _ in $(seq 1 30); do
+            STATE=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state --jq '.state')
+            if [ "$STATE" = "MERGED" ]; then
+              echo "PR #${PR_NUMBER} already merged."
+              exit 0
+            fi
+
+            if gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --squash --delete-branch; then
+              echo "Merged validated player-prop PR #${PR_NUMBER}."
+              exit 0
+            fi
+
+            echo "Merge not ready yet; waiting for protected required checks."
+            sleep 10
+          done
+
+          echo "FAIL: validated PR #${PR_NUMBER} did not become mergeable before timeout."
+          exit 1
