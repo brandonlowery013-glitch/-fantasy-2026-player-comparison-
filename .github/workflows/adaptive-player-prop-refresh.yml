@@ -109,25 +109,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          gh workflow run guardrail-qa.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+          RUN_URL=$(gh workflow run guardrail-qa.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH")
+          RUN_ID="${RUN_URL##*/}"
 
-          RUN_ID=""
-          for _ in $(seq 1 60); do
-            RUN_ID=$(gh run list \
-              --repo "$GITHUB_REPOSITORY" \
-              --workflow guardrail-qa.yml \
-              --branch "$BRANCH" \
-              --event workflow_dispatch \
-              --limit 10 \
-              --json databaseId,createdAt \
-              --jq --arg t "$DISPATCHED_AT" '[.[] | select(.createdAt >= $t)] | sort_by(.createdAt) | last | .databaseId // empty')
-            [ -n "$RUN_ID" ] && break
-            sleep 5
-          done
-
-          if [ -z "$RUN_ID" ]; then
-            echo "FAIL: dispatched Guardrail QA run was not discoverable."
+          if ! [[ "$RUN_ID" =~ ^[0-9]+$ ]]; then
+            echo "FAIL: could not parse Guardrail QA run id from: $RUN_URL"
             exit 1
           fi
 
