@@ -9,6 +9,7 @@ permissions:
   contents: read
   pull-requests: read
   checks: write
+  statuses: write
 
 jobs:
   guardrail-qa:
@@ -24,7 +25,11 @@ jobs:
           TARGET_SHA='${{ github.sha }}'
           PR_NUMBER=''
           PR_HEAD_SHA=''
-          if [ '${{ github.event_name }}' = 'workflow_dispatch' ]; then
+          if [ '${{ github.event_name }}' = 'pull_request' ]; then
+            PR_NUMBER='${{ github.event.pull_request.number }}'
+            PR_HEAD_SHA='${{ github.event.pull_request.head.sha }}'
+            echo "Pull-request QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA} and publish the required status on both protected targets."
+          elif [ '${{ github.event_name }}' = 'workflow_dispatch' ]; then
             PR_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&head=${GITHUB_REPOSITORY_OWNER}:${GITHUB_REF_NAME}" --jq '.[0].number // empty')
             if [ -n "$PR_NUMBER" ]; then
               TARGET_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
@@ -37,7 +42,7 @@ jobs:
                 echo "FAIL: open PR #${PR_NUMBER} has no head SHA."
                 exit 1
               fi
-              echo "Workflow-dispatch QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA} and publish required status on both protected targets."
+              echo "Workflow-dispatch QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA} and publish the required status on both protected targets."
             fi
           fi
           echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
@@ -145,7 +150,7 @@ jobs:
         run: node scripts/run-guardrail-qa.mjs
 
       - name: Publish required check after protected synthetic merge validation
-        if: github.event_name == 'workflow_dispatch' && steps.target.outputs.pr_number != ''
+        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request') && steps.target.outputs.pr_number != ''
         env:
           GH_TOKEN: ${{ github.token }}
           TARGET_SHA: ${{ steps.target.outputs.target_sha }}
@@ -162,9 +167,14 @@ jobs:
               -f conclusion='success' \
               -f details_url="$RUN_URL" \
               -f output[title]='Guardrail QA passed' \
-              -f output[summary]="Full Guardrail QA passed against protected synthetic merge ${TARGET_SHA}; required status published for ${CHECK_SHA}." >/dev/null
+              -f output[summary]="Full Guardrail QA passed against protected synthetic merge ${TARGET_SHA}; required check published for ${CHECK_SHA}." >/dev/null
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${CHECK_SHA}" \
+              -f state='success' \
+              -f context='guardrail-qa' \
+              -f target_url="$RUN_URL" \
+              -f description='Full Guardrail QA passed' >/dev/null
           done
-          echo "Published required guardrail-qa checks on synthetic merge ${TARGET_SHA} and PR head ${PR_HEAD_SHA}."
+          echo "Published required guardrail-qa check-runs and commit statuses on synthetic merge ${TARGET_SHA} and PR head ${PR_HEAD_SHA}."
 
       - name: Upload guardrail reports
         if: always()
@@ -212,7 +222,6 @@ jobs:
             guardrails/weekly-football-context-source-contract-report.json
             guardrails/weekly-football-context-normalization-report.json
             guardrails/weekly-projection-generator-report.json
-            guardrails/weekly-probability-engine-report.json
             guardrails/weekly-matchup-market-snapshot-report.json
             data/probability/generated/historical-core-2021-2025.json
             data/probability/generated/historical-enriched-2021-2025.json
