@@ -6,12 +6,20 @@ on:
     - cron: '15 */6 * * *'
   pull_request:
     paths:
+      - 'scripts/collect-substantive-football-context.mjs'
+      - 'scripts/build-substantive-football-context-inputs.mjs'
+      - 'scripts/build-substantive-component-recalculation-v2.mjs'
+      - 'scripts/build-full-universe-reconciliation-taxonomy.mjs'
       - 'scripts/adjudicate-live-news-current-model.mjs'
       - 'scripts/apply-live-news-to-current-model.mjs'
       - '.github/workflows/live-news-model-ingestion.yml'
   push:
     branches: [main]
     paths:
+      - 'scripts/collect-substantive-football-context.mjs'
+      - 'scripts/build-substantive-football-context-inputs.mjs'
+      - 'scripts/build-substantive-component-recalculation-v2.mjs'
+      - 'scripts/build-full-universe-reconciliation-taxonomy.mjs'
       - 'scripts/adjudicate-live-news-current-model.mjs'
       - 'scripts/apply-live-news-to-current-model.mjs'
       - '.github/workflows/live-news-model-ingestion.yml'
@@ -168,7 +176,7 @@ jobs:
             --base main \
             --head "$BRANCH" \
             --title 'Persist live 166-player news model decisions' \
-            --body "Automated live-news ingestion for the canonical 166-player model. Material evidence is converted into an explicit current-model decision, self-audited, hard-Guardrail validated, and persisted. Static player evaluations, canonical boards, and CTD interface are not mutated. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
+            --body "Automated live-news ingestion for the canonical 166-player model. Material evidence is converted into an explicit current-model decision, self-audited, hard-Guardrail validated, and persisted. Static player evaluations, canonical boards, and CTD interface are not mutated. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."
           PR_NUMBER="${PR_URL##*/}"
           test -n "$PR_NUMBER"
           echo 'changed=true' >> "$GITHUB_OUTPUT"
