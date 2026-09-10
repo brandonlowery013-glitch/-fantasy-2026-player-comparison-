@@ -23,19 +23,26 @@ jobs:
           set -euo pipefail
           TARGET_SHA='${{ github.sha }}'
           PR_NUMBER=''
+          PR_HEAD_SHA=''
           if [ '${{ github.event_name }}' = 'workflow_dispatch' ]; then
             PR_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&head=${GITHUB_REPOSITORY_OWNER}:${GITHUB_REF_NAME}" --jq '.[0].number // empty')
             if [ -n "$PR_NUMBER" ]; then
               TARGET_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
+              PR_HEAD_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha // empty')
               if [ -z "$TARGET_SHA" ]; then
                 echo "FAIL: open PR #${PR_NUMBER} has no synthetic merge commit SHA."
                 exit 1
               fi
-              echo "Workflow-dispatch QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA}."
+              if [ -z "$PR_HEAD_SHA" ]; then
+                echo "FAIL: open PR #${PR_NUMBER} has no head SHA."
+                exit 1
+              fi
+              echo "Workflow-dispatch QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA} and publish required status on PR head ${PR_HEAD_SHA}."
             fi
           fi
           echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "pr_head_sha=$PR_HEAD_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Checkout full history for drift comparison
         uses: actions/checkout@v4
@@ -137,24 +144,25 @@ jobs:
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
 
-      - name: Publish required check on protected synthetic merge
+      - name: Publish required check on PR head after protected synthetic merge validation
         if: github.event_name == 'workflow_dispatch' && steps.target.outputs.pr_number != ''
         env:
           GH_TOKEN: ${{ github.token }}
           TARGET_SHA: ${{ steps.target.outputs.target_sha }}
+          PR_HEAD_SHA: ${{ steps.target.outputs.pr_head_sha }}
         shell: bash
         run: |
           set -euo pipefail
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           gh api --method POST "repos/${GITHUB_REPOSITORY}/check-runs" \
             -f name='guardrail-qa' \
-            -f head_sha="$TARGET_SHA" \
+            -f head_sha="$PR_HEAD_SHA" \
             -f status='completed' \
             -f conclusion='success' \
             -f details_url="$RUN_URL" \
             -f output[title]='Guardrail QA passed' \
-            -f output[summary]='Full Guardrail QA passed against the exact synthetic merge commit required by Main Guardrail Protection.' >/dev/null
-          echo "Published required guardrail-qa check on protected merge SHA ${TARGET_SHA}."
+            -f output[summary]="Full Guardrail QA passed against protected synthetic merge ${TARGET_SHA}; required status published on PR head ${PR_HEAD_SHA}." >/dev/null
+          echo "Published required guardrail-qa check on PR head ${PR_HEAD_SHA} after validating protected merge ${TARGET_SHA}."
 
       - name: Upload guardrail reports
         if: always()
