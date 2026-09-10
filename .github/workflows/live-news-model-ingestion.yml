@@ -213,18 +213,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for _ in $(seq 1 30); do
+          HEAD_SHA=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefOid --jq '.headRefOid')
+          test -n "$HEAD_SHA"
+          for _ in $(seq 1 60); do
             STATE=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state --jq '.state')
             if [ "$STATE" = 'MERGED' ]; then
               echo "PR #${PR_NUMBER} already merged."
               exit 0
             fi
+            REQUIRED_STATUS=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/status" --jq '.state')
+            if [ "$REQUIRED_STATUS" != 'success' ]; then
+              echo "Required guardrail-qa commit status is ${REQUIRED_STATUS}; waiting."
+              sleep 10
+              continue
+            fi
             if gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --squash --delete-branch; then
-              echo "Merged validated live-news PR #${PR_NUMBER}."
+              echo "Merged validated live-news PR #${PR_NUMBER} after required guardrail-qa status succeeded."
               exit 0
             fi
-            echo 'Merge not ready yet; waiting for protected required checks.'
+            echo 'Required status is green but protected merge is not ready yet; retrying.'
             sleep 10
           done
-          echo "FAIL: validated live-news PR #${PR_NUMBER} did not become mergeable before timeout."
+          echo "FAIL: validated live-news PR #${PR_NUMBER} did not become mergeable after required guardrail-qa status succeeded."
           exit 1
