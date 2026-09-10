@@ -37,7 +37,7 @@ jobs:
                 echo "FAIL: open PR #${PR_NUMBER} has no head SHA."
                 exit 1
               fi
-              echo "Workflow-dispatch QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA} and publish required status on PR head ${PR_HEAD_SHA}."
+              echo "Workflow-dispatch QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA} and publish required status on both protected targets."
             fi
           fi
           echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
@@ -144,7 +144,7 @@ jobs:
       - name: Run hard Guardrail QA
         run: node scripts/run-guardrail-qa.mjs
 
-      - name: Publish required check on PR head after protected synthetic merge validation
+      - name: Publish required check after protected synthetic merge validation
         if: github.event_name == 'workflow_dispatch' && steps.target.outputs.pr_number != ''
         env:
           GH_TOKEN: ${{ github.token }}
@@ -154,15 +154,17 @@ jobs:
         run: |
           set -euo pipefail
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          gh api --method POST "repos/${GITHUB_REPOSITORY}/check-runs" \
-            -f name='guardrail-qa' \
-            -f head_sha="$PR_HEAD_SHA" \
-            -f status='completed' \
-            -f conclusion='success' \
-            -f details_url="$RUN_URL" \
-            -f output[title]='Guardrail QA passed' \
-            -f output[summary]="Full Guardrail QA passed against protected synthetic merge ${TARGET_SHA}; required status published on PR head ${PR_HEAD_SHA}." >/dev/null
-          echo "Published required guardrail-qa check on PR head ${PR_HEAD_SHA} after validating protected merge ${TARGET_SHA}."
+          for CHECK_SHA in "$TARGET_SHA" "$PR_HEAD_SHA"; do
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/check-runs" \
+              -f name='guardrail-qa' \
+              -f head_sha="$CHECK_SHA" \
+              -f status='completed' \
+              -f conclusion='success' \
+              -f details_url="$RUN_URL" \
+              -f output[title]='Guardrail QA passed' \
+              -f output[summary]="Full Guardrail QA passed against protected synthetic merge ${TARGET_SHA}; required status published for ${CHECK_SHA}." >/dev/null
+          done
+          echo "Published required guardrail-qa checks on synthetic merge ${TARGET_SHA} and PR head ${PR_HEAD_SHA}."
 
       - name: Upload guardrail reports
         if: always()
