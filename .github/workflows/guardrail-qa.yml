@@ -29,7 +29,7 @@ jobs:
             PR_NUMBER='${{ github.event.pull_request.number }}'
             PR_HEAD_SHA='${{ github.event.pull_request.head.sha }}'
             echo "Pull-request QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA} and publish the required status on both protected targets."
-          elif [ '${{ github.event_name }}' = 'workflow_dispatch' ]; then
+          elif [ '${{ github.event_name }}' = 'workflow_dispatch' ] || [ '${{ github.event_name }}' = 'push' ]; then
             PR_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&head=${GITHUB_REPOSITORY_OWNER}:${GITHUB_REF_NAME}" --jq '.[0].number // empty')
             if [ -n "$PR_NUMBER" ]; then
               TARGET_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
@@ -42,7 +42,7 @@ jobs:
                 echo "FAIL: open PR #${PR_NUMBER} has no head SHA."
                 exit 1
               fi
-              echo "Workflow-dispatch QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA} and publish the required status on both protected targets."
+              echo "${{ github.event_name }} QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA} and publish the required status on both protected targets."
             fi
           fi
           echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
@@ -150,7 +150,7 @@ jobs:
         run: node scripts/run-guardrail-qa.mjs
 
       - name: Publish required check after protected synthetic merge validation
-        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request') && steps.target.outputs.pr_number != ''
+        if: steps.target.outputs.pr_number != ''
         env:
           GH_TOKEN: ${{ github.token }}
           TARGET_SHA: ${{ steps.target.outputs.target_sha }}
