@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
+  pull-requests: read
   checks: write
   statuses: write
 
@@ -175,32 +175,6 @@ jobs:
               -f description='Full Guardrail QA passed' >/dev/null
           done
           echo "Published required guardrail-qa check-runs and commit statuses on synthetic merge ${TARGET_SHA} and PR head ${PR_HEAD_SHA}."
-
-      - name: Recovery-only immediate protected merge for PR 750
-        if: steps.target.outputs.pr_number == '750' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TARGET_SHA: ${{ steps.target.outputs.target_sha }}
-          PR_HEAD_SHA: ${{ steps.target.outputs.pr_head_sha }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          CURRENT_HEAD=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/750" --jq '.head.sha')
-          CURRENT_TARGET=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/750" --jq '.merge_commit_sha // empty')
-          if [ "$CURRENT_HEAD" != "$PR_HEAD_SHA" ]; then
-            echo "FAIL: PR #750 head moved during Guardrail; refusing merge."
-            echo "validated head=$PR_HEAD_SHA current head=$CURRENT_HEAD"
-            exit 1
-          fi
-          if [ "$CURRENT_TARGET" != "$TARGET_SHA" ]; then
-            echo "FAIL: PR #750 protected synthetic merge moved during Guardrail; refusing merge."
-            echo "validated merge=$TARGET_SHA current merge=$CURRENT_TARGET"
-            exit 1
-          fi
-          echo "Exact protected candidate is unchanged after Guardrail. Attempting normal protected squash merge now."
-          gh api --method PUT "repos/${GITHUB_REPOSITORY}/pulls/750/merge" \
-            -f merge_method='squash' \
-            -f sha="$PR_HEAD_SHA"
 
       - name: Upload guardrail reports
         if: always()
