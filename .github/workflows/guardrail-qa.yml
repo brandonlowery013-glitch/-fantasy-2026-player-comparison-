@@ -1,131 +1,260 @@
 name: Guardrail QA
 
 on:
+  workflow_dispatch:
   push:
+  pull_request:
 
 permissions:
-  contents: write
+  contents: read
+  pull-requests: read
+  checks: write
+  statuses: write
 
 jobs:
-  bootstrap-production-writer-locks:
-    if: github.ref_name == 'fix/systemic-production-handoff-v2'
+  guardrail-qa:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: fix/systemic-production-handoff-v2
-          fetch-depth: 0
-      - name: Refresh branch from current protected main
+      - name: Resolve exact protected merge target
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          git merge --no-edit origin/main
-      - name: Add one shared lock to every production-writing job
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          root=Path('.github/workflows')
-          audited=[]
-          changed=[]
-
-          def is_writer(block):
-              text='\n'.join(block)
-              if 'gh pr create' in text:
-                  return True
-              for line in block:
-                  s=line.strip()
-                  if s == 'git push':
-                      return True
-                  if re.search(r'\bgit\s+push\b.*\bHEAD:main\b', s):
-                      return True
-                  if re.search(r'\bgit\s+push\b.*\borigin\s+main\b', s):
-                      return True
-              return False
-
-          for path in sorted(root.glob('*.y*ml')):
-              if path.name in {'guardrail-qa.yml','apply-systemic-production-lock.yml'}:
-                  continue
-              lines=path.read_text().splitlines()
-              try:
-                  jobs_i=next(i for i,l in enumerate(lines) if l.strip()=='jobs:' and not l.startswith(' '))
-              except StopIteration:
-                  continue
-              starts=[]
-              for i in range(jobs_i+1,len(lines)):
-                  m=re.match(r'^  ([A-Za-z0-9_.-]+):\s*$',lines[i])
-                  if m:
-                      starts.append((i,m.group(1)))
-              replacements=[]
-              for n,(start,name) in enumerate(starts):
-                  end=starts[n+1][0] if n+1<len(starts) else len(lines)
-                  block=lines[start:end]
-                  if not is_writer(block):
-                      continue
-                  audited.append(f'{path}:{name}')
-                  cidx=cend=None
-                  for j in range(start+1,end):
-                      if lines[j].startswith('    concurrency:'):
-                          cidx=j
-                          k=j+1
-                          while k<end and (not lines[k].strip() or len(lines[k])-len(lines[k].lstrip())>4):
-                              k+=1
-                          cend=k
-                          break
-                  lock=[
-                      '    concurrency:',
-                      "      group: ${{ github.event_name == 'pull_request' && format('pr-validation-{0}', github.run_id) || 'production-main-writer' }}",
-                      '      cancel-in-progress: false',
-                  ]
-                  if cidx is None:
-                      replacements.append((start+1,start+1,lock))
-                  else:
-                      replacements.append((cidx,cend,lock))
-              if replacements:
-                  for a,b,new in reversed(replacements):
-                      lines[a:b]=new
-                  path.write_text('\n'.join(lines)+'\n')
-                  changed.append(str(path))
-
-          required={
-            '.github/workflows/step1-automatic-nfl-event-ingestion.yml':'ingest',
-            '.github/workflows/live-news-model-ingestion.yml':'live-news-model-ingestion',
-            '.github/workflows/final-betting-pipeline-step4.yml':'live-week-sync',
-            '.github/workflows/adaptive-market-refresh.yml':'adaptive-market-refresh',
-            '.github/workflows/adaptive-player-prop-refresh.yml':'adaptive-player-prop-refresh',
-            '.github/workflows/step24-weekly-production-orchestration.yml':'weekly-production-cycle',
-            '.github/workflows/weekly-player-outlook.yml':'weekly-player-outlook',
-            '.github/workflows/step23-live-market-ingestion.yml':'manual-live-market-refresh',
-            '.github/workflows/sync-canonical-boards.yml':'sync',
-          }
-          for f,job in required.items():
-              text=Path(f).read_text()
-              marker=f'  {job}:'
-              if marker not in text:
-                  raise SystemExit(f'FAIL: required writer job missing: {f}:{job}')
-              block=text.split(marker,1)[1].split('\n  ',1)[0]
-              if 'production-main-writer' not in block:
-                  raise SystemExit(f'FAIL: shared lock missing: {f}:{job}')
-          if not audited:
-              raise SystemExit('FAIL: no production writer jobs detected')
-          print(f'PASS: locked {len(audited)} detected production-writing jobs across {len(changed)} workflow files')
-          for x in audited:
-              print(' -',x)
-          PY
-      - name: Restore real Guardrail, remove bootstrap file, and publish refreshed branch
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch origin main
-          git checkout origin/main -- .github/workflows/guardrail-qa.yml
-          if [ -f .github/workflows/apply-systemic-production-lock.yml ]; then
-            git rm .github/workflows/apply-systemic-production-lock.yml
+          TARGET_SHA='${{ github.sha }}'
+          PR_NUMBER=''
+          PR_HEAD_SHA=''
+          if [ '${{ github.event_name }}' = 'pull_request' ]; then
+            PR_NUMBER='${{ github.event.pull_request.number }}'
+            PR_HEAD_SHA='${{ github.event.pull_request.head.sha }}'
+            echo "Pull-request QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA} and publish the required status on both protected targets."
+          elif [ '${{ github.event_name }}' = 'workflow_dispatch' ] || [ '${{ github.event_name }}' = 'push' ]; then
+            PR_NUMBER=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&head=${GITHUB_REPOSITORY_OWNER}:${GITHUB_REF_NAME}" --jq '.[0].number // empty')
+            if [ -n "$PR_NUMBER" ]; then
+              TARGET_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
+              PR_HEAD_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.head.sha // empty')
+              if [ -z "$TARGET_SHA" ]; then
+                echo "FAIL: open PR #${PR_NUMBER} has no synthetic merge commit SHA."
+                exit 1
+              fi
+              if [ -z "$PR_HEAD_SHA" ]; then
+                echo "FAIL: open PR #${PR_NUMBER} has no head SHA."
+                exit 1
+              fi
+              echo "${{ github.event_name }} QA will validate protected PR #${PR_NUMBER} synthetic merge ${TARGET_SHA} and publish the required status on both protected targets."
+            fi
           fi
-          git add .github/workflows scripts/merge-guarded-production-pr.sh
-          git commit -m "Serialize automatic production writers and restore Guardrail"
-          git push origin HEAD:fix/systemic-production-handoff-v2
+          echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "pr_head_sha=$PR_HEAD_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout full history for drift comparison
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.target.outputs.target_sha }}
+          fetch-depth: 0
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run frozen baseline drift comparator
+        run: node scripts/run-baseline-drift-check.mjs
+      - name: Test EV and de-vig math
+        run: node scripts/test-ev-math.mjs
+      - name: Validate Step 13 fair-market probability contract
+        run: node scripts/validate-fair-market-probability-contract.mjs
+      - name: Build Step 13 fair-market probability layer
+        run: node scripts/build-fair-market-probability-layer.mjs
+      - name: Validate historical uncertainty schema
+        run: node scripts/validate-historical-uncertainty-schema.mjs
+      - name: Ingest 2021-2025 historical core game logs
+        run: node scripts/ingest-historical-core.mjs
+      - name: Audit core historical stats and player identities
+        run: node scripts/audit-core-stats-identities.mjs
+      - name: Enrich historical context and usage
+        run: node scripts/enrich-historical-context.mjs
+      - name: Enrich position-specific high-value usage
+        run: node scripts/enrich-high-value-usage.mjs
+      - name: Audit high-value usage against PFR
+        run: node scripts/audit-high-value-usage.mjs
+      - name: Enrich deeper leakage-safe football context
+        run: node scripts/enrich-deeper-football-context.mjs
+      - name: Build broad historical reference population
+        run: node scripts/build-historical-reference-population.mjs
+      - name: Build uncertainty priors and walk-forward calibration
+        run: node scripts/build-historical-uncertainty-calibration.mjs
+      - name: Calibrate stat distribution families
+        run: node scripts/calibrate-distribution-families.mjs
+      - name: Audit frozen 2025 family calibration
+        run: node scripts/audit-frozen-2025-calibration.mjs
+      - name: Validate frozen 2025 calibration audit contract
+        run: node scripts/validate-frozen-2025-calibration-audit.mjs
+      - name: Validate exact tail math contract
+        run: node scripts/validate-exact-tail-math-contract.mjs
+      - name: Test exact tail and compound reception math
+        run: node scripts/test-exact-tail-math.mjs
+      - name: Validate Step 3C correlation modeling contract
+        run: node scripts/validate-correlation-modeling-contract.mjs
+      - name: Test Step 3C correlation and copula math
+        run: node scripts/test-correlation-modeling.mjs
+      - name: Build Step 3C historical correlation model
+        run: node scripts/build-correlation-model.mjs
+      - name: Build weekly Step 3C correlation layer
+        run: node scripts/build-weekly-correlation-layer.mjs
+      - name: Validate Step 4 risk profile contract
+        run: node scripts/validate-risk-profile-contract.mjs
+      - name: Validate Step 5 comparison decision contract
+        run: node scripts/validate-comparison-decision-contract.mjs
+      - name: Validate Step 6B preseason comparison risk contract
+        run: node scripts/validate-preseason-comparison-risk-contract.mjs
+      - name: Build Step 6B preseason comparison risk profiles
+        run: node scripts/build-preseason-comparison-risk-profiles.mjs
+      - name: Validate historical route source contract
+        run: node scripts/validate-historical-route-source-contract.mjs
+      - name: Backfill observed historical WR/TE pass-play participation
+        run: node scripts/backfill-historical-route-participation.mjs
+      - name: Build position-specific role cohort priors
+        run: node scripts/build-role-cohort-priors.mjs
+      - name: Build leakage-safe catch-rate priors from role cohorts
+        run: node scripts/build-catch-rate-priors.mjs
+      - name: Build historical rookie/no-history priors
+        run: node scripts/build-rookie-no-history-priors.mjs
+      - name: Validate rookie/no-history prior contract
+        run: node scripts/validate-rookie-no-history-priors.mjs
+      - name: Build historical projection error model
+        run: node scripts/build-historical-projection-error-model.mjs
+      - name: Validate projection error model contract
+        run: node scripts/validate-projection-error-model.mjs
+      - name: Validate weekly football context source contract
+        run: node scripts/validate-weekly-football-context-source-contract.mjs
+      - name: Validate role cohort baseline selection contract
+        run: node scripts/validate-role-cohort-baseline-selection.mjs
+      - name: Validate weekly football context normalization and freshness
+        run: node scripts/normalize-weekly-football-context.mjs --self-test
+      - name: Validate weekly football projection generator
+        run: node scripts/build-weekly-projection-generator.mjs --self-test
+      - name: Validate weekly calibrated probability engine
+        run: node scripts/build-weekly-probability-engine.mjs --self-test
+      - name: Validate Step 4 weekly risk profile
+        run: node scripts/build-weekly-risk-profile.mjs --self-test
+      - name: Validate Step 5 comparison decision layer
+        run: node scripts/build-comparison-decision-layer.mjs --self-test
+      - name: Validate weekly matchup market snapshot layer
+        run: node scripts/validate-weekly-matchup-market-snapshots.mjs --self-test
+      - name: Build and validate football probability distributions
+        run: node scripts/build-probability-distributions.mjs --validate
+      - name: Verify EV shadow layer synchronization
+        run: node scripts/build-ev-shadow-layer.mjs --check
+      - name: Run hard Guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+
+      - name: Publish required check after protected synthetic merge validation
+        if: steps.target.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ steps.target.outputs.target_sha }}
+          PR_HEAD_SHA: ${{ steps.target.outputs.pr_head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          for CHECK_SHA in "$TARGET_SHA" "$PR_HEAD_SHA"; do
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/check-runs" \
+              -f name='guardrail-qa' \
+              -f head_sha="$CHECK_SHA" \
+              -f status='completed' \
+              -f conclusion='success' \
+              -f details_url="$RUN_URL" \
+              -f output[title]='Guardrail QA passed' \
+              -f output[summary]="Full Guardrail QA passed against protected synthetic merge ${TARGET_SHA}; required check published for ${CHECK_SHA}." >/dev/null
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${CHECK_SHA}" \
+              -f state='success' \
+              -f context='guardrail-qa' \
+              -f target_url="$RUN_URL" \
+              -f description='Full Guardrail QA passed' >/dev/null
+          done
+          echo "Published required guardrail-qa check-runs and commit statuses on synthetic merge ${TARGET_SHA} and PR head ${PR_HEAD_SHA}."
+
+      - name: Upload guardrail reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: guardrail-reports
+          path: |
+            guardrails/baseline-drift-report.json
+            guardrails/guardrail-report.json
+            guardrails/probability-distribution-report.json
+            guardrails/generated-ev-probability-inputs.json
+            guardrails/fair-market-probability-contract-report.json
+            guardrails/fair-market-probability-layer-report.json
+            guardrails/historical-core-ingestion-report.json
+            guardrails/core-stats-identity-accuracy-report.json
+            guardrails/historical-context-enrichment-report.json
+            guardrails/high-value-usage-report.json
+            guardrails/high-value-usage-accuracy-report.json
+            guardrails/deeper-football-context-report.json
+            guardrails/historical-reference-population-report.json
+            guardrails/historical-uncertainty-calibration-report.json
+            guardrails/distribution-family-calibration-report.json
+            guardrails/frozen-2025-calibration-audit-report.json
+            guardrails/frozen-2025-calibration-audit-validation-report.json
+            guardrails/exact-tail-math-contract-report.json
+            guardrails/exact-tail-math-test-report.json
+            guardrails/correlation-modeling-contract-report.json
+            guardrails/correlation-modeling-test-report.json
+            guardrails/correlation-model-report.json
+            guardrails/risk-profile-contract-report.json
+            guardrails/weekly-risk-profile-report.json
+            guardrails/comparison-decision-contract-report.json
+            guardrails/comparison-decision-report.json
+            guardrails/preseason-comparison-risk-contract-report.json
+            guardrails/preseason-comparison-risk-profile-report.json
+            guardrails/catch-rate-priors-report.json
+            guardrails/historical-route-source-contract-report.json
+            guardrails/historical-route-participation-backfill-report.json
+            guardrails/role-cohort-priors-report.json
+            guardrails/role-cohort-baseline-selection-report.json
+            guardrails/rookie-no-history-priors-report.json
+            guardrails/rookie-no-history-priors-validation-report.json
+            guardrails/historical-projection-error-model-report.json
+            guardrails/projection-error-model-validation-report.json
+            guardrails/weekly-football-context-source-contract-report.json
+            guardrails/weekly-football-context-normalization-report.json
+            guardrails/weekly-projection-generator-report.json
+            guardrails/weekly-matchup-market-snapshot-report.json
+            data/probability/generated/historical-core-2021-2025.json
+            data/probability/generated/historical-enriched-2021-2025.json
+            data/probability/generated/historical-reference-population-2021-2025.json
+            data/probability/generated/historical-uncertainty-priors-2021-2025.json
+            data/probability/generated/distribution-family-calibration-2021-2025.json
+            data/probability/generated/frozen-2025-calibration-audit.json
+            data/probability/generated/correlation-model-2021-2025.json
+            data/probability/generated/catch-rate-priors-2021-2025.json
+            data/probability/generated/historical-pass-play-participation-2021-2025.json
+            data/probability/generated/role-cohort-priors-2021-2025.json
+            data/probability/generated/rookie-no-history-priors-2016-2025.json
+            data/probability/generated/historical-projection-error-model-2021-2025.json
+            data/probability/generated/weekly-risk-profiles-2026.json
+            data/probability/generated/comparison-decisions-2026.json
+            data/probability/generated/preseason-comparison-risk-profiles-2026.json
+            data/probability/generated/weekly-correlation-layer-2026.json
+            data/sources/historical-route-participation-2021-2025.json
+            data/sources/weekly-football-context-2026.json
+            data/sources/role-cohort-baseline-selection-2026.json
+            data/sources/rookie-no-history-inputs-2026.json
+            data/sources/projection-error-model-2026.json
+            data/sources/frozen-2025-calibration-audit-2026.json
+            data/sources/exact-tail-math-2026.json
+            data/sources/correlation-modeling-2026.json
+            data/sources/risk-profile-2026.json
+            data/sources/comparison-decision-2026.json
+            data/sources/preseason-comparison-risk-2026.json
+            data/sources/fair-market-probability-2026.json
+            data/probability/weekly-football-context-raw-2026.json
+            data/probability/weekly-football-context-inputs-2026.json
+            data/probability/weekly-projection-inputs-2026.json
+            data/probability/generated/weekly-probability-distributions-2026.json
+            data/market/weekly-matchup-market-snapshots-2026.json
+            data/market/fair-market-probabilities-2026.json
+          if-no-files-found: error
