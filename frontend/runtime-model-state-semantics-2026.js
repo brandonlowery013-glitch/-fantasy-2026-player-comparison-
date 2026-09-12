@@ -1,0 +1,54 @@
+(()=>{
+  const RAW='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/';
+  const WEEKLY=RAW+'data/market/weekly-game-market-recommendations-2026.json';
+  const FINAL=RAW+'data/market/final-betting-ui-feed-2026.json';
+  const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const json=async url=>{const r=await fetch(`${url}?ts=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error(`${r.status} ${url}`);return r.json()};
+  const normalize=(source,raw)=>({
+    source,
+    status:String(raw?.status||'UNKNOWN'),
+    mode:String(raw?.mode||raw?.status||'UNKNOWN'),
+    actionable:raw?.actionable===true,
+    football_projection_mutation_allowed:raw?.football_projection_mutation_allowed===true,
+    week:raw?.week??null,
+    generated_at:raw?.generated_at??null
+  });
+  const stateLabel=s=>s.actionable?'ACTIONABLE':(s.mode==='SHADOW_ONLY'||s.status==='SHADOW_ONLY'?'SHADOW ONLY':'NOT ACTIONABLE');
+  function ensureStyle(){if(document.getElementById('ctd-model-state-style'))return;const s=document.createElement('style');s.id='ctd-model-state-style';s.textContent=`.ctdModelStateBanner{margin:8px 0;padding:8px 10px;border:1px solid #6e4b1e;background:#24180b;color:#f2c67f;border-radius:7px;font-size:10px;font-weight:800}.ctdModelStateBanner[data-actionable="true"]{border-color:#256946;background:#103a2a;color:#6ee59c}.ctdNonActionable{opacity:.55;cursor:not-allowed!important}`;document.head.appendChild(s)}
+  function banner(state){
+    ensureStyle();
+    const host=document.querySelector('#gamesPage .content')||document.getElementById('gamesPage')||document.body;
+    let el=document.getElementById('ctdModelStateBanner');
+    if(!el){el=document.createElement('div');el.id='ctdModelStateBanner';el.className='ctdModelStateBanner';host.insertBefore(el,host.firstChild)}
+    el.dataset.actionable=String(state.actionable);
+    el.textContent=state.actionable?`Model state: ACTIONABLE · ${state.status}`:`Model state: ${stateLabel(state)} · ${state.status}${state.mode!==state.status?` / ${state.mode}`:''} · recommendations are analysis-only`;
+  }
+  function gateActions(state){
+    const add=[...document.querySelectorAll('button')].find(b=>/add to betslip/i.test(b.textContent||''));
+    if(add){add.disabled=!state.actionable;add.classList.toggle('ctdNonActionable',!state.actionable);add.title=state.actionable?'Add current actionable recommendation to betslip':'Disabled: current model output is not actionable';if(!state.actionable)add.textContent='Analysis Only'}
+    document.querySelectorAll('[data-byo], [data-parlay-mode="build"]').forEach(b=>{if('disabled'in b)b.disabled=!state.actionable;b.classList.toggle('ctdNonActionable',!state.actionable)});
+  }
+  function apply(primary,final){
+    const state={...primary,final_feed_status:final.status,final_feed_actionable:final.actionable};
+    window.CTD_MODEL_STATE_2026=state;
+    document.documentElement.dataset.ctdModelStatus=state.status;
+    document.documentElement.dataset.ctdModelMode=state.mode;
+    document.documentElement.dataset.ctdModelActionable=String(state.actionable);
+    document.documentElement.dataset.ctdFinalBettingStatus=final.status;
+    banner(state);gateActions(state);
+    document.dispatchEvent(new CustomEvent('ctd:model-state-ready',{detail:state}));
+  }
+  async function load(){
+    try{
+      const [weeklyRaw,finalRaw]=await Promise.all([json(WEEKLY),json(FINAL)]);
+      const weekly=normalize('weekly-game-market-recommendations-2026.json',weeklyRaw);
+      const final=normalize('final-betting-ui-feed-2026.json',finalRaw);
+      apply(weekly,final);
+    }catch(err){
+      const state={source:'model-state-semantics',status:'FEED_UNAVAILABLE',mode:'FEED_UNAVAILABLE',actionable:false,message:String(err?.message||err)};
+      window.CTD_MODEL_STATE_2026=state;document.documentElement.dataset.ctdModelActionable='false';banner(state);gateActions(state);document.dispatchEvent(new CustomEvent('ctd:model-state-failed',{detail:state}));
+    }
+  }
+  const observer=new MutationObserver(()=>{if(window.CTD_MODEL_STATE_2026)gateActions(window.CTD_MODEL_STATE_2026)});observer.observe(document.documentElement,{childList:true,subtree:true});
+  load();setInterval(load,60000);
+})();
