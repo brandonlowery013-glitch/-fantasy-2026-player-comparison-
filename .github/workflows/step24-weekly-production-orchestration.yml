@@ -203,7 +203,7 @@ jobs:
           branch="production/state-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git switch -c "$branch"
           git commit -m "Run ordered weekly production lifecycle"
-          git push --set-upstream origin "$branch"
+          git push origin "HEAD:$branch"
           echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
