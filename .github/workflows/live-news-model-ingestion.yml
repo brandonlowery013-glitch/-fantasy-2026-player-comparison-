@@ -184,8 +184,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Resolve and verify the exact persisted branch head before accepting Guardrail QA.
-          # Refresh marker: force protected PR checks to bind to current main before merge.
           HEAD_SHA=$(git rev-parse HEAD)
           DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           gh workflow run guardrail-qa.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
@@ -240,29 +238,106 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ steps.persist.outputs.pr_number }}
+          BRANCH: ${{ steps.persist.outputs.branch }}
         shell: bash
         run: |
           set -euo pipefail
-          HEAD_SHA=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json headRefOid --jq '.headRefOid')
-          test -n "$HEAD_SHA"
+
+          run_guardrail_for_exact_head() {
+            local head_sha="$1"
+            local dispatched_at run_id status conclusion run_head
+            dispatched_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            gh workflow run guardrail-qa.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+            run_id=''
+            for _ in $(seq 1 60); do
+              run_id=$(gh run list \
+                --repo "$GITHUB_REPOSITORY" \
+                --workflow guardrail-qa.yml \
+                --branch "$BRANCH" \
+                --event workflow_dispatch \
+                --limit 20 \
+                --json databaseId,headSha,createdAt \
+                --jq ".[] | select(.headSha == \"$head_sha\" and .createdAt >= \"$dispatched_at\") | .databaseId" \
+                | head -n 1)
+              if [ -n "$run_id" ]; then
+                break
+              fi
+              sleep 5
+            done
+            if [ -z "$run_id" ]; then
+              echo "FAIL: could not discover refreshed Guardrail QA run for exact head $head_sha."
+              return 1
+            fi
+            echo "Refreshed Guardrail QA run: ${run_id} (branch=${BRANCH}, head=${head_sha})"
+            for _ in $(seq 1 360); do
+              status=$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json status --jq '.status')
+              if [ "$status" = 'completed' ]; then
+                conclusion=$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json conclusion --jq '.conclusion')
+                run_head=$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json headSha --jq '.headSha')
+                if [ "$run_head" != "$head_sha" ]; then
+                  echo "FAIL: refreshed Guardrail head mismatch: expected $head_sha, got $run_head."
+                  return 1
+                fi
+                if [ "$conclusion" != 'success' ]; then
+                  echo "FAIL: refreshed Guardrail QA concluded ${conclusion}."
+                  return 1
+                fi
+                echo "Refreshed Guardrail QA passed on exact head $head_sha."
+                return 0
+              fi
+              sleep 10
+            done
+            echo "FAIL: timed out waiting for refreshed Guardrail QA on $head_sha."
+            return 1
+          }
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main "$BRANCH"
+          git switch "$BRANCH"
+
           for _ in $(seq 1 60); do
             STATE=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state --jq '.state')
             if [ "$STATE" = 'MERGED' ]; then
               echo "PR #${PR_NUMBER} already merged."
               exit 0
             fi
+
+            git fetch origin main
+            HEAD_SHA=$(git rev-parse HEAD)
+            MAIN_SHA=$(git rev-parse origin/main)
+
+            if ! git merge-base --is-ancestor "$MAIN_SHA" "$HEAD_SHA"; then
+              echo "Protected main advanced to $MAIN_SHA after Guardrail validated $HEAD_SHA; refreshing candidate."
+              if ! git rebase origin/main; then
+                git rebase --abort || true
+                echo 'FAIL: live-news candidate conflicts with current protected main; refusing to force or bypass protection.'
+                exit 1
+              fi
+              REFRESHED_SHA=$(git rev-parse HEAD)
+              if [ "$REFRESHED_SHA" = "$HEAD_SHA" ]; then
+                echo 'FAIL: expected refreshed candidate SHA to change after base advance.'
+                exit 1
+              fi
+              git push --force-with-lease origin "$BRANCH"
+              run_guardrail_for_exact_head "$REFRESHED_SHA"
+              HEAD_SHA="$REFRESHED_SHA"
+              continue
+            fi
+
             REQUIRED_STATUS=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/status" --jq '.state')
             if [ "$REQUIRED_STATUS" != 'success' ]; then
               echo "Required guardrail-qa commit status is ${REQUIRED_STATUS}; waiting."
               sleep 10
               continue
             fi
+
             if gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --squash --delete-branch; then
-              echo "Merged validated live-news PR #${PR_NUMBER} after required guardrail-qa status succeeded."
+              echo "Merged validated live-news PR #${PR_NUMBER} after exact-head Guardrail and current-main freshness checks succeeded."
               exit 0
             fi
-            echo 'Required status is green but protected merge is not ready yet; retrying.'
+            echo 'Required status is green but protected merge is not ready; rechecking protected main before retrying.'
             sleep 10
           done
-          echo "FAIL: validated live-news PR #${PR_NUMBER} did not become mergeable after required guardrail-qa status succeeded."
+          echo "FAIL: validated live-news PR #${PR_NUMBER} did not become mergeable after exact-head Guardrail and current-main freshness checks."
           exit 1
