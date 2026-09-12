@@ -17,6 +17,9 @@ esac
 
 last_dispatched_merge_sha=''
 
+git config user.name "github-actions[bot]"
+git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
 status_for_sha() {
   local sha="$1"
   gh api "repos/${GITHUB_REPOSITORY}/commits/${sha}/status" \
@@ -30,7 +33,32 @@ dispatch_guardrail() {
   last_dispatched_merge_sha="$merge_sha"
 }
 
+refresh_branch_to_current_main() {
+  git fetch origin main "$BRANCH"
+  git switch "$BRANCH"
+  local head_sha main_sha
+  head_sha=$(git rev-parse HEAD)
+  main_sha=$(git rev-parse origin/main)
+  if git merge-base --is-ancestor "$main_sha" "$head_sha"; then
+    return 0
+  fi
+
+  echo "Protected main advanced to ${main_sha}; refreshing ${BRANCH} before Guardrail validation."
+  if ! git merge --no-edit origin/main; then
+    git merge --abort || true
+    echo "FAIL: ${BRANCH} conflicts with current protected main; refusing to force or bypass protection."
+    return 1
+  fi
+  local refreshed_sha
+  refreshed_sha=$(git rev-parse HEAD)
+  git push origin "HEAD:${BRANCH}"
+  echo "Refreshed production branch ${BRANCH}: ${head_sha} -> ${refreshed_sha}."
+  last_dispatched_merge_sha=''
+}
+
 for _ in $(seq 1 "$MAX_POLLS"); do
+  refresh_branch_to_current_main
+
   PR_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
   PR_STATE=$(printf '%s' "$PR_JSON" | jq -r '.state')
   MERGED=$(printf '%s' "$PR_JSON" | jq -r '.merged')
@@ -65,6 +93,8 @@ for _ in $(seq 1 "$MAX_POLLS"); do
     CURRENT_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
     CURRENT_HEAD=$(printf '%s' "$CURRENT_JSON" | jq -r '.head.sha // empty')
     CURRENT_MERGE=$(printf '%s' "$CURRENT_JSON" | jq -r '.merge_commit_sha // empty')
+    CURRENT_MAIN=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq '.object.sha')
+    git fetch origin main >/dev/null 2>&1
 
     if [ "$CURRENT_HEAD" != "$HEAD_SHA" ] || [ "$CURRENT_MERGE" != "$MERGE_SHA" ]; then
       echo "Protected candidate moved before merge (${HEAD_SHA}/${MERGE_SHA} -> ${CURRENT_HEAD}/${CURRENT_MERGE}); revalidating the new exact candidate."
@@ -72,8 +102,13 @@ for _ in $(seq 1 "$MAX_POLLS"); do
       sleep "$SLEEP_SECONDS"
       continue
     fi
+    if ! git merge-base --is-ancestor "$CURRENT_MAIN" "$HEAD_SHA"; then
+      echo "Protected main advanced again to ${CURRENT_MAIN}; refreshing branch and discarding stale validation."
+      last_dispatched_merge_sha=''
+      continue
+    fi
 
-    echo "Guardrail QA is green on exact PR head ${HEAD_SHA} and protected synthetic merge ${MERGE_SHA}."
+    echo "Guardrail QA is green on exact up-to-date PR head ${HEAD_SHA} and protected synthetic merge ${MERGE_SHA}."
     if gh pr merge "$PR_NUMBER" \
       --repo "$GITHUB_REPOSITORY" \
       --match-head-commit "$HEAD_SHA" \
@@ -83,7 +118,7 @@ for _ in $(seq 1 "$MAX_POLLS"); do
       exit 0
     fi
 
-    echo "Merge was rejected after validation; protected main likely moved. Re-reading the PR instead of reusing stale validation."
+    echo "Merge was rejected after validation; protected main likely moved. Refreshing instead of reusing stale validation."
     last_dispatched_merge_sha=''
     sleep "$SLEEP_SECONDS"
     continue
@@ -97,5 +132,5 @@ for _ in $(seq 1 "$MAX_POLLS"); do
   sleep "$SLEEP_SECONDS"
 done
 
-echo "FAIL: PR #${PR_NUMBER} never reached a stable exact-candidate Guardrail pass within the bounded retry window."
+echo "FAIL: PR #${PR_NUMBER} never reached a stable up-to-date exact-candidate Guardrail pass within the bounded retry window."
 exit 1
