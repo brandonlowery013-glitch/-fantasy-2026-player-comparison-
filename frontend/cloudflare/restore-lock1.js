@@ -90,3 +90,67 @@
  document.addEventListener('ctd:games-ready',applyScores);
  fetch('https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/frontend/ctd-cloudflare-work/data/weekly/scoreboard-2026.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw Error(r.status);return r.json()}).then(d=>{scores=d;applyScores()}).catch(e=>console.error('Scoreboard unavailable',e));
 })();
+
+(()=>{
+  let feed=null;
+  const e=x=>String(x??'Unavailable').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const pct=x=>x==null?'Unavailable':(Number(x)*100).toFixed(1)+'%';
+  const pp=x=>x==null?'Unavailable':(Number(x)*100).toFixed(1)+' pp';
+  const num=x=>x==null?'Unavailable':Number(x).toFixed(1);
+  function latest(game){return (game.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));}
+  function selected(game){const rows=latest(game);return rows.find(s=>s.book==='draftkings')||rows[0];}
+  function explain(game,s){const p=game.football_projection,lines=Object.entries(s.markets||{}).filter(([,m])=>m.recommendation?.decision==='PICK').map(([kind,m])=>`${kind}: ${m.recommendation.selection}, ${pp(m.recommendation.probability_edge)} probability advantage, ${pct(m.recommendation.expected_value)} expected return per unit risked.`);return `Projected score: ${game.away_team} ${num(p.away_score_mean)}, ${game.home_team} ${num(p.home_score_mean)}. `+(lines.length?lines.join(' '):'No market clears the model thresholds.');}
+  function detail(){
+    const g=BET_FEED.games[selectedGameIndex];if(!g||!feed||Number(feed.week)!==Number(BET_FEED.week))return;
+    const raw=Object.values(feed.games||{}).find(x=>x.away_team===g.away_team&&x.home_team===g.home_team);if(!raw)return;
+    const s=selected(raw);if(!s)return;
+    const ended=g.completed===true||Date.parse(raw.kickoff)<=Date.now();
+    const summary=explain(raw,s);g.model_summary=summary;
+    if(activeGameTab==='OVERVIEW')document.getElementById('gameSummary').textContent=(ended?'Pregame analysis (archived). ':'')+summary;
+    const p=raw.football_projection;
+    document.querySelector('#awayProb + span').textContent=raw.away_team;
+    document.querySelector('#homeProb + span').textContent=raw.home_team;
+    document.getElementById('awayProb').textContent=pct(p.away_win_probability);
+    document.getElementById('homeProb').textContent=pct(p.home_win_probability);
+    const ml=s.markets.moneyline?.fair_market;
+    document.querySelector('.implied').textContent=`Tie: ${pct(p.tie_probability)}. Market win chance (bookmaker margin removed): ${raw.away_team} ${pct(ml?.side_b_probability)}, ${raw.home_team} ${pct(ml?.side_a_probability)}. Market figures exclude ties.`;
+    document.querySelector('.donut').style.display='none';
+    document.getElementById('gameTitle').firstChild.textContent=`${raw.away_team} vs ${raw.home_team} `;
+    document.getElementById('gameVenue').textContent=`${ended?'Archived':'Latest stored'} ${s.book} odds · ${new Date(s.captured_at).toLocaleString()} · venue not supplied by this feed`;
+    for(const [kind,id] of [['spread','spreadPick'],['total','totalPick'],['moneyline','mlPick']]){
+      const r=s.markets[kind]?.recommendation,el=document.getElementById(id),badge=el.parentElement.lastElementChild;
+      el.textContent=ended?'Archived':r?.decision==='PICK'?r.selection:'No qualifying bet';
+      badge.textContent=!ended&&r?.decision==='PICK'?pp(r.probability_edge):'';
+      badge.title='Model probability minus the market probability after removing bookmaker margin. pp = percentage points.';
+      if(kind==='spread')g.model_spread_pick=el.textContent;if(kind==='total')g.total_pick=el.textContent;if(kind==='moneyline')g.moneyline_pick=el.textContent;
+    }
+    for(const [kind,index,labels] of [['spread',1,[raw.home_team,raw.away_team]],['total',2,['Over','Under']]]){
+      const m=s.markets[kind],host=document.querySelector(`.lowgrid .panel:nth-child(${index})`);if(!host)continue;
+      host.innerHTML=`<h3>${kind.toUpperCase()} PROBABILITIES</h3>`+(m?`<div class="breakrow"><span>Side</span><b>${e(labels[0])}</b><b>${e(labels[1])}</b></div>`+[['Offered odds',x=>x.offered_odds,e],['Model chance (excluding pushes)',x=>x.conditional_win_probability,pct],['Push chance',x=>x.push_probability,pct],['Probability advantage',x=>x.probability_edge,pp],['Expected return / unit risked',x=>x.expected_value,pct]].map(([label,get,format])=>`<div class="breakrow"><span>${label}</span><b>${e(format(get(m.side_a)))}</b><b>${e(format(get(m.side_b)))}</b></div>`).join('')+`<div class="breakrow"><span>Market chance (margin removed)</span><b>${pct(m.fair_market.side_a_probability)}</b><b>${pct(m.fair_market.side_b_probability)}</b></div><p class="copy">${kind==='spread'?`${e(raw.home_team)} spread ${e(s.market.home_spread)}`:`Total ${e(s.market.total)}`} · ${e(s.book)}. pp means percentage points.</p>`:'<p class="copy">This market is unavailable.</p>');
+    }
+    let context=document.getElementById('ctdMarketContext');if(!context){context=document.createElement('div');context.id='ctdMarketContext';context.className='panel';document.querySelector('.lowgrid').appendChild(context);}
+    const books=new Map();for(const x of latest(raw))if(!books.has(x.book))books.set(x.book,x);
+    context.innerHTML='<h3>SPORTSBOOK COMPARISON</h3><p class="copy">Latest stored line per sportsbook; this is not public betting or smart-money data.</p>'+[...books.values()].map(x=>`<div class="breakrow"><span>${e(x.book)}</span><b>${e(raw.home_team)} ${e(x.market.home_spread)}</b><b>Total ${e(x.market.total)}</b></div>`).join('')+'<p class="copy">Bet counts, money percentages and identified sharp action are not supplied by the connected feed.</p>';
+  }
+  function syncTicker(){
+    if(!feed||Number(feed.week)!==Number(BET_FEED.week))return;
+    for(const g of BET_FEED.games){
+      const raw=Object.values(feed.games||{}).find(x=>x.away_team===g.away_team&&x.home_team===g.home_team),s=raw&&selected(raw);if(!s)continue;
+      const picks=Object.values(s.markets).map(x=>x.recommendation).filter(x=>x?.decision==='PICK').sort((a,b)=>b.probability_edge-a.probability_edge);
+      g.spread=raw.home_team+' '+(s.market.home_spread>0?'+':'')+s.market.home_spread;g.total=s.market.total;
+      g.model_edge=Date.parse(raw.kickoff)<=Date.now()?'Archived':picks.length?pp(picks[0].probability_edge):'No qualifying bet';
+    }
+    renderTicker();
+  }
+  document.addEventListener('ctd:games-ready',syncTicker);
+  const original=renderSelectedGame;renderSelectedGame=function(){original();detail();};
+  document.querySelector('.tabs').addEventListener('click',detail);
+  document.addEventListener('ctd:games-ready',detail);
+  const lane=document.getElementById('ctdGameTicker');
+  const controls=document.createElement('div');controls.style.cssText='display:flex;gap:8px;margin:8px 0';
+  for(const [label,direction] of [['Previous games',-1],['Next games',1]]){const b=document.createElement('button');b.className='btn';b.textContent=label;b.onclick=()=>lane.scrollBy({left:direction*lane.clientWidth*.75,behavior:'smooth'});controls.appendChild(b);}
+  lane.before(controls);lane.style.cssText+=';overflow-x:auto;max-width:100%;min-width:0;scrollbar-width:auto';
+  const css=document.createElement('style');css.textContent='#gamesPage{min-width:0;max-width:100%}#gamesPage .ticker{display:flex}#gamesPage .gamecard{flex:0 0 190px}#gamesPage .grid3,#gamesPage .lowgrid,#gamesPage .midgrid{min-width:0}#gamesPage .panel{min-width:0;overflow-wrap:anywhere}@media(max-width:1100px){#gamesPage .grid3,#gamesPage .lowgrid,#gamesPage .midgrid{grid-template-columns:1fr}}';document.head.appendChild(css);
+  async function load(){try{const r=await fetch(RAW+'data/market/weekly-game-market-recommendations-2026.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);feed=await r.json();syncTicker();detail();}catch(err){console.error('Detailed game feed unavailable',err);}}
+  load();setInterval(load,60000);
+})();
