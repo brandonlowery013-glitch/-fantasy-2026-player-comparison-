@@ -113,7 +113,7 @@
     document.getElementById('awayProb').textContent=pct(p.away_win_probability);
     document.getElementById('homeProb').textContent=pct(p.home_win_probability);
     const ml=s.markets.moneyline?.fair_market;
-    document.querySelector('.implied').textContent=`Tie: ${pct(p.tie_probability)}. Market win chance (bookmaker margin removed): ${raw.away_team} ${pct(ml?.side_b_probability)}, ${raw.home_team} ${pct(ml?.side_a_probability)}. Market figures exclude ties.`;
+    document.querySelector('.implied').textContent=`Equal-score simulation outcomes: ${pct(p.tie_probability)} (overtime not verified). Market win chance (bookmaker margin removed): ${raw.away_team} ${pct(ml?.side_b_probability)}, ${raw.home_team} ${pct(ml?.side_a_probability)}. Market figures exclude ties.`;
     document.querySelector('.donut').style.display='none';
     document.getElementById('gameTitle').firstChild.textContent=`${raw.away_team} vs ${raw.home_team} `;
     document.getElementById('gameVenue').textContent=`${ended?'Archived':'Latest stored'} ${s.book} odds · ${new Date(s.captured_at).toLocaleString()} · venue not supplied by this feed`;
