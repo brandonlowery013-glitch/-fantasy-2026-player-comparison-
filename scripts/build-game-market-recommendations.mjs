@@ -18,8 +18,8 @@ function synthetic(){return {
   ]}}}
 };}
 
-function evaluateSnapshot(gameId,game,s){
-  const draws=simulateGameDistribution(gameId,game),margins=draws.map(d=>d.margin),totals=draws.map(d=>d.total),results={};
+function evaluateSnapshot(gameId,game,s,draws){
+  const margins=draws.map(d=>d.margin),totals=draws.map(d=>d.total),results={};
   if(Number.isFinite(Number(s.home_spread))&&s.home_spread_price!=null&&s.away_spread_price!=null){
     const threshold=-Number(s.home_spread);
     const ev=evaluateTwoWay({sideA:outcomeProbabilities(margins,threshold,'OVER'),sideB:outcomeProbabilities(margins,threshold,'UNDER'),sideAOdds:s.home_spread_price,sideBOdds:s.away_spread_price,thresholds:{home_spread:Number(s.home_spread),home_cover_margin_threshold:threshold}});
@@ -37,6 +37,26 @@ function evaluateSnapshot(gameId,game,s){
   return results;
 }
 
+
+ // Keep the endpoints needed by current picks and movement comparisons.
+ // Complete captured history remains in weekly-matchup-market-snapshots-2026.json.
+ function servingSnapshots(rows,kickoff){
+   const groups=new Map(),selected=new Set();
+   const valid=(s,key)=>key==='spread'?s.home_spread!=null&&s.home_spread_price!=null&&s.away_spread_price!=null:key==='total'?s.total!=null&&s.over_price!=null&&s.under_price!=null:s.home_moneyline!=null&&s.away_moneyline!=null;
+   for(const [index,s] of rows.entries()){
+     const t=Date.parse(s.captured_at);if(!Number.isFinite(t))continue;
+     for(const key of ['all','spread','total','moneyline']){
+       if(key!=='all'&&!valid(s,key))continue;
+       const k=JSON.stringify([s.book,s.snapshot_kind,t<=kickoff,key]);
+       let g=groups.get(k);if(!g){g={first:index,last:index};groups.set(k,g);}
+       if(t<Date.parse(rows[g.first].captured_at))g.first=index;
+       if(t>=Date.parse(rows[g.last].captured_at))g.last=index;
+     }
+   }
+   for(const g of groups.values()){selected.add(g.first);selected.add(g.last);}
+   return rows.filter((_,i)=>selected.has(i));
+ }
+
 const self=process.argv.includes('--self-test'),src=self?synthetic():{projections,markets};
 const blocked=[],games={};
 if(src.projections.sportsbook_inputs_used!==false)blocked.push('Step 14 football projections show market contamination');
@@ -46,9 +66,10 @@ for(const [gameId,mg] of Object.entries(src.markets.games||{})){
   if(!game){blocked.push(`${gameId} has market snapshots but no Step 14 football projection`);continue;}
   if(game.sportsbook_inputs_used!==false){blocked.push(`${gameId} football projection market contamination`);continue;}
   const kickoff=Date.parse(mg.kickoff||game.event_start),evaluations=[];
-  for(const s of mg.snapshots||[]){
+  const draws=simulateGameDistribution(gameId,game);
+  for(const s of servingSnapshots(mg.snapshots||[],kickoff)){
     const captured=Date.parse(s.captured_at),eligible=s.snapshot_kind!=='CLOSE'&&Number.isFinite(captured)&&Number.isFinite(kickoff)&&captured<=kickoff;
-    evaluations.push({snapshot_id:s.snapshot_id,snapshot_kind:s.snapshot_kind,book:s.book,captured_at:s.captured_at,source:s.source,eligible_for_current_recommendation:eligible,market:{home_spread:s.home_spread??null,home_spread_price:s.home_spread_price??null,away_spread_price:s.away_spread_price??null,total:s.total??null,over_price:s.over_price??null,under_price:s.under_price??null,home_moneyline:s.home_moneyline??null,away_moneyline:s.away_moneyline??null},markets:evaluateSnapshot(gameId,game,s)});
+    evaluations.push({snapshot_id:s.snapshot_id,snapshot_kind:s.snapshot_kind,book:s.book,captured_at:s.captured_at,source:s.source,eligible_for_current_recommendation:eligible,market:{home_spread:s.home_spread??null,home_spread_price:s.home_spread_price??null,away_spread_price:s.away_spread_price??null,total:s.total??null,over_price:s.over_price??null,under_price:s.under_price??null,home_moneyline:s.home_moneyline??null,away_moneyline:s.away_moneyline??null},markets:evaluateSnapshot(gameId,game,s,draws)});
   }
   const eligible=evaluations.filter(x=>x.eligible_for_current_recommendation).sort((a,b)=>Date.parse(a.captured_at)-Date.parse(b.captured_at));
   const latest=eligible.at(-1)||null;
@@ -56,6 +77,12 @@ for(const [gameId,mg] of Object.entries(src.markets.games||{})){
 }
 
 if(self){
+  const many=Array.from({length:10000},(_,i)=>({snapshot_id:String(i),book:'TEST',snapshot_kind:'CURRENT',captured_at:new Date(1700000000000+i*1000).toISOString(),home_spread:-3,home_spread_price:-110,away_spread_price:-110}));
+  const kept=servingSnapshots(many,1800000000000);
+  if(kept.length!==2||kept[0].snapshot_id!=='0'||kept[1].snapshot_id!=='9999')blocked.push('snapshot growth must stay bounded and retain endpoints');
+  const partial={...many.at(-1),snapshot_id:'partial',captured_at:new Date(1700020000000).toISOString(),home_spread_price:null};
+  if(!servingSnapshots([...many,partial],1800000000000).some(s=>s.snapshot_id==='9999'))blocked.push('partial snapshots must not displace latest complete market');
+
   const g=games['2026-W1-GB-CHI'],early=g?.snapshot_evaluations?.find(x=>x.snapshot_id==='early'),cur=g?.snapshot_evaluations?.find(x=>x.snapshot_id==='current');
   if(!g||!early||!cur)blocked.push('self-test evaluations missing');
   else{
@@ -67,7 +94,7 @@ if(self){
 }
 
 const now=new Date().toISOString();
-const out={schema_version:'1.0.0',season:2026,week:src.projections.week??null,status:blocked.length?'BLOCKED':Object.keys(games).length?'SHADOW_ONLY':'AWAITING_GAME_MARKET_SNAPSHOTS',mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,fair_market_method:contract.fair_market_method,recommendation_policy:contract.recommendation_policy,generated_at:now,games};
+const out={schema_version:'1.0.0',season:2026,week:src.projections.week??null,status:blocked.length?'BLOCKED':Object.keys(games).length?'SHADOW_ONLY':'AWAITING_GAME_MARKET_SNAPSHOTS',mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,snapshot_history_source:'data/market/weekly-matchup-market-snapshots-2026.json',snapshot_retention:'FIRST_AND_LATEST_PER_BOOK_KIND_ELIGIBILITY_AND_MARKET',fair_market_method:contract.fair_market_method,recommendation_policy:contract.recommendation_policy,generated_at:now,games};
 const report={generated_at:now,result:blocked.length?'BLOCKED':'PASS',game_count:Object.keys(games).length,snapshot_evaluations:Object.values(games).reduce((n,g)=>n+g.snapshot_evaluations.length,0),mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,blocked,safeguards:contract.locked_rules};
 write('guardrails/game-market-recommendation-report.json',report);
 if(!self)write('data/market/weekly-game-market-recommendations-2026.json',out);
