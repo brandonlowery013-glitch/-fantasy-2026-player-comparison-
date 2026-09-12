@@ -44,7 +44,7 @@
  function renderOutlook(){
   const mount=document.getElementById('weeklyCategoryMount');
   const ordered=(window.CTD_CANONICAL_PLAYERS_2026||[]).map(p=>outlook?.players?.[p.name]).filter(Boolean);
-  mount.innerHTML=outlook?`<p class="ctdPublishedNote">Published ${e(outlook.generated_at)} · ${ordered.length} players · Current outlook, not start/sit recommendations</p><div class="categoryGrid">${ordered.map(p=>`<article class="categoryCard"><h3>${e(p.position)} · ${e(p.team)}</h3><b>${e(p.player)}</b><p class="copy">${e(p.current_outlook?.health_status)}</p><p class="copy">Next game: ${e(p.next_game?.date)} · ${e(p.next_game?.opponent)}</p>${p.latest_news?.headline?.toLowerCase().includes(p.player.toLowerCase())?`<p class="copy">${e(p.latest_news.date)} · ${e(p.latest_news.headline)}</p>`:''}</article>`).join('')}</div>`:'<p class="ctdPublishedNote">Weekly outlook could not be loaded.</p>';
+  mount.innerHTML=outlook?`<p class="ctdPublishedNote">Published ${e(outlook.generated_at)} · ${ordered.length} players · Current outlook, not start/sit recommendations</p><div class="categoryGrid">${ordered.map(p=>`<article class="categoryCard"><h3>${e(p.position)} · ${e(p.team)}</h3><b>${e(p.player)}</b><p class="copy">${e(p.current_outlook?.health_status)}</p>${p.last_game?`<p class="copy">Last game: ${e(p.last_game.team_score)}–${e(p.last_game.opponent_score)} vs ${e(p.last_game.opponent)} · Final</p>`:''}<p class="copy">Next game: ${e(p.next_game?.date)} · ${e(p.next_game?.opponent)}</p>${p.latest_news?.headline?.toLowerCase().includes(p.player.toLowerCase())?`<p class="copy">${e(p.latest_news.date)} · ${e(p.latest_news.headline)}</p>`:''}</article>`).join('')}</div>`:'<p class="ctdPublishedNote">Weekly outlook could not be loaded.</p>';
  }
  function install(){const tabs=document.getElementById('weeklyTabs');if(!tabs||!tabs.dataset.ctdPublished||document.getElementById('outlookTab'))return;const b=document.createElement('button');b.id='outlookTab';b.textContent='PLAYER OUTLOOK';tabs.appendChild(b);b.onclick=()=>{tabs.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderOutlook()};}
  document.addEventListener('ctd:published-data-ready',install);
@@ -64,4 +64,17 @@
  document.getElementById('ctdGameTicker').addEventListener('click',historyView);
  document.addEventListener('ctd:games-ready',historyView);
  get(RAW+'data/probability/generated/matchup-tidbits-2026.json').then(d=>{history=d;historyView()}).catch(err=>console.error('Historical context unavailable',err));
+})();
+
+(()=>{
+ let scores=null;
+ const norm=t=>({LA:'LAR',WAS:'WSH'}[t]||t);
+ function applyScores(){if(!scores||Number(scores.week)!==Number(BET_FEED.week))return;
+  for(const g of BET_FEED.games){const s=scores.games.find(x=>norm(x.away_team)===norm(g.away_team)&&norm(x.home_team)===norm(g.home_team));if(!s)continue;Object.assign(g,{away_score:s.away_score,home_score:s.home_score,status:s.completed?'FINAL':s.state==='in'?'LIVE':new Date(s.date).toLocaleString([], {weekday:'short',hour:'numeric',minute:'2-digit'}),completed:s.completed,latest_scores:{away:[...s.away_periods.slice(0,4),s.away_score],home:[...s.home_periods.slice(0,4),s.home_score]}});
+   if(s.completed){g.model_summary=`Final: ${g.away_team} ${s.away_score}, ${g.home_team} ${s.home_score}. Pregame market analysis is archived.`;g.model_spread_pick='GAME FINAL';g.total_pick='GAME FINAL';g.moneyline_pick='GAME FINAL';g.model_edge=null;}
+  }
+  renderTicker();renderSelectedGame();
+ }
+ document.addEventListener('ctd:games-ready',applyScores);
+ fetch('https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/frontend/ctd-cloudflare-work/data/weekly/scoreboard-2026.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw Error(r.status);return r.json()}).then(d=>{scores=d;applyScores()}).catch(e=>console.error('Scoreboard unavailable',e));
 })();
