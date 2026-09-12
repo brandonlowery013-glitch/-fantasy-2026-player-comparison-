@@ -369,14 +369,20 @@ jobs:
               continue
             fi
 
-            REQUIRED_STATUS=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/status" --jq '.state')
+            REQUIRED_STATUS=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/status" --jq '[.statuses[] | select(.context == "guardrail-qa")] | sort_by(.updated_at) | last | .state // "missing"')
             if [ "$REQUIRED_STATUS" != 'success' ]; then
               echo "Required guardrail-qa commit status is ${REQUIRED_STATUS}; waiting."
               sleep 10
               continue
             fi
 
-            if gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --merge --delete-branch; then
+            if ! gh pr checks "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --required; then
+              echo 'Required PR checks are not ready; rechecking candidate freshness before retrying.'
+              sleep 10
+              continue
+            fi
+
+            if gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --match-head-commit "$HEAD_SHA" --merge --delete-branch; then
               echo "Merged validated Step 24 PR #${PR_NUMBER} after exact-head Guardrail and current-main freshness checks succeeded."
               exit 0
             fi
