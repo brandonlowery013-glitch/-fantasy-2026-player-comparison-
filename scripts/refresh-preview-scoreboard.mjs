@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+const schedule=JSON.parse(fs.readFileSync('data/calibration/weekly-event-schedule-2026.json','utf8'));
+const week=Number(schedule.week),season=Number(schedule.season);
+if(season!==2026||!Number.isInteger(week)||week<1||week>18)throw Error('Invalid regular-season week');
+const url=`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=2&dates=${season}&week=${week}&limit=100`;
+const response=await fetch(url);if(!response.ok)throw Error(response.status);const raw=await response.json();
+if(!raw.events?.length)throw Error('No scoreboard events');
+const games=raw.events.map(x=>{const c=x.competitions[0],a=c.competitors.find(t=>t.homeAway==='away'),h=c.competitors.find(t=>t.homeAway==='home'),status=x.status||c.status;if(!a||!h||!status)throw Error('Incomplete scoreboard event');return {id:x.id,away_team:a.team.abbreviation,home_team:h.team.abbreviation,date:x.date,status:status.type.description,completed:status.type.completed,state:status.type.state,away_score:status.type.state==='pre'?null:Number(a.score),home_score:status.type.state==='pre'?null:Number(h.score),away_periods:a.linescores?.map(s=>s.value)||[],home_periods:h.linescores?.map(s=>s.value)||[]}});
+const expected=new Set(Object.values(schedule.games||{}).map(g=>String(g.event_id)));
+if(games.some(g=>!expected.has(String(g.id))))throw Error('Scoreboard does not match verified weekly schedule');
+fs.mkdirSync('data/weekly',{recursive:true});fs.writeFileSync('data/weekly/scoreboard-2026.json',JSON.stringify({source:url,generated_at:new Date().toISOString(),season,week,games},null,2)+'\n');

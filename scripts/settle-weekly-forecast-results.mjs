@@ -119,6 +119,8 @@ async function selfTest(){
 async function main(){
   if(process.argv.includes('--self-test'))return selfTest();
   const contract=read('data/sources/postgame-forecast-settlement-2026.json'),forecasts=read(contract.forecast_source),schedule=read(contract.schedule_source),ledger=read(contract.result_ledger),nowIso=process.env.SETTLE_NOW||new Date().toISOString(),now=parseTime(nowIso);if(now==null)throw new Error('SETTLE_NOW invalid');
+  const historyPath='data/history/2026/event-schedule.json';
+  if(fs.existsSync(path.join(root,historyPath)))schedule.games={...read(historyPath).games,...schedule.games};
   const latest=latestSettlements(ledger),eventIds=new Set();
   for(const f of forecasts.forecasts||[]){const g=schedule.games?.[f.game_id],eventId=String(g?.event_id||'');if(!eventId)continue;const start=parseTime(f.event_start);if(start==null||start>now)continue;const old=latest.get(f.forecast_id),withinCorrectionWindow=now-start<=7*24*3600*1000;if(!old||withinCorrectionWindow)eventIds.add(eventId);}
   const summaries=new Map(),fetchErrors=[];
