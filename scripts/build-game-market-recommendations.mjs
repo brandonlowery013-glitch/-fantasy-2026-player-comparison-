@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {simulateGameDistribution,outcomeProbabilities,moneylineProbabilities,evaluateTwoWay,recommendation} from '../lib/game-market-probability.mjs';
+import {simulateGameDistribution,moneylineProbabilities,evaluateTwoWay,recommendation} from '../lib/game-market-probability.mjs';
 
 const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
@@ -18,37 +18,88 @@ function synthetic(){return {
   ]}}}
 };}
 
-function evaluateSnapshot(gameId,game,s){
-  const draws=simulateGameDistribution(gameId,game),margins=draws.map(d=>d.margin),totals=draws.map(d=>d.total),results={};
+function lowerBound(a,x){let lo=0,hi=a.length;while(lo<hi){const mid=(lo+hi)>>1;if(a[mid]<x)lo=mid+1;else hi=mid;}return lo;}
+function upperBound(a,x){let lo=0,hi=a.length;while(lo<hi){const mid=(lo+hi)>>1;if(a[mid]<=x)lo=mid+1;else hi=mid;}return lo;}
+function sortedOutcomeProbabilities(values,threshold,direction){
+  const t=Number(threshold),n=values.length,lt=lowerBound(values,t),le=upperBound(values,t),push=le-lt;
+  const win=direction==='OVER'?n-le:lt;
+  const loss=direction==='OVER'?lt:n-le;
+  const den=win+loss;
+  return {win_probability:win/n,push_probability:push/n,loss_probability:loss/n,conditional_win_probability:den?win/den:null};
+}
+
+function makeProbabilityCache(draws){
+  const margins=draws.map(d=>d.margin).sort((a,b)=>a-b),totals=draws.map(d=>d.total).sort((a,b)=>a-b);
+  const spread=new Map(),total=new Map();
+  const mlHome=moneylineProbabilities(draws,'HOME'),mlAway=moneylineProbabilities(draws,'AWAY');
+  const outcomes=(kind,threshold,direction)=>{
+    const cache=kind==='spread'?spread:total;
+    const key=`${Number(threshold)}|${direction}`;
+    if(!cache.has(key))cache.set(key,sortedOutcomeProbabilities(kind==='spread'?margins:totals,Number(threshold),direction));
+    return cache.get(key);
+  };
+  return {outcomes,mlHome,mlAway};
+}
+
+function evaluateSnapshot(game,s,prob){
+  const results={};
   if(Number.isFinite(Number(s.home_spread))&&s.home_spread_price!=null&&s.away_spread_price!=null){
     const threshold=-Number(s.home_spread);
-    const ev=evaluateTwoWay({sideA:outcomeProbabilities(margins,threshold,'OVER'),sideB:outcomeProbabilities(margins,threshold,'UNDER'),sideAOdds:s.home_spread_price,sideBOdds:s.away_spread_price,thresholds:{home_spread:Number(s.home_spread),home_cover_margin_threshold:threshold}});
+    const ev=evaluateTwoWay({sideA:prob.outcomes('spread',threshold,'OVER'),sideB:prob.outcomes('spread',threshold,'UNDER'),sideAOdds:s.home_spread_price,sideBOdds:s.away_spread_price,thresholds:{home_spread:Number(s.home_spread),home_cover_margin_threshold:threshold}});
     results.spread={...roundObj(ev),recommendation:recommendation(ev,contract.recommendation_policy,{side_a:`${game.home_team} ${Number(s.home_spread)>0?'+':''}${s.home_spread}`,side_b:`${game.away_team} ${Number(-s.home_spread)>0?'+':''}${-Number(s.home_spread)}`})};
   }
   if(Number.isFinite(Number(s.total))&&s.over_price!=null&&s.under_price!=null){
     const line=Number(s.total);
-    const ev=evaluateTwoWay({sideA:outcomeProbabilities(totals,line,'OVER'),sideB:outcomeProbabilities(totals,line,'UNDER'),sideAOdds:s.over_price,sideBOdds:s.under_price,thresholds:{total:line}});
+    const ev=evaluateTwoWay({sideA:prob.outcomes('total',line,'OVER'),sideB:prob.outcomes('total',line,'UNDER'),sideAOdds:s.over_price,sideBOdds:s.under_price,thresholds:{total:line}});
     results.total={...roundObj(ev),recommendation:recommendation(ev,contract.recommendation_policy,{side_a:`OVER ${line}`,side_b:`UNDER ${line}`})};
   }
   if(s.home_moneyline!=null&&s.away_moneyline!=null){
-    const ev=evaluateTwoWay({sideA:moneylineProbabilities(draws,'HOME'),sideB:moneylineProbabilities(draws,'AWAY'),sideAOdds:s.home_moneyline,sideBOdds:s.away_moneyline,thresholds:null});
+    const ev=evaluateTwoWay({sideA:prob.mlHome,sideB:prob.mlAway,sideAOdds:s.home_moneyline,sideBOdds:s.away_moneyline,thresholds:null});
     results.moneyline={...roundObj(ev),recommendation:recommendation(ev,contract.recommendation_policy,{side_a:`${game.home_team} ML`,side_b:`${game.away_team} ML`})};
   }
   return results;
 }
 
 const self=process.argv.includes('--self-test'),src=self?synthetic():{projections,markets};
-const blocked=[],games={};
+const compactRecovery=!self&&process.env.RECOVERY_COMPACT_HISTORY==='1';
+const blocked=[],archivedMarketGamesSkipped=[],buildErrors=[],games={};
+let historicalSnapshotsConsidered=0;
 if(src.projections.sportsbook_inputs_used!==false)blocked.push('Step 14 football projections show market contamination');
 if(src.markets.market_context_only!==true||src.markets.probability_fit_input!==false)blocked.push('Market snapshot contract flags invalid');
 for(const [gameId,mg] of Object.entries(src.markets.games||{})){
   const game=src.projections.games?.[gameId];
-  if(!game){blocked.push(`${gameId} has market snapshots but no Step 14 football projection`);continue;}
+  const allSnapshots=Array.isArray(mg.snapshots)?mg.snapshots:[];
+  historicalSnapshotsConsidered+=allSnapshots.length;
+  if(!game){
+    archivedMarketGamesSkipped.push({game_id:gameId,week:mg.week??null,snapshot_count:allSnapshots.length,reason:'No current Step 14 projection; historical ledger retained but current recommendation rebuild skipped'});
+    continue;
+  }
   if(game.sportsbook_inputs_used!==false){blocked.push(`${gameId} football projection market contamination`);continue;}
   const kickoff=Date.parse(mg.kickoff||game.event_start),evaluations=[];
-  for(const s of mg.snapshots||[]){
+  let snapshotsToEvaluate=allSnapshots;
+  if(compactRecovery){
+    const eligible=allSnapshots.filter(s=>{
+      const captured=Date.parse(s.captured_at);
+      return s.snapshot_kind!=='CLOSE'&&Number.isFinite(captured)&&Number.isFinite(kickoff)&&captured<=kickoff;
+    }).sort((a,b)=>Date.parse(a.captured_at)-Date.parse(b.captured_at));
+    snapshotsToEvaluate=eligible.length?[eligible.at(-1)]:[];
+  }
+  let prob;
+  try{
+    const draws=simulateGameDistribution(gameId,game);
+    prob=makeProbabilityCache(draws);
+  }catch(error){
+    const detail={stage:'simulate_game_distribution',game_id:gameId,message:error instanceof Error?error.message:String(error)};
+    buildErrors.push(detail);blocked.push(`${gameId} rebuild error: ${detail.message}`);continue;
+  }
+  for(const s of snapshotsToEvaluate){
     const captured=Date.parse(s.captured_at),eligible=s.snapshot_kind!=='CLOSE'&&Number.isFinite(captured)&&Number.isFinite(kickoff)&&captured<=kickoff;
-    evaluations.push({snapshot_id:s.snapshot_id,snapshot_kind:s.snapshot_kind,book:s.book,captured_at:s.captured_at,source:s.source,eligible_for_current_recommendation:eligible,market:{home_spread:s.home_spread??null,home_spread_price:s.home_spread_price??null,away_spread_price:s.away_spread_price??null,total:s.total??null,over_price:s.over_price??null,under_price:s.under_price??null,home_moneyline:s.home_moneyline??null,away_moneyline:s.away_moneyline??null},markets:evaluateSnapshot(gameId,game,s)});
+    try{
+      evaluations.push({snapshot_id:s.snapshot_id,snapshot_kind:s.snapshot_kind,book:s.book,captured_at:s.captured_at,source:s.source,eligible_for_current_recommendation:eligible,market:{home_spread:s.home_spread??null,home_spread_price:s.home_spread_price??null,away_spread_price:s.away_spread_price??null,total:s.total??null,over_price:s.over_price??null,under_price:s.under_price??null,home_moneyline:s.home_moneyline??null,away_moneyline:s.away_moneyline??null},markets:evaluateSnapshot(game,s,prob)});
+    }catch(error){
+      const detail={stage:'evaluate_snapshot',game_id:gameId,snapshot_id:s.snapshot_id??null,book:s.book??null,message:error instanceof Error?error.message:String(error),market:{home_spread:s.home_spread??null,home_spread_price:s.home_spread_price??null,away_spread_price:s.away_spread_price??null,total:s.total??null,over_price:s.over_price??null,under_price:s.under_price??null,home_moneyline:s.home_moneyline??null,away_moneyline:s.away_moneyline??null}};
+      buildErrors.push(detail);blocked.push(`${gameId}/${s.snapshot_id??'NO_ID'} rebuild error: ${detail.message}`);
+    }
   }
   const eligible=evaluations.filter(x=>x.eligible_for_current_recommendation).sort((a,b)=>Date.parse(a.captured_at)-Date.parse(b.captured_at));
   const latest=eligible.at(-1)||null;
@@ -67,8 +118,8 @@ if(self){
 }
 
 const now=new Date().toISOString();
-const out={schema_version:'1.0.0',season:2026,week:src.projections.week??null,status:blocked.length?'BLOCKED':Object.keys(games).length?'SHADOW_ONLY':'AWAITING_GAME_MARKET_SNAPSHOTS',mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,fair_market_method:contract.fair_market_method,recommendation_policy:contract.recommendation_policy,generated_at:now,games};
-const report={generated_at:now,result:blocked.length?'BLOCKED':'PASS',game_count:Object.keys(games).length,snapshot_evaluations:Object.values(games).reduce((n,g)=>n+g.snapshot_evaluations.length,0),mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,blocked,safeguards:contract.locked_rules};
+const out={schema_version:'1.0.0',season:2026,week:src.projections.week??null,status:blocked.length?'BLOCKED':Object.keys(games).length?'SHADOW_ONLY':'AWAITING_GAME_MARKET_SNAPSHOTS',mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,fair_market_method:contract.fair_market_method,recommendation_policy:contract.recommendation_policy,generated_at:now,recovery_compact_history:compactRecovery,archived_market_games_skipped:archivedMarketGamesSkipped,build_errors:buildErrors,games};
+const report={generated_at:now,result:blocked.length?'BLOCKED':'PASS',game_count:Object.keys(games).length,historical_snapshots_considered:historicalSnapshotsConsidered,snapshot_evaluations:Object.values(games).reduce((n,g)=>n+g.snapshot_evaluations.length,0),recovery_compact_history:compactRecovery,archived_market_games_skipped:archivedMarketGamesSkipped.length,archived_market_game_details:archivedMarketGamesSkipped,build_error_count:buildErrors.length,build_errors:buildErrors,mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,blocked,safeguards:contract.locked_rules};
 write('guardrails/game-market-recommendation-report.json',report);
 if(!self)write('data/market/weekly-game-market-recommendations-2026.json',out);
 console.log(JSON.stringify(report,null,2));
