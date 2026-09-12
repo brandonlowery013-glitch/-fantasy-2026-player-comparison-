@@ -36,6 +36,8 @@ permissions:
   contents: write
   pull-requests: write
   checks: read
+  statuses: read
+  actions: write
 
 concurrency:
   group: final-betting-pipeline-step4
@@ -104,21 +106,176 @@ jobs:
         run: |
           pr_url=$(gh pr create --base main --head "${{ steps.persist.outputs.branch }}" --title "Production: current-week betting UI state" --body "Automated Step 4 downstream betting state for the active verified schedule week. Prior-week outputs are blocked by contract. Required Guardrail QA must pass before merge.")
           echo "url=$pr_url" >> "$GITHUB_OUTPUT"
-      - name: Wait for guardrail and merge current-week betting state
+          echo "pr_number=${pr_url##*/}" >> "$GITHUB_OUTPUT"
+      - name: run Guardrail QA on exact production candidate
         if: steps.persist.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_URL: ${{ steps.state_pr.outputs.url }}
+          BRANCH: ${{ steps.persist.outputs.branch }}
         shell: bash
         run: |
-          found=false
-          for i in $(seq 1 60); do
-            if gh pr checks "$PR_URL" --required 2>&1 | grep -q "guardrail-qa"; then found=true; break; fi
-            sleep 10
+          set -euo pipefail
+          HEAD_SHA=$(git rev-parse HEAD)
+          DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run guardrail-qa.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+
+          RUN_ID=''
+          for _ in $(seq 1 60); do
+            RUN_ID=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow guardrail-qa.yml \
+              --branch "$BRANCH" \
+              --event workflow_dispatch \
+              --limit 20 \
+              --json databaseId,headSha,createdAt \
+              --jq ".[] | select(.headSha == \"$HEAD_SHA\" and .createdAt >= \"$DISPATCHED_AT\") | .databaseId" \
+              | head -n 1)
+            if [ -n "$RUN_ID" ]; then
+              break
+            fi
+            sleep 5
           done
-          if [ "$found" != "true" ]; then
-            echo "Required guardrail-qa check did not appear."
+
+          if [ -z "$RUN_ID" ]; then
+            echo "FAIL: could not discover Guardrail QA run for exact production branch $BRANCH at head $HEAD_SHA."
             exit 1
           fi
-          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
-          gh pr merge "$PR_URL" --merge --delete-branch
+          echo "Guardrail QA run: ${RUN_ID} (branch=${BRANCH}, head=${HEAD_SHA})"
+
+          for _ in $(seq 1 360); do
+            STATUS=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json status --jq '.status')
+            if [ "$STATUS" = 'completed' ]; then
+              CONCLUSION=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion --jq '.conclusion')
+              RUN_HEAD=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json headSha --jq '.headSha')
+              if [ "$RUN_HEAD" != "$HEAD_SHA" ]; then
+                echo "FAIL: Guardrail QA head mismatch: expected $HEAD_SHA, got $RUN_HEAD."
+                exit 1
+              fi
+              if [ "$CONCLUSION" != 'success' ]; then
+                echo "FAIL: Guardrail QA concluded ${CONCLUSION}."
+                exit 1
+              fi
+              echo "Guardrail QA passed on exact production candidate $HEAD_SHA."
+              exit 0
+            fi
+            sleep 10
+          done
+
+          echo 'FAIL: timed out waiting for Guardrail QA.'
+          exit 1
+
+      - name: merge exact validated production state PR
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.state_pr.outputs.pr_number }}
+          BRANCH: ${{ steps.persist.outputs.branch }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          run_guardrail_for_exact_head() {
+            local head_sha="$1"
+            local dispatched_at run_id status conclusion run_head
+            dispatched_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            gh workflow run guardrail-qa.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
+            run_id=''
+            for _ in $(seq 1 60); do
+              run_id=$(gh run list \
+                --repo "$GITHUB_REPOSITORY" \
+                --workflow guardrail-qa.yml \
+                --branch "$BRANCH" \
+                --event workflow_dispatch \
+                --limit 20 \
+                --json databaseId,headSha,createdAt \
+                --jq ".[] | select(.headSha == \"$head_sha\" and .createdAt >= \"$dispatched_at\") | .databaseId" \
+                | head -n 1)
+              if [ -n "$run_id" ]; then
+                break
+              fi
+              sleep 5
+            done
+            if [ -z "$run_id" ]; then
+              echo "FAIL: could not discover refreshed Guardrail QA run for exact production head $head_sha."
+              return 1
+            fi
+            echo "Refreshed Guardrail QA run: ${run_id} (branch=${BRANCH}, head=${head_sha})"
+            for _ in $(seq 1 360); do
+              status=$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json status --jq '.status')
+              if [ "$status" = 'completed' ]; then
+                conclusion=$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json conclusion --jq '.conclusion')
+                run_head=$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json headSha --jq '.headSha')
+                if [ "$run_head" != "$head_sha" ]; then
+                  echo "FAIL: refreshed Guardrail head mismatch: expected $head_sha, got $run_head."
+                  return 1
+                fi
+                if [ "$conclusion" != 'success' ]; then
+                  echo "FAIL: refreshed Guardrail QA concluded ${conclusion}."
+                  return 1
+                fi
+                echo "Refreshed Guardrail QA passed on exact production head $head_sha."
+                return 0
+              fi
+              sleep 10
+            done
+            echo "FAIL: timed out waiting for refreshed Guardrail QA on $head_sha."
+            return 1
+          }
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main "$BRANCH"
+          git switch "$BRANCH"
+
+          for _ in $(seq 1 60); do
+            STATE=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state --jq '.state')
+            if [ "$STATE" = 'MERGED' ]; then
+              echo "PR #${PR_NUMBER} already merged."
+              exit 0
+            fi
+
+            git fetch origin main
+            HEAD_SHA=$(git rev-parse HEAD)
+            MAIN_SHA=$(git rev-parse origin/main)
+
+            if ! git merge-base --is-ancestor "$MAIN_SHA" "$HEAD_SHA"; then
+              echo "Protected main advanced to $MAIN_SHA after Guardrail validated $HEAD_SHA; refreshing production candidate."
+              if ! git merge --no-edit origin/main; then
+                git merge --abort || true
+                echo 'FAIL: Step 4 production candidate conflicts with current protected main; refusing to force or bypass protection.'
+                exit 1
+              fi
+              REFRESHED_SHA=$(git rev-parse HEAD)
+              if [ "$REFRESHED_SHA" = "$HEAD_SHA" ]; then
+                echo 'FAIL: expected refreshed Step 4 candidate SHA to change after base advance.'
+                exit 1
+              fi
+              git push origin "$BRANCH"
+              run_guardrail_for_exact_head "$REFRESHED_SHA"
+              continue
+            fi
+
+            REQUIRED_STATUS=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/status" --jq '[.statuses[] | select(.context == "guardrail-qa")] | sort_by(.updated_at) | last | .state // "missing"')
+            if [ "$REQUIRED_STATUS" != 'success' ]; then
+              echo "Required guardrail-qa commit status is ${REQUIRED_STATUS}; waiting."
+              sleep 10
+              continue
+            fi
+
+            if ! gh pr checks "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --required; then
+              echo 'Required PR checks are not ready; rechecking candidate freshness before retrying.'
+              sleep 10
+              continue
+            fi
+
+            if gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --match-head-commit "$HEAD_SHA" --merge --delete-branch; then
+              echo "Merged validated Step 4 PR #${PR_NUMBER} after exact-head Guardrail and current-main freshness checks succeeded."
+              exit 0
+            fi
+            echo 'Required status is green but protected merge is not ready; rechecking protected main before retrying.'
+            sleep 10
+          done
+
+          echo "FAIL: validated Step 4 PR #${PR_NUMBER} did not become mergeable after exact-head Guardrail and current-main freshness checks."
+          exit 1
+
