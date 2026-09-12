@@ -35,3 +35,33 @@
   document.querySelector('#weeklyPage .categoryIntro').textContent='Weekly categories use published GitHub outputs. Unpublished categories remain unavailable.';
   document.addEventListener('ctd:games-ready',()=>{const active=[...document.querySelectorAll('.tabs button')].find(b=>b.textContent.trim()===activeGameTab);if(active&&activeGameTab!=='OVERVIEW')active.click()});
 })();
+
+(()=>{
+ const preview='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/frontend/ctd-cloudflare-work/';
+ let outlook=null,history=null;
+ const e=x=>String(x??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const get=async url=>{const r=await fetch(url+'?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);return r.json()};
+ function renderOutlook(){
+  const mount=document.getElementById('weeklyCategoryMount');
+  const ordered=(window.CTD_CANONICAL_PLAYERS_2026||[]).map(p=>outlook?.players?.[p.name]).filter(Boolean);
+  mount.innerHTML=outlook?`<p class="ctdPublishedNote">Published ${e(outlook.generated_at)} · ${ordered.length} players · Current outlook, not start/sit recommendations</p><div class="categoryGrid">${ordered.map(p=>`<article class="categoryCard"><h3>${e(p.position)} · ${e(p.team)}</h3><b>${e(p.player)}</b><p class="copy">${e(p.current_outlook?.summary)}</p><p class="copy">Next game: ${e(p.next_game?.date)} · ${e(p.next_game?.opponent)}</p>${p.latest_news?`<p class="copy">${e(p.latest_news.date)} · ${e(p.latest_news.headline)}</p>`:''}</article>`).join('')}</div>`:'<p class="ctdPublishedNote">Weekly outlook could not be loaded.</p>';
+ }
+ function install(){const tabs=document.getElementById('weeklyTabs');if(!tabs||!tabs.dataset.ctdPublished||document.getElementById('outlookTab'))return;const b=document.createElement('button');b.id='outlookTab';b.textContent='PLAYER OUTLOOK';tabs.appendChild(b);b.onclick=()=>{tabs.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderOutlook()};}
+ document.addEventListener('ctd:published-data-ready',install);
+ document.addEventListener('ctd:canonical-players-ready',()=>{if(document.getElementById('outlookTab')?.classList.contains('active'))renderOutlook()});
+ install();
+ get(preview+'data/weekly/weekly-player-outlook-2026.json').then(d=>{if(d.universe!==166||Object.keys(d.players||{}).length!==166)throw Error('Outlook coverage mismatch');outlook=d;install()}).catch(err=>console.error('Weekly outlook unavailable',err));
+ const norm=t=>({LA:'LAR',WAS:'WSH'}[t]||t);
+ function historyView(){
+  if(!history||!['TRENDS','BETTING HISTORY','MATCHUP'].includes(activeGameTab))return;
+  const game=BET_FEED.games[selectedGameIndex];if(!game||Number(history.week)!==Number(BET_FEED.week))return;
+  const h=Object.values(history.games||{}).find(x=>norm(x.away_team)===norm(game.away_team)&&norm(x.home_team)===norm(game.home_team));
+  if(!h)return;
+  const rows=(h.tidbits||[]).filter(x=>activeGameTab==='TRENDS'||activeGameTab==='BETTING HISTORY'||x.scope==='MATCHUP');
+  document.getElementById('gameSummary').innerHTML=`<p>Historical context · published ${e(history.generated_at)} · descriptive only</p>${rows.map(x=>`<p>${e(x.text)} <small>Source: ${e(x.source)}</small></p>`).join('')}`;
+ }
+ document.querySelector('.tabs').addEventListener('click',historyView);
+ document.getElementById('ctdGameTicker').addEventListener('click',historyView);
+ document.addEventListener('ctd:games-ready',historyView);
+ get(RAW+'data/probability/generated/matchup-tidbits-2026.json').then(d=>{history=d;historyView()}).catch(err=>console.error('Historical context unavailable',err));
+})();
