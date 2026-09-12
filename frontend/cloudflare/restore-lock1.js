@@ -110,10 +110,10 @@
     const p=raw.football_projection;
     document.querySelector('#awayProb + span').textContent=raw.away_team;
     document.querySelector('#homeProb + span').textContent=raw.home_team;
-    document.getElementById('awayProb').textContent=pct(p.away_win_probability);
-    document.getElementById('homeProb').textContent=pct(p.home_win_probability);
+    document.getElementById('awayProb').textContent=pct(s.markets.moneyline?.side_b?.conditional_win_probability);
+    document.getElementById('homeProb').textContent=pct(s.markets.moneyline?.side_a?.conditional_win_probability);
     const ml=s.markets.moneyline?.fair_market;
-    document.querySelector('.implied').textContent=`Equal-score simulation outcomes: ${pct(p.tie_probability)} (overtime not verified). Market win chance (bookmaker margin removed): ${raw.away_team} ${pct(ml?.side_b_probability)}, ${raw.home_team} ${pct(ml?.side_a_probability)}. Market figures exclude ties.`;
+    document.querySelector('.implied').textContent=`Two-way probabilities, conditional on a win/loss settlement. Market chance (bookmaker margin removed): ${raw.away_team} ${pct(ml?.side_b_probability)}, ${raw.home_team} ${pct(ml?.side_a_probability)}.`;
     document.querySelector('.donut').style.display='none';
     document.getElementById('gameTitle').firstChild.textContent=`${raw.away_team} vs ${raw.home_team} `;
     document.getElementById('gameVenue').textContent=`${ended?'Archived':'Latest stored'} ${s.book} odds · ${new Date(s.captured_at).toLocaleString()} · venue not supplied by this feed`;
@@ -138,7 +138,7 @@
       const raw=Object.values(feed.games||{}).find(x=>x.away_team===g.away_team&&x.home_team===g.home_team),s=raw&&selected(raw);if(!s)continue;
       const picks=Object.values(s.markets).map(x=>x.recommendation).filter(x=>x?.decision==='PICK').sort((a,b)=>b.probability_edge-a.probability_edge);
       g.spread=raw.home_team+' '+(s.market.home_spread>0?'+':'')+s.market.home_spread;g.total=s.market.total;
-      g.model_edge=Date.parse(raw.kickoff)<=Date.now()?'Archived':picks.length?pp(picks[0].probability_edge):'No qualifying bet';
+      g.model_edge=Date.parse(raw.kickoff)<=Date.now()?'Archived':picks.length?picks[0].selection+' · '+pp(picks[0].probability_edge):'No qualifying bet';
     }
     renderTicker();
   }
