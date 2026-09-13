@@ -28,6 +28,8 @@ function loadPlayers(){
     out.push({name:p.n,position:String(p.p||'').toUpperCase(),team:abbr});
   }
   if(out.length!==activeCount)throw new Error(`Active universe contract mismatch: expected ${activeCount}, found ${out.length}`);
+  const unique=new Set(out.map(p=>norm(p.name)));
+  if(unique.size!==activeCount)throw new Error(`Active universe uniqueness mismatch: expected ${activeCount}, found ${unique.size}`);
   return out;
 }
 
@@ -93,20 +95,21 @@ function buildContext(players,week,nowIso){
     if(t>parseTime(nowIso)+5*60000){blocked.push(`${p.name} ${type} captured_at is in future`);continue;}
     const k=`${p.name}|${type}`,old=latest.get(k);if(!old||t>old.t)latest.set(k,{t,s,p});
   }
-  const grouped=new Map();
+  const grouped=new Map(players.map(p=>[p.name,{position:p.position,signals:{},availability:[]} ]));
   for(const {s,p} of latest.values()){
-    if(!grouped.has(p.name))grouped.set(p.name,{position:p.position,signals:{},availability:[]});
     const g=grouped.get(p.name);
     g.signals[s.signal_type]={source:s.source,captured_at:s.captured_at,cohort:s.cohort??undefined,stat_adjustments:s.stat_adjustments||{},evidence:s.evidence??undefined};
     if(typeof s.expected_active==='boolean')g.availability.push({captured_at:s.captured_at,expected_active:s.expected_active});
   }
   const out={};
-  for(const [name,g] of grouped){
+  for(const p of players){
+    const g=grouped.get(p.name);
     g.availability.sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));
-    if(!g.availability.length)continue;
-    out[name]={position:g.position,expected_active:g.availability[0].expected_active,signals:g.signals};
+    const known=g.availability.length>0;
+    out[p.name]={position:g.position,expected_active:known?g.availability[0].expected_active:null,availability_status:known?'KNOWN':'UNKNOWN',signals:g.signals};
   }
-  return {raw:{schema_version:'1.1.0',season:2026,week,status:Object.keys(out).length?'LIVE_CONTEXT_INGESTED':'AWAITING_LIVE_WEEKLY_CONTEXT',captured_at:nowIso,sportsbook_inputs_used:false,players:out},blocked};
+  if(Object.keys(out).length!==activeCount)blocked.push(`canonical context population mismatch: expected ${activeCount}, found ${Object.keys(out).length}`);
+  return {raw:{schema_version:'1.2.0',season:2026,week,status:Object.keys(out).length===activeCount?'LIVE_CONTEXT_INGESTED':'INCOMPLETE_CANONICAL_CONTEXT',captured_at:nowIso,sportsbook_inputs_used:false,players:out},blocked};
 }
 
 async function main(){
@@ -127,7 +130,9 @@ async function main(){
   if(!Object.keys(schedule.games).length)blocked.push(`no 2026 regular-season games found for week ${week}`);
   write('data/calibration/weekly-event-schedule-2026.json',schedule);write('data/probability/weekly-football-context-raw-2026.json',context.raw);
   const sources=[...new Set(Object.values(schedule.games).map(g=>g.source))];
-  const report={generated_at:nowIso,result:blocked.length?'BLOCKED':'PASS',season:2026,week,schedule_games:Object.keys(schedule.games).length,mapped_players:[...new Set(Object.values(schedule.games).flatMap(g=>g.players))].length,context_players:Object.keys(context.raw.players).length,schedule_sources:sources,authoritative_cross_check:contract.schedule_source.authoritative_cross_check,sportsbook_inputs_used:false,blocked,notes:['ESPN remains the preferred automated schedule adapter.','If ESPN has not yet published usable 2026 rows, the checked-in NFL.com-published Week 1 schedule may activate the production lifecycle as an authoritative fallback.','Only explicit current-source availability can set expected_active; absence of an injury row never implies active.','Missing context remains missing; no neutral/zero signal is invented.']};
+  const contextPlayers=Object.values(context.raw.players);
+  const unknownAvailability=contextPlayers.filter(p=>p.expected_active===null).length;
+  const report={generated_at:nowIso,result:blocked.length?'BLOCKED':'PASS',season:2026,week,schedule_games:Object.keys(schedule.games).length,mapped_players:[...new Set(Object.values(schedule.games).flatMap(g=>g.players))].length,context_players:contextPlayers.length,canonical_players:activeCount,unknown_availability_players:unknownAvailability,schedule_sources:sources,authoritative_cross_check:contract.schedule_source.authoritative_cross_check,sportsbook_inputs_used:false,blocked,notes:['ESPN remains the preferred automated schedule adapter.','If ESPN has not yet published usable 2026 rows, the checked-in NFL.com-published Week 1 schedule may activate the production lifecycle as an authoritative fallback.','All canonical players remain represented in weekly context even when explicit availability is unavailable.','Only explicit current-source availability can set expected_active true or false; absence of an availability row is preserved as UNKNOWN and never inferred active.','Missing signals remain missing; no neutral/zero signal is invented.']};
   write('guardrails/weekly-football-ingestion-report.json',report);console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
 }
 
