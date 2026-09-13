@@ -3,9 +3,9 @@
   const ESPN_IDS={ARI:22,ATL:1,BAL:33,BUF:2,CAR:29,CHI:3,CIN:4,CLE:5,DAL:6,DEN:7,DET:8,GB:9,HOU:34,IND:11,JAX:30,KC:12,LV:13,LAC:24,LAR:14,LA:14,MIA:15,MIN:16,NE:17,NO:18,NYG:19,NYJ:20,PHI:21,PIT:23,SEA:26,SF:25,TB:27,TEN:10,WAS:28,WSH:28};
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const norm=t=>String(t||'').toUpperCase()==='LA'?'LAR':String(t||'').toUpperCase()==='WAS'?'WSH':String(t||'').toUpperCase();
-  const logo=t=>{const id=ESPN_IDS[norm(t)];return id?`https://a.espncdn.com/i/teamlogos/nfl/500/${id}.png`:''};
+  const logo=t=>{const code=norm(t);return TEAM_NAMES[code]?`https://a.espncdn.com/i/teamlogos/nfl/500/${code.toLowerCase()}.png`:''};
   const teamName=t=>TEAM_NAMES[norm(t)]||t;
-  const teamMark=(t,compact=false)=>{const src=logo(t);return `<span class="ctdTeamMark ${compact?'compact':''}">${src?`<img src="${src}" alt="${esc(teamName(t))} logo" loading="lazy">`:''}<span>${esc(t)}</span></span>`};
+  const teamMark=(t,compact=false)=>{const src=logo(t);return `<span class="ctdTeamMark ${compact?'compact':''}">${src?`<img src="${src}" alt="${esc(teamName(t))} logo" loading="eager" referrerpolicy="no-referrer">`:''}<span>${esc(t)}</span></span>`};
   const style=document.createElement('style');
   style.textContent=`
     .ctdTeamMark{display:inline-flex;align-items:center;gap:8px}.ctdTeamMark img{width:34px;height:34px;object-fit:contain;flex:0 0 auto}.ctdTeamMark.compact{gap:5px}.ctdTeamMark.compact img{width:22px;height:22px}
@@ -35,8 +35,8 @@
       if(el.children.length)continue;
       const text=el.textContent.trim();
       if(!/^[A-Z]{2,3}$/.test(text))continue;
-      const t=norm(text);if(!ESPN_IDS[t]||el.querySelector('img'))continue;
-      const img=document.createElement('img');img.src=logo(t);img.alt=teamName(t)+' logo';img.loading='lazy';img.style.cssText='width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:5px';el.prepend(img);
+      const t=norm(text);if(!TEAM_NAMES[t]||el.querySelector('img'))continue;
+      const img=document.createElement('img');img.src=logo(t);img.alt=teamName(t)+' logo';img.loading='eager';img.referrerPolicy='no-referrer';img.style.cssText='width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-right:5px';el.prepend(img);
     }
   }
 
@@ -59,7 +59,7 @@
     if(!hero){hero=document.createElement('div');hero.id='ctdMatchupHero';hero.className='ctdMatchupHero';const title=document.getElementById('gameTitle');(title?.parentElement||page).insertBefore(hero,title?title.nextSibling:(title?.parentElement||page).firstChild)}
     const status=esc(g.status||'');
     const scoreKnown=Number.isFinite(Number(g.away_score))&&Number.isFinite(Number(g.home_score));
-    hero.innerHTML=`<div class="ctdMatchupSide"><img src="${logo(g.away_team)}" alt="${esc(teamName(g.away_team))} logo"><strong>${esc(teamName(g.away_team))}</strong><small>${esc(g.away_team)}</small></div><div class="ctdMatchupCenter"><b>${status}</b><span>${scoreKnown?`${esc(g.away_score)} — ${esc(g.home_score)}`:'VS'}</span></div><div class="ctdMatchupSide"><img src="${logo(g.home_team)}" alt="${esc(teamName(g.home_team))} logo"><strong>${esc(teamName(g.home_team))}</strong><small>${esc(g.home_team)}</small></div>`;
+    hero.innerHTML=`<div class="ctdMatchupSide"><img src="${logo(g.away_team)}" alt="${esc(teamName(g.away_team))} logo" loading="eager" referrerpolicy="no-referrer"><strong>${esc(teamName(g.away_team))}</strong><small>${esc(g.away_team)}</small></div><div class="ctdMatchupCenter"><b>${status}</b><span>${scoreKnown?`${esc(g.away_score)} — ${esc(g.home_score)}`:'VS'}</span></div><div class="ctdMatchupSide"><img src="${logo(g.home_team)}" alt="${esc(teamName(g.home_team))} logo" loading="eager" referrerpolicy="no-referrer"><strong>${esc(teamName(g.home_team))}</strong><small>${esc(g.home_team)}</small></div>`;
   }
 
   function removeNarrative(){
@@ -87,7 +87,7 @@
     for(const el of root.querySelectorAll('td,th,b,strong,span')){
       if(el.children.length)continue;
       const t=norm(el.textContent.trim());
-      if(!ESPN_IDS[t])continue;
+      if(!TEAM_NAMES[t])continue;
       el.innerHTML=teamMark(t,true);
     }
   }
