@@ -6,6 +6,7 @@ BRANCH="${2:?production branch required}"
 MERGE_METHOD="${3:-merge}"
 MAX_POLLS="${MAX_POLLS:-180}"
 SLEEP_SECONDS="${SLEEP_SECONDS:-10}"
+REQUIRED_CHECK_APP_ID="${REQUIRED_CHECK_APP_ID:-15368}"
 
 case "$MERGE_METHOD" in
   merge|squash|rebase) ;;
@@ -24,6 +25,13 @@ status_for_sha() {
   local sha="$1"
   gh api "repos/${GITHUB_REPOSITORY}/commits/${sha}/status" \
     --jq '[.statuses[] | select(.context == "guardrail-qa")] | sort_by(.updated_at) | last | .state // "missing"'
+}
+
+check_for_sha() {
+  local sha="$1"
+  gh api -H 'Accept: application/vnd.github+json' \
+    "repos/${GITHUB_REPOSITORY}/commits/${sha}/check-runs?check_name=guardrail-qa" \
+    --jq "[.check_runs[] | select(.app.id == ${REQUIRED_CHECK_APP_ID})] | sort_by(.completed_at // .started_at) | last | .conclusion // \"missing\""
 }
 
 dispatch_guardrail() {
@@ -88,8 +96,10 @@ for _ in $(seq 1 "$MAX_POLLS"); do
 
   HEAD_STATUS=$(status_for_sha "$HEAD_SHA")
   MERGE_STATUS=$(status_for_sha "$MERGE_SHA")
+  HEAD_CHECK=$(check_for_sha "$HEAD_SHA")
+  MERGE_CHECK=$(check_for_sha "$MERGE_SHA")
 
-  if [ "$HEAD_STATUS" = 'success' ] && [ "$MERGE_STATUS" = 'success' ]; then
+  if [ "$HEAD_STATUS" = 'success' ] && [ "$MERGE_STATUS" = 'success' ] && [ "$HEAD_CHECK" = 'success' ] && [ "$MERGE_CHECK" = 'success' ]; then
     CURRENT_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
     CURRENT_HEAD=$(printf '%s' "$CURRENT_JSON" | jq -r '.head.sha // empty')
     CURRENT_MERGE=$(printf '%s' "$CURRENT_JSON" | jq -r '.merge_commit_sha // empty')
@@ -108,7 +118,7 @@ for _ in $(seq 1 "$MAX_POLLS"); do
       continue
     fi
 
-    echo "Guardrail QA is green on exact up-to-date PR head ${HEAD_SHA} and protected synthetic merge ${MERGE_SHA}."
+    echo "Guardrail QA status and GitHub Actions check are green on exact up-to-date PR head ${HEAD_SHA} and protected synthetic merge ${MERGE_SHA}."
     if gh pr merge "$PR_NUMBER" \
       --repo "$GITHUB_REPOSITORY" \
       --match-head-commit "$HEAD_SHA" \
@@ -127,7 +137,7 @@ for _ in $(seq 1 "$MAX_POLLS"); do
   if [ "$MERGE_SHA" != "$last_dispatched_merge_sha" ]; then
     dispatch_guardrail "$MERGE_SHA"
   else
-    echo "Waiting for Guardrail QA on protected candidate ${MERGE_SHA} (head=${HEAD_STATUS}, merge=${MERGE_STATUS})."
+    echo "Waiting for Guardrail QA on protected candidate ${MERGE_SHA} (head_status=${HEAD_STATUS}, merge_status=${MERGE_STATUS}, head_check=${HEAD_CHECK}, merge_check=${MERGE_CHECK})."
   fi
   sleep "$SLEEP_SECONDS"
 done
