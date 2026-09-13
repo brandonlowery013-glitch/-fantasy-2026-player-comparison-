@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 
 const read = p => JSON.parse(fs.readFileSync(p, 'utf8'));
 const write = (p, x) => fs.writeFileSync(p, JSON.stringify(x, null, 2) + '\n');
@@ -22,7 +23,7 @@ function statusFor({scheduleReady, contextReady, forecastReady, finalReady, sett
   return 'READY';
 }
 
-export function evaluate({schedule, context, forecasts, results, calibration, governance, now = new Date()}) {
+export function evaluate({schedule, context, forecasts, results, calibration, governance, now = new Date(), learningRecap=null}) {
   const games = arr(schedule?.games);
   const fc = arr(forecasts?.forecasts || forecasts?.records);
   const settlements = arr(results?.settlements || results?.results);
@@ -38,9 +39,9 @@ export function evaluate({schedule, context, forecasts, results, calibration, go
 
   if (!weeks.size) {
     return {
-      schema_version:'1.1.0', season:2026, mode:'OBSERVATIONAL_ONLY', actionable:false,
+      schema_version:'1.2.0', season:2026, mode:'OBSERVATIONAL_ONLY', actionable:false,
       overall_status: blockedReasons.length ? 'BLOCKED' : 'WAITING_FOR_SOURCE', current_week:null, weeks:[],
-      blocked_reasons:blockedReasons, stale_reasons:[],
+      blocked_reasons:blockedReasons, stale_reasons:[], learning_recap:learningRecap,
       summary:{ready_weeks:0,waiting_weeks:0,stale_weeks:0,blocked_weeks:blockedReasons.length?1:0},
       reason: blockedReasons[0] || 'Verified 2026 regular-season event starts are not available yet.', generated_at:null
     };
@@ -70,15 +71,22 @@ export function evaluate({schedule, context, forecasts, results, calibration, go
   const rank = {BLOCKED:0,STALE:1,WAITING_FOR_SOURCE:2,WAITING_FOR_CONTEXT:3,WAITING_FOR_FORECAST:4,WAITING_FOR_FINAL:5,WAITING_FOR_SETTLEMENT:6,READY:7};
   const overall = [...rows].sort((a,b)=>rank[a.status]-rank[b.status])[0]?.status || 'WAITING_FOR_SOURCE';
   return {
-    schema_version:'1.1.0', season:2026, mode:'OBSERVATIONAL_ONLY', actionable:false,
+    schema_version:'1.2.0', season:2026, mode:'OBSERVATIONAL_ONLY', actionable:false,
     overall_status:overall, current_week:rows.find(r=>r.status!=='READY')?.week ?? rows.at(-1)?.week ?? null, weeks:rows,
     blocked_reasons:blockedReasons, stale_reasons:rows.flatMap(r=>r.stale_reasons.map(x=>`Week ${r.week}: ${x}`)),
+    learning_recap:learningRecap,
     summary:{ready_weeks:rows.filter(r=>r.status==='READY').length,waiting_weeks:rows.filter(r=>r.status.startsWith('WAITING_')).length,stale_weeks:rows.filter(r=>r.status==='STALE').length,blocked_weeks:rows.filter(r=>r.status==='BLOCKED').length},
     reason:`Pipeline status derived observationally from ${rows.length} detected week(s).`, generated_at:null
   };
 }
 
+function runLearningSelfTests(){
+  execFileSync(process.execPath,['scripts/capture-weekly-betting-predictions.mjs','--self-test'],{stdio:'inherit'});
+  execFileSync(process.execPath,['scripts/build-weekly-model-recap.mjs','--self-test'],{stdio:'inherit'});
+}
+
 function selfTest() {
+  runLearningSelfTests();
   const scheduleOnly={schedule:{games:[{week:1,status:'SCHEDULED'}]},context:{week:1,players:{},captured_at:new Date().toISOString(),sportsbook_inputs_used:false},forecasts:{forecasts:[]},results:{settlements:[]},calibration:{status:'AWAITING_SETTLED_FORECASTS',actionable:false},governance:{decision:'HOLD',actionable:false}};
   const z=evaluate(scheduleOnly); if(z.overall_status!=='WAITING_FOR_CONTEXT') throw Error('context wait test failed');
   const base={...scheduleOnly,context:{...scheduleOnly.context,players:{A:{}}}};
@@ -87,13 +95,16 @@ function selfTest() {
   const c=evaluate({...base,schedule:{games:[{week:1,status:'FINAL'}]},forecasts:{forecasts:[{week:1}]}}); if(c.overall_status!=='WAITING_FOR_SETTLEMENT') throw Error('settlement wait test failed');
   const d=evaluate({...base,schedule:{games:[{week:1,status:'FINAL'}]},forecasts:{forecasts:[{week:1}]},results:{settlements:[{week:1}]}}); if(d.overall_status!=='READY') throw Error('ready test failed');
   const e=evaluate({...base,context:{...base.context,sportsbook_inputs_used:true}}); if(e.overall_status!=='BLOCKED') throw Error('blocked test failed');
-  console.log('Step 20 pipeline health self-test passed');
+  console.log('Step 20 pipeline health + weekly learning self-tests passed');
 }
 
 if (process.argv.includes('--self-test')) selfTest();
 else {
+  execFileSync(process.execPath,['scripts/capture-weekly-betting-predictions.mjs'],{stdio:'inherit'});
+  execFileSync(process.execPath,['scripts/build-weekly-model-recap.mjs'],{stdio:'inherit'});
   const c=read(CONTRACT);
-  const out=evaluate({schedule:read(c.inputs.schedule),context:read(c.inputs.football_context),forecasts:read(c.inputs.forecasts),results:read(c.inputs.settlements),calibration:read(c.inputs.calibration),governance:read(c.inputs.governance)});
+  const learningRecap=fs.existsSync('data/calibration/weekly-model-recap-2026.json')?read('data/calibration/weekly-model-recap-2026.json'):null;
+  const out=evaluate({schedule:read(c.inputs.schedule),context:read(c.inputs.football_context),forecasts:read(c.inputs.forecasts),results:read(c.inputs.settlements),calibration:read(c.inputs.calibration),governance:read(c.inputs.governance),learningRecap});
   write(OUTPUT,out);
   console.log(`Step 20 pipeline health: ${out.overall_status}`);
 }
