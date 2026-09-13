@@ -7,14 +7,15 @@ const ledger=JSON.parse(fs.readFileSync('data/market/unified-opportunities-2026.
 const blocked=[];
 const need=(ok,msg)=>{if(!ok)blocked.push(msg)};
 need(index.includes('083fca6edf212334c3a2bc8ef48f141cef94fe26/index.html'),'main entry must preserve the pinned verified platform shell');
-need(runtime.includes("a.href='index.html?view=weekly'"),'Weekly Opportunities control must remain inside the current Chuck The Duke Weekly route');
+need(runtime.includes("a.href='index.html#weekly'"),'Weekly Opportunities control must use the shell hash router');
 need(runtime.includes("document.getElementById('weekly')"),'Weekly Opportunities control must be mounted inside Weekly rather than top-level navigation');
 need(compare.includes('runtime-comparison-ui-step3.js'),'dedicated Compare surface must remain preserved');
 need(runtime.includes('data-weekly-opportunities-link'),'nested Weekly Opportunities control must be explicit and non-placeholder');
-need(page.includes("location.replace('index.html?view=weekly')"),'obsolete standalone Weekly Opportunities URL must redirect to the current CTD Weekly route');
+need(page.includes("location.replace('index.html#weekly')"),'obsolete standalone Weekly Opportunities URL must redirect through the shell hash router');
+need(!page.includes('?view=weekly'),'obsolete query-param Weekly route must not remain');
 need(!page.includes('data/market/unified-opportunities-2026.json'),'obsolete standalone page must not carry a second independent weekly-opportunity renderer');
 need(ledger.mode==='SHADOW_ONLY'&&ledger.actionable===false,'Step 17 ledger must remain SHADOW_ONLY/non-actionable');
 need(!runtime.includes('data/market/unified-opportunities-2026.json'),'season-long Opportunity runtime must not consume the weekly ledger');
-const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',checks:9,architecture:'Chuck The Duke current interface; Player Board | Compare | Weekly | Games; old weekly-opportunities.html redirects into Weekly',blocked};
+const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',checks:10,architecture:'Chuck The Duke current interface; Player Board | Compare | Weekly | Games; legacy weekly-opportunities.html routes to #weekly',blocked};
 fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/weekly-opportunities-ui-report.json',JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
