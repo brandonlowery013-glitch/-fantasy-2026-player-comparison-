@@ -6,6 +6,7 @@ on:
       - 'data/sources/live-market-ingestion-2026.json'
       - 'data/sources/final-betting-live-pipeline-2026.json'
       - 'scripts/adaptive-market-refresh-gate.mjs'
+      - 'scripts/merge-guarded-production-pr.sh'
       - '.github/workflows/adaptive-market-refresh.yml'
   push:
     branches: [main]
@@ -13,6 +14,7 @@ on:
       - 'data/sources/live-market-ingestion-2026.json'
       - 'data/sources/final-betting-live-pipeline-2026.json'
       - 'scripts/adaptive-market-refresh-gate.mjs'
+      - 'scripts/merge-guarded-production-pr.sh'
       - '.github/workflows/adaptive-market-refresh.yml'
   schedule:
     - cron: '*/5 * * * *'
@@ -22,6 +24,7 @@ permissions:
   contents: write
   pull-requests: write
   checks: read
+  statuses: read
   actions: write
 
 concurrency:
@@ -47,6 +50,9 @@ jobs:
   adaptive-market-refresh:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     runs-on: ubuntu-latest
+    concurrency:
+      group: production-main-writer
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,7 +70,6 @@ jobs:
           else
             echo "run=true" >> "$GITHUB_OUTPUT"
             echo "band=FORCED_CURRENT_WEEK" >> "$GITHUB_OUTPUT"
-            echo "Forced current-week market refresh for ${{ github.event_name }} event."
           fi
       - name: Capture current featured sportsbook markets when due
         if: steps.cadence.outputs.run == 'true'
@@ -82,11 +87,7 @@ jobs:
         run: |
           node scripts/build-game-market-recommendations.mjs
           node scripts/build-player-prop-recommendations.mjs
-          if [ -f data/probability/generated/weekly-probability-distributions-2026.json ]; then
-            node scripts/build-unified-opportunity-engine.mjs
-          else
-            echo "Weekly probability distributions are not ready; preserving the existing unified-opportunity state instead of failing the market refresh."
-          fi
+          if [ -f data/probability/generated/weekly-probability-distributions-2026.json ]; then node scripts/build-unified-opportunity-engine.mjs; fi
           node scripts/build-weekly-parlay-recommendations.mjs
           node scripts/build-final-betting-ui-feed.mjs
           node scripts/validate-final-betting-pipeline-step4.mjs
@@ -95,108 +96,23 @@ jobs:
         if: steps.cadence.outputs.run == 'true'
         shell: bash
         run: |
-          paths=(
-            data/market/weekly-matchup-market-snapshots-2026.json
-            data/market/player-prop-market-snapshots-2026.json
-            data/market/live-market-ingestion-status-2026.json
-            data/market/weekly-game-market-recommendations-2026.json
-            data/market/player-prop-recommendations-2026.json
-            data/market/unified-opportunities-2026.json
-            data/market/parlay-recommendations-2026.json
-            data/market/final-betting-ui-feed-2026.json
-          )
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          paths=(data/market/weekly-matchup-market-snapshots-2026.json data/market/player-prop-market-snapshots-2026.json data/market/live-market-ingestion-status-2026.json data/market/weekly-game-market-recommendations-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json)
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${paths[@]}"
-          if git diff --cached --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          if git diff --cached --quiet; then echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           branch="production/adaptive-market-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          git switch -c "$branch"
-          git commit -m "Refresh adaptive pregame market state"
-          git push origin "HEAD:$branch"
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          git switch -c "$branch"; git commit -m "Refresh adaptive pregame market state"; git push origin "HEAD:$branch"
+          echo "changed=true" >> "$GITHUB_OUTPUT"; echo "branch=$branch" >> "$GITHUB_OUTPUT"
       - name: Open guarded adaptive market PR
         id: state_pr
         if: steps.persist.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: bash
         run: |
-          branch="${{ steps.persist.outputs.branch }}"
-          pr_url=$(gh pr create --base main --head "$branch" --title "Production: adaptive pregame market refresh" --body "Automated pregame spread/total/moneyline refresh selected by time-to-kickoff cadence. Market data remains downstream-only and stale-week isolation remains enforced. Required Guardrail QA must pass before merge.")
-          pr_number=$(gh pr view "$pr_url" --json number --jq '.number')
-          gh workflow run guardrail-qa.yml --ref "$branch"
-          echo "url=$pr_url" >> "$GITHUB_OUTPUT"
-          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
-      - name: Wait for guardrail and merge adaptive market state
+          pr_url=$(gh pr create --base main --head "${{ steps.persist.outputs.branch }}" --title "Production: adaptive pregame market refresh" --body "Automated adaptive market refresh. Required Guardrail QA must pass on the current protected candidate before merge.")
+          echo "number=${pr_url##*/}" >> "$GITHUB_OUTPUT"
+      - name: Validate current protected candidate and merge adaptive market state
         if: steps.persist.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_URL: ${{ steps.state_pr.outputs.url }}
-          PR_NUMBER: ${{ steps.state_pr.outputs.number }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          LAST_DISPATCH_SHA=''
-          LAST_FAILURE_RETRY_SHA=''
-          for i in $(seq 1 180); do
-            PR_JSON=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}")
-            PR_STATE=$(printf '%s' "$PR_JSON" | jq -r '.state')
-            if [ "$PR_STATE" != 'open' ]; then
-              MERGED=$(printf '%s' "$PR_JSON" | jq -r '.merged')
-              if [ "$MERGED" = 'true' ]; then
-                echo "Adaptive market PR #${PR_NUMBER} is merged."
-                exit 0
-              fi
-              echo "Adaptive market PR #${PR_NUMBER} is no longer open and was not merged."
-              exit 1
-            fi
-            MERGE_SHA=$(printf '%s' "$PR_JSON" | jq -r '.merge_commit_sha // empty')
-            HEAD_REF=$(printf '%s' "$PR_JSON" | jq -r '.head.ref')
-            if [ -n "$MERGE_SHA" ]; then
-              CHECK=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${MERGE_SHA}/check-runs" \
-                --jq '[.check_runs[] | select(.name=="guardrail-qa" and .app.id==15368)] | sort_by(.started_at // .created_at) | last // {}')
-              CONCLUSION=$(printf '%s' "$CHECK" | jq -r '.conclusion // empty')
-              STATUS=$(printf '%s' "$CHECK" | jq -r '.status // empty')
-              if [ "$CONCLUSION" = 'success' ]; then
-                CURRENT_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
-                if [ "$CURRENT_SHA" != "$MERGE_SHA" ]; then
-                  echo "Protected synthetic merge moved from ${MERGE_SHA} to ${CURRENT_SHA}; revalidating before merge."
-                  MERGE_SHA="$CURRENT_SHA"
-                else
-                  echo "Required guardrail-qa passed on current protected synthetic merge ${MERGE_SHA}."
-                  if gh pr merge "$PR_URL" --merge --delete-branch; then
-                    exit 0
-                  fi
-                  NEW_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
-                  echo "Merge was rejected after the validated check; current protected merge is ${NEW_SHA}. Revalidating instead of failing the production run."
-                  MERGE_SHA="$NEW_SHA"
-                fi
-              elif [ "$STATUS" = 'completed' ] && [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != 'success' ]; then
-                if [ "$MERGE_SHA" != "$LAST_FAILURE_RETRY_SHA" ]; then
-                  echo "Required guardrail-qa completed with ${CONCLUSION} on ${MERGE_SHA}; redispatching QA once for this exact protected merge before treating it as a hard failure."
-                  gh workflow run guardrail-qa.yml --ref "$HEAD_REF"
-                  LAST_FAILURE_RETRY_SHA="$MERGE_SHA"
-                  LAST_DISPATCH_SHA="$MERGE_SHA"
-                  sleep 10
-                  continue
-                fi
-                echo "Required guardrail-qa remained non-successful on ${MERGE_SHA} after one exact-SHA retry."
-                exit 1
-              fi
-              if [ -n "$MERGE_SHA" ] && [ "$MERGE_SHA" != "$LAST_DISPATCH_SHA" ]; then
-                CHECK_COUNT=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${MERGE_SHA}/check-runs" --jq '[.check_runs[] | select(.name=="guardrail-qa" and .app.id==15368)] | length')
-                if [ "$CHECK_COUNT" = '0' ]; then
-                  echo "No guardrail-qa exists on current protected merge ${MERGE_SHA}; dispatching QA for ${HEAD_REF}."
-                  gh workflow run guardrail-qa.yml --ref "$HEAD_REF"
-                  LAST_DISPATCH_SHA="$MERGE_SHA"
-                fi
-              fi
-            fi
-            sleep 10
-          done
-          echo 'Required guardrail-qa did not reach a mergeable stable protected synthetic commit within 30 minutes.'
-          exit 1
+        run: bash scripts/merge-guarded-production-pr.sh "${{ steps.state_pr.outputs.number }}" "${{ steps.persist.outputs.branch }}" merge
