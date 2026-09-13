@@ -370,23 +370,18 @@ jobs:
             fi
 
             REQUIRED_STATUS=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/status" --jq '[.statuses[] | select(.context == "guardrail-qa")] | sort_by(.updated_at) | last | .state // "missing"')
-            if [ "$REQUIRED_STATUS" != 'success' ]; then
-              echo "Required guardrail-qa commit status is ${REQUIRED_STATUS}; waiting."
-              sleep 10
-              continue
-            fi
-
-            if ! gh pr checks "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --required; then
-              echo 'Required PR checks are not ready; rechecking candidate freshness before retrying.'
+            REQUIRED_CHECK=$(gh api -H 'Accept: application/vnd.github+json' "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/check-runs?check_name=guardrail-qa" --jq '[.check_runs[] | select(.app.id == 15368)] | sort_by(.completed_at // .started_at) | last | .conclusion // "missing"')
+            if [ "$REQUIRED_STATUS" != 'success' ] || [ "$REQUIRED_CHECK" != 'success' ]; then
+              echo "Required guardrail-qa evidence is not green yet (status=${REQUIRED_STATUS}, check=${REQUIRED_CHECK}); waiting."
               sleep 10
               continue
             fi
 
             if gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --match-head-commit "$HEAD_SHA" --merge --delete-branch; then
-              echo "Merged validated Step 24 PR #${PR_NUMBER} after exact-head Guardrail and current-main freshness checks succeeded."
+              echo "Merged validated Step 24 PR #${PR_NUMBER} through normal protected-main enforcement after exact-head Guardrail and current-main freshness checks succeeded."
               exit 0
             fi
-            echo 'Required status is green but protected merge is not ready; rechecking protected main before retrying.'
+            echo 'Guardrail evidence is green but protected merge is not ready; rechecking protected main before retrying.'
             sleep 10
           done
 
