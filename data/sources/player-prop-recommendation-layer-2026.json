@@ -1,10 +1,11 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.0.1",
   "season": 2026,
   "status": "STEP_16_PLAYER_PROP_RECOMMENDATIONS_LOCKED",
   "mode": "SHADOW_ONLY",
   "actionable": false,
-  "player_universe": 162,
+  "player_universe": 166,
+  "player_universe_source": "MODEL_SOURCE_OF_TRUTH.json",
   "horizons": ["SEASON", "WEEKLY"],
   "fair_market_method": "PROPORTIONAL_TWO_WAY",
   "supported_stats": ["passing_yards", "passing_tds", "rushing_yards", "rushing_tds", "receiving_yards", "receiving_tds", "receptions"],
@@ -24,7 +25,7 @@
     }
   },
   "locked_rules": [
-    "All 162 players remain addressable even when no sportsbook market is available.",
+    "Every player in the canonical MODEL_SOURCE_OF_TRUTH active universe remains addressable even when no sportsbook market is available.",
     "Football projection distributions are generated before and independently of sportsbook prices.",
     "Every two-sided price is de-vigged with the shared Step 13 proportional method before probability edge is measured.",
     "Weekly prop probabilities use the exact selected-family CDF/PMF, including discrete pushes and compound reception PMFs.",
