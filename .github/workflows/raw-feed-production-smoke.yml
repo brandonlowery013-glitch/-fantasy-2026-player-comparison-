@@ -1,0 +1,84 @@
+name: Raw Feed Production Smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+  pull_request:
+    paths:
+      - '.github/workflows/raw-feed-production-smoke.yml'
+      - 'guardrails/current-football-review.json'
+      - 'data/market/weekly-matchup-market-snapshots-2026.json'
+      - 'data/market/player-prop-market-snapshots-2026.json'
+      - 'scripts/validate-weekly-matchup-market-snapshots.mjs'
+      - 'scripts/validate-player-prop-market-snapshots.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: raw-feed-production-smoke
+  cancel-in-progress: true
+
+jobs:
+  raw-news-feed:
+    name: Raw News Feed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'main' || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify canonical 166-player news feed coverage
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          if(Number(src.active_player_model)!==166) throw new Error(`Canonical universe is ${src.active_player_model}, expected 166`);
+          let canonical=[];
+          for(let i=0;i<Number(src.runtime_player_shards);i++) canonical.push(...require(`./players${i}.json`).map(p=>p.n));
+          const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
+          const rows=Array.isArray(review.players)?review.players:[];
+          const names=rows.map(r=>r.player);
+          const canonicalSet=new Set(canonical),nameSet=new Set(names);
+          const missing=canonical.filter(n=>!nameSet.has(n));
+          const extra=names.filter(n=>!canonicalSet.has(n));
+          if(canonical.length!==166||canonicalSet.size!==166) throw new Error(`Canonical load ${canonical.length}/${canonicalSet.size}, expected 166/166`);
+          if(rows.length!==166||nameSet.size!==166||missing.length||extra.length) throw new Error(`Raw news coverage failed: rows=${rows.length}, unique=${nameSet.size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
+          if(rows.some(r=>!r.reviewed_at)) throw new Error('At least one player is missing reviewed_at');
+          console.log(JSON.stringify({layer:'RAW_NEWS_FEED',result:'PASS',players:166},null,2));
+          NODE
+      - name: Raw news feed PASS
+        run: echo 'PASS — news was collected and mapped across the canonical 166-player universe. Model upgrade/downgrade decisions are intentionally outside this smoke check.'
+
+  raw-game-lines-feed:
+    name: Raw Game Lines Feed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'main' || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate sportsbook game-line snapshots only
+        run: node scripts/validate-weekly-matchup-market-snapshots.mjs
+      - name: Raw game lines feed PASS
+        run: echo 'PASS — sportsbook game lines satisfy the raw snapshot contract. Recommendations, edges, parlays, and model comparisons are intentionally outside this smoke check.'
+
+  raw-player-props-feed:
+    name: Raw Player Props Feed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'main' || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate sportsbook player-prop snapshots only
+        run: node scripts/validate-player-prop-market-snapshots.mjs
+      - name: Raw player props feed PASS
+        run: echo 'PASS — player props satisfy the raw snapshot contract. Betting recommendations and model-vs-market decisions are intentionally outside this smoke check.'
