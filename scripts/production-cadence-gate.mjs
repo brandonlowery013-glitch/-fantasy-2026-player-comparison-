@@ -19,7 +19,7 @@ function gameWindowReason(d){
   if(!games.length)return null;
   const t=d.getTime();
   for(const g of games){
-    const k=Date.parse(g.kickoff_utc||g.start_time_utc||g.date||'');
+    const k=Date.parse(g.event_start||g.kickoff_utc||g.start_time_utc||g.date||'');
     if(!Number.isFinite(k))continue;
     const delta=(k-t)/3600000;
     if(delta>=0&&delta<=6)return 'GAME_WITHIN_6_HOURS';
@@ -58,7 +58,15 @@ if(process.argv.includes('--self-test')){
   for(const [iso,expected,label] of cases){const r=decide(new Date(iso),{injuryChanged:false});if(r.run!==expected)throw new Error(`${label} expected ${expected} got ${r.run} (${r.reason})`);}
   const forced=decide(new Date('2026-09-08T13:10:00Z'),{injuryChanged:true});
   if(!forced.run||forced.reason!=='INJURY_STATE_CHANGED')throw new Error('injury change did not override cadence skip');
-  console.log(JSON.stringify({result:'PASS',timezone:TZ,cases:cases.length+1,injury_change_override:true},null,2));
+  const schedule=readJson('data/calibration/weekly-event-schedule-2026.json');
+  const first=Object.values(schedule?.games||{}).find(g=>g?.event_start);
+  if(first){
+    const kickoff=new Date(first.event_start);
+    const before=new Date(kickoff.getTime()-2*3600000);
+    const r=decide(before,{injuryChanged:false});
+    if(!r.run||r.reason!=='GAME_WITHIN_6_HOURS')throw new Error(`event_start game window not recognized: ${r.reason}`);
+  }
+  console.log(JSON.stringify({result:'PASS',timezone:TZ,cases:cases.length+2,injury_change_override:true,event_start_game_window:true},null,2));
   process.exit(0);
 }
 

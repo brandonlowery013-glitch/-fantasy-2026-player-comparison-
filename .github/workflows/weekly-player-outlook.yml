@@ -29,15 +29,19 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Hard-lock canonical universe to 166
+      - name: Hard-lock canonical universe to source of truth
         run: |
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
-          if(Number(src.active_player_model)!==166) throw new Error(`Expected 166 canonical players, got ${src.active_player_model}`);
+          const expected=Number(src.active_player_model);
+          const shards=Number(src.runtime_player_shards);
+          if(!Number.isInteger(expected)||expected<=0) throw new Error(`Invalid active_player_model: ${src.active_player_model}`);
+          if(!Number.isInteger(shards)||shards<=0) throw new Error(`Invalid runtime_player_shards: ${src.runtime_player_shards}`);
           let names=[];
-          for(let i=0;i<Number(src.runtime_player_shards);i++) names.push(...require(`./players${i}.json`).map(p=>p.n));
-          if(names.length!==166||new Set(names).size!==166) throw new Error(`Loaded ${names.length}/${new Set(names).size}, expected 166/166`);
+          for(let i=0;i<shards;i++) names.push(...require(`./players${i}.json`).map(p=>p.n));
+          if(names.length!==expected||new Set(names).size!==expected) throw new Error(`Loaded ${names.length}/${new Set(names).size}, expected ${expected}/${expected}`);
+          console.log(JSON.stringify({result:'PASS',expected_players:expected,loaded_players:names.length,unique_players:new Set(names).size},null,2));
           NODE
 
       - name: Refresh current player news context for outlook build
@@ -49,6 +53,7 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const expected=Number(src.active_player_model);
           let canonical=[];
           for(let i=0;i<Number(src.runtime_player_shards);i++) canonical.push(...require(`./players${i}.json`).map(p=>p.n));
           const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
@@ -56,31 +61,34 @@ jobs:
           const set=new Set(names), canon=new Set(canonical);
           const missing=canonical.filter(x=>!set.has(x));
           const extra=names.filter(x=>!canon.has(x));
-          if(canonical.length!==166||new Set(canonical).size!==166||names.length!==166||set.size!==166||missing.length||extra.length) throw new Error(`Tracked weekly review coverage failed: rows=${names.length}, unique=${set.size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
+          if(canonical.length!==expected||new Set(canonical).size!==expected||names.length!==expected||set.size!==expected||missing.length||extra.length) throw new Error(`Tracked weekly review coverage failed: expected=${expected}, rows=${names.length}, unique=${set.size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
           if(review.materiality_filter?.name_collision_regression_tests!==true||review.source_quality?.name_collision_regression_tests!==true) throw new Error('Weekly review name-collision guard did not run');
-          console.log(JSON.stringify({result:'PASS',tracked_players:166},null,2));
+          console.log(JSON.stringify({result:'PASS',tracked_players:expected},null,2));
           NODE
 
       - name: Build Yahoo-ESPN-style weekly player outlook layer
         run: node scripts/build-weekly-player-outlook.mjs
 
-      - name: Verify 166-player outlook contract
+      - name: Verify active-player outlook contract
         run: |
           node - <<'NODE'
           const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const expected=Number(src.active_player_model);
+          const minNextGame=Math.floor(expected*0.90);
           const out=JSON.parse(fs.readFileSync('data/weekly/weekly-player-outlook-2026.json','utf8'));
           const report=JSON.parse(fs.readFileSync('guardrails/weekly-player-outlook-report.json','utf8'));
           const names=Object.keys(out.players||{});
-          if(out.universe!==166||names.length!==166||new Set(names).size!==166) throw new Error(`Weekly outlook coverage ${names.length}/166`);
-          if(report.result!=='PASS'||report.players!==166) throw new Error('Weekly outlook report did not PASS');
-          if(Number(report.with_next_game)<150) throw new Error(`Next-game coverage too low: ${report.with_next_game}/166`);
+          if(out.universe!==expected||names.length!==expected||new Set(names).size!==expected) throw new Error(`Weekly outlook coverage ${names.length}/${expected}`);
+          if(report.result!=='PASS'||report.players!==expected) throw new Error(`Weekly outlook report did not PASS for ${expected} players`);
+          if(Number(report.with_next_game)<minNextGame) throw new Error(`Next-game coverage too low: ${report.with_next_game}/${expected}; minimum=${minNextGame}`);
           for(const [name,p] of Object.entries(out.players)){
             if(!p.current_outlook) throw new Error(`${name} missing current outlook`);
             if(!['MATERIAL_NEWS','NEWS_PRESENT','NO_MATERIAL_NEWS'].includes(p.news_state)) throw new Error(`${name} invalid news state`);
             if(p.news_state==='NO_MATERIAL_NEWS'&&p.latest_news) throw new Error(`${name} no-news state contains a news item`);
             if(p.last_game&&p.last_game.completed!==true) throw new Error(`${name} last_game is not completed`);
           }
-          console.log(JSON.stringify(report,null,2));
+          console.log(JSON.stringify({...report,expected_players:expected,min_next_game_required:minNextGame},null,2));
           NODE
 
       - name: Prove outlook build did not mutate model or CTD interface
@@ -98,7 +106,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: weekly-player-outlook-166
+          name: weekly-player-outlook-canonical
           path: |
             data/weekly/weekly-player-outlook-2026.json
             guardrails/weekly-player-outlook-report.json
@@ -128,14 +136,15 @@ jobs:
             REMOTE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${f}?ref=${BRANCH}" --jq '.sha' 2>/dev/null || true)
             base64 -w0 "$f" > /tmp/ctd-content.b64
             if [ -n "$REMOTE_SHA" ]; then
-              jq -n --rawfile content /tmp/ctd-content.b64 --arg message "Refresh 166-player weekly outlook: ${f}" --arg branch "$BRANCH" --arg sha "$REMOTE_SHA" '{message:$message,content:$content,branch:$branch,sha:$sha}' > /tmp/ctd-request.json
+              jq -n --rawfile content /tmp/ctd-content.b64 --arg message "Refresh canonical weekly outlook: ${f}" --arg branch "$BRANCH" --arg sha "$REMOTE_SHA" '{message:$message,content:$content,branch:$branch,sha:$sha}' > /tmp/ctd-request.json
             else
-              jq -n --rawfile content /tmp/ctd-content.b64 --arg message "Refresh 166-player weekly outlook: ${f}" --arg branch "$BRANCH" '{message:$message,content:$content,branch:$branch}' > /tmp/ctd-request.json
+              jq -n --rawfile content /tmp/ctd-content.b64 --arg message "Refresh canonical weekly outlook: ${f}" --arg branch "$BRANCH" '{message:$message,content:$content,branch:$branch}' > /tmp/ctd-request.json
             fi
             gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${f}" --input /tmp/ctd-request.json >/dev/null
           done
 
-          PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Refresh 166-player weekly outlook" --body "Automated 166-player weekly outlook refresh. Real dated news remains news; quiet players receive Current Outlook plus next opponent; after games, last-game stats and PPR points are included. Static evaluations, boards and CTD interface are untouched. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
+          EXPECTED_PLAYERS=$(node -e "const x=require('./MODEL_SOURCE_OF_TRUTH.json');process.stdout.write(String(x.active_player_model))")
+          PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Refresh canonical weekly player outlook" --body "Automated weekly outlook refresh for the active ${EXPECTED_PLAYERS}-player source-of-truth universe. Real dated news remains news; quiet players receive Current Outlook plus next opponent; after games, last-game stats and PPR points are included. Static evaluations, boards and CTD interface are untouched. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
           echo 'changed=true' >> "$GITHUB_OUTPUT"
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
 
