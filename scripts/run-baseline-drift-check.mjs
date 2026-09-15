@@ -37,17 +37,26 @@ const historicalUniverseChanges=(universeManifest.changes||[]).filter(x=>x&&x.pl
 const historicalModelChanges=(universeManifest.model_changes||[]).filter(x=>x&&x.player&&x.reason&&x.source&&x.expected_values);
 const historicalAdmissionUpdates=(universeManifest.admission_updates||[]).filter(x=>x&&x.player&&x.reason&&x.source&&x.expected_values);
 
-// A consumed population migration is historical evidence and never re-authorizes ADD/REMOVE.
-// Exact model-change declarations are PR-scoped: they are active only when this PR changes
-// the declaration payload relative to current main. Once merged, the same payload is inert.
-const universeChanges=checkpoint?[]:historicalUniverseChanges;
-let mainUniverseManifest={model_changes:[],admission_updates:[]};
+// A consumed population migration is historical evidence and never re-authorizes old ADD/REMOVE entries.
+// New population declarations are PR-scoped: only entries that differ from current main are active.
+// ADMIT is the canonical admissions workflow spelling and is normalized to ADD for population math.
+let mainUniverseManifest={changes:[],model_changes:[],admission_updates:[]};
 try{mainUniverseManifest=gitJson(mainRef,universeManifestFile);}catch{}
-const currentModelPayload=JSON.stringify({model_changes:universeManifest.model_changes||[],admission_updates:universeManifest.admission_updates||[]});
-const mainModelPayload=JSON.stringify({model_changes:mainUniverseManifest.model_changes||[],admission_updates:mainUniverseManifest.admission_updates||[]});
+const mainPopulationPayloads=new Set((mainUniverseManifest.changes||[]).map(x=>JSON.stringify(x)));
+const activeUniverseChanges=historicalUniverseChanges
+  .filter(x=>!mainPopulationPayloads.has(JSON.stringify(x)))
+  .map(x=>({...x,action:x.action==='ADMIT'?'ADD':x.action}))
+  .filter(x=>x.action==='ADD'||x.action==='REMOVE');
+const universeChanges=activeUniverseChanges;
+const hasActivePrUniverseDeclarations=universeChanges.length>0;
+const currentModelPayload=JSON.stringify(universeManifest.model_changes||[]);
+const mainModelPayload=JSON.stringify(mainUniverseManifest.model_changes||[]);
 const hasActivePrModelDeclarations=currentModelPayload!==mainModelPayload;
 const modelChanges=hasActivePrModelDeclarations?historicalModelChanges:[];
-const admissionUpdates=hasActivePrModelDeclarations?historicalAdmissionUpdates:[];
+const currentAdmissionPayload=JSON.stringify(universeManifest.admission_updates||[]);
+const mainAdmissionPayload=JSON.stringify(mainUniverseManifest.admission_updates||[]);
+const hasActivePrAdmissionUpdates=currentAdmissionPayload!==mainAdmissionPayload;
+const admissionUpdates=hasActivePrAdmissionUpdates?historicalAdmissionUpdates:[];
 const declaredAdds=new Set(universeChanges.filter(x=>x.action==='ADD').map(x=>x.player));
 const declaredRemoves=new Set(universeChanges.filter(x=>x.action==='REMOVE').map(x=>x.player));
 const declaredCurrentChanges=[...modelChanges,...admissionUpdates];
@@ -89,15 +98,15 @@ const added=[...currentMap.keys()].filter(n=>!mainMap.has(n));
 const removed=[...mainMap.keys()].filter(n=>!currentMap.has(n));
 const undeclaredAdded=added.filter(n=>!declaredAdds.has(n));
 const undeclaredRemoved=removed.filter(n=>!declaredRemoves.has(n));
-const staleDeclaredAdds=checkpoint?[]:[...declaredAdds].filter(n=>!added.includes(n));
-const staleDeclaredRemoves=checkpoint?[]:[...declaredRemoves].filter(n=>!removed.includes(n));
+const staleDeclaredAdds=[...declaredAdds].filter(n=>!added.includes(n));
+const staleDeclaredRemoves=[...declaredRemoves].filter(n=>!removed.includes(n));
 const populationDeclarationErrors=[];
 for(const d of universeChanges){
   if(d.from_count!=null&&d.from_count!==mainPlayers.length)populationDeclarationErrors.push({player:d.player,error:'FROM_COUNT_MISMATCH',declared:d.from_count,actual:mainPlayers.length});
   if(d.to_count!=null&&d.to_count!==currentPlayers.length)populationDeclarationErrors.push({player:d.player,error:'TO_COUNT_MISMATCH',declared:d.to_count,actual:currentPlayers.length});
 }
 if(cfg.authoritative_player_count!==currentPlayers.length)populationDeclarationErrors.push({error:'CONFIG_CURRENT_COUNT_MISMATCH',declared:cfg.authoritative_player_count,actual:currentPlayers.length});
-if(checkpoint&&currentPlayers.length!==Number(checkpoint.player_count))populationDeclarationErrors.push({error:'CURRENT_COUNT_DIFFERS_FROM_CONSUMED_CHECKPOINT',checkpoint:checkpoint.player_count,current:currentPlayers.length});
+if(checkpoint&&currentPlayers.length!==Number(checkpoint.player_count)&&!hasActivePrUniverseDeclarations)populationDeclarationErrors.push({error:'CURRENT_COUNT_DIFFERS_FROM_CONSUMED_CHECKPOINT_WITHOUT_ACTIVE_PR_DECLARATION',checkpoint:checkpoint.player_count,current:currentPlayers.length});
 
 // Start expected PR state from CURRENT MAIN, not the old frozen universe.
 const expected=new Map(mainPlayers.map(p=>[p.n,{...p}]));
@@ -199,7 +208,7 @@ const report={
   comparison_scope:checkpoint?'CONSUMED_MIGRATION_CHECKPOINT_TO_MAIN_PLUS_CURRENT_PR':'FROZEN_BASELINE_TO_MAIN_PLUS_ACTIVE_UNIVERSE_DECLARATIONS',result:blocked.length?'BLOCKED':'PASS',
   player_count:{anchor:anchorPlayers.length,main:mainPlayers.length,current:currentPlayers.length},anchor_to_main:{changes:anchorToMainChanges.length,undeclared:unauthorizedAnchorToMain.length},
   added_players:added,removed_players:removed,declared_added_players:added.filter(n=>declaredAdds.has(n)),declared_removed_players:removed.filter(n=>declaredRemoves.has(n)),undeclared_added_players:undeclaredAdded,undeclared_removed_players:undeclaredRemoved,
-  universe_change_manifest:universeManifestFile,manifest_lifecycle:checkpoint?'CONSUMED':'ACTIVE',population_declaration_errors:populationDeclarationErrors,
+  universe_change_manifest:universeManifestFile,manifest_lifecycle:hasActivePrUniverseDeclarations?'ACTIVE_PR':'CONSUMED_HISTORY_ONLY',population_declaration_errors:populationDeclarationErrors,
   exact_model_change_players:declaredCurrentChanges.map(x=>x.player),model_declaration_errors:modelDeclarationErrors,deterministic_declared_rank_reflow:deterministicReflow,undeclared_pr_changes:unauthorizedPrChanges,
   structural_drift:structural,declared_structural_changes:structural.length-unauthorizedStructural.length,undeclared_structural_changes:unauthorizedStructural.length,structural_change_manifest:structuralManifestFile,
   market_overlay_changes:marketChanges,blocked
