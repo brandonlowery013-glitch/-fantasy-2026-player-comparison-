@@ -17,10 +17,13 @@
   `;
   document.head.appendChild(style);
 
+  let gamesDefaultSet=false;
   function ensureGamesDefault(){
+    if(gamesDefaultSet)return;
     const nav=document.getElementById('nav');
     const games=nav?.querySelector('[data-page="gamesPage"]');
     if(!games)return;
+    gamesDefaultSet=true;
     nav.prepend(games);
     const visible=[...document.querySelectorAll('[id$="Page"]')].find(x=>getComputedStyle(x).display!=='none');
     if(!visible||visible.id!=='gamesPage'){
@@ -32,7 +35,7 @@
     const lane=document.getElementById('ctdGameTicker');
     if(!lane)return;
     for(const el of lane.querySelectorAll('*')){
-      if(el.children.length)continue;
+      if(el.children.length||el.tagName==='IMG'||el.closest('.ctdTeamMark'))continue;
       const text=el.textContent.trim();
       if(!/^[A-Z]{2,3}$/.test(text))continue;
       const t=norm(text);if(!TEAM_NAMES[t]||el.querySelector('img'))continue;
@@ -43,13 +46,11 @@
   function moveBettingToolsUp(){
     const games=document.getElementById('gamesPage');
     if(!games)return;
-    const tools=[...games.querySelectorAll('h1,h2,h3,p,div,section')].find(x=>x.childElementCount<5&&/BETTING TOOLS/i.test(x.textContent||''));
-    if(!tools)return;
-    let block=tools.closest('section')||tools.parentElement;
-    if(!block||block.dataset.ctdMoved==='1')return;
+    const block=games.querySelector('.bettingTools');
     const ticker=document.getElementById('ctdGameTicker');
-    const anchor=ticker?.parentElement||games.firstElementChild;
-    if(anchor&&block!==anchor){anchor.insertAdjacentElement('afterend',block);block.dataset.ctdMoved='1';}
+    if(!block||!ticker||block.dataset.ctdMoved==='1'||block.contains(ticker))return;
+    ticker.insertAdjacentElement('afterend',block);
+    block.dataset.ctdMoved='1';
   }
 
   function gameHero(){
@@ -85,16 +86,17 @@
   function addLogosToGameDetail(){
     const root=document.getElementById('gamesPage');if(!root)return;
     for(const el of root.querySelectorAll('td,th,b,strong,span')){
-      if(el.children.length)continue;
+      if(el.children.length||el.closest('.ctdTeamMark'))continue;
       const t=norm(el.textContent.trim());
       if(!TEAM_NAMES[t])continue;
       el.innerHTML=teamMark(t,true);
     }
   }
 
-  function enhance(){ensureGamesDefault();enhanceTicker();moveBettingToolsUp();gameHero();removeNarrative();plainEnglishBetting();addLogosToGameDetail()}
+  function enhance(){mo.disconnect();try{ensureGamesDefault();enhanceTicker();moveBettingToolsUp();gameHero();removeNarrative();plainEnglishBetting();addLogosToGameDetail()}finally{mo.observe(document.documentElement,{subtree:true,childList:true})}}
   document.addEventListener('DOMContentLoaded',enhance,{once:true});
   document.addEventListener('ctd:games-ready',enhance);
+  document.addEventListener('ctd:live-scores-updated',enhance);
   document.addEventListener('click',e=>{if(e.target.closest('#ctdGameTicker,.tabs,[data-open-game]'))setTimeout(enhance,40)});
   const mo=new MutationObserver(()=>{clearTimeout(window.__ctdEnhanceTimer);window.__ctdEnhanceTimer=setTimeout(enhance,80)});mo.observe(document.documentElement,{subtree:true,childList:true});
   setTimeout(enhance,0);
