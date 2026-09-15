@@ -1,0 +1,56 @@
+name: Onboard Kaelon Black 167
+
+on:
+  push:
+    branches: [fix/in-season-ros-weekly-ranking-mode]
+    paths:
+      - 'scripts/onboard-kaelon-black-167.mjs'
+      - '.github/workflows/onboard-kaelon-black-167.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  onboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/in-season-ros-weekly-ranking-mode
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apply guarded canonical onboarding
+        run: node scripts/onboard-kaelon-black-167.mjs
+      - name: Validate canonical admission state
+        run: |
+          node scripts/process-admissions.mjs --validate-queue
+          node scripts/validate-admission-state.mjs
+      - name: Run hard guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+      - name: Verify 167-player canonical state
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          let rows=[];for(let i=0;i<Number(src.runtime_player_shards);i++)rows.push(...JSON.parse(fs.readFileSync(`players${i}.json`,'utf8')));
+          if(Number(src.active_player_model)!==167) throw new Error(`source count ${src.active_player_model}`);
+          if(rows.length!==167||new Set(rows.map(x=>x.n)).size!==167) throw new Error(`loaded ${rows.length}/${new Set(rows.map(x=>x.n)).size}`);
+          const p=rows.find(x=>x.n==='Kaelon Black');if(!p)throw new Error('Kaelon Black missing');
+          if(p.o!==167||p.tr!==167)throw new Error(`Kaelon initial lock ${p.o}/${p.tr}, expected 167/167`);
+          console.log(JSON.stringify({result:'PASS',players:167,kaelon:{overall:p.o,true_value:p.tr,position:p.pr,tv_position:p.tp,score:p.s}},null,2));
+          NODE
+      - name: Commit generated onboarding state to PR branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add MODEL_SOURCE_OF_TRUTH.json players*.json canonicalBoards2026.json guardrails/guardrails-config.json guardrails/universe-change-manifest.json guardrails/kaelon-black-onboarding-report.json guardrails/admission-state-report.json admissions scripts/build-weekly-player-outlook.mjs
+          if git diff --cached --quiet; then
+            echo 'No onboarding changes to commit.'
+            exit 0
+          fi
+          git commit -m "Complete Kaelon Black player 167 onboarding"
+          git push origin HEAD:fix/in-season-ros-weekly-ranking-mode
