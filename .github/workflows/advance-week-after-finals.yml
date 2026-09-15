@@ -1,0 +1,120 @@
+name: Advance Week After Finals
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '25 * * * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+concurrency:
+  group: weekly-rollover
+  cancel-in-progress: false
+
+jobs:
+  rollover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Require every current-week game to be final
+        id: gate
+        run: node scripts/check-week-rollover-readiness.mjs
+
+      - name: Stop cleanly while current week is still active
+        if: steps.gate.outputs.ready != 'true'
+        run: echo 'Current week still has an unfinished game; no rollover performed.'
+
+      - name: Ingest next-week schedule
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          NFL_WEEK: ${{ steps.gate.outputs.next_week }}
+        run: node scripts/ingest-weekly-football-data.mjs
+
+      - name: Collect next-week football context
+        if: steps.gate.outputs.ready == 'true'
+        run: node scripts/collect-automatic-football-context.mjs
+
+      - name: Rebuild next-week source and context
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          NFL_WEEK: ${{ steps.gate.outputs.next_week }}
+        run: node scripts/ingest-weekly-football-data.mjs
+
+      - name: Normalize next-week football context
+        if: steps.gate.outputs.ready == 'true'
+        run: node scripts/normalize-weekly-football-context.mjs
+
+      - name: Build weekly projections
+        if: steps.gate.outputs.ready == 'true'
+        run: node scripts/build-weekly-projection-generator.mjs
+
+      - name: Build in-season ROS plus weekly ranking layer
+        if: steps.gate.outputs.ready == 'true'
+        run: node scripts/build-in-season-ranking-layer.mjs
+
+      - name: Run hard guardrail QA
+        if: steps.gate.outputs.ready == 'true'
+        run: node scripts/run-guardrail-qa.mjs
+
+      - name: Persist rollover through protected PR
+        id: persist
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          FILES=(
+            data/calibration/weekly-event-schedule-2026.json
+            data/ingestion/weekly-football-source-snapshots-2026.json
+            data/probability/weekly-football-context-raw-2026.json
+            data/probability/weekly-football-context-inputs-2026.json
+            data/probability/weekly-projection-inputs-2026.json
+            data/weekly/in-season-ranking-layer-2026.json
+            guardrails/weekly-football-context-normalization-report.json
+            guardrails/in-season-ranking-layer-report.json
+            guardrails/week-rollover-readiness-report.json
+          )
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for f in "${FILES[@]}"; do if [ -e "$f" ]; then git add "$f"; fi; done
+          if git diff --cached --quiet; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          branch="production/week-${{ steps.gate.outputs.next_week }}-rollover-${GITHUB_RUN_ID}"
+          git switch -c "$branch"
+          git commit -m "Advance production context to Week ${{ steps.gate.outputs.next_week }}"
+          git push origin "HEAD:$branch"
+          pr_url=$(gh pr create --base main --head "$branch" --title "Production: advance to Week ${{ steps.gate.outputs.next_week }}" --body "Automatically generated after every Week ${{ steps.gate.outputs.current_week }} game was confirmed final. Refreshes next-week schedule, football context, projections, and matchup-sensitive in-season rankings. ADP remains disabled. Required guardrail-qa must pass before merge.")
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "pr_url=$pr_url" >> "$GITHUB_OUTPUT"
+
+      - name: Merge generated rollover only after required checks
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.persist.outputs.pr_url }}
+        shell: bash
+        run: |
+          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
+          gh pr merge "$PR_URL" --merge --delete-branch
+
+      - name: Upload rollover evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-rollover-readiness
+          path: |
+            guardrails/week-rollover-readiness-report.json
+            guardrails/in-season-ranking-layer-report.json
+          if-no-files-found: warn
