@@ -5,7 +5,7 @@
   let timer=null,busy=false,lastApplied='';
 
   function currentWeek(){
-    const w=Number(window.BET_FEED?.week);
+    const w=Number(BET_FEED?.week);
     return Number.isInteger(w)&&w>0?w:1;
   }
   function parseEvent(ev){
@@ -35,7 +35,7 @@
     return d.toLocaleString('en-US',{timeZone:'America/Chicago',weekday:'short',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
   }
   function apply(rows){
-    const feed=window.BET_FEED;
+    const feed=BET_FEED;
     if(!feed?.games?.length)return;
     let changed=false;
     for(const g of feed.games){
