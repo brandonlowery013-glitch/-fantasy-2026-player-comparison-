@@ -53,7 +53,7 @@
   }
 
   function gameHero(){
-    const g=window.BET_FEED?.games?.[window.selectedGameIndex??0]||window.BET_FEED?.games?.[0];
+    const g=BET_FEED?.games?.[selectedGameIndex??0]||BET_FEED?.games?.[0];
     const page=document.getElementById('gamesPage');if(!g||!page)return;
     let hero=document.getElementById('ctdMatchupHero');
     if(!hero){hero=document.createElement('div');hero.id='ctdMatchupHero';hero.className='ctdMatchupHero';const title=document.getElementById('gameTitle');(title?.parentElement||page).insertBefore(hero,title?title.nextSibling:(title?.parentElement||page).firstChild)}
