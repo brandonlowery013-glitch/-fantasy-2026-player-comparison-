@@ -52,7 +52,7 @@
       });
       if(s.completed){
         g.model_summary=`Final: ${g.away_team} ${s.away_score}, ${g.home_team} ${s.home_score}. Pregame market analysis is archived.`;
-        g.model_spread_pick='GAME FINAL';g.total_pick='GAME FINAL';g.moneyline_pick='GAME FINAL';g.model_edge=null;
+        
       }
     }
     const stamp=JSON.stringify(rows.map(x=>[x.id,x.away_score,x.home_score,x.state,x.status]));

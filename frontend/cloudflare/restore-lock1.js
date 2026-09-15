@@ -85,7 +85,7 @@
  const norm=t=>({LA:'LAR',WAS:'WSH'}[t]||t);
  function applyScores(){if(!scores||Number(scores.week)!==Number(BET_FEED.week))return;
   for(const g of BET_FEED.games){const s=scores.games.find(x=>norm(x.away_team)===norm(g.away_team)&&norm(x.home_team)===norm(g.home_team));if(!s)continue;Object.assign(g,{away_score:s.away_score,home_score:s.home_score,status:s.completed?'FINAL':s.state==='in'?'LIVE':new Date(s.date).toLocaleString([], {weekday:'short',hour:'numeric',minute:'2-digit'}),completed:s.completed,latest_scores:{away:[...s.away_periods.slice(0,4),s.away_score],home:[...s.home_periods.slice(0,4),s.home_score]}});
-   if(s.completed){g.model_summary=`Final: ${g.away_team} ${s.away_score}, ${g.home_team} ${s.home_score}. Pregame market analysis is archived.`;g.model_spread_pick='GAME FINAL';g.total_pick='GAME FINAL';g.moneyline_pick='GAME FINAL';g.model_edge=null;}
+   if(s.completed){g.model_summary=`Final: ${g.away_team} ${s.away_score}, ${g.home_team} ${s.home_score}. Pregame market analysis is archived.`;}
   }
   renderTicker();renderSelectedGame();
  }
@@ -99,7 +99,7 @@
   const pct=x=>x==null?'Unavailable':(Number(x)*100).toFixed(1)+'%';
   const pp=x=>x==null?'Unavailable':(Number(x)*100).toFixed(1)+' pp';
   const num=x=>x==null?'Unavailable':Number(x).toFixed(1);
-  function latest(game){return (game.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));}
+  function latest(game){return (game.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(game.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));}
   function selected(game){const rows=latest(game);return rows.find(s=>s.book==='draftkings')||rows[0];}
   function explain(game,s){const p=game.football_projection,lines=Object.entries(s.markets||{}).filter(([,m])=>m.recommendation?.decision==='PICK').map(([kind,m])=>`${kind}: ${m.recommendation.selection}, ${pp(m.recommendation.probability_edge)} probability advantage, ${pct(m.recommendation.expected_value)} expected return per unit risked.`);return `Projected score: ${game.away_team} ${num(p.away_score_mean)}, ${game.home_team} ${num(p.home_score_mean)}. `+(lines.length?lines.join(' '):'No market clears the model thresholds.');}
   function detail(){
@@ -121,8 +121,8 @@
     document.getElementById('gameVenue').textContent=`${ended?'Archived':'Latest stored'} ${s.book} odds · ${new Date(s.captured_at).toLocaleString()} · venue not supplied by this feed`;
     for(const [kind,id] of [['spread','spreadPick'],['total','totalPick'],['moneyline','mlPick']]){
       const r=s.markets[kind]?.recommendation,el=document.getElementById(id),badge=el.parentElement.lastElementChild;
-      el.textContent=ended?'Archived':r?.decision==='PICK'?r.selection:'No qualifying bet';
-      badge.textContent=!ended&&r?.decision==='PICK'?pp(r.probability_edge):'';
+      el.textContent=r?.decision==='PICK'?r.selection:'PASS';
+      badge.textContent=r?.decision==='PICK'?pp(r.probability_edge):'';
       badge.title='Model probability minus the market probability after removing bookmaker margin. pp = percentage points.';
       if(kind==='spread')g.model_spread_pick=el.textContent;if(kind==='total')g.total_pick=el.textContent;if(kind==='moneyline')g.moneyline_pick=el.textContent;
     }
@@ -140,7 +140,7 @@
       const raw=Object.values(feed.games||{}).find(x=>x.away_team===g.away_team&&x.home_team===g.home_team),s=raw&&selected(raw);if(!s)continue;
       const picks=Object.values(s.markets).map(x=>x.recommendation).filter(x=>x?.decision==='PICK').sort((a,b)=>b.probability_edge-a.probability_edge);
       g.spread=raw.home_team+' '+(s.market.home_spread>0?'+':'')+s.market.home_spread;g.total=s.market.total;
-      g.model_edge=Date.parse(raw.kickoff)<=Date.now()?'Archived':picks.length?picks[0].selection+' · '+pp(picks[0].probability_edge):'No qualifying bet';
+      g.model_edge=picks.length?picks[0].selection+' · '+pp(picks[0].probability_edge):'No qualifying bet';
     }
     renderTicker();
   }
@@ -176,5 +176,7 @@ document.addEventListener('click',ev=>{const p=ev.target.closest('[data-profile]
   load('./game-dashboard-enhancements.js')
     .catch(err=>console.error('CTD dashboard enhancements failed',err))
     .then(()=>load('./live-score-poller.js'))
-    .catch(err=>console.error('CTD live score bootstrap failed',err));
+    .catch(err=>console.error('CTD live score bootstrap failed',err))
+    .then(()=>load('./game-detail-panels.js'))
+    .catch(err=>console.error('CTD game detail panels failed',err));
 })();
