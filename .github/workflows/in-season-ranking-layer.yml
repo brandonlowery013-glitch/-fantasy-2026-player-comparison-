@@ -1,0 +1,118 @@
+name: In-Season ROS + Weekly Rankings
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Weekly Player Outlook"]
+    types: [completed]
+  pull_request:
+    paths:
+      - 'data/sources/in-season-ranking-policy-2026.json'
+      - 'scripts/build-in-season-ranking-layer.mjs'
+      - '.github/workflows/in-season-ranking-layer.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  in-season-rankings:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Build dynamic in-season ranking layer
+        run: node scripts/build-in-season-ranking-layer.mjs
+
+      - name: Verify in-season contract
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const out=JSON.parse(fs.readFileSync('data/weekly/in-season-ranking-layer-2026.json','utf8'));
+          const report=JSON.parse(fs.readFileSync('guardrails/in-season-ranking-layer-report.json','utf8'));
+          const expected=Number(src.active_player_model);
+          const rows=Object.values(out.players||{});
+          if(out.universe!==expected||rows.length!==expected) throw new Error(`Universe mismatch ${rows.length}/${expected}`);
+          if(report.result!=='PASS'||report.universe!==expected) throw new Error('In-season ranking report did not PASS');
+          if(out.market_policy?.adp!=='DISABLED') throw new Error('ADP must be disabled after season start');
+          if(out.market_policy?.draft_price_labels!=='DISABLED') throw new Error('Draft BUY/FAIR/REACH/FADE must be disabled after season start');
+          if(out.ranking_policy?.weekly_schedule_weight!=='MODESTLY_ELEVATED') throw new Error('Weekly schedule weighting policy missing');
+          for(const r of rows){
+            if(!Number.isInteger(r.ros_overall_rank)||!r.ros_position_rank) throw new Error(`${r.player} missing ROS rank`);
+            if(!Number.isInteger(r.weekly_overall_rank)||!r.weekly_position_rank) throw new Error(`${r.player} missing weekly rank`);
+          }
+          console.log(JSON.stringify(report,null,2));
+          NODE
+
+      - name: Prove season-long canonical model was not rewritten
+        run: |
+          if ! git diff --quiet -- players*.json canonicalBoards2026.json MODEL_SOURCE_OF_TRUTH.json; then
+            echo 'FAIL: weekly ranking layer mutated season-long canonical state.'
+            git diff -- players*.json canonicalBoards2026.json MODEL_SOURCE_OF_TRUTH.json
+            exit 1
+          fi
+
+      - name: Run hard guardrail QA
+        run: node scripts/run-guardrail-qa.mjs
+
+      - name: Upload ranking evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: in-season-ros-weekly-rankings
+          path: |
+            data/weekly/in-season-ranking-layer-2026.json
+            guardrails/in-season-ranking-layer-report.json
+          if-no-files-found: error
+
+      - name: Persist generated weekly rankings through protected PR
+        id: persist
+        if: github.event_name == 'workflow_run' || github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          FILES=(data/weekly/in-season-ranking-layer-2026.json guardrails/in-season-ranking-layer-report.json)
+          if git diff --quiet HEAD -- "${FILES[@]}"; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          BRANCH="production/in-season-rankings-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          BASE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq '.object.sha')
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" -f ref="refs/heads/${BRANCH}" -f sha="$BASE_SHA" >/dev/null
+          for f in "${FILES[@]}"; do
+            if git diff --quiet HEAD -- "$f"; then continue; fi
+            REMOTE_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/contents/${f}?ref=${BRANCH}" --jq '.sha' 2>/dev/null || true)
+            base64 -w0 "$f" > /tmp/content.b64
+            if [ -n "$REMOTE_SHA" ]; then
+              jq -n --rawfile content /tmp/content.b64 --arg message "Refresh in-season rankings: ${f}" --arg branch "$BRANCH" --arg sha "$REMOTE_SHA" '{message:$message,content:$content,branch:$branch,sha:$sha}' >/tmp/request.json
+            else
+              jq -n --rawfile content /tmp/content.b64 --arg message "Refresh in-season rankings: ${f}" --arg branch "$BRANCH" '{message:$message,content:$content,branch:$branch}' >/tmp/request.json
+            fi
+            gh api --method PUT "repos/${GITHUB_REPOSITORY}/contents/${f}" --input /tmp/request.json >/dev/null
+          done
+          PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Production: refresh in-season ROS + weekly rankings" --body "Automated in-season ranking refresh. ADP/draft-price logic is disabled; outputs are ROS overall, ROS positional, and game-dependent weekly rankings. Weekly opponent/SOS context is modestly upweighted while season-long True Value remains independent. Required guardrail-qa must pass before merge.")
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Auto-merge generated weekly rankings after required checks
+        if: steps.persist.outputs.changed == 'true' && github.event_name == 'workflow_run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.persist.outputs.pr_url }}
+        shell: bash
+        run: |
+          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
+          gh pr merge "$PR_URL" --merge --delete-branch

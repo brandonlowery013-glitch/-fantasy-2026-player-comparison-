@@ -28,7 +28,8 @@ const aliases={
 };
 const expectedNoHistory=new Set([
   'Carnell Tate','Jeremiyah Love','Makai Lemon','Jadarian Price','KC Concepcion',
-  'Jonah Coleman','Mike Washington Jr.','Kaytron Allen','Chris Bell','Jordyn Tyson'
+  'Jonah Coleman','Mike Washington Jr.','Kaytron Allen','Chris Bell','Jordyn Tyson',
+  'Kaelon Black'
 ]);
 const canonical=new Map();
 for(const p of players){

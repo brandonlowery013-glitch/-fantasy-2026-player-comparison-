@@ -2,10 +2,11 @@ import fs from 'node:fs';
 
 const path='data/contracts/weekly-order-of-operations-2026.json';
 const x=JSON.parse(fs.readFileSync(path,'utf8'));
+const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
 const fail=m=>{throw new Error(m)};
 
 if(x.season!==2026) fail('season must be 2026');
-if(x.canonical_player_count!==166) fail('canonical player universe must be exactly 166');
+if(x.canonical_player_count!==Number(src.active_player_model)) fail(`canonical player universe must match source of truth (${src.active_player_model})`);
 if(x.timezone!=='America/Chicago') fail('display/contract timezone must be America/Chicago');
 if(x.principles?.raw_feeds_independent!==true) fail('raw feeds must remain independent');
 if(x.principles?.raw_feeds_never_require_model_pick!==true) fail('raw feeds may not require a model PICK');
