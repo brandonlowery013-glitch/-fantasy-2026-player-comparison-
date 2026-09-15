@@ -1,24 +1,81 @@
 {
   "version": "1.3.0",
   "season": 2026,
-  "authoritative_player_count": 166,
+  "authoritative_player_count": 167,
   "authoritative_player_shards": 14,
   "core_model": {
     "frozen": true,
     "market_layers_may_rewrite_core_rank": false,
     "market_layers_may_rewrite_core_projection": false,
-    "allowed_market_output": ["context","probability_edge","expected_value","review_flag","draft_value_overlay"]
+    "allowed_market_output": [
+      "context",
+      "probability_edge",
+      "expected_value",
+      "review_flag",
+      "draft_value_overlay"
+    ]
   },
-  "required_player_numeric_fields": ["o","tr","s","pd","ce","r","e","a","rl","su","mp"],
+  "required_player_numeric_fields": [
+    "o",
+    "tr",
+    "s",
+    "pd",
+    "ce",
+    "r",
+    "e",
+    "a",
+    "rl",
+    "su",
+    "mp"
+  ],
   "numeric_bounds": {
-    "s": [0,10], "pd": [0,10], "ce": [0,10], "r": [0,10], "e": [0,10], "a": [0,10], "rl": [0,10], "su": [0,10]
+    "s": [
+      0,
+      10
+    ],
+    "pd": [
+      0,
+      10
+    ],
+    "ce": [
+      0,
+      10
+    ],
+    "r": [
+      0,
+      10
+    ],
+    "e": [
+      0,
+      10
+    ],
+    "a": [
+      0,
+      10
+    ],
+    "rl": [
+      0,
+      10
+    ],
+    "su": [
+      0,
+      10
+    ]
   },
   "full_universe_review": {
     "required": true,
     "ledger_file": "guardrails/current-football-review.json",
     "scope": "FULL_ACTIVE_UNIVERSE_PLUS_CONNECTED",
-    "tracked_statuses": ["NO_MATERIAL_CHANGE","MATERIAL_CHANGE","REVIEWED_NO_CHANGE"],
-    "untracked_decisions": ["ADMIT","HOLD_OUT","WAIT"],
+    "tracked_statuses": [
+      "NO_MATERIAL_CHANGE",
+      "MATERIAL_CHANGE",
+      "REVIEWED_NO_CHANGE"
+    ],
+    "untracked_decisions": [
+      "ADMIT",
+      "HOLD_OUT",
+      "WAIT"
+    ],
     "require_categories_checked": true,
     "require_material_change_reason_and_source_summary": true,
     "require_admit_onboarding_complete": true,
@@ -41,14 +98,25 @@
     "two_sided_odds_required_for_market_lean": true,
     "missing_one_side_action": "THRESHOLD_CONTEXT_ONLY",
     "minimum_independent_signals_for_strong_bet": 2,
-    "prohibited_fields_in_market_layer": ["o","tr","tp","pr","core_rank_override","projection_override"],
+    "prohibited_fields_in_market_layer": [
+      "o",
+      "tr",
+      "tp",
+      "pr",
+      "core_rank_override",
+      "projection_override"
+    ],
     "vig_tolerance_after_devig": 0.000001,
     "minimum_valid_american_odds_abs": 100,
     "require_book": true,
     "require_source_date": true,
     "duplicate_same_book_market_action": "BLOCK",
     "ev_formula_tolerance": 0.0001,
-    "strong_labels": ["STRONG BET","STRONG EDGE","MAX BET"]
+    "strong_labels": [
+      "STRONG BET",
+      "STRONG EDGE",
+      "MAX BET"
+    ]
   },
   "drift": {
     "player_count_change": "REQUIRE_MANIFEST",
@@ -72,8 +140,22 @@
   "calibration": {
     "required_before_actionable_weekly_betting": true,
     "minimum_holdout_bets_before_trust": 100,
-    "track": ["brier_score","log_loss","roi","closing_line_value","hit_rate_by_probability_bucket","hit_rate_by_market_type"],
-    "probability_buckets": [0.50,0.55,0.60,0.65,0.70,0.75],
+    "track": [
+      "brier_score",
+      "log_loss",
+      "roi",
+      "closing_line_value",
+      "hit_rate_by_probability_bucket",
+      "hit_rate_by_market_type"
+    ],
+    "probability_buckets": [
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75
+    ],
     "prohibit_same_sample_tuning_and_evaluation": true,
     "require_timestamped_predictions_before_outcomes": true
   },
@@ -82,5 +164,10 @@
     "parlays_not_treated_as_independent": true,
     "same_player_multi_prop_requires_correlation_review": true
   },
-  "status_labels": ["PASS","REVIEW_REQUIRED","INSUFFICIENT_DATA","BLOCKED"]
+  "status_labels": [
+    "PASS",
+    "REVIEW_REQUIRED",
+    "INSUFFICIENT_DATA",
+    "BLOCKED"
+  ]
 }
