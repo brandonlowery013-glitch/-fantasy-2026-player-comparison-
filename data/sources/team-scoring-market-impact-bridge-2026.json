@@ -20,10 +20,29 @@
     "market_may_not_write_model_total": true,
     "connected_event_may_trigger_recalculation_but_not_dictate_numeric_delta": true,
     "missing_market_is_insufficient_data_not_zero": true,
-    "missing_football_projection_blocks_numeric_comparison": true
+    "missing_football_projection_blocks_numeric_comparison": true,
+    "regeneration_timestamp_alone_proves_recalculation": false
   },
-  "required_football_fields": ["home_score_mean","away_score_mean","model_home_spread","model_total"],
-  "comparison_fields": ["model_home_spread","market_home_spread","spread_gap","model_total","market_total","total_gap","model_home_team_total","market_home_team_total","home_team_total_gap","model_away_team_total","market_away_team_total","away_team_total_gap"],
+  "required_football_fields": [
+    "home_score_mean",
+    "away_score_mean",
+    "model_home_spread",
+    "model_total"
+  ],
+  "comparison_fields": [
+    "model_home_spread",
+    "market_home_spread",
+    "spread_gap",
+    "model_total",
+    "market_total",
+    "total_gap",
+    "model_home_team_total",
+    "market_home_team_total",
+    "home_team_total_gap",
+    "model_away_team_total",
+    "market_away_team_total",
+    "away_team_total_gap"
+  ],
   "market_team_total_derivation": {
     "allowed_when_spread_and_total_are_present": true,
     "home_team_total_formula": "(market_total - market_home_spread) / 2",
@@ -43,5 +62,10 @@
     "bridge_does_not_change_season_rank": true,
     "bridge_does_not_change_true_value": true,
     "bridge_outputs_context_for_existing_decision_layers": true
+  },
+  "event_application_provenance": {
+    "field": "games[game_id].applied_source_event_ids",
+    "requirement": "Record a source_event_id only when the football forecast actually incorporates that event through reviewed football inputs. A new generated_at timestamp alone is insufficient.",
+    "missing_provenance_state": "PENDING_FOOTBALL_RECALCULATION"
   }
 }

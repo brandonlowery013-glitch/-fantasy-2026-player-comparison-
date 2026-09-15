@@ -4,7 +4,7 @@ import path from 'node:path';
 const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true});fs.writeFileSync(path.join(root,p),JSON.stringify(x,null,2)+'\n');};
-const num=x=>Number.isFinite(Number(x))?Number(x):null;
+const num=x=>x==null||typeof x==='boolean'||(typeof x==='string'&&!x.trim())?null:(Number.isFinite(Number(x))?Number(x):null);
 const round=(x,n=3)=>x==null?null:Number(Number(x).toFixed(n));
 
 const contract=read('data/sources/team-scoring-market-impact-bridge-2026.json');
@@ -28,6 +28,7 @@ function footballFor(gameId){
   if(!required)return null;
   return {
     generated_at:football.generated_at||null,
+    applied_source_event_ids:Array.isArray(g.applied_source_event_ids)?g.applied_source_event_ids:[],
     home_team:g.home_team,
     away_team:g.away_team,
     home_score_mean:num(m.home_score_mean),
@@ -90,7 +91,9 @@ function buildComparison(f,m){
 function projectionIsPostEvent(f,c){
   const a=Date.parse(f?.generated_at||'');
   const b=Date.parse(c?.captured_at||'');
-  return Number.isFinite(a)&&Number.isFinite(b)&&a>=b;
+  return Number.isFinite(a)&&Number.isFinite(b)&&a>=b
+    && typeof c.source_event_id==='string' && c.source_event_id.length>0
+    && f.applied_source_event_ids.includes(c.source_event_id);
 }
 
 function buildCase(c){
@@ -102,9 +105,9 @@ function buildCase(c){
   const f=footballFor(gameId);
   if(!f)return {case_id:c.case_id,source_event_id:c.source_event_id,team:c.team,game_id:gameId,state:'PENDING_FOOTBALL_RECALCULATION',reason:'No valid football game projection exists for the affected current-week game.',football:null,market:null,comparison:null};
   const postEvent=projectionIsPostEvent(f,c);
-  if(!postEvent)return {case_id:c.case_id,source_event_id:c.source_event_id,team:c.team,game_id:gameId,state:'PENDING_FOOTBALL_RECALCULATION',reason:'Existing football game projection predates the connected event; comparison is withheld until football inputs/projection are regenerated.',football:f,market:null,comparison:null};
+  if(!postEvent)return {case_id:c.case_id,source_event_id:c.source_event_id,team:c.team,game_id:gameId,state:'PENDING_FOOTBALL_RECALCULATION',reason:'Forecast must postdate the event and explicitly record its source_event_id as applied. Regeneration time alone does not prove changed football inputs were used.',football:f,market:null,comparison:null};
   const m=extractMarket(gameId);
-  if(!m)return {case_id:c.case_id,source_event_id:c.source_event_id,team:c.team,game_id:gameId,state:'INSUFFICIENT_MARKET_DATA',reason:'Football projection is current but spread/total market data is unavailable; missing market is not treated as zero.',football:f,market:null,comparison:null};
+  if(!m||m.market_home_spread==null||m.market_total==null)return {case_id:c.case_id,source_event_id:c.source_event_id,team:c.team,game_id:gameId,state:'INSUFFICIENT_MARKET_DATA',reason:'Football projection is current but spread/total market data is unavailable; missing market is not treated as zero.',football:f,market:null,comparison:null};
   return {case_id:c.case_id,source_event_id:c.source_event_id,team:c.team,game_id:gameId,state:'READY_FOR_MARKET_COMPARISON',football:f,market:m,comparison:buildComparison(f,m),market_is_downstream_only:true};
 }
 
