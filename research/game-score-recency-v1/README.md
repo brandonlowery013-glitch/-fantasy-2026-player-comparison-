@@ -25,3 +25,12 @@ This emits all 544 evaluation predictions and summaries. The bundled summary omi
 `week-2-prospective-score-comparison.json` was captured on September 15, 2026 before all 16 Week 2 kickoffs, using the ESPN-backed schedule snapshot. It includes both methods, source/code hashes and capture time. Existing capture files cannot be overwritten; started games are rejected. This is an independent research capture and does not advance the canonical Week 1 schedule or merge the Week 2 rollover PR.
 
 After final results arrive, match by event ID and teams, compare paired score/total/margin errors, and preserve this original file. Week 2 alone is not enough to approve a production model. Further prospective samples and probability/market validation are still required. No scheduled watcher is installed by this experiment.
+
+## Grade a new result snapshot
+
+```sh
+python3 test-game-score-grading.py
+python3 grade-game-score-comparison.py week-2-prospective-score-comparison.json fresh-scoreboard.json grading-new-revision.json
+```
+
+Use a newly retrieved `/api/live/scoreboard?week=2` JSON response as `fresh-scoreboard.json`. Each report must use a new filename. Final state, event identity, both teams, kickoff, numeric scores, and capture timing are checked before settlement. Schedule changes require explicit reconciliation. Unfinished or absent games remain pending. No promotion occurs automatically. The initial grading file uses the captured pregame schedule to demonstrate the pending state; it is not a later result check.
