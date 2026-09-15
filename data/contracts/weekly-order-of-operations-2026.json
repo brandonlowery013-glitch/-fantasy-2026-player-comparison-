@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "season": 2026,
+  "canonical_player_count": 167,
+  "timezone": "America/Chicago",
+  "principles": {
+    "raw_feeds_independent": true,
+    "raw_feeds_never_require_model_pick": true,
+    "model_reads_normalized_context": true,
+    "decision_outputs_separate_from_raw_data": true,
+    "monitoring_is_watchdog_not_update_gate": true,
+    "learning_updates_require_repeated_supported_signal": true
+  },
+  "order": [
+    {"step":1,"id":"game_identity","type":"raw","requires":[],"outputs":["event_id","team_ids","team_names","team_logos","kickoff_central"]},
+    {"step":2,"id":"live_game_feed","type":"raw","requires":["game_identity"],"outputs":["score","clock","game_state","player_stats","scoring_plays"]},
+    {"step":3,"id":"market_feed","type":"raw","requires":["game_identity"],"outputs":["spread","total","moneyline","player_props","sportsbook","captured_at_central"]},
+    {"step":4,"id":"news_injury_availability","type":"raw_context","requires":["game_identity"],"outputs":["injury_status","inactive_status","depth_chart_changes","coach_usage_news"]},
+    {"step":5,"id":"role_opportunity_redistribution","type":"intelligence","requires":["news_injury_availability"],"outputs":["snap_share","route_share","carry_share","target_share","red_zone_share","vacated_usage_distribution"]},
+    {"step":6,"id":"player_projection","type":"intelligence","requires":["role_opportunity_redistribution","market_feed","live_game_feed"],"outputs":["ppr_projection","floor","median","ceiling","td_probability"]},
+    {"step":7,"id":"fantasy_decisions","type":"decision","requires":["player_projection"],"outputs":["start_sit_label","decision_zone","weekly_outlook"]},
+    {"step":8,"id":"sleeper_breakout","type":"decision","requires":["role_opportunity_redistribution","player_projection"],"rules":{"opportunity_gate_required":true,"true_value_vs_ecr_alone_forbidden":true},"outputs":["sleeper_label","breakout_label","eligibility_reason"]},
+    {"step":9,"id":"betting_decisions","type":"decision","requires":["market_feed","player_projection"],"outputs":["pick_pass","confidence","edge","expected_value","reasoning"]},
+    {"step":10,"id":"game_detail_interface","type":"presentation","requires":["game_identity","live_game_feed","market_feed","news_injury_availability","player_projection","fantasy_decisions","sleeper_breakout","betting_decisions"],"rules":{"raw_and_model_outputs_visually_integrated_but_internally_separate":true,"team_logos_next_to_names":true,"game_props_inside_game_detail":true},"outputs":["game_detail_view"]},
+    {"step":11,"id":"postgame_settlement","type":"settlement","requires":["live_game_feed","market_feed","player_projection","betting_decisions"],"outputs":["fantasy_actuals","game_result","prop_results","closing_lines","prediction_error"]},
+    {"step":12,"id":"learning_calibration","type":"learning","requires":["postgame_settlement"],"outputs":["projection_error_class","role_error_class","news_miss_class","market_timing_class","closing_line_value","matchup_error_class","variance_class"]},
+    {"step":13,"id":"monitoring_self_healing","type":"resilience","requires":[],"rules":{"may_detect_any_layer":true,"may_self_heal_known_deterministic_failures":true,"must_alert_unknown_failures":true,"must_not_block_healthy_raw_feed_updates":true}}
+  ]
+}

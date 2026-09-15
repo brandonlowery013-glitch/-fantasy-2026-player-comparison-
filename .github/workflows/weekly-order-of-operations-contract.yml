@@ -1,0 +1,29 @@
+name: Weekly Order of Operations Contract
+
+on:
+  pull_request:
+    paths:
+      - 'data/contracts/weekly-order-of-operations-2026.json'
+      - 'scripts/validate-weekly-order-of-operations.mjs'
+      - '.github/workflows/weekly-order-of-operations-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/contracts/weekly-order-of-operations-2026.json'
+      - 'scripts/validate-weekly-order-of-operations.mjs'
+      - '.github/workflows/weekly-order-of-operations-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  architecture-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate canonical weekly order of operations
+        run: node scripts/validate-weekly-order-of-operations.mjs
