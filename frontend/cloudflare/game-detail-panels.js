@@ -64,11 +64,30 @@
     return `<h3>GAME FLOW</h3>${chart}<details><summary>Scoring timeline · ${plays.length} plays</summary>${plays.length?`<ol class="ctdDetailList">${plays.map(p=>`<li><b>Q${esc(p.period)} ${esc(p.clock)} · ${esc(p.away_score)}–${esc(p.home_score)}</b><br>${esc(p.text)}</li>`).join('')}</ol>`:empty('No scoring plays reported.')}</details><p class="ctdDetailNote">In-game probabilities are ESPN estimates, separate from CTD’s stored pregame model.</p>`;
   }
   function flowLabel(g,p){return p?`${g.home_team} win probability ${pct(p.home_win_probability)} · ${p.period?`Q${p.period} ${p.clock||''}`:'Before first recorded play'}${p.away_score!=null&&p.home_score!=null?` · ${g.away_team} ${p.away_score}–${p.home_score} ${g.home_team}`:''}${p.text?` · ${p.text}`:''}`:'No play selected'}
+  function settledPick(g,s,kind){
+    const rec=s.markets?.[kind]?.recommendation;
+    if(rec?.decision==='PASS')return 'PASS · no pick';
+    if(rec?.decision!=='PICK')return 'Not published';
+    if(g.completed!==true||typeof g.away_score!=='number'||typeof g.home_score!=='number'||!Number.isFinite(g.away_score)||!Number.isFinite(g.home_score))return 'Awaiting final';
+    const selection=String(rec.selection||''),market=s.market||{};
+    let delta;
+    if(kind==='total'){
+      if(typeof market.total!=='number'||!Number.isFinite(market.total)||!(/^(OVER|UNDER) /.test(selection)))return 'Unverified selection';
+      delta=(g.away_score+g.home_score-market.total)*(selection.startsWith('OVER ')?1:-1);
+    }else{
+      const team=norm(selection.split(' ')[0]);
+      if(team!==norm(g.home_team)&&team!==norm(g.away_team))return 'Unverified selection';
+      const home=team===norm(g.home_team);
+      if(kind==='spread'&&(typeof market.home_spread!=='number'||!Number.isFinite(market.home_spread)))return 'Missing line';
+      delta=(g.home_score-g.away_score+(kind==='spread'?market.home_spread:0))*(home?1:-1);
+    }
+    return delta>0?'WIN':delta<0?'LOSS':'PUSH';
+  }
   function historyHtml(g){
     const h=Number(history?.week)===Number(BET_FEED.week)?Object.values(history.games||{}).find(x=>same(x,g)):null;
     const bits=h?.tidbits||[];const raw=marketGame(g),s=snapshot(raw);
     const rows=pregame(raw).filter(x=>x.book===s?.book);
-    return `<h3>BETTING HISTORY &amp; MODEL RECORD</h3><p class="ctdDetailNote">Published historical context · ${esc(date(history?.generated_at))}</p>${bits.length?`<ul class="ctdDetailList">${bits.map(t=>`<li>${esc(t.text)} <small>(${esc(t.sample_size)} games)</small></li>`).join('')}</ul>`:empty('No published matchup history is available for this pairing.')}<p class="ctdDetailNote">Source: ${esc([...new Set(bits.map(t=>t.source))].join('; ')||'No historical source published')}. Trends are historical samples, not the current game result.</p><details open><summary>Stored pregame picks and lines · ${esc(s?.book||'No sportsbook snapshot')}</summary>${rows.length?`<div class="ctdDetailTableWrap"><table class="ctdDetailTable"><thead><tr><th>Recorded</th><th>Spread pick</th><th>Total pick</th><th>Moneyline pick</th><th>Home line</th><th>Total line</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(date(x.captured_at))}</td>${['spread','total','moneyline'].map(k=>`<td>${esc(x.markets?.[k]?.recommendation?.selection||x.markets?.[k]?.recommendation?.decision||'Not published')}</td>`).join('')}<td>${esc(g.home_team)} ${esc(x.market?.home_spread)}</td><td>${esc(x.market?.total)}</td></tr>`).join('')}</tbody></table></div>`:empty('No eligible pregame model snapshots have been published.')}</details><p class="ctdDetailNote">Closing-line value requires a verified closing line and a recorded entry price; it is not inferred from these snapshots.</p>`;
+    return `<h3>BETTING HISTORY &amp; MODEL RECORD</h3><p class="ctdDetailNote">Published historical context · ${esc(date(history?.generated_at))}</p>${bits.length?`<ul class="ctdDetailList">${bits.map(t=>`<li>${esc(t.text)} <small>(${esc(t.sample_size)} games)</small></li>`).join('')}</ul>`:empty('No published matchup history is available for this pairing.')}<p class="ctdDetailNote">Source: ${esc([...new Set(bits.map(t=>t.source))].join('; ')||'No historical source published')}. Trends are historical samples, not the current game result.</p><details open><summary>Stored pregame picks and lines · ${esc(s?.book||'No sportsbook snapshot')}</summary>${rows.length?`<div class="ctdDetailTableWrap"><table class="ctdDetailTable"><thead><tr><th>Recorded</th><th>Spread pick</th><th>Total pick</th><th>Moneyline pick</th><th>Home line</th><th>Total line</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(date(x.captured_at))}</td>${['spread','total','moneyline'].map(k=>`<td>${esc(x.markets?.[k]?.recommendation?.selection||x.markets?.[k]?.recommendation?.decision||'Not published')}<br><small>${esc(settledPick(g,x,k))}</small></td>`).join('')}<td>${esc(g.home_team)} ${esc(x.market?.home_spread)}</td><td>${esc(x.market?.total)}</td></tr>`).join('')}</tbody></table></div>`:empty('No eligible pregame model snapshots have been published.')}</details><p class="ctdDetailNote">Results compare each displayed selection and its recorded line with the final score, including overtime. PASS is not a wager. These are snapshot outcomes, not a verified record of bets placed or an immutable pregame model archive. Closing-line value requires a verified closing line and entry price.</p>`;
   }
   function offenseDefense(g,d,defense){return `<h3>${defense?'DEFENSE':'OFFENSE'} · BOTH TEAMS</h3><div class="ctdDetailColumns">${[g.away_team,g.home_team].map(t=>`<section><h4>${esc(t)}</h4>${playerList(defense?playerRows(d,t,['defensive']).sort((a,b)=>(Number(b.stats?.TOT)||0)-(Number(a.stats?.TOT)||0)):playerRows(d,t,['passing','rushing','receiving']))}</section>`).join('')}</div>`}
   function tabs(g,d){
