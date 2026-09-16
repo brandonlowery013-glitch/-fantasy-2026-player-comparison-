@@ -1,3 +1,4 @@
+import {resolveAvailability} from '../lib/injury-evidence.mjs';
 import {completeWeekSchedule} from '../lib/complete-week-schedule.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -100,18 +101,17 @@ function buildContext(players,week,nowIso){
     if(t>parseTime(nowIso)+5*60000){blocked.push(`${p.name} ${type} captured_at is in future`);continue;}
     const k=`${p.name}|${type}`,old=latest.get(k);if(!old||t>old.t)latest.set(k,{t,s,p});
   }
-  const grouped=new Map(players.map(p=>[p.name,{position:p.position,signals:{},availability:[]} ]));
+  const grouped=new Map(players.map(p=>[p.name,{position:p.position,signals:{}} ]));
   for(const {s,p} of latest.values()){
     const g=grouped.get(p.name);
     g.signals[s.signal_type]={source:s.source,captured_at:s.captured_at,cohort:s.cohort??undefined,stat_adjustments:s.stat_adjustments||{},evidence:s.evidence??undefined};
-    if(typeof s.expected_active==='boolean')g.availability.push({captured_at:s.captured_at,expected_active:s.expected_active});
   }
   const out={};
   for(const p of players){
     const g=grouped.get(p.name);
-    g.availability.sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));
-    const known=g.availability.length>0;
-    out[p.name]={position:g.position,expected_active:known?g.availability[0].expected_active:null,availability_status:known?'KNOWN':'UNKNOWN',signals:g.signals};
+    const availability=resolveAvailability(g.signals,nowIso);
+    const known=typeof availability.expected_active==='boolean';
+    out[p.name]={position:g.position,expected_active:availability.expected_active,availability_status:known?'KNOWN':'UNKNOWN',availability_basis:availability.basis,signals:g.signals};
   }
   if(Object.keys(out).length!==activeCount)blocked.push(`canonical context population mismatch: expected ${activeCount}, found ${Object.keys(out).length}`);
   return {raw:{schema_version:'1.2.0',season:2026,week,status:Object.keys(out).length===activeCount?'LIVE_CONTEXT_INGESTED':'INCOMPLETE_CANONICAL_CONTEXT',captured_at:nowIso,sportsbook_inputs_used:false,players:out},blocked};
