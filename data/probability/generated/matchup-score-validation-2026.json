@@ -1,0 +1,228 @@
+{
+  "schema_version": 1,
+  "status": "RESEARCH_ONLY",
+  "automatic_promotion": false,
+  "sportsbook_inputs_used": false,
+  "feature_cutoff": "Strictly earlier regular-season weeks; no current-game starters, player box scores, or future rosters",
+  "baseline": "Deployed three-season scoring averages, eight-game league shrinkage, empirical home advantage",
+  "personnel_scope": "Previously observed passing, rushing and target allocation to prior-season team contributors; not current injury impact",
+  "held_out_seasons": [
+    2024,
+    2025
+  ],
+  "sources": [
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
+      "sha256": "c96c0122c5ab9fa4a995cba9d923213652b71ed9db14dc3b20c3ded8ad03a197"
+    },
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2020.csv",
+      "sha256": "a8f2cc2055404fc293105af25f14ff28593c32961912e752e2e50f4a6ba461ad"
+    },
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2020.csv",
+      "sha256": "05b992676faccc8940efbf6242cb76358069372d31d7c2e02c1a4acdcd3cbe18"
+    },
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2021.csv",
+      "sha256": "a094523217f7f351a79f5e667dbe67267e0861a3b76a7a3b62a1cfe49f289673"
+    },
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2021.csv",
+      "sha256": "41915fb49238902ad1f129ebf0405b11a1e710454ae0fe8f7b3e4f9145875f48"
+    },
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2022.csv",
+      "sha256": "9803875bd0b74aa49230288d45359c75e45910f1cf1953ea0f07b9d3db35e4d1"
+    },
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2022.csv",
+      "sha256": "ad426c3fe5bf1cc30c3f137fdfe96d054e19d400879ee4413129da49fa7b54be"
+    },
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2023.csv",
+      "sha256": "dc5a387daabe8663deaddac492ad7020d47fb1a66048690b355b406cd8e4c454"
+    },
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2023.csv",
+      "sha256": "f19cb71a5de0dce7fd09376026237c9ee9d5a93fe13815a2ea3ec2d37204cb17"
+    },
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2024.csv",
+      "sha256": "b207a1430c2715d03bbf1844c4eae98695f364851ff6025f422febc2c13f5255"
+    },
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2024.csv",
+      "sha256": "3ddc45a84f759aa348ce465ae001752c530575455717657cdfe1f8abfcdb4759"
+    },
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_team/stats_team_week_2025.csv",
+      "sha256": "91058a59d894855377b2f39f40c4e7bdbeef96d12144289dc68215209a1c93cb"
+    },
+    {
+      "url": "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_2025.csv",
+      "sha256": "e5e0615b3d96a3eaebfaee91e55afb4a4e7fe0caf057454177bcd7d6ad4bcfc2"
+    }
+  ],
+  "results": {
+    "scoring": {
+      "folds": [
+        {
+          "season": 2024,
+          "half_life_games": 8,
+          "ridge_lambda": 0.01,
+          "metrics": {
+            "games": 272,
+            "margin_mae": 10.420046694072493,
+            "margin_rmse": 13.455822939050213,
+            "total_mae": 10.039695449228091,
+            "total_rmse": 13.078619176072825,
+            "team_score_mae": 7.409039568402999
+          }
+        },
+        {
+          "season": 2025,
+          "half_life_games": 4,
+          "ridge_lambda": 1,
+          "metrics": {
+            "games": 272,
+            "margin_mae": 10.277773714459968,
+            "margin_rmse": 12.939773697507352,
+            "total_mae": 10.727966103052221,
+            "total_rmse": 13.508398292623804,
+            "team_score_mae": 7.483058587566356
+          }
+        }
+      ],
+      "pooled": {
+        "games": 544,
+        "margin_mae": 10.348910204266232,
+        "margin_rmse": 13.200320342888903,
+        "total_mae": 10.383830776140146,
+        "total_rmse": 13.295245465671202,
+        "team_score_mae": 7.446049077984665
+      }
+    },
+    "deployed": {
+      "folds": [
+        {
+          "season": 2024,
+          "metrics": {
+            "games": 272,
+            "margin_mae": 10.869141199339358,
+            "margin_rmse": 14.205793062867764,
+            "total_mae": 10.006403165292582,
+            "total_rmse": 13.08935356004633,
+            "team_score_mae": 7.707626522471399
+          }
+        },
+        {
+          "season": 2025,
+          "metrics": {
+            "games": 272,
+            "margin_mae": 10.867419669540155,
+            "margin_rmse": 13.85348624246596,
+            "total_mae": 10.931460091378076,
+            "total_rmse": 13.692549179569557,
+            "team_score_mae": 7.773809007845298
+          }
+        }
+      ],
+      "pooled": {
+        "games": 544,
+        "margin_mae": 10.86828043443975,
+        "margin_rmse": 14.030745482960189,
+        "total_mae": 10.46893162833534,
+        "total_rmse": 13.394347308749849,
+        "team_score_mae": 7.740717765158357
+      }
+    },
+    "matchup": {
+      "folds": [
+        {
+          "season": 2024,
+          "half_life_games": 8,
+          "ridge_lambda": 100,
+          "metrics": {
+            "games": 272,
+            "margin_mae": 10.255108297032269,
+            "margin_rmse": 13.35664126796553,
+            "total_mae": 10.2741054557491,
+            "total_rmse": 13.282853556682255,
+            "team_score_mae": 7.443298436455263
+          }
+        },
+        {
+          "season": 2025,
+          "half_life_games": 1,
+          "ridge_lambda": 100,
+          "metrics": {
+            "games": 272,
+            "margin_mae": 10.496066694895513,
+            "margin_rmse": 13.288944356819657,
+            "total_mae": 10.751188296725644,
+            "total_rmse": 13.572626967354415,
+            "team_score_mae": 7.561485943747833
+          }
+        }
+      ],
+      "pooled": {
+        "games": 544,
+        "margin_mae": 10.375587495963902,
+        "margin_rmse": 13.322835810738061,
+        "total_mae": 10.51264687623736,
+        "total_rmse": 13.428521910531005,
+        "team_score_mae": 7.502392190101551
+      }
+    },
+    "personnel": {
+      "folds": [
+        {
+          "season": 2024,
+          "half_life_games": 6,
+          "ridge_lambda": 100,
+          "metrics": {
+            "games": 272,
+            "margin_mae": 10.253379594386507,
+            "margin_rmse": 13.430461730591707,
+            "total_mae": 10.208544024275431,
+            "total_rmse": 13.247188059675517,
+            "team_score_mae": 7.450202899259148
+          }
+        },
+        {
+          "season": 2025,
+          "half_life_games": 1,
+          "ridge_lambda": 0.01,
+          "metrics": {
+            "games": 272,
+            "margin_mae": 10.591892918737349,
+            "margin_rmse": 13.379343314331182,
+            "total_mae": 10.718770238150919,
+            "total_rmse": 13.576021320344738,
+            "team_score_mae": 7.589390159615842
+          }
+        }
+      ],
+      "pooled": {
+        "games": 544,
+        "margin_mae": 10.422636256561923,
+        "margin_rmse": 13.40492688938711,
+        "total_mae": 10.46365713121318,
+        "total_rmse": 13.412612466981672,
+        "team_score_mae": 7.519796529437504
+      }
+    }
+  },
+  "gates": {
+    "scoring_vs_deployed": true,
+    "matchup_vs_scoring": false,
+    "personnel_vs_matchup": false
+  },
+  "limitations": [
+    "Historical tests are retrospective; no evidence of prospective profitability.",
+    "No trained current-injury or coaching-change adjustment.",
+    "Week 1 deployment is explicitly unknown.",
+    "Held-out comparisons require subsequent prospective evaluation."
+  ]
+}

@@ -1,0 +1,53 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {rows,pred} from '../lib/game-scoring-calibration.mjs';
+import {scoreCurrentGame,parseCompletedWeek} from '../lib/current-game-scoring.mjs';
+import {candidateRows,passesGate} from '../lib/matchup-score-candidate.mjs';
+const artifact=JSON.parse(fs.readFileSync('data/probability/generated/game-scoring-model-2026.json','utf8'));
+const validation=JSON.parse(fs.readFileSync(artifact.validation_path,'utf8'));
+assert.equal(validation.gates.scoring_vs_deployed,true);
+assert.equal(artifact.distribution.games,544);
+assert.deepEqual(validation.held_out_seasons,[2024,2025]);
+for(const v of Object.values(validation.results))assert.equal(v.pooled.games,544);
+assert.equal(passesGate(validation.results.scoring,validation.results.deployed),true);
+assert.equal(passesGate(validation.results.matchup,validation.results.scoring),false);
+assert.equal(passesGate(validation.results.personnel,validation.results.matchup),false);
+
+const prior=[{id:'2025a',season:2025,week:1,home:'CHI',away:'GB',hs:24,as:17,hr:7,ar:7},
+  {id:'2025b',season:2025,week:2,home:'GB',away:'CHI',hs:30,as:21,hr:7,ar:7}];
+const completed=[{id:'2026a',season:2026,week:1,home:'CHI',away:'GB',hs:35,as:28,hr:7,ar:7,final:true,event_start:'2026-09-06T17:00:00Z'}];
+const target={id:'target',season:2026,week:2,home:'GB',away:'CHI',home_team:'GB',away_team:'CHI',event_start:'2026-09-13T17:00:00Z',hs:10,as:20,hr:7,ar:6};
+const fixture={...artifact,hfa:8,prior:{CHI:{games:2,pf:45,pa:47},GB:{games:2,pf:47,pa:45}}};
+const actual=scoreCurrentGame(fixture,target,completed,{home:7,away:6});
+const historical=rows([...prior,...completed,target],fixture.half_life_games).find(r=>r.id==='target');
+assert.deepEqual(actual.evidence.margin_features,historical.xm);
+assert.deepEqual(actual.evidence.total_features,historical.xt);
+assert.equal(actual.home_score_mean,(pred(fixture.total,[historical.xt])[0]+pred(fixture.margin,[historical.xm])[0])/2);
+assert.equal(actual.evidence.teams.CHI.current_games,1);
+assert.equal(actual.evidence.teams.CHI.current_weight,1-2**(-1/fixture.half_life_games));
+const neutral=scoreCurrentGame(fixture,{...target,neutral_site:true},completed,{home:7,away:6});
+assert.equal(neutral.evidence.home_field_advantage_feature,0);
+assert.equal(neutral.evidence.margin_features[0],actual.evidence.margin_features[0]-fixture.hfa);
+assert.deepEqual(scoreCurrentGame(fixture,{...target,odds:999,spread_line:99,total_line:99},completed,{home:7,away:6}),actual);
+assert.deepEqual(scoreCurrentGame(fixture,target,[...completed,{...target,final:true,hs:99,as:99},{...completed[0],id:'unfinished',final:false}],{home:7,away:6}),actual);
+assert.throws(()=>scoreCurrentGame(fixture,target,completed,{home:null,away:7}),/rest/);
+assert.throws(()=>scoreCurrentGame(fixture,target,[...completed,...completed],{home:7,away:6}),/Duplicate/);
+assert.throws(()=>scoreCurrentGame({...fixture,prior:{}},target,completed,{home:7,away:6}),/Missing/);
+
+const all=[...prior,...completed,target];
+const teamRows=all.flatMap(g=>[g.home,g.away].map(team=>({game_id:g.id,season:g.season,week:g.week,season_type:'REG',team,opponent_team:team===g.home?g.away:g.home,
+  attempts:30,sacks_suffered:2,carries:25,passing_epa:4,rushing_epa:2,passing_20:3,rushing_10:2,passing_interceptions:1})));
+const before=candidateRows(all,teamRows,[],4,'personnel').find(r=>r.id==='target');
+const after=candidateRows(all.map(g=>g.id==='target'?{...g,hs:99,as:0}:g),teamRows.map(r=>r.game_id==='target'?{...r,passing_epa:999}:r),[],4,'personnel').find(r=>r.id==='target');
+assert.deepEqual(before.xm,after.xm);assert.deepEqual(before.xt,after.xt);
+const reverse=candidateRows([...all].reverse().sort((a,b)=>a.season-b.season||a.week-b.week),teamRows,[],4,'personnel').find(r=>r.id==='target');
+assert.deepEqual(before.xm,reverse.xm);
+const event={id:'1',date:'2026-09-06T17:00:00Z',week:{number:1},status:{type:{completed:true}},competitions:[{competitors:[{homeAway:'home',team:{abbreviation:'LAR'},score:'20'},{homeAway:'away',team:{abbreviation:'WSH'},score:'17'}]}]};
+const payload={season:{year:2026},events:[event]};
+assert.equal(parseCompletedWeek(payload,1)[0].home,'LAR');
+assert.equal(parseCompletedWeek(payload,1)[0].away,'WAS');
+assert.equal(parseCompletedWeek({...payload,events:[{...event,status:{type:{completed:false}}}]},1).length,0);
+assert.throws(()=>parseCompletedWeek(payload,2),/week/);
+assert.throws(()=>parseCompletedWeek({...payload,season:{year:2025}},1),/season/);
+assert.throws(()=>parseCompletedWeek({...payload,events:[event,event]},1),/Duplicate/);
+console.log(JSON.stringify({result:'PASS',checks:['historical/live feature parity','current-season influence','neutral venue','no target-week leakage','no market influence','missing-data and duplicate rejection','held-out gates','completed-score provenance']}));
