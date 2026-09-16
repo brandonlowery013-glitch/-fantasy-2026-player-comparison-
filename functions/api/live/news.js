@@ -4,6 +4,7 @@ function clean(value){return String(value||'').replace(/&#(?:x([0-9a-f]+)|(\d+))
 function classify(title){
   if(/awards? tracker|mvp odds|rookie of the year|power rankings|mock draft|betting odds|picks for|best bets|how to watch/i.test(title))return null;
   if(/ruled out|out for (?:the )?season|season.ending|injured reserve|torn|surgery|suspended/i.test(title))return {category:'AVAILABILITY',priority:100,angle:'Availability can change this week’s lineup and open work for teammates. Check the reported timeline.'};
+  if(/remarkable return|comeback|return from.*injury/i.test(title))return {category:'GAME TAKEAWAY',priority:60,angle:'Review the workload and performance since returning, rather than treating an old injury as a new absence.'};
   if(/injur|questionable|doubtful|concussion|ankle|hamstring|knee|practice|cleared to|returns? to/i.test(title))return {category:'INJURY WATCH',priority:90,angle:'Watch the next practice report and game-day status before changing your lineup.'};
   if(/named.*starter|benched|takes over|lead back|workload|snap share|target share|committee|starting role|depth chart|released|traded/i.test(title))return {category:'ROLE CHANGE',priority:85,angle:'Follow carries, targets and snaps to see who gains or loses opportunity.'};
   if(/breakout|career.high|career.best|record.break|dominant|dominates|stellar|erupts|explodes|monster|(?:[2-9]\d\d)[ -]yard|[3-9][ -](?:touchdown|td)/i.test(title))return {category:'BREAKOUT',priority:75,angle:'Separate repeatable workload from efficiency spikes before carrying this performance into next week.'};
@@ -29,6 +30,7 @@ function normalize(review){
       if(items.has(url.href)||titles.has(titleKey))continue;
       titles.add(titleKey);
       const ageHours=Math.max(0,(now-published)/3600000);
+      if(/inactives|ruled out for (?:sunday|monday|thursday)/i.test(title)&&ageHours>24)continue;
       items.set(url.href,{title:title.slice(0,300),url:url.href,source:clean(story.source||url.hostname).replaceAll('_',' ').slice(0,100),published_at:new Date(published).toISOString(),category:label.category,priority:label.priority-Math.floor(ageHours/12)*8,angle:label.angle,summary:clean(story.description).slice(0,240),team:typeof story.team==='string'?story.team:null});
     }
   }
