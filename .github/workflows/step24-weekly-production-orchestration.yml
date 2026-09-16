@@ -138,7 +138,7 @@ jobs:
         run: node scripts/build-weekly-probability-engine.mjs
       - name: Stage 3 - freeze first valid pregame forecasts
         if: steps.context.outputs.ready == 'true'
-        run: node scripts/capture-weekly-forecast-snapshots.mjs
+        run: node scripts/capture-weekly-forecast-snapshots.mjs --preserve-existing
       - name: Stage 4 - build football-only team scoring priors
         if: steps.context.outputs.ready == 'true'
         run: node scripts/build-game-team-scoring-priors.mjs
