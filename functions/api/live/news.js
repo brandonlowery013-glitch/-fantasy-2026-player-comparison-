@@ -50,19 +50,19 @@ function liveItems(payload,now=Date.now()){
  });
 }
 export async function onRequestGet(){
- const key=new Request('https://ctd.internal/live-news-v3');
+ const key=new Request('https://ctd.internal/live-news-v4');
  try{
   const [live,published]=await Promise.allSettled([
-   fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=200',{headers:{accept:'application/json','user-agent':'ChuckTheDuke/2026'},signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}}).then(async r=>{if(!r.ok)throw Error('Live news HTTP '+r.status);return liveItems(await r.json())}),
+   fetch('https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/data/live-news/data/live-news.json',{headers:{accept:'application/json','user-agent':'ChuckTheDuke/2026'},signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}}).then(async r=>{if(!r.ok)throw Error('Live news HTTP '+r.status);const data=await r.json();const fetched=Date.parse(data.fetched_at);if(!Number.isFinite(fetched)||Date.now()-fetched>3600000||fetched>Date.now()+300000)throw Error('Headline snapshot is stale');return {items:liveItems(data),fetched_at:data.fetched_at}}),
    fetch(SOURCE,{signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}}).then(async r=>{if(!r.ok)throw Error('Published review unavailable');return normalize(await r.json())})
   ]);
   if(live.status==='rejected'&&published.status==='rejected')throw Error('All news sources unavailable');
   const items=new Map(),titles=new Set();
-  for(const item of [...(live.status==='fulfilled'?live.value:[]),...(published.status==='fulfilled'?published.value.items:[])].sort((a,b)=>b.priority-a.priority||Date.parse(b.published_at)-Date.parse(a.published_at))){
+  for(const item of [...(live.status==='fulfilled'?live.value.items:[]),...(published.status==='fulfilled'?published.value.items:[])].sort((a,b)=>b.priority-a.priority||Date.parse(b.published_at)-Date.parse(a.published_at))){
    const title=item.title.toLowerCase().replace(/[^a-z0-9]/g,'');if(items.has(item.url)||titles.has(title))continue;items.set(item.url,item);titles.add(title);
   }
   const checked=new Date().toISOString(),reviewed=published.status==='fulfilled'?published.value.reviewed_at:null;
-  const result={items:[...items.values()].slice(0,20),reviewed_at:live.status==='fulfilled'?checked:reviewed,checked_at:checked,model_reviewed_at:reviewed,status:live.status==='fulfilled'?'CURRENT':'STALE',refresh_seconds:300,source_branch:'main',live_source:live.status==='fulfilled'?'ESPN':null,live_error:live.status==='rejected'?String(live.reason?.message||'Provider unavailable'):null};
+  const result={items:[...items.values()].slice(0,20),reviewed_at:live.status==='fulfilled'?live.value.fetched_at:reviewed,checked_at:checked,model_reviewed_at:reviewed,status:live.status==='fulfilled'?'CURRENT':'STALE',refresh_seconds:300,collection_interval_seconds:900,source_branch:'main',live_source:live.status==='fulfilled'?'ESPN':null,live_error:live.status==='rejected'?String(live.reason?.message||'Provider unavailable'):null};
   try{await caches.default.put(key,new Response(JSON.stringify(result),{headers:{'cache-control':'public,max-age=86400'}}))}catch{}
   return new Response(JSON.stringify(result),{headers});
  }catch{
