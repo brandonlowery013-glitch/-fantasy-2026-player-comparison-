@@ -34,3 +34,26 @@
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
   schedule();refresh();setInterval(refresh,300000);
 })();
+
+;(()=>{
+  const originalTicker=renderTicker;
+  renderTicker=function(){
+    originalTicker();
+    document.querySelectorAll('#ctdGameTicker [data-game-index]').forEach(card=>{
+      const g=BET_FEED.games[Number(card.dataset.gameIndex)],row=card.querySelector('.marketline');
+      if(!g||!row)return;
+      row.replaceChildren();
+      const market=document.createElement('span');
+      market.textContent='Stored market: '+(g.spread||'Spread pending')+' · Total '+(g.total??'pending');
+      market.title='Sportsbook spread quoted for the home team: minus means favored; plus means underdog. Updated prices are in Live Sportsbook Lines.';
+      const pick=document.createElement('span');pick.className='edge';
+      const value=typeof g.model_edge==='string'&&/[A-Za-z]/.test(g.model_edge)?g.model_edge:g.model_pick;
+      pick.textContent='Model pick: '+(!value||value==='PENDING'?'Pending analysis':value==='PASS'?'Pass — no qualifying pick':value);
+      row.append(market,pick);
+    });
+  };
+  const style=document.createElement('style');
+  style.textContent='#gamesPage .gamecard{flex-basis:260px!important}#ctdGameTicker .marketline{display:flex;flex-direction:column;align-items:flex-start;gap:8px;white-space:normal;text-align:left}#ctdGameTicker .marketline .edge{line-height:1.4}';
+  document.head.append(style);
+  renderTicker();
+})();
