@@ -36,11 +36,10 @@ function dayPolicy(parts){
   if(parts.weekday==='Mon')return ([0,6,12].includes(h)||h>=14)?'MONDAY_MNF_WINDOW':'SKIP_MONDAY';
   return [0,6,12,18].includes(h)?'OFFDAY_6_HOUR':'SKIP_OFFDAY_6_HOUR';
 }
-function decide(d,{injuryChanged=process.env.INJURY_STATE_CHANGED==='true'}={}){
-  if(event==='workflow_dispatch')return {run:true,reason:'MANUAL_DISPATCH'};
+function decide(d,{injuryChanged=process.env.INJURY_STATE_CHANGED==='true',eventName=event,gameReason=gameWindowReason(d)}={}){
+  if(eventName==='workflow_dispatch')return {run:true,reason:'MANUAL_DISPATCH'};
   const parts=chicagoParts(d);
   if(injuryChanged)return {run:true,reason:'INJURY_STATE_CHANGED',parts};
-  const gameReason=gameWindowReason(d);
   if(gameReason)return {run:true,reason:gameReason,parts};
   const reason=dayPolicy(parts);
   return {run:!reason.startsWith('SKIP_'),reason,parts};
@@ -55,10 +54,16 @@ if(process.argv.includes('--self-test')){
     ['2026-09-14T19:10:00Z',true,'Mon afternoon/MNF'],
     ['2026-09-12T13:10:00Z',true,'Sat 4-hour']
   ];
-  for(const [iso,expected,label] of cases){const r=decide(new Date(iso),{injuryChanged:false});if(r.run!==expected)throw new Error(`${label} expected ${expected} got ${r.run} (${r.reason})`);}
-  const forced=decide(new Date('2026-09-08T13:10:00Z'),{injuryChanged:true});
+  for(const [iso,expected,label] of cases){const r=decide(new Date(iso),{injuryChanged:false,eventName:'schedule',gameReason:null});if(r.run!==expected)throw new Error(`${label} expected ${expected} got ${r.run} (${r.reason})`);}
+  const forced=decide(new Date('2026-09-08T13:10:00Z'),{injuryChanged:true,eventName:'schedule',gameReason:null});
   if(!forced.run||forced.reason!=='INJURY_STATE_CHANGED')throw new Error('injury change did not override cadence skip');
-  console.log(JSON.stringify({result:'PASS',timezone:TZ,cases:cases.length+1,injury_change_override:true},null,2));
+  const manual=decide(new Date('2026-09-08T13:10:00Z'),{injuryChanged:false,eventName:'workflow_dispatch',gameReason:null});
+  if(!manual.run||manual.reason!=='MANUAL_DISPATCH')throw new Error('manual dispatch did not override cadence skip');
+  for(const reason of ['GAME_WITHIN_6_HOURS','RECENT_GAME_SETTLEMENT_WINDOW']){
+    const result=decide(new Date('2026-09-08T13:10:00Z'),{injuryChanged:false,eventName:'schedule',gameReason:reason});
+    if(!result.run||result.reason!==reason)throw new Error('game window override failed');
+  }
+  console.log(JSON.stringify({result:'PASS',timezone:TZ,cases:cases.length+4,injury_change_override:true},null,2));
   process.exit(0);
 }
 
