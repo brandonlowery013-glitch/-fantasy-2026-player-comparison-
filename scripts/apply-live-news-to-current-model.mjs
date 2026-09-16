@@ -26,7 +26,7 @@ const adjudication=read('analysis/live-news-decision-audit-current.json');
 const patchPath=source.current_update_layer||'current162patch-2026-08-24.json';
 const patch=read(patchPath);
 if(!patch.players||typeof patch.players!=='object') throw new Error('Current update layer missing players map');
-for(const n of names) if(!patch.players[n]) throw new Error(`Current update layer missing canonical player: ${n}`);
+
 const taxBy=new Map((taxonomy.rows||[]).map(x=>[x.player,x]));
 const calcBy=new Map((recalc.rows||[]).map(x=>[x.player,x]));
 const reviewBy=new Map((review.players||[]).map(x=>[x.player,x]));
@@ -35,6 +35,11 @@ if(reviewBy.size!==expected) throw new Error(`Review coverage ${reviewBy.size}/$
 if(decisionBy.size!==expected||adjudication.counts?.self_audit_errors!==0) throw new Error(`Decision/self-audit coverage failed: ${decisionBy.size}/${expected}`);
 for(const [label,rows,map] of [['Review',review.players||[],reviewBy],['Decision',adjudication.decisions||[],decisionBy]]) {
   if(rows.length!==expected||names.some(n=>!map.has(n))) throw new Error(`${label} must cover each canonical player exactly once`);
+}
+// Newly admitted canonical players may not yet have a news overlay.
+for(const name of names){
+  if(!Object.prototype.hasOwnProperty.call(patch.players,name)) patch.players[name]={};
+  if(!patch.players[name]||typeof patch.players[name]!=='object'||Array.isArray(patch.players[name])) throw new Error(`Invalid current update layer for ${name}`);
 }
 const now=new Date().toISOString();
 let material=0,directMaterial=0,connectedMaterial=0,connectedReview=0,numeric=0,noChange=0,preservedNews=0,adjudicatedCount=0,unboundSuppressed=0;
