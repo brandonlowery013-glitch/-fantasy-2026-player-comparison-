@@ -15,7 +15,7 @@
     if(!items.length){const p=document.createElement('p');p.textContent='No published headlines available yet.';list.append(p)}
     for(const item of items.slice(0,expanded?30:3)){
       let url;try{url=new URL(item.url);if(url.protocol!=='https:')continue}catch{continue}
-      const card=document.createElement('article'),link=document.createElement('a'),meta=document.createElement('p');link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent=item.title;meta.className='news-meta';meta.textContent=[item.source,date(item.published_at)||'Publication time unavailable',(item.players||[]).slice(0,4).join(', ')].filter(Boolean).join(' · ');card.append(link,meta);list.append(card);
+      const card=document.createElement('article'),link=document.createElement('a'),meta=document.createElement('p');link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';link.textContent=String(item.title).replace(/&#(?:x([0-9a-f]+)|(\d+));/gi,(_,hex,dec)=>{const n=parseInt(hex||dec,hex?16:10);return n>0&&n<=0x10ffff?String.fromCodePoint(n):""}).replace(/&(?:amp|quot|apos|lt|gt);/g,x=>({"&amp;":"&","&quot;":"\"","&apos;":"'","&lt;":"<","&gt;":">"}[x]));meta.className='news-meta';meta.textContent=[item.source,date(item.published_at)||'Publication time unavailable'].filter(Boolean).join(' · ');card.append(link,meta);list.append(card);
     }
     more.hidden=items.length<=3;more.textContent=expanded?'Show fewer updates':'Show more updates';
   }
