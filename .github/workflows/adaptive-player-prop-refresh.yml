@@ -65,6 +65,19 @@ jobs:
         run: node scripts/adaptive-player-prop-refresh.mjs
       - name: Validate player prop snapshots
         run: node scripts/validate-player-prop-market-snapshots.mjs
+      - name: Rebuild website outputs when prop quotes change
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- data/market/player-prop-market-snapshots-2026.json; then
+            echo 'No prop quote changes; retaining validated website outputs.'
+            exit 0
+          fi
+          node scripts/build-player-prop-recommendations.mjs
+          node scripts/build-unified-opportunity-engine.mjs
+          node scripts/build-weekly-parlay-recommendations.mjs
+          node scripts/build-final-betting-ui-feed.mjs
+          node scripts/validate-final-betting-pipeline-step4.mjs
       - name: Persist adaptive player prop state through guarded PR
         id: persist
         env:
@@ -72,7 +85,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          paths=(data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json)
+          paths=(data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${paths[@]}"
