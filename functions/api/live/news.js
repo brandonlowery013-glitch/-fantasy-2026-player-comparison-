@@ -19,6 +19,9 @@ function normalize(review){
     for(const story of player.news_mentions||[]){
       let url;try{url=new URL(story.url);if(url.protocol!=='https:')continue}catch{continue}
       const title=clean(story.headline),label=classify(title);if(!title||!label)continue;
+      const normalized=value=>clean(value).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+      const subject=normalized(player.player);
+      if(label.category!=='UPSET'&&(!subject||!normalized(title+' '+clean(story.description)).includes(subject)))continue;
       const published=Date.parse(story.published);
       // Old or undated articles must not be presented as current actionable updates.
       if(!Number.isFinite(published)||published>now+300000||now-published>7*86400000)continue;
