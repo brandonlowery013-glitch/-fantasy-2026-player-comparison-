@@ -53,7 +53,7 @@ export async function onRequestGet(){
  const key=new Request('https://ctd.internal/live-news-v3');
  try{
   const [live,published]=await Promise.allSettled([
-   fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=200',{signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}}).then(async r=>{if(!r.ok)throw Error('Live news unavailable');return liveItems(await r.json())}),
+   fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=200',{headers:{accept:'application/json','user-agent':'ChuckTheDuke/2026'},signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}}).then(async r=>{if(!r.ok)throw Error('Live news HTTP '+r.status);return liveItems(await r.json())}),
    fetch(SOURCE,{signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}}).then(async r=>{if(!r.ok)throw Error('Published review unavailable');return normalize(await r.json())})
   ]);
   if(live.status==='rejected'&&published.status==='rejected')throw Error('All news sources unavailable');
@@ -62,7 +62,7 @@ export async function onRequestGet(){
    const title=item.title.toLowerCase().replace(/[^a-z0-9]/g,'');if(items.has(item.url)||titles.has(title))continue;items.set(item.url,item);titles.add(title);
   }
   const checked=new Date().toISOString(),reviewed=published.status==='fulfilled'?published.value.reviewed_at:null;
-  const result={items:[...items.values()].slice(0,20),reviewed_at:live.status==='fulfilled'?checked:reviewed,checked_at:checked,model_reviewed_at:reviewed,status:live.status==='fulfilled'?'CURRENT':'STALE',refresh_seconds:300,source_branch:'main',live_source:live.status==='fulfilled'?'ESPN':null};
+  const result={items:[...items.values()].slice(0,20),reviewed_at:live.status==='fulfilled'?checked:reviewed,checked_at:checked,model_reviewed_at:reviewed,status:live.status==='fulfilled'?'CURRENT':'STALE',refresh_seconds:300,source_branch:'main',live_source:live.status==='fulfilled'?'ESPN':null,live_error:live.status==='rejected'?String(live.reason?.message||'Provider unavailable'):null};
   try{await caches.default.put(key,new Response(JSON.stringify(result),{headers:{'cache-control':'public,max-age=86400'}}))}catch{}
   return new Response(JSON.stringify(result),{headers});
  }catch{
