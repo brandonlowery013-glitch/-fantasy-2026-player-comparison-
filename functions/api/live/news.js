@@ -9,7 +9,7 @@ function classify(title){
   if(/named.*starter|benched|takes over|lead back|workload|snap share|target share|committee|starting role|depth chart|released|traded/i.test(title))return {category:'ROLE CHANGE',priority:85,angle:'Follow carries, targets and snaps to see who gains or loses opportunity.'};
   if(/breakout|career.high|career.best|record.break|dominant|dominates|stellar|erupts|explodes|monster|(?:[2-9]\d\d)[ -]yard|[3-9][ -](?:touchdown|td)/i.test(title))return {category:'BREAKOUT',priority:75,angle:'Separate repeatable workload from efficiency spikes before carrying this performance into next week.'};
   if(/upset|stuns?\b|shocks?\b|underdog.*win/i.test(title))return {category:'UPSET',priority:72,angle:'Check how the game script changed volume and which roles held up in the surprise result.'};
-  if(/disappoint|struggl|underwhelm|quiet game|held to|shut down|shut out|dud\b|turnover|interceptions/i.test(title))return {category:'DISAPPOINTMENT',priority:70,angle:'Check opportunity and matchup context before treating one poor result as a lasting decline.'};
+  if(/disappoint|struggl|underwhelm|quiet game|held to|shut down|shut out|dud\b|turnover|interceptions/i.test(title))return {category:'FOOTBALL CONTEXT',priority:70,angle:'Check opportunity and matchup context before treating one poor result as a lasting decline.'};
   if(/rush(?:es|ed|ing)?.{0,30}\d+|throws?.{0,30}\d+|touchdowns?|receiving yards|catches|game recap|week \d+.*takeaways/i.test(title))return {category:'GAME TAKEAWAY',priority:60,angle:'Review usage alongside the box score, then check the next opponent.'};
   return null;
 }
@@ -37,18 +37,37 @@ function normalize(review){
   const time=Date.parse(review.sweep_completed_at);
   return {reviewed_at:Number.isFinite(time)?new Date(time).toISOString():null,items:[...items.values()].sort((a,b)=>b.priority-a.priority||Date.parse(b.published_at)-Date.parse(a.published_at)).slice(0,20)};
 }
-export async function onRequestGet(){
-  const key=new Request('https://ctd.internal/published-news-v2');
-  try{
-    const response=await fetch(SOURCE,{headers:{accept:'application/json'},cf:{cacheTtl:300,cacheEverything:true}});
-    if(!response.ok)throw Error('News source unavailable');
-    const feed=normalize(await response.json());
-    const age=Date.now()-Date.parse(feed.reviewed_at);
-    const result={...feed,status:!Number.isFinite(age)||age>12*3600000||age< -300000?'STALE':'CURRENT',source_branch:'main'};
-    try{await caches.default.put(key,new Response(JSON.stringify(result),{headers:{'cache-control':'public,max-age=86400'}}))}catch{}
-    return new Response(JSON.stringify(result),{headers});
-  }catch{
-    try{const saved=await caches.default.match(key);if(saved){const feed=await saved.json();return new Response(JSON.stringify({...feed,status:'STALE',message:'Refresh unavailable; showing the last saved news.'}),{headers})}}catch{}
-    return new Response(JSON.stringify({status:'UNAVAILABLE',reviewed_at:null,items:[],message:'News updates are temporarily unavailable.'}),{status:502,headers});
-  }
+
+function liveItems(payload,now=Date.now()){
+ if(!Array.isArray(payload.articles))throw Error('Live news response invalid');
+ return payload.articles.flatMap(a=>{
+  const title=clean(a.headline),label=classify(title),published=Date.parse(a.published);
+  if(!label||!Number.isFinite(published)||published>now+300000||now-published>7*86400000)return [];
+  let url;try{url=new URL(a.links?.web?.href);if(url.protocol!=='https:'||!(url.hostname=='espn.com'||url.hostname.endsWith('.espn.com')))return []}catch{return []}
+  const ageHours=(now-published)/3600000;
+  if(/inactives|ruled out for (?:sunday|monday|thursday)/i.test(title)&&ageHours>24)return [];
+  return [{title:title.slice(0,300),url:url.href,source:'ESPN',published_at:new Date(published).toISOString(),category:/winners and losers/i.test(title)?'FOOTBALL CONTEXT':label.category,priority:label.priority-Math.floor(ageHours/12)*8,angle:'',summary:clean(a.description).slice(0,240),team:a.categories?.find(c=>c.type==='team')?.team?.abbreviation||null}];
+ });
 }
+export async function onRequestGet(){
+ const key=new Request('https://ctd.internal/live-news-v3');
+ try{
+  const [live,published]=await Promise.allSettled([
+   fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=200',{signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}}).then(async r=>{if(!r.ok)throw Error('Live news unavailable');return liveItems(await r.json())}),
+   fetch(SOURCE,{signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}}).then(async r=>{if(!r.ok)throw Error('Published review unavailable');return normalize(await r.json())})
+  ]);
+  if(live.status==='rejected'&&published.status==='rejected')throw Error('All news sources unavailable');
+  const items=new Map(),titles=new Set();
+  for(const item of [...(live.status==='fulfilled'?live.value:[]),...(published.status==='fulfilled'?published.value.items:[])].sort((a,b)=>b.priority-a.priority||Date.parse(b.published_at)-Date.parse(a.published_at))){
+   const title=item.title.toLowerCase().replace(/[^a-z0-9]/g,'');if(items.has(item.url)||titles.has(title))continue;items.set(item.url,item);titles.add(title);
+  }
+  const checked=new Date().toISOString(),reviewed=published.status==='fulfilled'?published.value.reviewed_at:null;
+  const result={items:[...items.values()].slice(0,20),reviewed_at:live.status==='fulfilled'?checked:reviewed,checked_at:checked,model_reviewed_at:reviewed,status:live.status==='fulfilled'?'CURRENT':'STALE',refresh_seconds:300,source_branch:'main',live_source:live.status==='fulfilled'?'ESPN':null};
+  try{await caches.default.put(key,new Response(JSON.stringify(result),{headers:{'cache-control':'public,max-age=86400'}}))}catch{}
+  return new Response(JSON.stringify(result),{headers});
+ }catch{
+  try{const saved=await caches.default.match(key);if(saved){const feed=await saved.json();return new Response(JSON.stringify({...feed,status:'STALE',message:'Refresh unavailable; showing the last saved news.'}),{headers})}}catch{}
+  return new Response(JSON.stringify({status:'UNAVAILABLE',reviewed_at:null,items:[],message:'News updates are temporarily unavailable.'}),{status:502,headers});
+ }
+}
+
