@@ -22,6 +22,9 @@ if(exists('data/sources/weekly-game-projection-engine-2026.json')&&read('data/so
   catch(e){block('calibrated_game_scoring',String(e.stderr||e.message));}
 }
 
+try{execFileSync(process.execPath,['scripts/test-injury-evidence.mjs'],{cwd:root,stdio:'pipe'});pass('personnel_availability_evidence','Stable identities, source-age expiry and injury precedence passed');}
+catch(e){block('personnel_availability_evidence',String(e.stderr||e.message));}
+
 pass('source_of_truth_count',String(authoritativePlayerCount));
 pass('source_of_truth_shards',String(authoritativePlayerShards));
 if(cfg.authoritative_player_count!=null&&Number(cfg.authoritative_player_count)!==authoritativePlayerCount) review('legacy_config_count',`non-authoritative guardrail config=${cfg.authoritative_player_count}, canonical=${authoritativePlayerCount}`);

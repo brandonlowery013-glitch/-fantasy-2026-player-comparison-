@@ -1,3 +1,4 @@
+import {injuryFreshness,resolveAvailability} from '../lib/injury-evidence.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -68,6 +69,7 @@ const players={};let currentSignals=0,staleSignals=0,invalidSignals=0,currentRol
 for(const [inputName,p] of Object.entries(src.players||{})){
   const suppliedPos=String(p.position||'').toUpperCase();
   if(!allowedPositions.has(suppliedPos)){blocked.push(`${inputName} unsupported position ${suppliedPos}`);continue;}
+  if(!selfTest){const a=resolveAvailability(p.signals||{},now);p.expected_active=a.expected_active;p.availability_status=typeof a.expected_active==='boolean'?'KNOWN':'UNKNOWN';p.availability_basis=a.basis;}
   const availabilityKnown=typeof p.expected_active==='boolean';
   if(!availabilityKnown&&p.expected_active!==null){blocked.push(`${inputName} expected_active must be boolean or explicit null UNKNOWN`);continue;}
   if(!availabilityKnown&&p.availability_status!=='UNKNOWN'){blocked.push(`${inputName} null expected_active requires availability_status UNKNOWN`);continue;}
@@ -87,7 +89,7 @@ for(const [inputName,p] of Object.entries(src.players||{})){
     if(marketWords.test(source)||marketWords.test(JSON.stringify(s.evidence||{}))){blocked.push(`${name} ${signalName} possible market contamination`);invalidSignals++;continue;}
     if(captured==null){blocked.push(`${name} ${signalName} invalid captured_at`);invalidSignals++;continue;}
     if(captured>now+5*60000){blocked.push(`${name} ${signalName} captured_at is in the future`);invalidSignals++;continue;}
-    const ageHours=(now-captured)/3600000;const maxAge=Number(freshness[signalName]);const stale=ageHours>maxAge;const adj={};
+    const sourceAge=signalName==='injury'?injuryFreshness(s.evidence||{},now,Number(freshness[signalName])):null;const ageHours=sourceAge?sourceAge.age_hours:(now-captured)/3600000;const maxAge=Number(freshness[signalName]);const stale=sourceAge?sourceAge.status!=='CURRENT':ageHours>maxAge;const adj={};
     for(const [stat,a] of Object.entries(s.stat_adjustments||{})){
       if(!statsByPos[pos]?.has(stat)){blocked.push(`${name} ${signalName} adjustment not allowed for ${pos}: ${stat}`);continue;}
       if(!a||typeof a!=='object'){blocked.push(`${name} ${signalName} ${stat} invalid adjustment`);continue;}
@@ -98,9 +100,9 @@ for(const [inputName,p] of Object.entries(src.players||{})){
     let cohort=null;
     if(signalName==='role'&&s.cohort!=null){cohort=String(s.cohort);const declared=(cohortContract.allowed_cohorts?.[pos]||[]).includes(cohort);const actualPos=cohortPosition.get(cohort)||null;if(!declared||actualPos!==pos){blocked.push(`${name} role cohort invalid for ${pos}: ${cohort}`);invalidSignals++;cohort=null;}else if(stale)staleRoleCohorts++;else currentRoleCohorts++;}
     const status=stale?'STALE_REVIEW_REQUIRED':'CURRENT'; if(stale){staleSignals++;playerReview=true;review.push(`${name} ${signalName} stale ${round(ageHours,2)}h > ${maxAge}h`);}else currentSignals++;
-    const {position:unusedPosition,...signalRest}=s;outSignals[signalName]={...signalRest,cohort,status,age_hours:round(ageHours,3),freshness_limit_hours:maxAge,stat_adjustments:adj,sportsbook_inputs_used:false};
+    const {position:unusedPosition,...signalRest}=s;outSignals[signalName]={...signalRest,cohort,status,age_hours:ageHours===null?null:round(ageHours,3),freshness_basis:signalName==='injury'?'SOURCE_UPDATED_AT':'CAPTURED_AT',freshness_limit_hours:maxAge,stat_adjustments:adj,sportsbook_inputs_used:false};
   }
-  players[name]={player:name,position:pos,prior_player:p.prior_player||null,expected_active:p.expected_active,availability_status:availabilityKnown?'KNOWN':'UNKNOWN',context_status:playerReview?'REVIEW_REQUIRED':'PASS',signals:outSignals};
+  players[name]={player:name,position:pos,prior_player:p.prior_player||null,expected_active:p.expected_active,availability_status:availabilityKnown?'KNOWN':'UNKNOWN',availability_basis:p.availability_basis||null,context_status:playerReview?'REVIEW_REQUIRED':'PASS',signals:outSignals};
 }
 if(!selfTest&&Object.keys(players).length!==activeCount)blocked.push(`normalized roster mismatch: expected ${activeCount}, found ${Object.keys(players).length}`);
 if(selfTest&&currentRoleCohorts<4)blocked.push(`self-test current role cohorts unexpectedly low: ${currentRoleCohorts}`);
