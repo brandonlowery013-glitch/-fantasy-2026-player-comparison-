@@ -1,21 +1,21 @@
 {
   "schema_version": "1.4.1",
-  "generated_at": "2026-09-16T04:51:40.040Z",
+  "generated_at": "2026-09-16T16:52:51.259Z",
   "authoritative": true,
   "status": "PASS",
   "policy": "SUBJECT_AWARE_PLAYER_EVENT_BINDING; VERIFIED SAME_TEAM_QB EVENTS MAY PROPAGATE AS CONNECTED OFFENSE CONTEXT; STARTER CHANGES ARE NONDIRECTIONAL UNLESS EVIDENCE SUPPORTS GOOD/BAD IMPACT; STATIC BASELINE UNTOUCHED; SEASON_LONG NUMERIC MOVES REQUIRE VALIDATED QUANTITATIVE SUPPORT",
   "universe": 167,
   "counts": {
     "players": 167,
-    "adjudicated": 64,
-    "player_specific": 39,
+    "adjudicated": 62,
+    "player_specific": 42,
     "connected_context": 0,
-    "unbound_material": 25,
-    "near_term": 10,
+    "unbound_material": 20,
+    "near_term": 12,
     "season_long": 21,
     "upgrades": 6,
-    "downgrades": 27,
-    "holds": 134,
+    "downgrades": 29,
+    "holds": 132,
     "self_audit_errors": 0
   },
   "audit_errors": [],
@@ -234,21 +234,33 @@
       ]
     },
     {
-      "status": "NO_MATERIAL_CHANGE",
-      "horizon": "NONE",
-      "player_effect": "HOLD",
-      "near_term_projection": "HOLD",
+      "status": "ADJUDICATED",
+      "horizon": "NEAR_TERM",
+      "player_effect": "DOWNGRADE",
+      "near_term_projection": "REDUCE",
       "season_long_effect": "HOLD",
       "confidence": "HIGH",
-      "binding_status": "NO_MATERIAL_EVIDENCE",
-      "reason": "No new material football evidence.",
+      "binding_status": "PLAYER_SPECIFIC",
+      "reason": "Player-specific availability evidence materially deteriorated for the near term without establishing a season-long impairment.",
+      "evidence_excerpt": "who were the nfl s top stars in week 1 each wednesday the league unveils its weekly honor roll see who the players of the week are below afc offensive player of the week in his first game with the chiefs and since winning super bowl mvp for the seahawks walker stole the show as he propelled kansas city to an impressive 31 0 victory over the broncos walker posted a career best 173 rushing yards on 23 carries with a 60 yard highlight reel touchdown run included and added a td reception his 191 scrimmage yards were also a career high and the most for a reigning super bowl mvp in week 1 breaking hall of famer jerry rice s 1989 record of 180 this is walker s first player of the week accolade sinc",
+      "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
+      "proposed_projected_ppr": null,
+      "proposed_score": null,
+      "proposed_true_value_rank": null,
       "connected_player_effects": [],
       "player": "Trey McBride",
       "position": "TE",
       "team": "Arizona Cardinals",
       "current_true_value_rank": 13,
       "current_overall_rank": 11,
-      "implicated_components": []
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ]
     },
     {
       "status": "NO_MATERIAL_CHANGE",
@@ -918,14 +930,18 @@
     },
     {
       "status": "ADJUDICATED",
-      "horizon": "CURRENT_OUTLOOK",
-      "player_effect": "HOLD",
-      "near_term_projection": "HOLD",
+      "horizon": "NEAR_TERM",
+      "player_effect": "DOWNGRADE",
+      "near_term_projection": "REDUCE",
       "season_long_effect": "HOLD",
-      "confidence": "LOW",
-      "binding_status": "UNBOUND_MATERIAL_EVIDENCE",
-      "reason": "Material source text was present, but no player-specific event fragment, athlete-bound subject, or verified causal connected-player context was found; model/news impact is blocked pending review.",
+      "confidence": "HIGH",
+      "binding_status": "PLAYER_SPECIFIC",
+      "reason": "Player-specific availability evidence materially deteriorated for the near term without establishing a season-long impairment.",
+      "evidence_excerpt": "before the season began former miami dolphins quarterback ryan fitzpatrick predicted the fins could go 0 17 in 2026 after one week he s not scrambling away from that suggestion on a promotional tour for amazon prime s first thursday night football game this week the qb turned analyst doubled down in comments to barry jackson of the miami herald fitzpatrick s logic stems from miami s overhauled roster thanks to deals given out by the previous front office part of it is self inflicted with all the dead money fitzpatrick told jackson they ve got over 180 million in dead cap tua tagovailoa tyreek hill jaylen waddle bradley chubb jalen ramsey minkah fitzpatrick all those guys that are on the book",
       "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
+      "proposed_projected_ppr": null,
+      "proposed_score": null,
+      "proposed_true_value_rank": null,
       "connected_player_effects": [],
       "player": "Jaylen Waddle",
       "position": "WR",
@@ -1213,7 +1229,7 @@
       "confidence": "HIGH",
       "binding_status": "PLAYER_SPECIFIC",
       "reason": "Player-specific evidence indicates a potentially multi-week or season-long availability impairment.",
-      "evidence_excerpt": "nfl com keeps you up to date with all of the latest injury updates ahead of week 1 s sunday games read week 1 injury report injuries rb jeremiyah love questionable ankle is expected to play against the chargers nfl network insider ian rapoport reported injuries qb cooper rush is expected to start against the steelers after experiencing back spasms over the weekend espn s adam schefter reported per a source rush is active de jeremiyah love (ankle) considered game-time decision; ews from around the nfl visit nfl com s transaction hub for a daily breakdown injuries qb carson beck s status is still tbd with a ribs injury per hc mike lafleur who added the rookie s throwing session after monday s ",
+      "evidence_excerpt": "jeremiyah love (ankle) considered game-time decision; ews from around the nfl visit nfl com s transaction hub for a daily breakdown injuries qb carson beck s status is still tbd with a ribs injury per hc mike lafleur who added the rookie s throwing session after monday s practice went well rb jeremiyah love ankle is progressing but will be sidelined this week per lafleur wr xavier weaver placed on ir lb josh sweat knee has been activated off the pup list the pass rusher is practicing with a sleeve and brace on his left knee signings s devyn b",
       "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
       "proposed_projected_ppr": null,
       "proposed_score": null,
@@ -1369,7 +1385,6 @@
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ]
     },
@@ -1379,10 +1394,14 @@
       "player_effect": "HOLD",
       "near_term_projection": "HOLD",
       "season_long_effect": "HOLD",
-      "confidence": "LOW",
-      "binding_status": "UNBOUND_MATERIAL_EVIDENCE",
-      "reason": "Material source text was present, but no player-specific event fragment, athlete-bound subject, or verified causal connected-player context was found; model/news impact is blocked pending review.",
+      "confidence": "MEDIUM",
+      "binding_status": "PLAYER_SPECIFIC",
+      "reason": "Player-specific material evidence requires current-outlook adjudication.",
+      "evidence_excerpt": "dopp lays out fantasy concerns for justin herbert dopp lays out fantasy concerns for justin herbert dopp lays out fantasy concerns for justin herbert",
       "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
+      "proposed_projected_ppr": null,
+      "proposed_score": null,
+      "proposed_true_value_rank": null,
       "connected_player_effects": [],
       "player": "Justin Herbert",
       "position": "QB",
@@ -1686,7 +1705,6 @@
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ]
     },
@@ -2539,7 +2557,6 @@
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ]
     },
@@ -2657,29 +2674,21 @@
       ]
     },
     {
-      "status": "ADJUDICATED",
-      "horizon": "CURRENT_OUTLOOK",
+      "status": "NO_MATERIAL_CHANGE",
+      "horizon": "NONE",
       "player_effect": "HOLD",
       "near_term_projection": "HOLD",
       "season_long_effect": "HOLD",
-      "confidence": "LOW",
-      "binding_status": "UNBOUND_MATERIAL_EVIDENCE",
-      "reason": "Material source text was present, but no player-specific event fragment, athlete-bound subject, or verified causal connected-player context was found; model/news impact is blocked pending review.",
-      "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
+      "confidence": "HIGH",
+      "binding_status": "NO_MATERIAL_EVIDENCE",
+      "reason": "No new material football evidence.",
       "connected_player_effects": [],
       "player": "Deebo Samuel",
       "position": "WR",
       "team": "San Francisco 49ers",
       "current_true_value_rank": 119,
       "current_overall_rank": 130,
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ]
+      "implicated_components": []
     },
     {
       "status": "NO_MATERIAL_CHANGE",
@@ -2786,29 +2795,21 @@
       ]
     },
     {
-      "status": "ADJUDICATED",
-      "horizon": "CURRENT_OUTLOOK",
+      "status": "NO_MATERIAL_CHANGE",
+      "horizon": "NONE",
       "player_effect": "HOLD",
       "near_term_projection": "HOLD",
       "season_long_effect": "HOLD",
-      "confidence": "LOW",
-      "binding_status": "UNBOUND_MATERIAL_EVIDENCE",
-      "reason": "Material source text was present, but no player-specific event fragment, athlete-bound subject, or verified causal connected-player context was found; model/news impact is blocked pending review.",
-      "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
+      "confidence": "HIGH",
+      "binding_status": "NO_MATERIAL_EVIDENCE",
+      "reason": "No new material football evidence.",
       "connected_player_effects": [],
       "player": "Brock Purdy",
       "position": "QB",
       "team": "San Francisco 49ers",
       "current_true_value_rank": 127,
       "current_overall_rank": 138,
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ]
+      "implicated_components": []
     },
     {
       "status": "NO_MATERIAL_CHANGE",
@@ -3238,7 +3239,6 @@
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ]
     },
@@ -3340,28 +3340,21 @@
       ]
     },
     {
-      "status": "ADJUDICATED",
-      "horizon": "CURRENT_OUTLOOK",
+      "status": "NO_MATERIAL_CHANGE",
+      "horizon": "NONE",
       "player_effect": "HOLD",
       "near_term_projection": "HOLD",
       "season_long_effect": "HOLD",
-      "confidence": "LOW",
-      "binding_status": "UNBOUND_MATERIAL_EVIDENCE",
-      "reason": "Material source text was present, but no player-specific event fragment, athlete-bound subject, or verified causal connected-player context was found; model/news impact is blocked pending review.",
-      "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
+      "confidence": "HIGH",
+      "binding_status": "NO_MATERIAL_EVIDENCE",
+      "reason": "No new material football evidence.",
       "connected_player_effects": [],
       "player": "C.J. Stroud",
       "position": "QB",
       "team": "Houston Texans",
       "current_true_value_rank": 148,
       "current_overall_rank": 164,
-      "implicated_components": [
-        "role_volume",
-        "production",
-        "ceiling",
-        "weekly_reliability",
-        "offensive_environment"
-      ]
+      "implicated_components": []
     },
     {
       "status": "NO_MATERIAL_CHANGE",
