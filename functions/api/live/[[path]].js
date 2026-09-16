@@ -2,7 +2,7 @@ const CDN_SCOREBOARD='https://cdn.espn.com/core/nfl/scoreboard?xhr=1&limit=50';
 const CDN_GAME=id=>`https://cdn.espn.com/core/nfl/game?xhr=1&gameId=${encodeURIComponent(id)}`;
 const SITE_SCOREBOARD='https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?limit=100&dates=2026';
 const SITE_SUMMARY=id=>`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${encodeURIComponent(id)}`;
-const RAW='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/frontend/ctd-cloudflare-work';
+const RAW='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main';
 const H={'content-type':'application/json; charset=utf-8','cache-control':'no-store','access-control-allow-origin':'*'};
 const now=()=>new Date().toISOString();
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
