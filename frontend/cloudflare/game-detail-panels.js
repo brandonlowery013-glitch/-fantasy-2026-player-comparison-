@@ -90,13 +90,29 @@
     return `<h3>BETTING HISTORY &amp; MODEL RECORD</h3><p class="ctdDetailNote">Published historical context · ${esc(date(history?.generated_at))}</p>${bits.length?`<ul class="ctdDetailList">${bits.map(t=>`<li>${esc(t.text)} <small>(${esc(t.sample_size)} games)</small></li>`).join('')}</ul>`:empty('No published matchup history is available for this pairing.')}<p class="ctdDetailNote">Source: ${esc([...new Set(bits.map(t=>t.source))].join('; ')||'No historical source published')}. Trends are historical samples, not the current game result.</p><details open><summary>Stored pregame picks and lines · ${esc(s?.book||'No sportsbook snapshot')}</summary>${rows.length?`<div class="ctdDetailTableWrap"><table class="ctdDetailTable"><thead><tr><th>Recorded</th><th>Spread pick</th><th>Total pick</th><th>Moneyline pick</th><th>Home line</th><th>Total line</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${esc(date(x.captured_at))}</td>${['spread','total','moneyline'].map(k=>`<td>${esc(x.markets?.[k]?.recommendation?.selection||x.markets?.[k]?.recommendation?.decision||'Not published')}<br><small>${esc(settledPick(g,x,k))}</small></td>`).join('')}<td>${esc(g.home_team)} ${esc(x.market?.home_spread)}</td><td>${esc(x.market?.total)}</td></tr>`).join('')}</tbody></table></div>`:empty('No eligible pregame model snapshots have been published.')}</details><p class="ctdDetailNote">Results compare each displayed selection and its recorded line with the final score, including overtime. PASS is not a wager. These are snapshot outcomes, not a verified record of bets placed or an immutable pregame model archive. Closing-line value requires a verified closing line and entry price.</p>`;
   }
   function offenseDefense(g,d,defense){return `<h3>${defense?'DEFENSE':'OFFENSE'} · BOTH TEAMS</h3><div class="ctdDetailColumns">${[g.away_team,g.home_team].map(t=>`<section><h4>${esc(t)}</h4>${playerList(defense?playerRows(d,t,['defensive']).sort((a,b)=>(Number(b.stats?.TOT)||0)-(Number(a.stats?.TOT)||0)):playerRows(d,t,['passing','rushing','receiving']))}</section>`).join('')}</div>`}
+
+  function injuriesHtml(g,d){
+    const context=marketGame(g)?.personnel_context;
+    const concern=/^(questionable|doubtful|out|injured reserve|ir|physically unable to perform|pup|suspended|inactive)$/i;
+    const card=(x)=>`<div class="ctdDetailPlayer"><strong>${esc(x.name)} · ${esc(x.position||'')} <span style="color:#ffb6a5">${esc(x.designation)}</span></strong><span>Reported ${esc(date(x.reported_at))}${x.confirmed_for_game?' · Game status confirmed':' · Last reported designation'}</span>${x.practice_status?empty('Practice: '+x.practice_status):''}${x.impact?empty(x.impact):''}${x.depth_options?.length?empty('Next on the depth chart: '+x.depth_options.map(p=>p.name+(p.designation&&p.designation!=='Active'?' ('+p.designation+')':'')).join(', ')+'. Replacement role not confirmed.'):''}</div>`;
+    const columns=[g.away_team,g.home_team].map(team=>{
+      const record=Object.values(context?.teams||{}).find(t=>norm(t.team)===norm(team));
+      const summary=record?.weekly_injuries;
+      const valid=summary&&Number(summary.week)===Number(BET_FEED.week);
+      const items=valid?summary.items:(d?.injuries||[]).filter(x=>norm(x.team)===norm(team)&&concern.test(x.status)).map(x=>({name:x.player,designation:x.status,reported_at:x.source_updated_at,impact:x.detail,depth_chart_starter:true,long_term:/^(injured reserve|ir|pup|suspended)$/i.test(x.status)}));
+      const starters=items.filter(x=>x.depth_chart_starter&&!x.long_term),depth=items.filter(x=>!x.depth_chart_starter&&!x.long_term),long=items.filter(x=>x.long_term);
+      return `<section><h4>${esc(team)}</h4>${starters.map(card).join('')}${depth.length?`<details><summary>Other reported injuries · ${depth.length}</summary>${depth.map(card).join('')}</details>`:''}${long.length?`<details><summary>Long-term absences · ${long.length}</summary>${long.map(card).join('')}</details>`:''}${!items.length?empty('No unresolved injury designations supplied for this matchup.'):''}</section>`;
+    }).join('');
+    return `<h3>WEEK ${esc(BET_FEED.week)} · INJURY WATCH</h3>${empty('Last reported status stays visible until updated. Report dates are separate from game-day confirmation.')}<div class="ctdDetailColumns">${columns}</div>`;
+  }
+
   function tabs(g,d){
     let mount=document.getElementById('ctdGameTabContent');if(!mount){mount=document.createElement('section');mount.id='ctdGameTabContent';mount.className='ctdDetailPanel';document.querySelector('#gamesPage .tabs')?.after(mount)}
     mount.hidden=activeGameTab==='OVERVIEW';if(mount.hidden)return;
     if(activeGameTab==='OFFENSE'||activeGameTab==='DEFENSE')mount.innerHTML=offenseDefense(g,d,activeGameTab==='DEFENSE');
     else if(activeGameTab==='MATCHUP')mount.innerHTML=matchup(g,d);
     else if(activeGameTab==='BETTING HISTORY'||activeGameTab==='TRENDS')mount.innerHTML=historyHtml(g);
-    else if(activeGameTab==='INJURIES')mount.innerHTML=`<h3>REPORTED INJURIES</h3>${d?.injuries?.length?d.injuries.map(x=>row(`${x.player} · ${x.team}`,`${x.status} · ${x.detail||''}`)).join(''):empty('No injury report was included in this game feed. This does not confirm that every player is healthy or active.')}`;
+    else if(activeGameTab==='INJURIES')mount.innerHTML=injuriesHtml(g,d);
   }
   function render(){
     const g=selected();if(!g)return;const record=games.get(key(g)),d=record?.data;
