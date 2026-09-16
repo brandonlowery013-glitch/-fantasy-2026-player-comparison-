@@ -1,3 +1,4 @@
+import {gameContextEvidence} from '../lib/game-context-evidence.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import {simulateGameDistribution,outcomeProbabilities,moneylineProbabilities,evaluateTwoWay,recommendation} from '../lib/game-market-probability.mjs';
@@ -8,6 +9,8 @@ const write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true
 const contract=read('data/sources/game-market-recommendation-layer-2026.json');
 const projections=read('data/probability/generated/weekly-game-projections-2026.json');
 const markets=read('data/market/weekly-matchup-market-snapshots-2026.json');
+const contextPath=path.join(root,'data/probability/weekly-football-context-inputs-2026.json');
+const footballContext=fs.existsSync(contextPath)?JSON.parse(fs.readFileSync(contextPath,'utf8')):null;
 const roundObj=x=>JSON.parse(JSON.stringify(x,(k,v)=>typeof v==='number'?Number(v.toFixed(6)):v));
 
 function synthetic(){return {
@@ -79,7 +82,7 @@ for(const [gameId,mg] of Object.entries(src.markets.games||{})){
   }
   const eligible=evaluations.filter(x=>x.eligible_for_current_recommendation).sort((a,b)=>Date.parse(a.captured_at)-Date.parse(b.captured_at));
   const latest=eligible.at(-1)||null;
-  games[gameId]={week:mg.week,away_team:game.away_team,home_team:game.home_team,kickoff:mg.kickoff||game.event_start,football_projection:{home_score_mean:game.model.home_score_mean,away_score_mean:game.model.away_score_mean,model_home_spread:game.model.model_home_spread,model_total:game.model.model_total,home_win_probability:game.model.home_win_probability,away_win_probability:game.model.away_win_probability,tie_probability:game.model.tie_probability},snapshot_evaluations:evaluations,current_recommendations:latest?{snapshot_id:latest.snapshot_id,captured_at:latest.captured_at,book:latest.book,spread:latest.markets.spread?.recommendation||{decision:'PASS',selection:null,confidence:null,reason:'Spread market unavailable'},total:latest.markets.total?.recommendation||{decision:'PASS',selection:null,confidence:null,reason:'Total market unavailable'},moneyline:latest.markets.moneyline?.recommendation||{decision:'PASS',selection:null,confidence:null,reason:'Moneyline market unavailable'}}:null,sportsbook_inputs_used_for_football_projection:false,mode:'SHADOW_ONLY',actionable:false};
+  games[gameId]={context_evidence:gameContextEvidence(self?null:footballContext,game,currentWeek),week:mg.week,away_team:game.away_team,home_team:game.home_team,kickoff:mg.kickoff||game.event_start,football_projection:{home_score_mean:game.model.home_score_mean,away_score_mean:game.model.away_score_mean,model_home_spread:game.model.model_home_spread,model_total:game.model.model_total,home_win_probability:game.model.home_win_probability,away_win_probability:game.model.away_win_probability,tie_probability:game.model.tie_probability},snapshot_evaluations:evaluations,current_recommendations:latest?{snapshot_id:latest.snapshot_id,captured_at:latest.captured_at,book:latest.book,spread:latest.markets.spread?.recommendation||{decision:'PASS',selection:null,confidence:null,reason:'Spread market unavailable'},total:latest.markets.total?.recommendation||{decision:'PASS',selection:null,confidence:null,reason:'Total market unavailable'},moneyline:latest.markets.moneyline?.recommendation||{decision:'PASS',selection:null,confidence:null,reason:'Moneyline market unavailable'}}:null,sportsbook_inputs_used_for_football_projection:false,mode:'SHADOW_ONLY',actionable:false};
 }
 
 if(self){
