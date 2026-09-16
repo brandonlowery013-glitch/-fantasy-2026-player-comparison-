@@ -61,13 +61,15 @@ function evaluateSnapshot(gameId,game,s,draws){
  }
 
 const self=process.argv.includes('--self-test'),src=self?synthetic():{projections,markets};
-if(self)src.markets.games['2026-W2-DET-BUF']={week:2,snapshots:[]};
+if(self){src.markets.games['2026-W2-DET-BUF']={week:2,snapshots:[]};src.projections.games['2026-W1-NO-ATL']={...src.projections.games['2026-W1-GB-CHI'],home_team:'ATL',away_team:'NO'};}
 const blocked=[],games={},historicalGames=[];
 const currentWeek=Number(src.projections.week);
 if(!Number.isInteger(currentWeek)||currentWeek<1||currentWeek>18)blocked.push('Current projection week is invalid');
 if(src.projections.sportsbook_inputs_used!==false)blocked.push('Step 14 football projections show market contamination');
 if(src.markets.market_context_only!==true||src.markets.probability_fit_input!==false)blocked.push('Market snapshot contract flags invalid');
-for(const [gameId,mg] of Object.entries(src.markets.games||{})){
+const marketGames={...(src.markets.games||{})};
+for(const [gameId,g] of Object.entries(src.projections.games||{}))if(!marketGames[gameId])marketGames[gameId]={week:currentWeek,home_team:g.home_team,away_team:g.away_team,kickoff:g.event_start,snapshots:[]};
+for(const [gameId,mg] of Object.entries(marketGames)){
   const marketWeek=Number(mg.week);
   if(!Number.isInteger(marketWeek)||marketWeek<1||marketWeek>18){blocked.push(`${gameId} market week is invalid`);continue;}
   if(marketWeek!==currentWeek){historicalGames.push(gameId);continue;}
@@ -86,6 +88,7 @@ for(const [gameId,mg] of Object.entries(src.markets.games||{})){
 }
 
 if(self){
+  if(!games['2026-W1-NO-ATL']||games['2026-W1-NO-ATL'].current_recommendations!==null||games['2026-W1-NO-ATL'].snapshot_evaluations.length)blocked.push('Projected games without prices must remain represented without invented recommendations');
   if(!historicalGames.includes('2026-W2-DET-BUF')||games['2026-W2-DET-BUF'])blocked.push('Other-week markets must remain outside current recommendations');
   const many=Array.from({length:10000},(_,i)=>({snapshot_id:String(i),book:'TEST',snapshot_kind:'CURRENT',captured_at:new Date(1700000000000+i*1000).toISOString(),home_spread:-3,home_spread_price:-110,away_spread_price:-110}));
   const kept=servingSnapshots(many,1800000000000);

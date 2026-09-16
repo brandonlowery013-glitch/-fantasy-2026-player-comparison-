@@ -28,6 +28,8 @@ jobs:
           node-version: '20'
       - name: Validate Step 24 orchestration contract
         run: node scripts/validate-weekly-production-orchestration-contract.mjs
+      - name: Verify complete selected-week schedule
+        run: node scripts/test-complete-week-schedule.mjs
       - name: Validate game-aware cadence policy
         run: node scripts/production-cadence-gate.mjs --self-test
       - name: Validate hourly injury-change polling
