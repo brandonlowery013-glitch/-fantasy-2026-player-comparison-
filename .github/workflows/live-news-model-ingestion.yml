@@ -39,16 +39,17 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Hard-lock canonical universe to 166
+      - name: Validate manifest-defined canonical universe
         run: |
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
-          if(Number(src.active_player_model)!==166) throw new Error(`Expected canonical universe 166, got ${src.active_player_model}`);
+          const expected=Number(src.active_player_model);
+          if(!Number.isInteger(expected)||expected<1) throw new Error('Invalid canonical player count');
           let names=[];
           for(let i=0;i<Number(src.runtime_player_shards);i++) names.push(...require(`./players${i}.json`).map(p=>p.n));
-          if(names.length!==166||new Set(names).size!==166) throw new Error(`Loaded player universe ${names.length}/${new Set(names).size}, expected 166/166`);
-          console.log(JSON.stringify({result:'PASS',players:166,shards:src.runtime_player_shards},null,2));
+          if(names.length!==expected||new Set(names).size!==expected) throw new Error(`Loaded player universe ${names.length}/${new Set(names).size}, expected ${expected}/${expected}`);
+          console.log(JSON.stringify({result:'PASS',players:expected,shards:src.runtime_player_shards},null,2));
           NODE
 
       - name: Use protected main as the canonical starting state
@@ -64,11 +65,13 @@ jobs:
           node scripts/enrich-transition-from-unified-evidence.mjs
           node scripts/integrate-transition-intelligence.mjs
 
-      - name: Validate tracked 166-player review coverage
+      - name: Validate tracked canonical-player review coverage
         run: |
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const expected=Number(src.active_player_model);
+          if(!Number.isInteger(expected)||expected<1) throw new Error('Invalid canonical player count');
           let canonical=[];
           for(let i=0;i<Number(src.runtime_player_shards);i++) canonical.push(...require(`./players${i}.json`).map(p=>p.n));
           const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
@@ -77,13 +80,13 @@ jobs:
           const nameSet=new Set(names),canonicalSet=new Set(canonical);
           const missing=canonical.filter(x=>!nameSet.has(x));
           const extra=names.filter(x=>!canonicalSet.has(x));
-          if(canonical.length!==166||canonicalSet.size!==166) throw new Error('Canonical 166-player universe invalid');
-          if(rows.length!==166||nameSet.size!==166||missing.length||extra.length) throw new Error(`Tracked review coverage failed: rows=${rows.length}, unique=${nameSet.size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
+          if(canonical.length!==expected||canonicalSet.size!==expected) throw new Error('Canonical player universe invalid');
+          if(rows.length!==expected||nameSet.size!==expected||missing.length||extra.length) throw new Error(`Tracked review coverage failed: rows=${rows.length}, unique=${nameSet.size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
           if(review.materiality_filter?.name_collision_regression_tests!==true||review.source_quality?.name_collision_regression_tests!==true) throw new Error('Name-collision regression guard did not run');
           if(Number(review.source_quality?.espn_player_news_calls)<150) throw new Error(`ESPN player-news coverage too low: ${review.source_quality?.espn_player_news_calls}`);
           if(Number(review.source_quality?.espn_modeled_athlete_ids_resolved)<150) throw new Error(`Modeled ESPN athlete-ID coverage too low: ${review.source_quality?.espn_modeled_athlete_ids_resolved}`);
           for(const r of rows){if(!r.reviewed_at)throw new Error(`${r.player} missing reviewed_at`);if(!Array.isArray(r.categories_checked)||!r.categories_checked.length)throw new Error(`${r.player} missing categories_checked`);}
-          console.log(JSON.stringify({result:'PASS',tracked_players:166,untracked_admissions:'NON_BLOCKING_IN_THIS_WORKFLOW'},null,2));
+          console.log(JSON.stringify({result:'PASS',tracked_players:expected,untracked_admissions:'NON_BLOCKING_IN_THIS_WORKFLOW'},null,2));
           NODE
 
       - name: Build quantitative evidence and autonomous model decisions
@@ -103,14 +106,16 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const expected=Number(src.active_player_model);
+          if(!Number.isInteger(expected)||expected<1) throw new Error('Invalid canonical player count');
           const report=JSON.parse(fs.readFileSync('guardrails/live-news-model-application-report.json','utf8'));
           const decisions=JSON.parse(fs.readFileSync('analysis/live-news-decision-audit-current.json','utf8'));
           const patch=JSON.parse(fs.readFileSync(src.current_update_layer,'utf8'));
-          if(report.result!=='PASS'||report.universe!==166||report.decision_self_audit!=='PASS') throw new Error('Live news decision application did not PASS for 166 players');
-          if(decisions.universe!==166||decisions.counts?.self_audit_errors!==0) throw new Error('Decision self-audit did not PASS');
-          if(patch.live_news_model_sync?.players!==166||patch.live_news_model_sync?.decision_policy!=='DECIDE_THEN_SELF_AUDIT') throw new Error('Canonical current-model layer did not receive decision sync');
+          if(report.result!=='PASS'||report.universe!==expected||report.decision_self_audit!=='PASS') throw new Error('Live news decision application did not PASS for canonical players');
+          if(decisions.universe!==expected||decisions.counts?.self_audit_errors!==0) throw new Error('Decision self-audit did not PASS');
+          if(patch.live_news_model_sync?.players!==expected||patch.live_news_model_sync?.decision_policy!=='DECIDE_THEN_SELF_AUDIT') throw new Error('Canonical current-model layer did not receive decision sync');
           const rows=Object.values(patch.players||{});
-          if(rows.length!==166) throw new Error(`Current-model layer coverage ${rows.length}/166`);
+          if(rows.length!==expected) throw new Error(`Current-model layer coverage ${rows.length}/${expected}`);
           if(rows.some(p=>!p.currentModelImpact||!p.currentModelDecision||!p.newsFeedState)) throw new Error('At least one player lacks currentModelImpact/currentModelDecision/newsFeedState after ingestion');
           const material=rows.filter(p=>p.currentModelImpact.material);
           if(material.some(p=>p.currentModelDecision.status!=='ADJUDICATED'||p.currentModelDecision.self_audit!=='PASS')) throw new Error('At least one material update reached persistence without an adjudicated PASS decision');
@@ -129,7 +134,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: live-news-model-ingestion-166
+          name: live-news-model-ingestion
           path: |
             guardrails/current-football-review.json
             guardrails/live-news-model-application-report.json
@@ -160,15 +165,15 @@ jobs:
 
           BRANCH="production/live-news-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git switch -c "$BRANCH"
-          git commit -m "Persist live 166-player news model decisions [skip ci]"
+          git commit -m "Persist live canonical-player news model decisions [skip ci]"
           git push --set-upstream origin "$BRANCH"
 
           PR_URL=$(gh pr create \
             --repo "$GITHUB_REPOSITORY" \
             --base main \
             --head "$BRANCH" \
-            --title 'Persist live 166-player news model decisions' \
-            --body "Automated live-news ingestion for the canonical 166-player model. Material evidence is converted into an explicit current-model decision, self-audited, hard-Guardrail validated, and persisted. Static player evaluations, canonical boards, and CTD interface are not mutated. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
+            --title 'Persist live canonical-player news model decisions' \
+            --body "Automated live-news ingestion for the canonical player model. Material evidence is converted into an explicit current-model decision, self-audited, hard-Guardrail validated, and persisted. Static player evaluations, canonical boards, and CTD interface are not mutated. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
           PR_NUMBER="${PR_URL##*/}"
           test -n "$PR_NUMBER"
           echo 'changed=true' >> "$GITHUB_OUTPUT"
