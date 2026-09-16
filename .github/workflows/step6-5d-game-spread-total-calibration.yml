@@ -27,11 +27,18 @@ jobs:
         run: node scripts/backtest-step6-5d-game-spread-total-calibration.mjs --self-test
       - name: Run historical Step 6.5D game calibration
         run: node scripts/backtest-step6-5d-game-spread-total-calibration.mjs
+      - name: Validate matchup and personnel ablations against deployed baseline
+        run: |
+          node scripts/backtest-matchup-score-candidate.mjs
+          node scripts/test-current-game-scoring.mjs
       - name: Upload Step 6.5D calibration artifact
         uses: actions/upload-artifact@v4
         with:
           name: step6-5d-game-spread-total-calibration
-          path: data/probability/generated/step6-5d-game-spread-total-calibration.json
+          path: |
+            data/probability/generated/step6-5d-game-spread-total-calibration.json
+            data/probability/generated/matchup-score-validation-2026.json
+            data/probability/generated/game-scoring-model-2026.json
           if-no-files-found: error
       - name: Revalidate Step 5 permissions
         run: node scripts/validate-ui-permissions-step5.mjs

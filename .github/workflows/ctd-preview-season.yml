@@ -142,7 +142,9 @@ jobs:
         run: node scripts/build-game-team-scoring-priors.mjs
       - name: Stage 4 - build weekly NFL game projections
         if: steps.context.outputs.ready == 'true'
-        run: node scripts/build-weekly-game-projections.mjs
+        run: |
+          node scripts/refresh-current-game-scoring.mjs
+          node scripts/build-weekly-game-projections.mjs
       - name: Stage 5 - capture live market snapshots
         if: steps.context.outputs.ready == 'true'
         env:

@@ -17,6 +17,11 @@ const review=(name,details)=>checks.push({name,status:'REVIEW_REQUIRED',details}
 const pass=(name,details)=>checks.push({name,status:'PASS',details});
 const insufficient=(name,details)=>checks.push({name,status:'INSUFFICIENT_DATA',details});
 
+if(exists('data/sources/weekly-game-projection-engine-2026.json')&&read('data/sources/weekly-game-projection-engine-2026.json').calibrated_scoring?.enabled){
+  try{execFileSync(process.execPath,['scripts/test-current-game-scoring.mjs'],{cwd:root,stdio:'pipe'});pass('calibrated_game_scoring','Historical/live parity, provenance, leakage, and ablation gates passed');}
+  catch(e){block('calibrated_game_scoring',String(e.stderr||e.message));}
+}
+
 pass('source_of_truth_count',String(authoritativePlayerCount));
 pass('source_of_truth_shards',String(authoritativePlayerShards));
 if(cfg.authoritative_player_count!=null&&Number(cfg.authoritative_player_count)!==authoritativePlayerCount) review('legacy_config_count',`non-authoritative guardrail config=${cfg.authoritative_player_count}, canonical=${authoritativePlayerCount}`);

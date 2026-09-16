@@ -69,7 +69,9 @@ jobs:
       - name: Build or reuse historical team scoring priors
         run: node scripts/build-game-team-scoring-priors.mjs
       - name: Build weekly NFL game projections
-        run: node scripts/build-weekly-game-projections.mjs
+        run: |
+          node scripts/refresh-current-game-scoring.mjs
+          node scripts/build-weekly-game-projections.mjs
       - name: Validate generated football-only projections
         run: |
           node scripts/validate-weekly-game-projection-contract.mjs
@@ -84,7 +86,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$branch"
-          git add data/probability/generated/game-team-scoring-priors-2023-2025.json data/probability/generated/weekly-game-projections-2026.json guardrails/game-team-scoring-priors-report.json guardrails/weekly-game-projection-report.json
+          git add data/probability/generated/current-game-scoring-2026.json data/probability/generated/game-team-scoring-priors-2023-2025.json data/probability/generated/weekly-game-projections-2026.json guardrails/game-team-scoring-priors-report.json guardrails/weekly-game-projection-report.json
           git commit -m "Production: update weekly football-only projections"
           git push origin HEAD:refs/heads/$branch --force
           echo "Validated output published to $branch. Merge to main only through a guardrail-checked PR."
