@@ -29,13 +29,13 @@
   function betting(){
     const mode=window.CTD_MODEL_STATE_2026?.actionable?'Current published model output':'Analysis only — current model output is not actionable';
     const matchingWeek=Number(finalFeed?.week)===Number(BET_FEED?.week);
-    const props=matchingWeek?(finalFeed?.props||[]):[],parlays=matchingWeek?(finalFeed?.parlays||[]):[];
+    const eligible=x=>!x.player||window.CTD_WEEKLY_ELIGIBILITY?.(x.player,BET_FEED.week)?.state==='ELIGIBLE';const props=matchingWeek?(finalFeed?.props||[]).filter(eligible):[],parlays=matchingWeek?(finalFeed?.parlays||[]).filter(x=>(x.legs||[]).every(id=>{const leg=finalFeed?.eligible_legs?.find(l=>l.leg_id===id);return leg&&eligible(leg)})):[];
     for(const [panel,rows] of [['props',props],['parlays',parlays]]){
       document.querySelector(`[data-bet-panel="${panel}"]`).innerHTML=`<div class="panel"><h3>${panel.toUpperCase()}</h3><p class="copy">${escape(mode)}</p>${Array.isArray(rows)&&rows.length?rows.map(bettingCard).join(''):`<p class="copy">${finalFeed?'No '+panel+' have been published for Week '+(BET_FEED?.week||'—')+'.':'Published '+panel+' feed is unavailable.'}</p>`}</div>`;
     }
   }
   async function finalData(){try{const r=await fetch(RAW+'data/market/final-betting-ui-feed-2026.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);finalFeed=await r.json();betting()}catch{finalFeed=null;betting()}}
-  document.addEventListener('ctd:games-ready',betting);
+  document.addEventListener('ctd:games-ready',betting);document.addEventListener('ctd:player-context-ready',betting);
   finalData();setInterval(finalData,60000);
   const report=document.querySelector('.actions .primary');
   report.addEventListener('click',()=>{
@@ -178,6 +178,27 @@ function sharedPlayer(name){
  const news=profileNews.filter(n=>{const text=playerKey((n.headline||n.title||'')+' '+(n.summary||n.description||''));return text.includes(playerKey(name));}).slice(0,5);
  return {roster,report,projection,news,game,week:weeklySchedule?.week,opponent:game?(game.home_team===roster.team?game.away_team:game.home_team):null};
 }
+
+function weeklyEligibility(name,week){
+ const v=sharedPlayer(name),r=v.roster,status=String(v.report?.status||'').toLowerCase();
+ if(!r||Number(personnel?.week)!==Number(week)||!v.game)return {state:'WAIT',reason:'Current-week availability not supplied',player:name};
+ if(/^(out|inactive|injured reserve|ir|pup|physically unable to perform|suspended)$/.test(status))return {state:'UNAVAILABLE',reason:'Reported '+v.report.status,player:name,report:v.report,roster:r};
+ if(/^(questionable|doubtful)$/.test(status))return {state:'CONDITIONAL',reason:v.report.status+' — use only if cleared and role confirmed',player:name,report:v.report,roster:r};
+ const age=Date.now()-Date.parse(personnel.captured_at);
+ if(age<0||age>86400000||r.game_availability!=='EXPECTED_ACTIVE')return {state:'WAIT',reason:'Availability needs confirmation',player:name,roster:r};
+ return {state:'ELIGIBLE',reason:'Expected active; not game-day confirmation',player:name,roster:r};
+}
+window.CTD_WEEKLY_ELIGIBILITY=weeklyEligibility;
+window.CTD_WEEKLY_AVAILABILITY=()=> (window.CTD_CANONICAL_PLAYERS_2026||[]).map(p=>weeklyEligibility(p.name,weeklySchedule?.week));
+window.CTD_REPLACEMENT_WATCH=()=>{
+ const rows=[];for(const t of Object.values(personnel?.teams||{}))for(const p of t.players||[]){
+ const a=weeklyEligibility(p.name,weeklySchedule?.week);if(!['UNAVAILABLE','CONDITIONAL'].includes(a.state)||!p.depth_roles?.some(d=>d.rank===1))continue;
+ const positions=new Set(p.depth_roles.filter(d=>d.rank===1).map(d=>d.position));
+ const options=t.players.filter(q=>q.athlete_id!==p.athlete_id&&q.depth_roles?.some(d=>positions.has(d.position)&&d.rank>1)&&weeklyEligibility(q.name,weeklySchedule?.week).state!=='UNAVAILABLE').slice(0,3);
+ if(options.length)rows.push({player:p.name,status:a.reason,options:options.map(q=>q.name),team:t.team});
+ }return rows;
+};
+
 async function refreshPlayerContext(){
  const paths=['data/ingestion/team-personnel-2026.json','data/calibration/weekly-event-schedule-2026.json','data/probability/weekly-projection-inputs-2026.json'];
  const values=await Promise.allSettled([...paths.map(p=>read(raw+p)),read('/api/live/news')]);
