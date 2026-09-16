@@ -181,6 +181,8 @@ document.addEventListener('click',ev=>{const p=ev.target.closest('[data-profile]
     .catch(err=>console.error('CTD live score bootstrap failed',err))
     .then(()=>load('./game-detail-panels.js'))
     .catch(err=>console.error('CTD game detail panels failed',err))
+    .then(()=>load('./live-odds.js'))
+    .catch(err=>console.error('CTD live odds failed',err))
     .then(()=>load('./news-updates.js'))
     .catch(err=>console.error('CTD news updates failed',err));
 })();
