@@ -28,12 +28,14 @@
   if(window.CTD_CANONICAL_PLAYERS_2026)canonical();
   function betting(){
     const mode=window.CTD_MODEL_STATE_2026?.actionable?'Current published model output':'Analysis only — current model output is not actionable';
-    const props=finalFeed?.props||[],parlays=finalFeed?.parlays||[];
+    const matchingWeek=Number(finalFeed?.week)===Number(BET_FEED?.week);
+    const props=matchingWeek?(finalFeed?.props||[]):[],parlays=matchingWeek?(finalFeed?.parlays||[]):[];
     for(const [panel,rows] of [['props',props],['parlays',parlays]]){
-      document.querySelector(`[data-bet-panel="${panel}"]`).innerHTML=`<div class="panel"><h3>${panel.toUpperCase()}</h3><p class="copy">${escape(mode)}</p>${Array.isArray(rows)&&rows.length?rows.map(bettingCard).join(''):`<p class="copy">${finalFeed?'No '+panel+' have been published in the current GitHub feed.':'Published '+panel+' feed is unavailable.'}</p>`}</div>`;
+      document.querySelector(`[data-bet-panel="${panel}"]`).innerHTML=`<div class="panel"><h3>${panel.toUpperCase()}</h3><p class="copy">${escape(mode)}</p>${Array.isArray(rows)&&rows.length?rows.map(bettingCard).join(''):`<p class="copy">${finalFeed?'No '+panel+' have been published for Week '+(BET_FEED?.week||'—')+'.':'Published '+panel+' feed is unavailable.'}</p>`}</div>`;
     }
   }
   async function finalData(){try{const r=await fetch(RAW+'data/market/final-betting-ui-feed-2026.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);finalFeed=await r.json();betting()}catch{finalFeed=null;betting()}}
+  document.addEventListener('ctd:games-ready',betting);
   finalData();setInterval(finalData,60000);
   const report=document.querySelector('.actions .primary');
   report.addEventListener('click',()=>{

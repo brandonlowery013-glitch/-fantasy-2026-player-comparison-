@@ -134,7 +134,7 @@ border-radius:6px;overflow:hidden}
   <div class="content">
     <div class="livebar">
       <h2>NFL LIVE BOARD</h2>
-      <select><option>Week 1</option></select>
+      <select id="liveWeekSelect" aria-label="NFL week"><option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option><option value="4">Week 4</option><option value="5">Week 5</option><option value="6">Week 6</option><option value="7">Week 7</option><option value="8">Week 8</option><option value="9">Week 9</option><option value="10">Week 10</option><option value="11">Week 11</option><option value="12">Week 12</option><option value="13">Week 13</option><option value="14">Week 14</option><option value="15">Week 15</option><option value="16">Week 16</option><option value="17">Week 17</option><option value="18">Week 18</option></select>
       <select><option>All Games</option></select>
       <div class="oddsby">Odds by <b>SPORTSBOOK</b></div>
       <div class="refresh">Auto-Refresh: <b>On</b></div>
@@ -544,11 +544,40 @@ document.getElementById('weeklyTabs')?.addEventListener('click',e=>{
  document.querySelectorAll('[data-weekly]').forEach(x=>x.classList.toggle('active',x===b));renderWeekly();
 });
 document.getElementById('weeklyCategoryMount').textContent='Loading published weekly data…';
+let selectedLiveWeek=null, feedRequest=0;
+const weekSelector=document.getElementById('liveWeekSelect');
+weekSelector.addEventListener('change',()=>{selectedLiveWeek=Number(weekSelector.value);selectedGameIndex=0;loadFeed()});
 async function loadFeed(){
+  const request=++feedRequest;
+  let targetWeek=selectedLiveWeek;
+
   try{
     const r=await fetch(`${RAW}${FEED_PATH}?ts=${Date.now()}`,{cache:'no-store'});
     if(!r.ok)throw new Error(`feed ${r.status}`);
-    const raw=await r.json();
+    let raw=await r.json();
+    if(targetWeek===null){
+      try{const sr=await fetch(`${RAW}data/calibration/weekly-event-schedule-2026.json?ts=${Date.now()}`,{cache:'no-store'});if(sr.ok){const schedule=await sr.json();targetWeek=Number(schedule.week)}}catch{}
+      if(!Number.isInteger(targetWeek)||targetWeek<1||targetWeek>18)targetWeek=Number(raw.week)||1;
+    }
+    if(request!==feedRequest)return;
+    weekSelector.value=String(targetWeek);
+    if(Number(raw.week)!==targetWeek&&targetWeek===1){
+      const historyRoot=RAW.replace('/main/','/31f85ec6e4a819c6d41258f676225ac634e053e0/');
+      try{const hr=await fetch(`${historyRoot}${FEED_PATH}`,{cache:'force-cache'});if(hr.ok){const historical=await hr.json();if(Number(historical.week)===targetWeek)raw=historical}}catch{}
+    }
+    if(Number(raw.week)!==targetWeek){
+      const sr=await fetch(`/api/live/scoreboard?week=${targetWeek}`,{cache:'no-store'});
+      if(!sr.ok)throw Error(`Week ${targetWeek} schedule ${sr.status}`);
+      const schedule=await sr.json();
+      if(request!==feedRequest)return;
+      const rows=schedule.games||schedule.data?.games||[];
+      BET_FEED={week:targetWeek,status:'SCHEDULE_ONLY',actionable:false,props:[],parlays:[],eligible_legs:[],games:rows.map(g=>({event_id:g.event_id,away_team:g.away.team,home_team:g.home.team,event_start:g.start_at,status:g.status,completed:g.state==='post',away_score:g.state==='pre'?null:g.away.score,home_score:g.state==='pre'?null:g.home.score,venue:g.venue||`Week ${targetWeek}`,model_pick:'PENDING',total_pick:'PENDING',model_spread_pick:'PENDING',moneyline_pick:'PENDING',model_summary:`Week ${targetWeek} games are available. Matching published lines and model analysis are pending.`}))};
+      selectedGameIndex=0;
+      renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);document.dispatchEvent(new Event('ctd:games-ready'));
+      document.documentElement.dataset.gameFeedStatus=BET_FEED.status;
+      return;
+    }
+    if(request!==feedRequest)return;
     const games=[];
     for(const [gameId,g] of Object.entries(raw.games||{})){
       const snaps=(g.snapshot_evaluations||[]).filter(x=>x.eligible_for_current_recommendation!==false);
@@ -578,7 +607,7 @@ async function loadFeed(){
         model_spread_pick:spreadSel||'PASS',
         moneyline_pick:mlSel||'PASS',
         model_summary:picks.length?`Our model has ${picks.length} qualified market edge${picks.length===1?'':'s'} at the current ${dk.book||'sportsbook'} lines.`:'No current game market clears the locked betting threshold.',
-        venue:'Current Week 1 market · '+(dk.book||'sportsbook'),
+        venue:`Week ${targetWeek} market · `+(dk.book||'sportsbook'),
         spread_breakdown:{
           model_projection_away:fp.away_score_mean?.toFixed?.(1)??fp.away_score_mean,
           model_projection_home:fp.home_score_mean?.toFixed?.(1)??fp.home_score_mean,
@@ -603,7 +632,8 @@ async function loadFeed(){
     renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);document.dispatchEvent(new Event('ctd:games-ready'));
     document.documentElement.dataset.gameFeedStatus=BET_FEED.status;
   }catch(err){
-    BET_FEED={status:'FEED_UNAVAILABLE',games:[],props:[],parlays:[],eligible_legs:[]};
+    if(request!==feedRequest)return;
+    BET_FEED={week:targetWeek,status:'FEED_UNAVAILABLE',games:[],props:[],parlays:[],eligible_legs:[]};
     renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);document.dispatchEvent(new Event('ctd:games-ready'));
     document.getElementById('gameVenue').textContent=`Live market feed unavailable: ${err.message}`;
   }

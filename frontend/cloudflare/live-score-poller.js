@@ -72,7 +72,7 @@
       if(!r.ok)throw Error(`ESPN ${r.status}`);
       const data=await r.json();
       const rows=(data.events||[]).map(parseEvent).filter(Boolean);
-      if(rows.length)apply(rows);
+      if(rows.length&&currentWeek()===week)apply(rows);
     }catch(err){console.warn('Live score poll failed; keeping last known scores.',err)}
     finally{busy=false;}
   }
