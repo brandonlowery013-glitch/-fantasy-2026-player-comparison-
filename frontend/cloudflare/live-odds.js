@@ -7,7 +7,7 @@
   let feed=null,busy=false,sequence=0;
   function render(){
     const host=document.querySelector('#gamesPage .lowgrid');if(!host)return;
-    let panel=document.getElementById('ctdLiveOdds');if(!panel){panel=document.createElement('section');panel.id='ctdLiveOdds';panel.className='panel';host.prepend(panel)}
+    let panel=document.getElementById('ctdLiveOdds');if(!panel){panel=document.createElement('section');panel.id='ctdLiveOdds';panel.className='panel';host.before(panel)}
     const g=BET_FEED.games?.[selectedGameIndex];
     const match=g&&feed?.games?.find(x=>code(x.home_team)===code(g.home_team)&&code(x.away_team)===code(g.away_team)&&Math.abs(Date.parse(x.start_at)-Date.parse(g.event_start||g.kickoff))<21600000);
     panel.innerHTML='<h3>LIVE SPORTSBOOK LINES</h3>';
