@@ -1,6 +1,6 @@
 {
   "schema_version": "1.5.0",
-  "generated_at": "2026-09-16T04:51:39.824Z",
+  "generated_at": "2026-09-16T16:52:51.066Z",
   "authoritative": false,
   "mutation_policy": "PROPOSAL_ONLY_NO_CANONICAL_WRITES",
   "universe": {
@@ -10,10 +10,10 @@
   "counts": {
     "UP": 0,
     "DOWN": 0,
-    "MATERIAL_HOLD": 62,
+    "MATERIAL_HOLD": 60,
     "POSITIVE_HOLD": 0,
     "NEGATIVE_HOLD": 0,
-    "NO_MATERIAL_UPDATE": 105
+    "NO_MATERIAL_UPDATE": 107
   },
   "validation": {
     "exact_universe": true,
@@ -570,10 +570,25 @@
       "player": "Trey McBride",
       "pos": "TE",
       "team": "Arizona Cardinals",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "NFL.com",
+          "headline": "Chiefs RB Kenneth Walker, Bears RB D&#x27;Andre Swift highlight Players of the Week",
+          "matched_context": "player of the week fehoko played a pivotal role in the cardinals 26 14 win over the chargers on sunday with the cards lead cut to 16 14 fehoko came up huge with a blocked punt two plays later arizona increased its lead with a trey mcbride touchdown in his sixth nfl season with his third club fehoko is taking home his first player of the week honor",
+          "description": "Chicago running back D&#x27;Andre Swift and Kansas City running back Kenneth Walker earned Offensive Player of the Week accolades for the first week of the season. ",
+          "published": "2026-09-16T16:00:10.174Z",
+          "url": "https://www.nfl.com/news/players-of-the-week-2026-week-1-kenneth-walker-dandre-swift",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "ARI",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.386,
@@ -589,21 +604,29 @@
           "sustainability": 9.6
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "player of the week fehoko played a pivotal role in the cardinals 26 14 win over the chargers on sunday with the cards lead cut to 16 14 fehoko came up huge with a blocked punt two plays later arizona increased its lead with a trey mcbride touchdown in his sixth nfl season with his third club fehoko is taking home his first player of the week honor",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.386,
       "proposed_true_value_rank": 13,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Arizona Cardinals"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "James Cook",
@@ -1887,20 +1910,6 @@
       "team_context_only": false,
       "evidence_summary": [
         {
-          "source": "NFL.com",
-          "headline": "NFL Week 1 injuries to monitor for Sunday&#x27;s games: Joey Porter Jr., Alvin Kamara inactive",
-          "matched_context": "experiencing back spasms over the weekend espn s adam schefter reported per a source rush is active de za 39 darius smith questionable shoulder should be good to go against pittsburgh nfl network insider ian rapoport reported per a source smith is active injuries wr rome odunze questionable calf is expected to play against carolina nfl network insider ian rapoport reported per a source odunze is active s xavier woods questionable groin is inactive vs the panthers injuries rb alvin kamara questionable knee is not expected to play against the lions nfl",
-          "description": "NFL.com keeps you up to date with all of the latest injury updates ahead of Week 1&#x27;s Sunday games.",
-          "published": "2026-09-13T12:19:01.393Z",
-          "url": "https://www.nfl.com/news/week-1-injuries-sunday-pregame-2026-nfl-season",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "CHI",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFL news roundup: Colts name Anthony Richardson backup QB; Zay Flowers back at practice",
           "matched_context": "NFL news roundup: Colts name Anthony Richardson backup QB; Zay Flowers back at practice NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. signings rb ahmani marshall practice squad roster cuts ol isaia glass practice squad ot ryan hayes waived with injury settlement injuries rb d 39 andre swift exited thursday s practice due to cramping espn insider adam schefter reported wr rome odunze exited thursday s practice with an apparent injury per local reports signings cb michael coats practice squad signings te jake ferguson restructured his contract per espn dt kenny clark restructured his contract per espn cb daron bland res",
@@ -1930,7 +1939,7 @@
           "sustainability": 8.7
         }
       },
-      "changed_fact": "experiencing back spasms over the weekend espn s adam schefter reported per a source rush is active de za 39 darius smith questionable shoulder should be good to go against pittsburgh nfl network insider ian rapoport reported per a source smith is active injuries wr rome odunze questionable calf is expected to play against carolina nfl network insider ian rapoport reported per a source odunze is active s xavier woods questionable groin is inactive vs the panthers injuries rb alvin kamara questionable knee is not expected to play against the lions nfl",
+      "changed_fact": "NFL news roundup: Colts name Anthony Richardson backup QB; Zay Flowers back at practice NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. signings rb ahmani marshall practice squad roster cuts ol isaia glass practice squad ot ryan hayes waived with injury settlement injuries rb d 39 andre swift exited thursday s practice due to cramping espn insider adam schefter reported wr rome odunze exited thursday s practice with an apparent injury per local reports signings cb michael coats practice squad signings te jake ferguson restructured his contract per espn dt kenny clark restructured his contract per espn cb daron bland res",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -2242,6 +2251,20 @@
       "team_context_only": false,
       "evidence_summary": [
         {
+          "source": "NFL.com",
+          "headline": "Ryan Fitzpatrick: 0-17 season &#x27;within reach&#x27; for 2026 Dolphins",
+          "matched_context": "s logic stems from miami s overhauled roster thanks to deals given out by the previous front office part of it is self inflicted with all the dead money fitzpatrick told jackson they ve got over 180 million in dead cap tua tagovailoa tyreek hill jaylen waddle bradley chubb jalen ramsey minkah fitzpatrick all those guys that are on the books but not on the roster that s part of it the dolphins lost 27 13 to the las vegas raiders in week 1 fitzpatrick noted that first year coach jeff hafley",
+          "description": "Before the season began, former Miami quarterback Ryan Fitzpatrick predicted the Dolphins could go 0-17 in 2026. After one week, he’s not scrambling away from that suggestion.",
+          "published": "2026-09-16T13:48:02.871Z",
+          "url": "https://www.nfl.com/news/ryan-fitzpatrick-0-17-season-within-reach-2026-dolphins",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "DEN",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "AFC West training camp 2026 preview: Top storylines for Broncos, Chargers, Chiefs, Raiders",
           "matched_context": "AFC West training camp 2026 preview: Top storylines for Broncos, Chargers, Chiefs, Raiders As we hurtle toward the 2026 NFL season, Bobby Kownack breaks down the top AFC West training camp storylines to monitor for the Denver Broncos, Kansas City Chiefs, Las Vegas Raiders and Los Angeles Chargers. step in the process bears watching when someone this important to a franchise is returning from injury once nix is out there eyes will also be glued to his pass catching group denver gifted its qb with a second no 1 wideout by trading for jaylen waddle to pair with courtland sutton and camp should provide the first hints as to whether the broncos will employ them as a 1a 1b combo or settle into a more defined pecking order plus can anyone from a proven supporting cast of troy franklin ma",
@@ -2271,7 +2294,7 @@
           "sustainability": 8.79
         }
       },
-      "changed_fact": "AFC West training camp 2026 preview: Top storylines for Broncos, Chargers, Chiefs, Raiders As we hurtle toward the 2026 NFL season, Bobby Kownack breaks down the top AFC West training camp storylines to monitor for the Denver Broncos, Kansas City Chiefs, Las Vegas Raiders and Los Angeles Chargers. step in the process bears watching when someone this important to a franchise is returning from injury once nix is out there eyes will also be glued to his pass catching group denver gifted its qb with a second no 1 wideout by trading for jaylen waddle to pair with courtland sutton and camp should provide the first hints as to whether the broncos will employ them as a 1a 1b combo or settle into a more defined pecking order plus can anyone from a proven supporting cast of troy franklin ma",
+      "changed_fact": "s logic stems from miami s overhauled roster thanks to deals given out by the previous front office part of it is self inflicted with all the dead money fitzpatrick told jackson they ve got over 180 million in dead cap tua tagovailoa tyreek hill jaylen waddle bradley chubb jalen ramsey minkah fitzpatrick all those guys that are on the books but not on the roster that s part of it the dolphins lost 27 13 to the las vegas raiders in week 1 fitzpatrick noted that first year coach jeff hafley",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -2958,20 +2981,6 @@
       "evidence_summary": [
         {
           "source": "NFL.com",
-          "headline": "NFL Week 1 injuries to monitor for Sunday&#x27;s games: Joey Porter Jr., Alvin Kamara inactive",
-          "matched_context": "nfl com keeps you up to date with all of the latest injury updates ahead of week 1 s sunday games read week 1 injury report injuries rb jeremiyah love questionable ankle is expected to play against the chargers nfl network insider ian rapoport reported injuries qb cooper rush is expected to start against the steelers after experiencing back spasms over the weekend espn s adam schefter reported per a source rush is active de",
-          "description": "NFL.com keeps you up to date with all of the latest injury updates ahead of Week 1&#x27;s Sunday games.",
-          "published": "2026-09-13T12:19:01.393Z",
-          "url": "https://www.nfl.com/news/week-1-injuries-sunday-pregame-2026-nfl-season",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "ARI",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "NFL.com",
           "headline": "NFL news roundup: Cardinals&#x27; Jeremiyah Love (ankle) considered game-time decision; Giants WR Malik Nabers (knee) questionable for Sunday night",
           "matched_context": "nfl news roundup cardinals x27 jeremiyah love ankle considered game time decision giants wr malik nabers knee questionable for sunday night nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
           "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
@@ -3028,7 +3037,7 @@
           "sustainability": 8
         }
       },
-      "changed_fact": "nfl com keeps you up to date with all of the latest injury updates ahead of week 1 s sunday games read week 1 injury report injuries rb jeremiyah love questionable ankle is expected to play against the chargers nfl network insider ian rapoport reported injuries qb cooper rush is expected to start against the steelers after experiencing back spasms over the weekend espn s adam schefter reported per a source rush is active de",
+      "changed_fact": "nfl news roundup cardinals x27 jeremiyah love ankle considered game time decision giants wr malik nabers knee questionable for sunday night nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -3323,20 +3332,6 @@
       "team_context_only": false,
       "evidence_summary": [
         {
-          "source": "NFL.com",
-          "headline": "NFL Network: 49ers rookie WR De&#x27;Zhaun Stribling out at least a month with ankle sprain",
-          "matched_context": "injury george kittle and nick bosa just returned to game action this week from their 2025 season ending injuries without the rookie in brock purdy s receiving corps demarcus robinson deebo samuel and jacob cowing are slated for more action than expected early on newcomer mike evans led all 49ers wideouts with 48 snaps against l a followed by robinson 40 and samuel 26 san francisco 1 0 hosts the dolphins in its home opener on sept 20 at 4 25 p m et",
-          "description": "The 49ers will be without their top rookie for at least a quarter of the 2026 season. First-year receiver De&#x27;Zhaun Stribling is out at least a month after suffering a deltoid sprain in his ankle.",
-          "published": "2026-09-13T13:57:09.061Z",
-          "url": "https://www.nfl.com/news/niners-wr-dezhaun-stribling-out-at-least-a-month-ankle-sprain",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "SF",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFL news roundup: Giants WR Calvin Austin III out for &#x27;26 with torn ACL; Ja&#x27;Marr Chase sits out practice",
           "matched_context": "NFL news roundup: Giants WR Calvin Austin III out for &#x27;26 with torn ACL; Ja&#x27;Marr Chase sits out practice NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. as waived from injured reserve other news the eagles announced that owner jeffrey lurie will be inducted into the team s hall of fame during philadelphia s week 7 home game against the cowboys on oct 26 on monday night football injuries wr mike evans plans to play week 1 despite lingering injuries through training camp espn s jeremy fowler reported fowler added that evans most recent injury a groin issue is considered minor signings ot derrick graham db tysheem johnson rb justin jones",
@@ -3380,13 +3375,12 @@
           "sustainability": 8
         }
       },
-      "changed_fact": "injury george kittle and nick bosa just returned to game action this week from their 2025 season ending injuries without the rookie in brock purdy s receiving corps demarcus robinson deebo samuel and jacob cowing are slated for more action than expected early on newcomer mike evans led all 49ers wideouts with 48 snaps against l a followed by robinson 40 and samuel 26 san francisco 1 0 hosts the dolphins in its home opener on sept 20 at 4 25 p m et",
+      "changed_fact": "NFL news roundup: Giants WR Calvin Austin III out for &#x27;26 with torn ACL; Ja&#x27;Marr Chase sits out practice NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. as waived from injured reserve other news the eagles announced that owner jeffrey lurie will be inducted into the team s hall of fame during philadelphia s week 7 home game against the cowboys on oct 26 on monday night football injuries wr mike evans plans to play week 1 despite lingering injuries through training camp espn s jeremy fowler reported fowler added that evans most recent injury a groin issue is considered minor signings ot derrick graham db tysheem johnson rb justin jones",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ],
       "component_delta": null,
@@ -3412,6 +3406,20 @@
       "meaningful_evidence": true,
       "team_context_only": false,
       "evidence_summary": [
+        {
+          "source": "ESPN_LEAGUE",
+          "headline": "Dopp lays out fantasy concerns for Justin Herbert",
+          "matched_context": "dopp lays out fantasy concerns for justin herbert dopp lays out fantasy concerns for justin herbert",
+          "description": "Dopp lays out fantasy concerns for Justin Herbert",
+          "published": "2026-09-16T14:43:07Z",
+          "url": "https://www.espn.com/video/clip/_/id/49956863/dopp-lays-fantasy-concerns-justin-herbert",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "LAC",
+          "source_team": null,
+          "context_lanes": null
+        },
         {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFL news roundup: Dolphins claim QB Brady Cook; Cade Klubnik to serve as Jets&#x27; No. 2 quarterback",
@@ -3442,7 +3450,7 @@
           "sustainability": 9.2
         }
       },
-      "changed_fact": "NFL news roundup: Dolphins claim QB Brady Cook; Cade Klubnik to serve as Jets&#x27; No. 2 quarterback NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. injuries wr dont 39 e thornton was placed on injured reserve signings te patrick herbert who was waived by the jaguars signed with los angeles practice squad nfl network insider mike garafolo reported patrick is the brother of chargers qb justin herbert lb junior colson was among 16 additions to the chargers practice squad p j k scott injuries rb keaton mitchell won t go on injured reserve according to general manager joe hortiz who said he anticipates mitchell playing in week 1 lb denzel",
+      "changed_fact": "dopp lays out fantasy concerns for justin herbert dopp lays out fantasy concerns for justin herbert",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -4115,34 +4123,6 @@
       "team_context_only": false,
       "evidence_summary": [
         {
-          "source": "NFL.com",
-          "headline": "Report: Texans, QB C.J. Stroud tabling extension talks until after season",
-          "matched_context": "kraft who each signed extensions this week to avoid playing out 2026 on a contract year stroud has two seasons remaining on his rookie deal after houston picked up his fifth year option the quarterback market is forever climbing topped by the kansas city chiefs patrick mahomes 64 million per year salary so stroud stands to make more money as long as he s patient and proves himself worthy of such a lucrative deal stroud s upcoming campaign will be crucial in regard to the latter element of the equation after winning",
-          "description": "After previously attempting to reach an extension, the Houston Texans and QB C.J. Stroud have agreed to table negotiations until after this season, NFL Network Insider Ian Rapoport and ESPN&#x27;s Adam Schefter reported Saturday.",
-          "published": "2026-09-12T21:30:04.458Z",
-          "url": "https://www.nfl.com/news/report-texans-qb-c-j-stroud-tabling-extension-talks-until-after-season",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "KC",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Is Patrick Mahomes a fantasy QB1 in Week 2?",
-          "matched_context": "is patrick mahomes a fantasy qb1 in week 2 is patrick mahomes a fantasy qb1 in week 2",
-          "description": "Is Patrick Mahomes a fantasy QB1 in Week 2?",
-          "published": "2026-09-15T14:46:12Z",
-          "url": "https://www.espn.com/video/clip/_/id/49949299/is-patrick-mahomes-fantasy-qb1-week-2",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "KC",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "2026 NFL training camp: Early takeaways for all 32 teams",
           "matched_context": "2026 NFL training camp: Early takeaways for all 32 teams Is Matthew Golden poised to break out in Year 2? How does Patrick Mahomes look in his return from knee surgery? Are DJ Moore and Josh Allen jelling? With training camps in full swing across the NFL, Kevin Patra spotlights the most interesting developments for all 32 teams. is matthew golden poised to break out in year 2 how does patrick mahomes look in his return from knee surgery are dj moore and josh allen jelling with training camps in full swing across the nfl kevin patra spotlights the most interesting developments for all 32 teams",
@@ -4200,13 +4180,12 @@
           "sustainability": 9.6
         }
       },
-      "changed_fact": "kraft who each signed extensions this week to avoid playing out 2026 on a contract year stroud has two seasons remaining on his rookie deal after houston picked up his fifth year option the quarterback market is forever climbing topped by the kansas city chiefs patrick mahomes 64 million per year salary so stroud stands to make more money as long as he s patient and proves himself worthy of such a lucrative deal stroud s upcoming campaign will be crucial in regard to the latter element of the equation after winning",
+      "changed_fact": "2026 NFL training camp: Early takeaways for all 32 teams Is Matthew Golden poised to break out in Year 2? How does Patrick Mahomes look in his return from knee surgery? Are DJ Moore and Josh Allen jelling? With training camps in full swing across the NFL, Kevin Patra spotlights the most interesting developments for all 32 teams. is matthew golden poised to break out in year 2 how does patrick mahomes look in his return from knee surgery are dj moore and josh allen jelling with training camps in full swing across the nfl kevin patra spotlights the most interesting developments for all 32 teams",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ],
       "component_delta": null,
@@ -4962,20 +4941,6 @@
       "team_context_only": false,
       "evidence_summary": [
         {
-          "source": "NFL.com",
-          "headline": "NFL Network: 49ers rookie WR De&#x27;Zhaun Stribling out at least a month with ankle sprain",
-          "matched_context": "just as they were getting healthier ricky pearsall is already out for the season having undergone knee surgery in august defensive tackle alfred collins tore his patellar tendon during practice in australia and tight end jake tonges left the rams game with a knee injury george kittle and nick bosa just returned to game action this week from their 2025 season ending injuries without the rookie in brock purdy s receiving corps demarcus robinson deebo samuel and jacob cowing are slated for more action than expected early on newcomer mike evans led",
-          "description": "The 49ers will be without their top rookie for at least a quarter of the 2026 season. First-year receiver De&#x27;Zhaun Stribling is out at least a month after suffering a deltoid sprain in his ankle.",
-          "published": "2026-09-13T13:57:09.061Z",
-          "url": "https://www.nfl.com/news/niners-wr-dezhaun-stribling-out-at-least-a-month-ankle-sprain",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "SF",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFC West training camp 2026 preview: Top storylines for 49ers, Cardinals, Rams, Seahawks",
           "matched_context": "NFC West training camp 2026 preview: Top storylines for 49ers, Cardinals, Rams, Seahawks As we hurtle toward the 2026 NFL season, Grant Gordon breaks down the top NFC West training camp storylines to monitor for the Arizona Cardinals, Los Angeles Rams, San Francisco 49ers and Seattle Seahawks. bstation but for whatever reason injury woes have plagued kyle shanahan s squads for years niners starters missed north of 50 games in 2025 at the moment the anticipated returns of defensive end nick bosa torn acl missed 14 games tight end george kittle hamstring tear ankle sprain achilles tear six games and linebacker fred warner broken and dislocated ankle 11 games are atop the queue san francisco went 12 5 last season and advanced to the divisional round with those three who are each p",
@@ -5061,7 +5026,7 @@
           "sustainability": 7.5
         }
       },
-      "changed_fact": "just as they were getting healthier ricky pearsall is already out for the season having undergone knee surgery in august defensive tackle alfred collins tore his patellar tendon during practice in australia and tight end jake tonges left the rams game with a knee injury george kittle and nick bosa just returned to game action this week from their 2025 season ending injuries without the rookie in brock purdy s receiving corps demarcus robinson deebo samuel and jacob cowing are slated for more action than expected early on newcomer mike evans led",
+      "changed_fact": "NFC West training camp 2026 preview: Top storylines for 49ers, Cardinals, Rams, Seahawks As we hurtle toward the 2026 NFL season, Grant Gordon breaks down the top NFC West training camp storylines to monitor for the Arizona Cardinals, Los Angeles Rams, San Francisco 49ers and Seattle Seahawks. bstation but for whatever reason injury woes have plagued kyle shanahan s squads for years niners starters missed north of 50 games in 2025 at the moment the anticipated returns of defensive end nick bosa torn acl missed 14 games tight end george kittle hamstring tear ankle sprain achilles tear six games and linebacker fred warner broken and dislocated ankle 11 games are atop the queue san francisco went 12 5 last season and advanced to the divisional round with those three who are each p",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -6221,20 +6186,6 @@
       "team_context_only": false,
       "evidence_summary": [
         {
-          "source": "NFL.com",
-          "headline": "Report: Texans, QB C.J. Stroud tabling extension talks until after season",
-          "matched_context": "set to turn 25 on oct 3 is heading into his fourth season with the texans and despite discussions there doesn t need to be a great rush to get something done unlike tampa bay buccaneers qb baker mayfield and green bay packers tight end tucker kraft who each signed extensions this week to avoid playing out 2026 on a contract year stroud has two seasons remaining on his rookie deal after houston picked up his fifth year option the quarterback market is forever climbing topped by the kansas city chiefs patrick",
-          "description": "After previously attempting to reach an extension, the Houston Texans and QB C.J. Stroud have agreed to table negotiations until after this season, NFL Network Insider Ian Rapoport and ESPN&#x27;s Adam Schefter reported Saturday.",
-          "published": "2026-09-12T21:30:04.458Z",
-          "url": "https://www.nfl.com/news/report-texans-qb-c-j-stroud-tabling-extension-talks-until-after-season",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "GB",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "ESPN_TRANSACTIONS",
           "headline": "Transaction: Agreed to term with TE Tucker Kraft on a four-year contract extension worth $75M. Elevated WR Bo Melton and LB Kristian Welch from the practice squad.",
           "matched_context": "transaction agreed to term with te tucker kraft on a four year contract extension worth 75m elevated wr bo melton and lb kristian welch from the practice squad agreed to term with te tucker kraft on a four year contract extension worth 75m elevated wr bo melton and lb kristian welch from the practice squad",
@@ -6306,13 +6257,12 @@
           "sustainability": 8.4
         }
       },
-      "changed_fact": "set to turn 25 on oct 3 is heading into his fourth season with the texans and despite discussions there doesn t need to be a great rush to get something done unlike tampa bay buccaneers qb baker mayfield and green bay packers tight end tucker kraft who each signed extensions this week to avoid playing out 2026 on a contract year stroud has two seasons remaining on his rookie deal after houston picked up his fifth year option the quarterback market is forever climbing topped by the kansas city chiefs patrick",
+      "changed_fact": "transaction agreed to term with te tucker kraft on a four year contract extension worth 75m elevated wr bo melton and lb kristian welch from the practice squad agreed to term with te tucker kraft on a four year contract extension worth 75m elevated wr bo melton and lb kristian welch from the practice squad",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ],
       "component_delta": null,
@@ -6590,25 +6540,10 @@
       "player": "Deebo Samuel",
       "pos": "WR",
       "team": "San Francisco 49ers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "NFL Network: 49ers rookie WR De&#x27;Zhaun Stribling out at least a month with ankle sprain",
-          "matched_context": "practice in australia and tight end jake tonges left the rams game with a knee injury george kittle and nick bosa just returned to game action this week from their 2025 season ending injuries without the rookie in brock purdy s receiving corps demarcus robinson deebo samuel and jacob cowing are slated for more action than expected early on newcomer mike evans led all 49ers wideouts with 48 snaps against l a followed by robinson 40 and samuel 26 san francisco 1 0 hosts the dolphins in its home opener on sept",
-          "description": "The 49ers will be without their top rookie for at least a quarter of the 2026 season. First-year receiver De&#x27;Zhaun Stribling is out at least a month after suffering a deltoid sprain in his ankle.",
-          "published": "2026-09-13T13:57:09.061Z",
-          "url": "https://www.nfl.com/news/niners-wr-dezhaun-stribling-out-at-least-a-month-ankle-sprain",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "SF",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PEARSALL/ROLE/HEALTH WATCH",
         "score": 8.095,
@@ -6624,29 +6559,21 @@
           "sustainability": 7.8
         }
       },
-      "changed_fact": "practice in australia and tight end jake tonges left the rams game with a knee injury george kittle and nick bosa just returned to game action this week from their 2025 season ending injuries without the rookie in brock purdy s receiving corps demarcus robinson deebo samuel and jacob cowing are slated for more action than expected early on newcomer mike evans led all 49ers wideouts with 48 snaps against l a followed by robinson 40 and samuel 26 san francisco 1 0 hosts the dolphins in its home opener on sept",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.095,
       "proposed_true_value_rank": 119,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "San Francisco 49ers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Malik Washington",
@@ -6906,25 +6833,10 @@
       "player": "Brock Purdy",
       "pos": "QB",
       "team": "San Francisco 49ers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "NFL Network: 49ers rookie WR De&#x27;Zhaun Stribling out at least a month with ankle sprain",
-          "matched_context": "alfred collins tore his patellar tendon during practice in australia and tight end jake tonges left the rams game with a knee injury george kittle and nick bosa just returned to game action this week from their 2025 season ending injuries without the rookie in brock purdy s receiving corps demarcus robinson deebo samuel and jacob cowing are slated for more action than expected early on newcomer mike evans led all 49ers wideouts with 48 snaps against l a followed by robinson 40 and samuel 26 san francisco 1 0 hosts the",
-          "description": "The 49ers will be without their top rookie for at least a quarter of the 2026 season. First-year receiver De&#x27;Zhaun Stribling is out at least a month after suffering a deltoid sprain in his ankle.",
-          "published": "2026-09-13T13:57:09.061Z",
-          "url": "https://www.nfl.com/news/niners-wr-dezhaun-stribling-out-at-least-a-month-ankle-sprain",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "SF",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "SUPPORTING-CAST WATCH",
         "score": 9.06,
@@ -6940,29 +6852,21 @@
           "sustainability": 9
         }
       },
-      "changed_fact": "alfred collins tore his patellar tendon during practice in australia and tight end jake tonges left the rams game with a knee injury george kittle and nick bosa just returned to game action this week from their 2025 season ending injuries without the rookie in brock purdy s receiving corps demarcus robinson deebo samuel and jacob cowing are slated for more action than expected early on newcomer mike evans led all 49ers wideouts with 48 snaps against l a followed by robinson 40 and samuel 26 san francisco 1 0 hosts the",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.06,
       "proposed_true_value_rank": 127,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "San Francisco 49ers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Chris Rodriguez Jr.",
@@ -8020,20 +7924,6 @@
       "team_context_only": false,
       "evidence_summary": [
         {
-          "source": "NFL.com",
-          "headline": "Report: Texans, QB C.J. Stroud tabling extension talks until after season",
-          "matched_context": "and espn s adam schefter reported saturday stroud set to turn 25 on oct 3 is heading into his fourth season with the texans and despite discussions there doesn t need to be a great rush to get something done unlike tampa bay buccaneers qb baker mayfield and green bay packers tight end tucker kraft who each signed extensions this week to avoid playing out 2026 on a contract year stroud has two seasons remaining on his rookie deal after houston picked up his fifth year option the quarterback market is forever",
-          "description": "After previously attempting to reach an extension, the Houston Texans and QB C.J. Stroud have agreed to table negotiations until after this season, NFL Network Insider Ian Rapoport and ESPN&#x27;s Adam Schefter reported Saturday.",
-          "published": "2026-09-12T21:30:04.458Z",
-          "url": "https://www.nfl.com/news/report-texans-qb-c-j-stroud-tabling-extension-talks-until-after-season",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "TB",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFL news roundup: Packers&#x27; Micah Parsons to open season on PUP list, miss at least first four games",
           "matched_context": "NFL news roundup: Packers&#x27; Micah Parsons to open season on PUP list, miss at least first four games NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. r reported he had been due 3 52 million on a restricted free agent tender roster cuts qb jake browning and olb chris braswell were among the team s notable cuts roster news qb jalon daniels and undrafted free agent will be the backup qb to baker mayfield rapoport reported injuries wr david sills was placed on injured reserve designated to return cb josh hayes injured reserve designated to return roster cuts qb hendon hooker qb will levis rb d ernest johnson wr k j osborn og cordell volson",
@@ -8063,13 +7953,12 @@
           "sustainability": 8.5
         }
       },
-      "changed_fact": "and espn s adam schefter reported saturday stroud set to turn 25 on oct 3 is heading into his fourth season with the texans and despite discussions there doesn t need to be a great rush to get something done unlike tampa bay buccaneers qb baker mayfield and green bay packers tight end tucker kraft who each signed extensions this week to avoid playing out 2026 on a contract year stroud has two seasons remaining on his rookie deal after houston picked up his fifth year option the quarterback market is forever",
+      "changed_fact": "NFL news roundup: Packers&#x27; Micah Parsons to open season on PUP list, miss at least first four games NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown. r reported he had been due 3 52 million on a restricted free agent tender roster cuts qb jake browning and olb chris braswell were among the team s notable cuts roster news qb jalon daniels and undrafted free agent will be the backup qb to baker mayfield rapoport reported injuries wr david sills was placed on injured reserve designated to return cb josh hayes injured reserve designated to return roster cuts qb hendon hooker qb will levis rb d ernest johnson wr k j osborn og cordell volson",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ],
       "component_delta": null,
@@ -8309,25 +8198,10 @@
       "player": "C.J. Stroud",
       "pos": "QB",
       "team": "Houston Texans",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_NOW",
-          "headline": "Could David Montgomery be key to unlock Texans' offense?",
-          "matched_context": "name det detroit lions detroit lions a in march the offense finished with 124 rushing yards on 32 carries which helped take pressure off quarterback a data player guid 147e6862 2ac0 3a97 8f36 e3b1c0147320 href https www espn com nfl player id 4432577 cj stroud c j stroud a and helped open up passing lanes en route to a 287 yard passing day p p inline1 p p that s going to be our identity montgomery said offensive coordinator nick caley believes in that coach ryans believes in that also me a data",
-          "description": "Houston scored its most points in a season opener since coach DeMeco Ryans took over.",
-          "published": "2026-09-15T20:35:46Z",
-          "url": "https://www.espn.com/nfl/story/_/id/49949962/houston-texans-david-montgomery-rb-three-touchdowns-debut",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "HOU",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 8.4265,
@@ -8343,28 +8217,21 @@
           "sustainability": 7.8
         }
       },
-      "changed_fact": "name det detroit lions detroit lions a in march the offense finished with 124 rushing yards on 32 carries which helped take pressure off quarterback a data player guid 147e6862 2ac0 3a97 8f36 e3b1c0147320 href https www espn com nfl player id 4432577 cj stroud c j stroud a and helped open up passing lanes en route to a 287 yard passing day p p inline1 p p that s going to be our identity montgomery said offensive coordinator nick caley believes in that coach ryans believes in that also me a data",
-      "implicated_components": [
-        "role_volume",
-        "production",
-        "ceiling",
-        "weekly_reliability",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.4265,
       "proposed_true_value_rank": 148,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Houston Texans"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Jayden Higgins",
