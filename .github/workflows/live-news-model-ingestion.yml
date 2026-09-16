@@ -24,7 +24,7 @@ permissions:
   actions: write
 
 concurrency:
-  group: production-main-writer
+  group: ${{ github.event_name == 'pull_request' && format('news-validation-pr-{0}', github.event.pull_request.number) || 'production-main-writer' }}
   cancel-in-progress: false
 
 jobs:
