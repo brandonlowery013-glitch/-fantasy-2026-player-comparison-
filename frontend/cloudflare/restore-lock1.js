@@ -163,7 +163,7 @@
 const e=v=>String(v??'Not published').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const style=document.createElement('style');style.textContent='.ctdProfileLink{background:none;border:0;color:#a9d1ff;font:inherit;font-weight:700;text-align:left;cursor:pointer;padding:4px 0}.ctdProfileLink:hover{text-decoration:underline}.ctdBoardTools{display:flex;gap:20px;flex-wrap:wrap;margin:16px 0}.ctdBoardTools label{display:grid;gap:6px}.ctdBoardTools input,.ctdBoardTools select{background:#0b1929;color:#eef5ff;border:1px solid #355576;padding:10px;border-radius:7px;font:inherit}.ctdWeeklyCard details{margin-top:12px;font-size:13px;line-height:1.6}.ctdWeeklyCard{font-size:14px}.ctdWeeklyLine{font-size:13px;padding:8px 0}#ctdPlayerProfile{width:min(760px,90vw);max-height:85vh;overflow:auto;background:#0b1726;color:#e9f0fa;border:1px solid #355576;border-radius:14px;padding:24px}#ctdPlayerProfile::backdrop{background:#000b}#ctdPlayerProfile p{line-height:1.6}#ctdPlayerProfile dl{display:grid;grid-template-columns:1fr 1fr;gap:12px}#ctdPlayerProfile dd{margin:0;text-align:right}';document.head.append(style);
 
-let weeklyProjections=null,personnel=null,weeklySchedule=null,profileNews=[],profileOpenName=null;
+let weeklyProjections=null,personnel=null,weeklySchedule=null,profileNews=[],roleUsage=null,profileOpenName=null;
 const playerKey=n=>String(n||'').toLowerCase().normalize('NFKD').replace(/[^a-z0-9]/g,'').replace(/(jr|sr|iii|ii)$/,'');
 const findPlayer=(rows,name)=>{const matches=rows.filter(p=>playerKey(p.name||p.player)===playerKey(name));return matches.length===1?matches[0]:null};
 const raw='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/';
@@ -210,10 +210,23 @@ window.CTD_ROLE_WATCH=()=>{
   const conditional=age>=0&&age<=7*86400000&&/^(questionable|doubtful)$/.test(status);
   if((!unavailable&&!conditional)||!v.game)continue;
   const rank=q=>Math.min(...(q.depth_roles||[]).filter(d=>d.position===p.position).map(d=>d.rank),Infinity);
-  if(!Number.isFinite(rank(p))||rank(p)>2)continue;
-  const options=t.players.filter(q=>q.athlete_id!==p.athlete_id&&q.position===p.position&&Number.isFinite(rank(q))&&q.availability?.expected_active!==false&&weeklyEligibility(q.name,weeklySchedule.week).state!=='UNAVAILABLE')
-   .sort((a,b)=>rank(a)-rank(b)).slice(0,3).map(q=>({name:q.name,athlete_id:q.athlete_id,position:q.position,rank:rank(q),status:q.latest_reported_status&&q.latest_reported_status!=='Active'?q.latest_reported_status:null}));
-  if(options.length)rows.push({player:p.name,team:t.team,position:p.position,designation:report.status,reported:report.source_updated_at,source:t.source_url,conditional,options});
+  const prior=roleUsage?.players?.[p.name]?.last_game;
+  const priorAge=Date.parse(v.game.event_start)-Date.parse(prior?.date);
+  const groups=prior?.completed&&priorAge>0&&priorAge<=14*86400000?prior.player_stat_groups||[]:[];
+  const rush=groups.find(g=>g.category==='rushing')?.stats;
+  const rec=groups.find(g=>g.category==='receiving')?.stats;
+  const carries=Number(rush?.CAR||0),targets=Number(rec?.TGTS||0);
+  const established=rank(p)===1||(p.position==='RB'&&carries>=8)||(p.position!=='QB'&&targets>=4);
+  if(!established)continue;
+  // A reserve QB's absence never transfers the starter's existing workload.
+  if(p.position==='QB'&&rank(p)!==1)continue;
+  const eligible=t.players.filter(q=>q.athlete_id!==p.athlete_id&&q.position===p.position&&Number.isFinite(rank(q))&&q.availability?.expected_active!==false&&weeklyEligibility(q.name,weeklySchedule.week).state!=='UNAVAILABLE');
+  const nextRank=Math.min(...eligible.filter(q=>rank(q)>rank(p)).map(rank),Infinity);
+  const options=eligible.filter(q=>p.position==='QB'?rank(q)===nextRank:rank(q)===1||rank(q)===nextRank)
+   .sort((a,b)=>rank(a)-rank(b)).slice(0,p.position==='QB'?1:3).map(q=>({name:q.name,athlete_id:q.athlete_id,position:q.position,rank:rank(q),status:q.latest_reported_status&&q.latest_reported_status!=='Active'?q.latest_reported_status:null,reason:rank(q)===1?'Already listed in the starting group; additional work could be shared.':'Next listed reserve at this position; promotion has not been confirmed.'}));
+  const usage=groups.length?[carries?carries+' carries'+(rush?.YDS?' for '+rush.YDS+' yards':''):'',targets?targets+' targets'+(rec?.REC?' / '+rec.REC+' catches':''):''].filter(Boolean).join(' and '):'';
+  const explanation=usage?p.name+' had '+usage+' in his last completed game ('+new Date(prior.date).toLocaleDateString()+'). '+(conditional?'If he is ruled out, that workload becomes available.':'His absence leaves that workload to be redistributed.') : p.name+' is listed in the starting '+p.position+' group. '+(conditional?'A missed game would open a starting role.':'His absence opens a starting role.');
+  if(options.length)rows.push({player:p.name,team:t.team,position:p.position,designation:report.status,reported:report.source_updated_at,source:report.source_url||t.source_url,conditional,options,explanation,opponent:v.opponent});
  }return rows.sort((a,b)=>Number(a.conditional)-Number(b.conditional)||Date.parse(b.reported)-Date.parse(a.reported));
 };
 window.CTD_REPLACEMENT_WATCH=()=>window.CTD_ROLE_WATCH().map(r=>({...r,status:r.designation,options:r.options.map(q=>q.name)}));
@@ -230,6 +243,8 @@ async function refreshPlayerContext(){
  document.dispatchEvent(new CustomEvent('ctd:player-context-ready'));
  if(profileOpenName&&document.getElementById('ctdPlayerProfile')?.open)profile(profileOpenName);
 }
+// The published outlook supplies dated usage only; reject old games in Role Watch.
+read('https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/frontend/ctd-cloudflare-work/data/weekly/weekly-player-outlook-2026.json').then(x=>{roleUsage=x;document.dispatchEvent(new CustomEvent('ctd:player-context-ready'))}).catch(()=>{});
 const playerContextReady=refreshPlayerContext();
 setInterval(()=>{if(!document.hidden)void refreshPlayerContext()},60000);
 
