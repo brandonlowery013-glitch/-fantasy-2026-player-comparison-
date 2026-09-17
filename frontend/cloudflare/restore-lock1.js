@@ -222,9 +222,9 @@ window.CTD_ROLE_WATCH=()=>{
   if(p.position==='QB'&&rank(p)!==1)continue;
   const eligible=t.players.filter(q=>q.athlete_id!==p.athlete_id&&q.position===p.position&&Number.isFinite(rank(q))&&q.availability?.expected_active!==false&&weeklyEligibility(q.name,weeklySchedule.week).state!=='UNAVAILABLE');
   const nextRank=Math.min(...eligible.filter(q=>rank(q)>rank(p)).map(rank),Infinity);
-  const options=eligible.filter(q=>p.position==='QB'?rank(q)===nextRank:rank(q)===1||rank(q)===nextRank)
+  const options=eligible.filter(q=>p.position==='QB'?rank(q)===nextRank:p.position==='RB'?(rank(q)===1||rank(q)===nextRank):rank(q)===1)
    .sort((a,b)=>rank(a)-rank(b)).slice(0,p.position==='QB'?1:3).map(q=>({name:q.name,athlete_id:q.athlete_id,position:q.position,rank:rank(q),status:q.latest_reported_status&&q.latest_reported_status!=='Active'?q.latest_reported_status:null,reason:rank(q)===1?'Already listed in the starting group; additional work could be shared.':'Next listed reserve at this position; promotion has not been confirmed.'}));
-  const usage=groups.length?[carries?carries+' carries'+(rush?.YDS?' for '+rush.YDS+' yards':''):'',targets?targets+' targets'+(rec?.REC?' / '+rec.REC+' catches':''):''].filter(Boolean).join(' and '):'';
+  const usage=p.position!=='QB'&&groups.length?[carries?carries+' carries'+(rush?.YDS?' for '+rush.YDS+' yards':''):'',targets?targets+' targets'+(rec?.REC?' / '+rec.REC+' catches':''):''].filter(Boolean).join(' and '):'';
   const explanation=usage?p.name+' had '+usage+' in his last completed game ('+new Date(prior.date).toLocaleDateString()+'). '+(conditional?'If he is ruled out, that workload becomes available.':'His absence leaves that workload to be redistributed.') : p.name+' is listed in the starting '+p.position+' group. '+(conditional?'A missed game would open a starting role.':'His absence opens a starting role.');
   if(options.length)rows.push({player:p.name,team:t.team,position:p.position,designation:report.status,reported:report.source_updated_at,source:report.source_url||t.source_url,conditional,options,explanation,opponent:v.opponent});
  }return rows.sort((a,b)=>Number(a.conditional)-Number(b.conditional)||Date.parse(b.reported)-Date.parse(a.reported));
