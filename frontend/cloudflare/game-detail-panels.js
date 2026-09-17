@@ -11,7 +11,7 @@
   const row=(label,value)=>`<div class="ctdDetailRow"><span>${esc(label)}</span><b>${esc(value)}</b></div>`;
   const empty=text=>`<p class="ctdDetailNote">${esc(text)}</p>`;
   const same=(a,g)=>norm(a?.away_team)===norm(g?.away_team)&&norm(a?.home_team)===norm(g?.home_team);
-  let markets=null,history=null,scoreboard=null,feedError='',lastKey='',busy=false;
+  let issuedHistory=null,pickResults=null,historyError='',markets=null,history=null,scoreboard=null,feedError='',lastKey='',busy=false;
   const games=new Map();
   const style=document.createElement('style');
   style.textContent=`.ctdDetailNote{font-size:12px!important;line-height:1.6!important;color:#a8bdd3;margin:10px 0}.ctdDetailRow{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #1d314b;font-size:12px;line-height:1.4}.ctdDetailRow b{text-align:right}.ctdDetailPlayer{padding:9px 0;border-bottom:1px solid #1d314b}.ctdDetailPlayer strong{display:block;font-size:14px}.ctdDetailPlayer span{font-size:12px;color:#a8bdd3;line-height:1.5}.ctdDetailColumns{display:grid;grid-template-columns:1fr 1fr;gap:16px}.ctdDetailTableWrap{overflow:auto;max-height:360px}.ctdDetailTable{width:100%;border-collapse:collapse;font-size:12px}.ctdDetailTable th,.ctdDetailTable td{text-align:left;padding:9px;border-bottom:1px solid #263e58;white-space:nowrap}.ctdDetailTable th{color:#a8bdd3}.ctdDetailList{padding-left:18px;font-size:12px;line-height:1.7}.ctdDetailList li{margin:6px 0}.ctdFlowChart{width:100%;height:auto;display:block}.ctdFlowRange{width:100%;accent-color:#72b8ff}.ctdDetailPanel h4{font-size:12px;margin:12px 0 6px;color:#b2cce7}.ctdDetailPanel details summary{font-size:12px;cursor:pointer;padding:10px 0;color:#a9d1ff}.ctdDetailPanel details{margin:6px 0}.ctdPickContext{font-size:11px;line-height:1.5;color:#a8bdd3;max-width:600px;margin-top:6px}#ctdGameTabContent{margin:12px 0;padding:16px;border:1px solid #263e58;border-radius:8px;background:#091524}#ctdGameTabContent[hidden]{display:none}#ctdGameTabContent h3{font-size:14px}.ctdDetailPanel .chart{height:auto}.ctdDetailPanel .kicker{font-size:10px}@media(max-width:600px){.ctdDetailColumns{grid-template-columns:1fr}.ctdDetailTable{font-size:11px}.ctdDetailTable th,.ctdDetailTable td{padding:8px 6px}}`;
@@ -84,6 +84,7 @@
     return delta>0?'WIN':delta<0?'LOSS':'PUSH';
   }
   function historyHtml(g){
+    if(window.ctdRecordedHistory)return window.ctdRecordedHistory(g,issuedHistory,pickResults,historyError);
     const h=Number(history?.week)===Number(BET_FEED.week)?Object.values(history.games||{}).find(x=>same(x,g)):null;
     const bits=h?.tidbits||[];const raw=marketGame(g),s=snapshot(raw);
     const rows=pregame(raw).filter(x=>x.book===s?.book);
@@ -142,13 +143,17 @@
   document.addEventListener('ctd:live-scores-updated',()=>{render();void refresh()});
   document.addEventListener('input',e=>{if(e.target.id!=='ctdFlowRange')return;const g=selected(),p=games.get(key(g))?.data?.win_probability?.[Number(e.target.value)];const label=document.getElementById('ctdFlowReadout');if(label)label.textContent=flowLabel(g,p)});
   async function loadFeeds(){
-    const results=await Promise.allSettled([get(RAW+'data/market/weekly-game-market-recommendations-2026.json'),get(RAW+'data/probability/generated/matchup-tidbits-2026.json')]);
+    const results=await Promise.allSettled([get(RAW+'data/market/weekly-game-market-recommendations-2026.json'),get(RAW+'data/probability/generated/matchup-tidbits-2026.json'),get(RAW+'data/market/issued-pick-history-2026.json'),get(RAW+'data/market/issued-pick-results-2026.json')]);
     if(results[0].status==='fulfilled')markets=results[0].value;
     if(results[1].status==='fulfilled')history=results[1].value;
+    if(results[2].status==='fulfilled')issuedHistory=results[2].value;
+    if(results[3].status==='fulfilled')pickResults=results[3].value;
+    historyError=results.slice(2).some(r=>r.status==='rejected')?'History refresh unavailable; showing any last loaded records.':'';
     feedError=results.filter(x=>x.status==='rejected').map(x=>x.reason?.message||'Published data unavailable').join('; ');
     if(feedError)console.warn('Game reference feeds:',feedError);
     render();
   }
+  document.addEventListener('ctd:history-filter',render);
   void loadFeeds();void refresh();
   setInterval(()=>{if(!document.hidden)void refresh()},20000);
   setInterval(()=>{if(!document.hidden)void loadFeeds()},60000);

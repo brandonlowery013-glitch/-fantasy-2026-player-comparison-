@@ -230,6 +230,7 @@ document.addEventListener('click',ev=>{const p=ev.target.closest('[data-profile]
     .catch(err=>console.error('CTD dashboard enhancements failed',err))
     .then(()=>load('./live-score-poller.js'))
     .catch(err=>console.error('CTD live score bootstrap failed',err))
+    .then(()=>load('./pick-history.js'))
     .then(()=>load('./game-detail-panels.js'))
     .catch(err=>console.error('CTD game detail panels failed',err))
     .then(()=>load('./live-odds.js'))
