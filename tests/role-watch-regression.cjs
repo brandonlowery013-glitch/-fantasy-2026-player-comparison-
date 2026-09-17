@@ -19,3 +19,9 @@ console.log('PASS: backup exclusions, relevant receiver room, proven committee w
 const injured=player('Pierce','WR',1,'Questionable');injured.injury_reports[0].body_part='Wrist';
 const detail=run([injured,player('Downs','WR',1)],{Pierce:{last_game:{completed:true,date:new Date(Date.now()-3*86400000).toISOString(),player_stat_groups:[{category:'receiving',stats:{REC:'4',TGTS:'6',YDS:'70',TD:'0'}}]}}})[0];
 assert.match(detail.explanation,/Wrist injury/);assert.equal(detail.usage,'4 catches · 70 yards · 0 TD · 6 targets');
+
+const mason=player('Jordan Mason','RB',1,'Injured Reserve');
+mason.injury_reports[0].injury_detail='Vikings RB Jordan Mason put on IR after having surgery on thumb';
+const masonCard=run([mason,player('Aaron Jones','RB',2)])[0];
+assert.match(masonCard.explanation,/surgery on thumb/);
+assert.doesNotMatch(masonCard.explanation,/details not supplied/);

@@ -182,7 +182,7 @@ function sharedPlayer(name){
   let trusted=false;try{trusted=/(^|\.)(espn\.com|nfl\.com)$/.test(new URL(story.url).hostname);}catch{}
   const nameAt=title.toLowerCase().indexOf(String(name).toLowerCase()),named=nameAt>=0;
   const explicitIR=named&&/^\s+(?:(?:has been|was|is being)\s+)?(?:put|placed|moved)\s+(?:on|to)\s+(?:the\s+)?(?:IR|injured reserve)\b/i.test(title.slice(nameAt+name.length));
-  if(trusted&&named&&explicitIR&&Number.isFinite(time)&&time<=Date.now()+300000&&Date.now()-time<7*86400000&&time>(Date.parse(report?.source_updated_at)||0))report={status:'Injured Reserve',source_updated_at:story.published_at,source_url:story.url,source:'Dated news transaction',body_part:null};
+  if(trusted&&named&&explicitIR&&Number.isFinite(time)&&time<=Date.now()+300000&&Date.now()-time<7*86400000&&time>(Date.parse(report?.source_updated_at)||0))report={status:'Injured Reserve',source_updated_at:story.published_at,source_url:story.url,source:'Dated news transaction',body_part:null,injury_detail:title};
  }
  return {roster,report,projection,news,game,week:weeklySchedule?.week,opponent:game?(game.home_team===roster.team?game.away_team:game.home_team):null};
 }
@@ -227,7 +227,7 @@ window.CTD_ROLE_WATCH=()=>{
   const statLine=(stats,kind)=>!stats?'':[kind==='rushing'&&stats.CAR!=null?stats.CAR+' carries':'',kind==='receiving'&&stats.REC!=null?stats.REC+' catches':'',stats.YDS!=null?stats.YDS+' yards':'',stats.TD!=null?stats.TD+' TD':'',kind==='receiving'&&stats.TGTS!=null?stats.TGTS+' targets':''].filter(Boolean).join(' · ');
   const usage=p.position!=='QB'&&groups.length?[statLine(rush,'rushing'),statLine(rec,'receiving')].filter(Boolean).join(' | '):'';
   const injury=report.body_part||null;
-  const explanation=(injury?injury+' injury. ':'Injury details not supplied by the report. ')+(conditional?'If '+p.name+' is ruled out against '+v.opponent+', these teammates could take on more work.':p.name+' is unavailable; these teammates could take on more work against '+v.opponent+'.');
+  const explanation=(report.injury_detail?report.injury_detail.replace(/[.!?]+$/,'')+'. ':injury?injury+' injury. ':'Injury details not supplied by the report. ')+(conditional?'If '+p.name+' is ruled out against '+v.opponent+', these teammates could take on more work.':p.name+' is unavailable; these teammates could take on more work against '+v.opponent+'.');
   if(options.length)rows.push({player:p.name,team:t.team,position:p.position,designation:report.status,injury,practice:report.practice_status||null,usage,usageDate:usage?prior.date:null,reported:report.source_updated_at,source:report.source_url||t.source_url,conditional,options,explanation,opponent:v.opponent});
  }return rows.sort((a,b)=>Number(a.conditional)-Number(b.conditional)||Date.parse(b.reported)-Date.parse(a.reported));
 };
