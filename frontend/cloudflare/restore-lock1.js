@@ -216,7 +216,7 @@ window.CTD_ROLE_WATCH=()=>{
   const rush=groups.find(g=>g.category==='rushing')?.stats;
   const rec=groups.find(g=>g.category==='receiving')?.stats;
   const carries=Number(rush?.CAR||0),targets=Number(rec?.TGTS||0);
-  const established=rank(p)===1||(p.position==='RB'&&carries>=8)||(p.position!=='QB'&&targets>=4);
+  const established=p.position==='QB'?rank(p)===1:p.position==='RB'?(rank(p)===1||carries>=8):targets>=4;
   if(!established)continue;
   // A reserve QB's absence never transfers the starter's existing workload.
   if(p.position==='QB'&&rank(p)!==1)continue;

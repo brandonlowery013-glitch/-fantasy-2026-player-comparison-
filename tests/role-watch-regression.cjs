@@ -6,7 +6,7 @@ function run(players,usage={}){const ctx={window:{},personnel:{week:2,teams:{T:{
 assert.equal(run([player('Caleb','QB',1),player('Bagent','QB',2,'Out')]).length,0);
 assert.equal(run([player('Starter','TE',1),player('Tonges','TE',2,'Out')]).length,0);
 assert.equal(run([player('Ladd','WR',1),player('Davis','WR',2,'Out')]).length,0);
-let rows=run([player('Ladd','WR',1,'Out'),player('Harris','WR',1),player('Johnston','WR',1),player('Davis','WR',2)]);
+let rows=run([player('Ladd','WR',1,'Out'),player('Harris','WR',1),player('Johnston','WR',1),player('Davis','WR',2)],{Ladd:{last_game:{completed:true,date:new Date(Date.now()-3*86400000).toISOString(),player_stat_groups:[{category:'receiving',stats:{REC:'5',TGTS:'7',YDS:'82',TD:'1'}}]}}});
 assert.deepEqual(Array.from(rows[0].options,q=>q.name),['Harris','Johnston']);
 const usage={Mason:{last_game:{completed:true,date:new Date(Date.now()-3*86400000).toISOString(),player_stat_groups:[{category:'rushing',stats:{CAR:'15',YDS:'59'}}]}}};
 rows=run([player('Jones','RB',1),player('Mason','RB',2,'Injured Reserve'),player('Reserve','RB',3)],usage);
@@ -25,3 +25,5 @@ mason.injury_reports[0].injury_detail='Vikings RB Jordan Mason put on IR after h
 const masonCard=run([mason,player('Aaron Jones','RB',2)])[0];
 assert.match(masonCard.explanation,/surgery on thumb/);
 assert.doesNotMatch(masonCard.explanation,/details not supplied/);
+
+assert.equal(run([player('Ja’Kobi Lane','WR',1,'Questionable'),player('Zay Flowers','WR',1)]).length,0);
