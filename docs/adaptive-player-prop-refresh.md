@@ -12,3 +12,8 @@ The player-prop loop is keyed to each individual NFL game's kickoff time.
 The cadence is per event, so Wednesday, Thursday, Saturday, Sunday, and Monday games enter their active windows independently.
 
 Quota protection is based on The Odds API remaining-credit response headers. Early and lower-priority refreshes are reduced first as the configured reserve thresholds are approached. Sportsbook data remains downstream-only and cannot mutate football projections, fantasy True Value, Overall rankings, or comparison winners.
+
+## Full roster coverage and early additions
+The collector resolves sportsbook names against the two teams in the event and their full personnel rosters, including suffix normalization and position constraints. Raw offers remain visible even when the player is outside the model universe. Unresolved/ambiguous identities remain market-only and cannot create a model pick. Source name, roster athlete ID, team and resolution status accompany new records. Historical snapshots are unchanged.
+
+Beyond 48 hours, check available market types every six hours; capture new market types immediately and refresh existing types at most daily to catch new players. Market discovery costs one credit and does not reveal player names, so it cannot replace periodic price capture. Existing near-kickoff cadence and quota reserve gates remain. A coverage-version migration allows one corrective capture on the next due discovery. Per-run request costs respect the configured cap.

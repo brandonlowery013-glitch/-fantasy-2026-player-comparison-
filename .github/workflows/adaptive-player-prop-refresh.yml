@@ -5,6 +5,8 @@ on:
     paths:
       - 'data/sources/live-market-ingestion-2026.json'
       - 'scripts/adaptive-player-prop-refresh.mjs'
+      - 'lib/prop-player-identity.mjs'
+      - 'scripts/test-prop-player-identity.mjs'
       - 'scripts/merge-guarded-production-pr.sh'
       - '.github/workflows/adaptive-player-prop-refresh.yml'
   push:
@@ -12,6 +14,8 @@ on:
     paths:
       - 'data/sources/live-market-ingestion-2026.json'
       - 'scripts/adaptive-player-prop-refresh.mjs'
+      - 'lib/prop-player-identity.mjs'
+      - 'scripts/test-prop-player-identity.mjs'
       - 'scripts/merge-guarded-production-pr.sh'
       - '.github/workflows/adaptive-player-prop-refresh.yml'
   schedule:
@@ -39,7 +43,9 @@ jobs:
         with:
           node-version: '20'
       - name: Validate adaptive player prop cadence
-        run: node scripts/adaptive-player-prop-refresh.mjs --self-test
+        run: |
+          node scripts/adaptive-player-prop-refresh.mjs --self-test
+          node scripts/test-prop-player-identity.mjs
       - name: Validate live market ingestion contract
         run: node scripts/validate-live-market-ingestion-contract.mjs
       - name: Validate player prop snapshot contract
