@@ -30,7 +30,7 @@
     const mode=window.CTD_MODEL_STATE_2026?.actionable?'Current published model output':'Analysis only — current model output is not actionable';
     const matchingWeek=Number(finalFeed?.week)===Number(BET_FEED?.week);
     const eligible=x=>!x.player||window.CTD_WEEKLY_ELIGIBILITY?.(x.player,BET_FEED.week)?.state==='ELIGIBLE';const props=matchingWeek?(finalFeed?.props||[]).filter(eligible):[],parlays=matchingWeek?(finalFeed?.parlays||[]).filter(x=>(x.legs||[]).every(id=>{const leg=finalFeed?.eligible_legs?.find(l=>l.leg_id===id);return leg&&eligible(leg)})):[];
-    for(const [panel,rows] of [['props',props],['parlays',parlays]]){
+    for(const [panel,rows] of [['parlays',parlays]]){
       document.querySelector(`[data-bet-panel="${panel}"]`).innerHTML=`<div class="panel"><h3>${panel.toUpperCase()}</h3><p class="copy">${escape(mode)}</p>${Array.isArray(rows)&&rows.length?rows.map(bettingCard).join(''):`<p class="copy">${finalFeed?'No '+panel+' have been published for Week '+(BET_FEED?.week||'—')+'.':'Published '+panel+' feed is unavailable.'}</p>`}</div>`;
     }
   }
@@ -226,7 +226,8 @@ document.addEventListener('click',ev=>{const p=ev.target.closest('[data-profile]
     script.onerror=()=>reject(new Error('Failed to load '+src));
     document.head.appendChild(script);
   });
-  load('./game-dashboard-enhancements.js')
+  load('./prop-board.js')
+    .then(()=>load('./game-dashboard-enhancements.js'))
     .catch(err=>console.error('CTD dashboard enhancements failed',err))
     .then(()=>load('./live-score-poller.js'))
     .catch(err=>console.error('CTD live score bootstrap failed',err))
