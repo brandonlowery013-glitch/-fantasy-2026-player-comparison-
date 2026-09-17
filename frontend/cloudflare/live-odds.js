@@ -10,13 +10,13 @@
     let panel=document.getElementById('ctdLiveOdds');if(!panel){panel=document.createElement('section');panel.id='ctdLiveOdds';panel.className='panel';host.before(panel)}
     const g=BET_FEED.games?.[selectedGameIndex];
     const match=g&&feed?.games?.find(x=>code(x.home_team)===code(g.home_team)&&code(x.away_team)===code(g.away_team)&&Math.abs(Date.parse(x.start_at)-Date.parse(g.event_start||g.kickoff))<21600000);
-    panel.innerHTML='<h3>LIVE SPORTSBOOK LINES</h3>';
+    panel.innerHTML='<h3>SPORTSBOOK LINES</h3>';
     if(!match){panel.innerHTML+='<p class="copy">'+esc(feed?.status==='unavailable'?feed.message:g?.completed?'This game is complete. Pregame lines remain in betting history.':'No live lines are currently available for this matchup.')+'</p>';return}
-    panel.innerHTML+=`<p class="copy">${feed.status==='stale'?'Last retrieved lines · provider delayed':'Updated automatically'} · ${esc(new Date(feed.fetched_at).toLocaleString())} · Checks every 5 minutes.</p>`;
+    panel.innerHTML+=`<p class="copy">Pregame quotes · Collected ${esc(new Date(Math.max(...match.bookmakers.map(b=>Date.parse(b.last_update)))).toLocaleString())}</p>`;
     for(const b of match.bookmakers){
       const market=k=>b.markets.find(m=>m.key===k);const side=(k,n)=>market(k)?.outcomes.find(o=>o.name===n);
       const h=side('spreads',match.home_team),a=side('spreads',match.away_team),over=side('totals','Over'),under=side('totals','Under');
-      panel.innerHTML+=`<details><summary>${esc(b.title)} · ${esc(g.home_team)} ${signed(h?.point)} · Total ${esc(over?.point)}</summary><p class="copy">Spread: ${esc(g.away_team)} ${signed(a?.point)} (${signed(a?.price)}) / ${esc(g.home_team)} ${signed(h?.point)} (${signed(h?.price)})<br>Total: Over ${esc(over?.point)} (${signed(over?.price)}) / Under ${esc(under?.point)} (${signed(under?.price)})<br>Moneyline: ${esc(g.away_team)} ${signed(side('h2h',match.away_team)?.price)} / ${esc(g.home_team)} ${signed(side('h2h',match.home_team)?.price)}<br>Book updated: ${esc(b.last_update?new Date(b.last_update).toLocaleString():'Unavailable')}</p></details>`;
+      panel.innerHTML+=`<details><summary>${esc(b.title)} · ${esc(g.home_team)} ${signed(h?.point)} · Total ${esc(over?.point)}</summary><p class="copy">Spread: ${esc(g.away_team)} ${signed(a?.point)} (${signed(a?.price)}) / ${esc(g.home_team)} ${signed(h?.point)} (${signed(h?.price)})<br>Total: Over ${esc(over?.point)} (${signed(over?.price)}) / Under ${esc(under?.point)} (${signed(under?.price)})<br>Moneyline: ${esc(g.away_team)} ${signed(side('h2h',match.away_team)?.price)} / ${esc(g.home_team)} ${signed(side('h2h',match.home_team)?.price)}<br>Quote collected: ${esc(b.last_update?new Date(b.last_update).toLocaleString():'Unavailable')}</p></details>`;
     }
     panel.innerHTML+='<p class="copy">Model picks above retain their original evaluated lines. A new sportsbook price does not automatically create a new model edge.</p>';
   }

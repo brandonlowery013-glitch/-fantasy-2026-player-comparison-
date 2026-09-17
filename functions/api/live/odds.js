@@ -1,31 +1,14 @@
-const headers={'content-type':'application/json; charset=utf-8','cache-control':'no-store'};
-const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers});
-export function refreshSeconds(games,now=Date.now()){
-  const starts=games.map(g=>Date.parse(g.start_at)).filter(t=>Number.isFinite(t)&&t>now-4*3600000);
-  if(!starts.length)return 3600;
-  const minutes=(Math.min(...starts)-now)/60000;
-  return minutes<=60?300:minutes<=1440?600:minutes<=2880?900:minutes<=10080?1800:3600;
-}
-export async function onRequestGet({env,request,waitUntil}){
-  if(!env.ODDS_API_KEY)return json({status:'unavailable',games:[],message:'Live odds are not configured.'},503);
-  const cache=caches.default;
-  const key=new Request(new URL('/__cache/nfl-odds-v1',request.url));
-  let prior;
-  try{const hit=await cache.match(key);if(hit)prior=await hit.json()}catch{}
-  if(prior&&Date.now()-Date.parse(prior.fetched_at)<refreshSeconds(prior.games)*1000)return json(prior);
+const SOURCE='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/data/market/current-game-lines-2026.json';
+const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'public, max-age=60'}});
+export async function onRequestGet(){
   try{
-    const url=new URL('https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds');
-    url.search=new URLSearchParams({apiKey:env.ODDS_API_KEY,regions:'us',markets:'h2h,spreads,totals',oddsFormat:'american'});
-    const response=await fetch(url,{signal:AbortSignal.timeout(10000)});
-    if(!response.ok)throw Error('Provider unavailable');
-    const rows=await response.json();
-    if(!Array.isArray(rows)||rows.length>100)throw Error('Invalid provider data');
-    const games=rows.filter(g=>g.id&&g.home_team&&g.away_team&&Number.isFinite(Date.parse(g.commence_time))).map(g=>({id:g.id,home_team:g.home_team,away_team:g.away_team,start_at:g.commence_time,bookmakers:(g.bookmakers||[]).map(b=>({key:b.key,title:b.title,last_update:b.last_update,markets:(b.markets||[]).filter(m=>['h2h','spreads','totals'].includes(m.key)).map(m=>({key:m.key,last_update:m.last_update,outcomes:(m.outcomes||[]).map(o=>({name:o.name,price:o.price,...(Number.isFinite(o.point)?{point:o.point}:{})}))}))}))}));
-    const body={status:'ok',source:'The Odds API',fetched_at:new Date().toISOString(),refresh_seconds:refreshSeconds(games),games};
-    waitUntil(cache.put(key,new Response(JSON.stringify(body),{headers:{...headers,'cache-control':'public, max-age=7200'}})).catch(()=>{}));
-    return json(body);
-  }catch{
-    if(prior&&Date.now()-Date.parse(prior.fetched_at)<Math.max(900,refreshSeconds(prior.games)+900)*1000)return json({...prior,status:'stale',message:'Provider temporarily unavailable; showing the last retrieved lines.'});
-    return json({status:'unavailable',games:[],message:'Live odds provider is unavailable. Stored model analysis is unchanged.'},502);
-  }
+    const response=await fetch(SOURCE,{signal:AbortSignal.timeout(10000)});
+    if(!response.ok)throw Error('Published lines unavailable');
+    const reader=response.body.getReader(),chunks=[];let size=0;
+    for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>2000000){await reader.cancel();throw Error('Feed too large');}chunks.push(value);}
+    const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
+    const data=JSON.parse(new TextDecoder().decode(bytes));
+    if(!Array.isArray(data.games)||data.games.length>300||data.quote_type!=='pregame')throw Error('Invalid feed');
+    return json(data);
+  }catch{return json({status:'unavailable',games:[],message:'Published sportsbook lines are temporarily unavailable.'},503);}
 }

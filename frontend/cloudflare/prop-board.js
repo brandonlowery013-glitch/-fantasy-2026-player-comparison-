@@ -40,6 +40,7 @@
   const r=s.evaluation?.recommendation;
   if(!r)return ['',''];
   if(r.decision==='WAIT')return ['',''];
+  if(['UNAVAILABLE','CONDITIONAL'].includes(window.CTD_WEEKLY_ELIGIBILITY?.(s.player,s.week)?.state))return ['',''];
   if(r.decision==='PICK')return ['MODEL PICK',`${r.side} ${s.line} · analysis only`];
   return ['PASS','Neither side meets the model’s pick thresholds.'];
  }
@@ -55,7 +56,7 @@
   }).join('')}</div>${!visible.length?`<p class="copy">${snapshots?'No sportsbook prop lines are available for this week and filter.':'Loading sportsbook prop lines…'}</p>`:''}</div>`;
  }
  async function refresh(){if(busy)return;busy=true;try{
-  const results=await Promise.allSettled(['data/market/player-prop-market-snapshots-2026.json','data/market/player-prop-recommendations-2026.json','data/ingestion/team-personnel-2026.json'].map(async path=>{const r=await fetch(RAW+path,{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}));
+  const results=await Promise.allSettled(['data/market/player-prop-market-snapshots-2026.json','data/market/player-prop-recommendations-2026.json','data/ingestion/team-personnel-2026.json'].map(async path=>{const r=await fetch(RAW+path+'?refresh='+Math.floor(Date.now()/300000),{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}));
   if(results[0].status==='fulfilled')snapshots=results[0].value;if(results[1].status==='fulfilled')recs=results[1].value;
   if(results[2].status==='fulfilled')personnel=results[2].value;
   error=results.slice(0,2).some(r=>r.status==='rejected')?'A feed could not refresh. Any displayed quotes retain their original timestamps.':'';
