@@ -10,7 +10,12 @@ let rows=run([player('Ladd','WR',1,'Out'),player('Harris','WR',1),player('Johnst
 assert.deepEqual(Array.from(rows[0].options,q=>q.name),['Harris','Johnston']);
 const usage={Mason:{last_game:{completed:true,date:new Date(Date.now()-3*86400000).toISOString(),player_stat_groups:[{category:'rushing',stats:{CAR:'15',YDS:'59'}}]}}};
 rows=run([player('Jones','RB',1),player('Mason','RB',2,'Injured Reserve'),player('Reserve','RB',3)],usage);
-assert.match(rows[0].explanation,/15 carries for 59 yards/);
+assert.match(rows[0].usage,/15 carries · 59 yards/);
+assert.match(rows[0].explanation,/unavailable/);
 assert.deepEqual(Array.from(rows[0].options,q=>q.name),['Jones','Reserve']);
 usage.Mason.last_game.date='2025-09-01';assert.equal(run([player('Mason','RB',2,'Out')],usage).length,0);
 console.log('PASS: backup exclusions, relevant receiver room, proven committee workload, expired evidence');
+
+const injured=player('Pierce','WR',1,'Questionable');injured.injury_reports[0].body_part='Wrist';
+const detail=run([injured,player('Downs','WR',1)],{Pierce:{last_game:{completed:true,date:new Date(Date.now()-3*86400000).toISOString(),player_stat_groups:[{category:'receiving',stats:{REC:'4',TGTS:'6',YDS:'70',TD:'0'}}]}}})[0];
+assert.match(detail.explanation,/Wrist injury/);assert.equal(detail.usage,'4 catches · 70 yards · 0 TD · 6 targets');
