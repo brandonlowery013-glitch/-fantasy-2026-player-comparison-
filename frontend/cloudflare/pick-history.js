@@ -1,5 +1,6 @@
 (()=>{
  const e=x=>String(x??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const team=x=>({WAS:'WSH',LA:'LAR'}[x]||x);
  const date=x=>new Date(x).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
  let kind='all',scope='game';
  window.ctdRecordedHistory=(g,history,settlements,error)=>{
@@ -7,7 +8,7 @@
   const events=settlements?.events||{};
   const rows=(history?.records||[]).filter(p=>Number(p.week)===week&&Number(p.season)===season).filter(p=>{
    const event=events[p.game_id]||p;
-   return (scope==='week'||(event.home_team===g.home_team&&event.away_team===g.away_team)||p.game_id===`${season}-W${week}-${g.away_team}-${g.home_team}`)&&(kind==='all'||(kind==='props'?!!p.player:!p.player));
+   return (scope==='week'||(team(event.home_team)===team(g.home_team)&&team(event.away_team)===team(g.away_team))||p.game_id===`${season}-W${week}-${team(g.away_team)}-${team(g.home_team)}`)&&(kind==='all'||(kind==='props'?!!p.player:!p.player));
   });
   const groups=new Map(),results=new Map((settlements?.settlements||[]).map(s=>[s.record_id,s]));
   for(const p of rows){if(!groups.has(p.stream_id))groups.set(p.stream_id,[]);groups.get(p.stream_id).push(p);}
