@@ -96,7 +96,7 @@ jobs:
         if: steps.cadence.outputs.run == 'true'
         shell: bash
         run: |
-          paths=(data/market/weekly-matchup-market-snapshots-2026.json data/market/player-prop-market-snapshots-2026.json data/market/live-market-ingestion-status-2026.json data/market/weekly-game-market-recommendations-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json)
+          paths=(data/market/weekly-matchup-market-snapshots-2026.json data/market/player-prop-market-snapshots-2026.json data/market/live-market-ingestion-status-2026.json data/market/weekly-game-market-recommendations-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
           git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${paths[@]}"
           if git diff --cached --quiet; then echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0; fi

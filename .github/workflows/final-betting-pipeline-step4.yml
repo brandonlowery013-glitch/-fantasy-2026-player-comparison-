@@ -8,6 +8,8 @@ on:
       - 'data/market/final-betting-ui-feed-2026.json'
       - 'scripts/build-weekly-parlay-recommendations.mjs'
       - 'scripts/build-final-betting-ui-feed.mjs'
+      - 'lib/issued-pick-history.mjs'
+      - 'scripts/test-issued-pick-history.mjs'
       - 'scripts/validate-final-betting-pipeline-step4.mjs'
       - 'scripts/merge-guarded-production-pr.sh'
       - 'runtime-final-betting-pipeline-2026.js'
@@ -21,6 +23,8 @@ on:
       - 'data/market/final-betting-ui-feed-2026.json'
       - 'scripts/build-weekly-parlay-recommendations.mjs'
       - 'scripts/build-final-betting-ui-feed.mjs'
+      - 'lib/issued-pick-history.mjs'
+      - 'scripts/test-issued-pick-history.mjs'
       - 'scripts/validate-final-betting-pipeline-step4.mjs'
       - 'scripts/merge-guarded-production-pr.sh'
       - 'runtime-final-betting-pipeline-2026.js'
@@ -61,7 +65,9 @@ jobs:
       - name: Test week-aware parlay rollover
         run: node scripts/build-weekly-parlay-recommendations.mjs --self-test
       - name: Test week-aware final UI feed
-        run: node scripts/build-final-betting-ui-feed.mjs --self-test
+        run: |
+          node scripts/build-final-betting-ui-feed.mjs --self-test
+          node scripts/test-issued-pick-history.mjs
       - name: Validate Step 4 contract
         run: node scripts/validate-final-betting-pipeline-step4.mjs
 
@@ -91,7 +97,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json
+          git add data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json
           if git diff --cached --quiet; then echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           branch="production/betting-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git switch -c "$branch"

@@ -1,3 +1,5 @@
+import {execFileSync} from 'node:child_process';
+import {captureHistory} from '../lib/issued-pick-history.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -76,6 +78,13 @@ if(self){
   const stale=build({...src,gameRecs:{...src.gameRecs,week:2}});
   if(stale.status!=='WAITING_FOR_CURRENT_WEEK_OUTPUTS'||stale.games.length||stale.eligible_legs.length)throw new Error('self-test stale-week isolation failed');
 }
-if(!self)write('data/market/final-betting-ui-feed-2026.json',out);
+if(!self){
+ const historyPath='data/market/issued-pick-history-2026.json';
+ if(out.status==='READY'){
+  const history=captureHistory({...src,ledger:fs.existsSync(historyPath)?read(historyPath):null,propSnapshots:read('data/market/player-prop-market-snapshots-2026.json'),now:out.generated_at,sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()});
+  write(historyPath,history.ledger);
+ }
+ write('data/market/final-betting-ui-feed-2026.json',out);
+}
 console.log(JSON.stringify({result:out.blocked?.length?'BLOCKED':'PASS',week:out.week,status:out.status,games:out.games.length,props:out.props.length,parlays:out.parlays.length,eligible_legs:out.eligible_legs.length,blocked:out.blocked},null,2));
 if(out.blocked?.length)process.exit(1);
