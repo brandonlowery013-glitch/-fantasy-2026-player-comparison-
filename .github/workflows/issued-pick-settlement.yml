@@ -1,0 +1,65 @@
+name: Issued Pick Settlement
+on:
+  schedule:
+    - cron: '35 */6 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths: ['lib/pick-settlement.mjs', 'scripts/*issued-picks.mjs', 'scripts/test-pick-settlement.mjs', '.github/workflows/issued-pick-settlement.yml']
+  push:
+    branches: [main]
+    paths: ['lib/pick-settlement.mjs', 'scripts/*issued-picks.mjs', '.github/workflows/issued-pick-settlement.yml']
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+  actions: write
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/test-pick-settlement.mjs
+  publish:
+    if: github.event_name != 'pull_request'
+    needs: qa
+    runs-on: ubuntu-latest
+    concurrency:
+      group: production-main-writer
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/settle-issued-picks.mjs
+      - name: Persist pick settlement state through guarded PR
+        id: persist
+        shell: bash
+        run: |
+          paths=(data/market/issued-pick-results-2026.json)
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${paths[@]}"
+          if git diff --cached --quiet; then echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+          branch="production/pick-settlement-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$branch"; git commit -m "Refresh issued pick settlement state"; git push origin "HEAD:$branch"
+          echo "changed=true" >> "$GITHUB_OUTPUT"; echo "branch=$branch" >> "$GITHUB_OUTPUT"
+      - name: Open guarded pick settlement PR
+        id: state_pr
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr_url=$(gh pr create --base main --head "${{ steps.persist.outputs.branch }}" --title "Production: issued pick settlement refresh" --body "Automated pick settlement refresh. Required Guardrail QA must pass on the current protected candidate before merge.")
+          echo "number=${pr_url##*/}" >> "$GITHUB_OUTPUT"
+      - name: Validate current protected candidate and merge pick settlement state
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/merge-guarded-production-pr.sh "${{ steps.state_pr.outputs.number }}" "${{ steps.persist.outputs.branch }}" merge

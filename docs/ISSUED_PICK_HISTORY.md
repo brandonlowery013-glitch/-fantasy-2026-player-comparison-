@@ -9,3 +9,8 @@ Only active-week, identifiable pregame records with valid source timestamps are 
 Capture starts with deployment. It does not turn reconstructed Week 1 outputs into frozen issued bets. Settlement and stat-correction records should later reference record_id and append their own revisions; this change does not infer or fabricate settled results. Parlay ticket history is not captured by this module.
 
 Validation: `node scripts/test-issued-pick-history.mjs`, plus the final-feed self-test. Tests cover immutable revisions, duplicate suppression, withdrawals, future timestamps, kickoff and week restrictions, malformed ledgers, incomplete picks, prop game mapping and PICK-to-WAIT preservation.
+
+## Results and presentation
+`settle-issued-picks.mjs` appends verified final results to `data/market/issued-pick-results-2026.json`. Event identities are retained across rollover; original picks remain untouched. Official corrections append settlement revisions. Missing player/stat rows do not become zero or a void. The model record assumes full-game markets including overtime, moneyline ties as pushes, and one hypothetical unit risked at original American odds; bookmaker-specific exceptions require review.
+
+The Games → Betting History view counts the first recorded PICK per stream once, regardless of subsequent PASS/WAIT decisions. Revisions expand separately and never inflate the summary. The week selector and game/prop filters narrow the record. The six-hour guarded settlement publisher runs separately from market collection. These are model publication records, not actual account wagers. Week 1 is not retroactively inserted.
