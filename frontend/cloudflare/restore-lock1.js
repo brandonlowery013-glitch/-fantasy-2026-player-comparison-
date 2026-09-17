@@ -174,8 +174,16 @@ function sharedPlayer(name){
  const sameWeek=personnel&&weeklySchedule&&Number(personnel.week)===Number(weeklySchedule.week)&&personnel.season===weeklySchedule.season;
  const game=sameWeek&&roster?Object.values(weeklySchedule.games||{}).find(g=>[g.home_team,g.away_team].includes(roster.team)):null;
  const projection=weeklyProjections&&weeklySchedule&&Number(weeklyProjections.week)===Number(weeklySchedule.week)&&weeklyProjections.season===weeklySchedule.season?Object.entries(weeklyProjections.players||{}).find(([n])=>playerKey(n)===playerKey(name))?.[1]:null;
- const report=[...(roster?.injury_reports||[])].sort((a,b)=>(Date.parse(b.source_updated_at)||0)-(Date.parse(a.source_updated_at)||0))[0];
+ let report=[...(roster?.injury_reports||[])].sort((a,b)=>(Date.parse(b.source_updated_at)||0)-(Date.parse(a.source_updated_at)||0))[0];
  const news=profileNews.filter(n=>{const text=playerKey((n.headline||n.title||'')+' '+(n.summary||n.description||''));return text.includes(playerKey(name));}).slice(0,5);
+ // A newer explicit IR transaction can arrive in the news before the roster refresh.
+ for(const story of news){
+  const time=Date.parse(story.published_at),title=String(story.headline||story.title||'');
+  let trusted=false;try{trusted=/(^|\.)(espn\.com|nfl\.com)$/.test(new URL(story.url).hostname);}catch{}
+  const nameAt=title.toLowerCase().indexOf(String(name).toLowerCase()),named=nameAt>=0;
+  const explicitIR=named&&/^\s+(?:(?:has been|was|is being)\s+)?(?:put|placed|moved)\s+(?:on|to)\s+(?:the\s+)?(?:IR|injured reserve)\b/i.test(title.slice(nameAt+name.length));
+  if(trusted&&named&&explicitIR&&Number.isFinite(time)&&time<=Date.now()+300000&&Date.now()-time<7*86400000&&time>(Date.parse(report?.source_updated_at)||0))report={status:'Injured Reserve',source_updated_at:story.published_at,source_url:story.url,source:'Dated news transaction',body_part:null};
+ }
  return {roster,report,projection,news,game,week:weeklySchedule?.week,opponent:game?(game.home_team===roster.team?game.away_team:game.home_team):null};
 }
 
@@ -203,7 +211,7 @@ window.CTD_ROLE_WATCH=()=>{
   if((!unavailable&&!conditional)||!v.game)continue;
   const rank=q=>Math.min(...(q.depth_roles||[]).filter(d=>d.position===p.position).map(d=>d.rank),Infinity);
   if(!Number.isFinite(rank(p))||rank(p)>2)continue;
-  const options=t.players.filter(q=>q.athlete_id!==p.athlete_id&&q.position===p.position&&Number.isFinite(rank(q))&&q.availability?.expected_active!==false)
+  const options=t.players.filter(q=>q.athlete_id!==p.athlete_id&&q.position===p.position&&Number.isFinite(rank(q))&&q.availability?.expected_active!==false&&weeklyEligibility(q.name,weeklySchedule.week).state!=='UNAVAILABLE')
    .sort((a,b)=>rank(a)-rank(b)).slice(0,3).map(q=>({name:q.name,athlete_id:q.athlete_id,position:q.position,rank:rank(q),status:q.latest_reported_status&&q.latest_reported_status!=='Active'?q.latest_reported_status:null}));
   if(options.length)rows.push({player:p.name,team:t.team,position:p.position,designation:report.status,reported:report.source_updated_at,source:t.source_url,conditional,options});
  }return rows.sort((a,b)=>Number(a.conditional)-Number(b.conditional)||Date.parse(b.reported)-Date.parse(a.reported));
