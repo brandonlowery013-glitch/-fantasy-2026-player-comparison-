@@ -220,7 +220,7 @@ window.CTD_ROLE_WATCH=()=>{
   if(!established)continue;
   // A reserve QB's absence never transfers the starter's existing workload.
   if(p.position==='QB'&&rank(p)!==1)continue;
-  const eligible=t.players.filter(q=>q.athlete_id!==p.athlete_id&&q.position===p.position&&Number.isFinite(rank(q))&&q.availability?.expected_active!==false&&weeklyEligibility(q.name,weeklySchedule.week).state!=='UNAVAILABLE');
+  const eligible=t.players.filter(q=>q.athlete_id!==p.athlete_id&&q.position===p.position&&Number.isFinite(rank(q))&&q.availability?.expected_active!==false&&!/^doubtful$/i.test(sharedPlayer(q.name).report?.status||'')&&weeklyEligibility(q.name,weeklySchedule.week).state!=='UNAVAILABLE');
   const nextRank=Math.min(...eligible.filter(q=>rank(q)>rank(p)).map(rank),Infinity);
   const options=eligible.filter(q=>p.position==='QB'?rank(q)===nextRank:p.position==='RB'?(rank(q)===1||rank(q)===nextRank):rank(q)===1)
    .sort((a,b)=>rank(a)-rank(b)).slice(0,p.position==='QB'?1:3).map(q=>({name:q.name,athlete_id:q.athlete_id,position:q.position,rank:rank(q),status:q.latest_reported_status&&q.latest_reported_status!=='Active'?q.latest_reported_status:null,reason:rank(q)===1?'Already listed in the starting group; additional work could be shared.':'Next listed reserve at this position; promotion has not been confirmed.'}));
