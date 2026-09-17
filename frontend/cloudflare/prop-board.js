@@ -6,7 +6,7 @@
  const price=x=>typeof x==='number'&&Number.isFinite(x)?(x>0?'+':'')+x:'—';
  const date=x=>Number.isFinite(Date.parse(x))?new Date(x).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Time unavailable';
  let snapshots=null,recs=null,personnel=null,error='',market='all',game='all',busy=false,nextRefresh=Date.now()+300000;
- const key=n=>String(n||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+ const key=n=>String(n||'').toLowerCase().normalize('NFKD').replace(/\b(jr|sr|ii|iii|iv)\b/g,'').replace(/[^a-z0-9]/g,'');
  window.CTD_PLAYER_PORTRAIT=(name,id)=>{const matches=Object.values(personnel?.teams||{}).flatMap(t=>t.players||[]).filter(p=>key(p.name||p.player)===key(name));id=id||(matches.length===1?matches[0].athlete_id:null);const initials=String(name).split(' ').map(w=>w[0]).slice(0,2).join('');return `<span class="ctdPortrait"><span>${esc(initials)}</span>${/^\d+$/.test(String(id||''))?`<img loading="lazy" src="https://a.espncdn.com/i/headshots/nfl/players/full/${id}.png" alt="${esc(name)}">`:''}</span>`;};
  document.addEventListener('error',e=>{if(e.target.matches?.('.ctdPortrait img'))e.target.remove();},true);
  const nav=document.getElementById('nav'),gamesButton=nav.querySelector('[data-page="gamesPage"]');
