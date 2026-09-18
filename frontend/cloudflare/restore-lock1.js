@@ -1,3 +1,27 @@
+(()=>{
+ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const number=x=>x!=null&&Number.isFinite(Number(x));
+ const fmt=x=>number(x)?Number(x).toFixed(1):'—';
+ let published=null;
+ const style=document.createElement('style');style.textContent=`.ctdScoreGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.ctdScoreTile{background:#101f30;border:1px solid #29425b;border-radius:12px;padding:16px}.ctdScoreTile strong{display:block;font-size:clamp(20px,3vw,30px);margin:8px 0}.ctdScoreTile small,.ctdScoreNote{color:#aabed0}.ctdScoreGraph{width:100%;height:auto;display:block}.ctdScoreLegend{display:flex;flex-wrap:wrap;gap:18px;margin:8px 0;color:#b8c9d9}@media(max-width:600px){.ctdScoreGrid{grid-template-columns:1fr}}`;document.head.append(style);
+ window.ctdScoreComparison={setData(d){published=d},render(raw,s,week){
+  const anchor=document.getElementById('awayProb');const box=anchor?.closest('.panel');if(!box)return;
+  let host=document.getElementById('ctdScoreComparison');if(!host){host=document.createElement('section');host.id='ctdScoreComparison';box.prepend(host);}
+  const p=raw.football_projection||{},total=s.market?.total,spread=s.market?.home_spread;
+  const known=number(total)&&number(spread),home=known?(Number(total)-Number(spread))/2:null,away=known?(Number(total)+Number(spread))/2:null;
+  const g=Number(published?.week)===Number(week)?Object.values(published.games||{}).find(g=>g.home_team===raw.home_team&&g.away_team===raw.away_team&&g.event_start===raw.kickoff&&Math.abs(g.model?.home_score_mean-p.home_score_mean)<.001&&Math.abs(g.model?.away_score_mean-p.away_score_mean)<.001):null;
+  const d=g?.distribution;let graph='';
+  if(d&&number(d.team_score_sd)&&d.team_score_sd>0&&Number.isInteger(d.simulations)&&d.simulations>=1000){
+   const sd=Number(d.team_score_sd),hm=Number(p.home_score_mean),am=Number(p.away_score_mean),max=Math.ceil(Math.max(hm,am,home??0,away??0)+sd*3),x=v=>36+v/max*608,y=(v,mu)=>150-120*Math.exp(-.5*((v-mu)/sd)**2);
+   const curve=mu=>Array.from({length:121},(_,i)=>{const v=i*max/120;return `${i?'L':'M'}${x(v).toFixed(2)},${y(v,mu).toFixed(2)}`}).join(' ');
+   const ticks=Array.from({length:5},(_,i)=>{const v=i*max/4;return `<text x="${x(v)}" y="175" text-anchor="middle" fill="#aabed0" font-size="12">${v.toFixed(0)}</text>`}).join('');
+   graph=`<h3>PROJECTED SCORE RANGE</h3><svg class="ctdScoreGraph" viewBox="0 0 680 195" role="img" aria-label="Projected score bell curves for ${esc(raw.away_team)} and ${esc(raw.home_team)}; dashed lines mark sportsbook implied scores"><path d="M36 150H644" stroke="#536c83"/>${known?`<path d="M${x(away)} 20V150" stroke="#70b5ff" stroke-dasharray="5 5"/><path d="M${x(home)} 20V150" stroke="#ffc665" stroke-dasharray="5 5"/>`:''}<path d="${curve(am)}" fill="none" stroke="#70b5ff" stroke-width="3"/><path d="${curve(hm)}" fill="none" stroke="#ffc665" stroke-width="3"/>${ticks}<text x="340" y="192" text-anchor="middle" fill="#aabed0" font-size="12">Team points</text></svg><div class="ctdScoreLegend"><span style="color:#70b5ff">● ${esc(raw.away_team)}</span><span style="color:#ffc665">● ${esc(raw.home_team)}</span><span>Dashed: sportsbook-implied score</span></div><p class="ctdScoreNote">${d.simulations.toLocaleString()} simulated outcomes · Curves show the score distributions used before rounding and the zero-point floor.</p>`;
+  }
+  host.innerHTML=`<h3>PROJECTED SCORE</h3><div class="ctdScoreGrid"><div class="ctdScoreTile">Our model<strong>${esc(raw.away_team)} ${fmt(p.away_score_mean)} · ${esc(raw.home_team)} ${fmt(p.home_score_mean)}</strong><small>Total ${fmt(Number(p.home_score_mean)+Number(p.away_score_mean))}</small></div><div class="ctdScoreTile">Sportsbook-implied<strong>${esc(raw.away_team)} ${fmt(away)} · ${esc(raw.home_team)} ${fmt(home)}</strong><small>${esc(s.book)} · Derived from spread and total<br>${esc(new Date(s.captured_at).toLocaleString())}</small></div></div>${graph}<h3>CHANCE TO WIN OUTRIGHT</h3>`;
+  const title=[...box.children].find(el=>el.tagName==='H3'&&/MODEL WIN PROBABILITY/i.test(el.textContent));if(title)title.hidden=true;
+ }};
+})();
+
 // Vendored from commit 251a16428d468cd3eb764ef3218f1049d4d9b588.
 // Serve the preserved LOCK1 runtime from Pages with a JavaScript content type.
 (()=>{
@@ -105,6 +129,7 @@
   function selected(game){const rows=latest(game);return rows.find(s=>s.book==='draftkings')||rows[0];}
   function explain(game,s){const p=game.football_projection,lines=Object.entries(s.markets||{}).filter(([,m])=>m.recommendation?.decision==='PICK').map(([kind,m])=>`${kind}: ${m.recommendation.selection}, ${pp(m.recommendation.probability_edge)} probability advantage, ${pct(m.recommendation.expected_value)} expected return per unit risked.`);return `Projected score: ${game.away_team} ${num(p.away_score_mean)}, ${game.home_team} ${num(p.home_score_mean)}. `+(lines.length?lines.join(' '):'No market clears the model thresholds.');}
   function detail(){
+    document.getElementById('ctdScoreComparison')?.remove();
     const g=BET_FEED.games[selectedGameIndex];if(!g||!feed||Number(feed.week)!==Number(BET_FEED.week))return;
     const raw=Object.values(feed.games||{}).find(x=>x.away_team===g.away_team&&x.home_team===g.home_team);if(!raw)return;
     const s=selected(raw);if(!s)return;
@@ -112,6 +137,7 @@
     const summary=explain(raw,s);g.model_summary=summary;
     if(activeGameTab==='OVERVIEW')document.getElementById('gameSummary').textContent=(ended?'Pregame analysis (archived). ':'')+summary;
     const p=raw.football_projection;
+    window.ctdScoreComparison?.render(raw,s,feed.week);
     document.querySelector('#awayProb + span').textContent=raw.away_team;
     document.querySelector('#homeProb + span').textContent=raw.home_team;
     document.getElementById('awayProb').textContent=pct(s.markets.moneyline?.side_b?.conditional_win_probability);
@@ -155,7 +181,7 @@
   for(const [label,direction] of [['Previous games',-1],['Next games',1]]){const b=document.createElement('button');b.className='btn';b.textContent=label;b.onclick=()=>lane.scrollBy({left:direction*lane.clientWidth*.75,behavior:'smooth'});controls.appendChild(b);}
   lane.before(controls);lane.style.cssText+=';overflow-x:auto;max-width:100%;min-width:0;scrollbar-width:auto';
   const css=document.createElement('style');css.textContent='#gamesPage{min-width:0;max-width:100%}#gamesPage .ticker{display:flex}#gamesPage .gamecard{flex:0 0 190px}#gamesPage .grid3,#gamesPage .lowgrid,#gamesPage .midgrid{min-width:0}#gamesPage .panel{min-width:0;overflow-wrap:anywhere}@media(max-width:1100px){#gamesPage .grid3,#gamesPage .lowgrid,#gamesPage .midgrid{grid-template-columns:1fr}}';document.head.appendChild(css);
-  async function load(){try{const r=await fetch(RAW+'data/market/weekly-game-market-recommendations-2026.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);feed=await r.json();syncTicker();detail();}catch(err){console.error('Detailed game feed unavailable',err);}}
+  async function load(){try{const r=await fetch(RAW+'data/market/weekly-game-market-recommendations-2026.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);feed=await r.json();syncTicker();detail();try{const pr=await fetch(RAW+'data/probability/generated/weekly-game-projections-2026.json?ts='+Date.now(),{cache:'no-store'});if(pr.ok){window.ctdScoreComparison?.setData(await pr.json());detail();}}catch(err){console.error('Score distributions unavailable',err);}}catch(err){console.error('Detailed game feed unavailable',err);}}
   load();setInterval(load,60000);
 })();
 
