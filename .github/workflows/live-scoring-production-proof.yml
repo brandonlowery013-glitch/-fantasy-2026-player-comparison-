@@ -12,6 +12,7 @@ on:
     paths:
       - '.github/workflows/live-scoring-production-proof.yml'
       - 'scripts/verify-cloudflare-live-scoring-production.mjs'
+      - 'scripts/verify-cloudflare-live-scoring-resilience.mjs'
 
 permissions:
   contents: read
@@ -30,7 +31,9 @@ jobs:
         with:
           node-version: '20'
       - name: Validate production observer syntax
-        run: node --check scripts/verify-cloudflare-live-scoring-production.mjs
+        run: |
+          node --check scripts/verify-cloudflare-live-scoring-production.mjs
+          node --check scripts/verify-cloudflare-live-scoring-resilience.mjs
 
   live-window:
     if: >-
@@ -123,3 +126,67 @@ jobs:
           path: artifacts/live-scoring-production-proof/
           if-no-files-found: warn
           retention-days: 30
+
+  postgame-resilience:
+    if: >-
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.event == 'schedule' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      CTD_PRODUCTION_URL: https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev/
+      CTD_RESILIENCE_DIR: artifacts/live-scoring-resilience
+      CTD_RESILIENCE_STATE_DIR: artifacts/live-scoring-resilience/state
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Restore prior postgame provider snapshot
+        uses: actions/cache/restore@v4
+        with:
+          path: artifacts/live-scoring-resilience/state
+          key: live-scoring-resilience-${{ github.run_id }}
+          restore-keys: |
+            live-scoring-resilience-
+      - name: Validate deployed final state, provider ids, freshness and ESPN stats
+        run: node scripts/verify-cloudflare-live-scoring-resilience.mjs
+      - name: Publish resilience summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "$CTD_RESILIENCE_DIR/proof.json" ]; then
+            node - <<'NODE'
+            const fs=require('node:fs');
+            const p=JSON.parse(fs.readFileSync('artifacts/live-scoring-resilience/proof.json','utf8'));
+            const lines=[
+              `## Live scoring resilience`,
+              `- Result: **${p.result}**`,
+              p.event ? `- Matchup: **${p.event.away_team} @ ${p.event.home_team}** · final ${p.event.away_score}-${p.event.home_score}` : null,
+              p.final_reconciliation != null ? `- Final-state reconciliation: **${Boolean(p.final_reconciliation)}**` : null,
+              p.feed_freshness_health != null ? `- Feed freshness/health: **${Boolean(p.feed_freshness_health)}**` : null,
+              p.stable_provider_ids != null ? `- Stable provider IDs: **${Boolean(p.stable_provider_ids)}**` : null,
+              p.final_player_stats_match_espn != null ? `- Final ESPN player stats matched: **${Boolean(p.final_player_stats_match_espn)}**` : null,
+              `- Later provider/stat correction observed: **${Boolean(p.correction_observed)}**`,
+              p.correction_observed ? `- Later correction reconciled: **${Boolean(p.correction_reconciled)}**` : `- Later correction validation: **pending a real ESPN stat/provider change**`,
+              p.error ? `- Error: ${String(p.error).split('\n')[0]}` : null,
+            ].filter(Boolean).join('\n')+'\n';
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines);
+            NODE
+          fi
+      - name: Upload resilience evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-scoring-resilience-${{ github.run_id }}
+          path: artifacts/live-scoring-resilience/proof.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Save current postgame provider snapshot
+        if: success() && hashFiles('artifacts/live-scoring-resilience/state/latest.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: artifacts/live-scoring-resilience/state
+          key: live-scoring-resilience-${{ github.run_id }}
