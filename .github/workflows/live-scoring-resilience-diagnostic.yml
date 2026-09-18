@@ -1,0 +1,95 @@
+name: Live Scoring Resilience Diagnostic
+
+on:
+  push:
+    branches:
+      - diag/live-scoring-resilience-2026-09-18
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Compare deployed final game with ESPN
+        shell: bash
+        run: |
+          node <<'NODE'
+          const PROD='https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev';
+          const ESPN_SCORE='https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=20260917';
+          const fetchJson=async(url)=>{
+            const r=await fetch(url,{headers:{accept:'application/json','user-agent':'CTD-resilience-diagnostic/2026'}});
+            if(!r.ok) throw new Error(`${r.status} ${url}`);
+            return r.json();
+          };
+          const abbr=c=>c?.team?.abbreviation;
+          const findDetBuf=events=>(events||[]).find(e=>{
+            const teams=(e.competitions?.[0]?.competitors||[]).map(abbr);
+            return teams.includes('DET')&&teams.includes('BUF');
+          });
+          const flattenProviderPlayers=summary=>{
+            const out=[];
+            for(const t of summary?.boxscore?.players||[]) for(const g of t.statistics||[]) for(const p of g.athletes||[]) {
+              const labels=g.labels||[];
+              out.push({
+                player_id:String(p.athlete?.id||''),
+                category:g.name||g.displayName||null,
+                stats:Object.fromEntries(labels.map((k,i)=>[k,p.stats?.[i]??null]))
+              });
+            }
+            return out;
+          };
+          const canonical=o=>JSON.stringify(o,Object.keys(o||{}).sort());
+          const main=async()=>{
+            const espnScore=await fetchJson(ESPN_SCORE);
+            const event=findDetBuf(espnScore.events);
+            if(!event) throw new Error('DET/BUF 2026-09-17 not found in ESPN scoreboard');
+            const eventId=String(event.id);
+            const comp=event.competitions?.[0]||{};
+            const away=(comp.competitors||[]).find(c=>c.homeAway==='away');
+            const home=(comp.competitors||[]).find(c=>c.homeAway==='home');
+            const expected={away:abbr(away),away_score:Number(away?.score||0),home:abbr(home),home_score:Number(home?.score||0),state:event.status?.type?.state,completed:Boolean(event.status?.type?.completed)};
+            const [prodScore,prodGame,espnGame]=await Promise.all([
+              fetchJson(`${PROD}/api/live/scoreboard?week=2&t=${Date.now()}`),
+              fetchJson(`${PROD}/api/live/game?event=${eventId}&t=${Date.now()}`),
+              fetchJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${eventId}`)
+            ]);
+            const pg=prodGame.game||prodGame;
+            const ps=(prodScore.games||[]).find(g=>String(g.event_id)===eventId);
+            const providerRows=flattenProviderPlayers(espnGame);
+            const providerByKey=new Map(providerRows.map(r=>[`${r.player_id}|${r.category}`,r]));
+            let matched=0,mismatched=0,missingIds=0;
+            const mismatchExamples=[];
+            for(const row of pg.player_stats||[]){
+              if(!row.player_id){missingIds++;continue;}
+              const ref=providerByKey.get(`${String(row.player_id)}|${row.category}`);
+              if(!ref) continue;
+              matched++;
+              if(canonical(row.stats)!==canonical(ref.stats)){
+                mismatched++;
+                if(mismatchExamples.length<5)mismatchExamples.push({player_id:row.player_id,category:row.category,prod:row.stats,espn:ref.stats});
+              }
+            }
+            const prodAwayScore=Number(pg.away_score??pg.away?.score);
+            const prodHomeScore=Number(pg.home_score??pg.home?.score);
+            const checks={
+              scoreboard_event_id:String(ps?.event_id||'')===eventId,
+              scoreboard_provider_event_id:String(ps?.provider_event_id||'')===eventId,
+              game_event_id:String(pg.event_id||'')===eventId,
+              game_provider_event_id:String(pg.provider_event_id||'')===eventId,
+              final_state:String(pg.state||'').toLowerCase()==='post' && pg.completed===true,
+              final_score:prodAwayScore===expected.away_score&&prodHomeScore===expected.home_score,
+              teams:pg.away?.team===expected.away&&pg.home?.team===expected.home,
+              player_ids:(pg.player_stats||[]).length>0&&missingIds===0,
+              provider_stat_snapshot:matched>0&&mismatched===0
+            };
+            const result={checked_at:new Date().toISOString(),event_id:eventId,expected,production:{scoreboard_health:prodScore.health||null,game_health:prodGame.health||null,state:pg.state,completed:pg.completed,away:pg.away,home:pg.home,away_score:pg.away_score,home_score:pg.home_score,player_rows:(pg.player_stats||[]).length,matched_provider_rows:matched,missing_player_ids:missingIds,stat_mismatches:mismatched,mismatch_examples:mismatchExamples},checks};
+            console.log('RESILIENCE_DIAGNOSTIC='+JSON.stringify(result));
+            const failed=Object.entries(checks).filter(([,v])=>!v).map(([k])=>k);
+            if(failed.length){console.error('RESILIENCE_FAIL='+failed.join(','));process.exitCode=1;}
+            else console.log('RESILIENCE_PASS=current final/provider snapshot matches ESPN');
+          };
+          main().catch(e=>{console.error('RESILIENCE_ERROR='+e.stack);process.exitCode=1});
+          NODE
