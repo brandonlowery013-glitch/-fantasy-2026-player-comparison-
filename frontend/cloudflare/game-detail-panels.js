@@ -120,7 +120,7 @@
     modelPicks(g);pivotal(g,d);
     const match=document.querySelector('#gamesPage .midgrid .panel:nth-child(2)'),chart=document.querySelector('#gamesPage .midgrid .panel:nth-child(3)'),hist=document.querySelector('#gamesPage .panel.history');
     for(const [el,html] of [[match,matchup(g,d)],[chart,flow(g,d)],[hist,historyHtml(g)]])if(el){el.classList.add('ctdDetailPanel');el.innerHTML=html}
-    if(chart&&record){const note=document.createElement('p');note.className='ctdDetailNote';note.textContent=`${record.error?'Last available data · ':''}${record.updated?`Updated ${date(record.updated)} · `:''}${record.error||record.health||''}`;chart.appendChild(note)}
+    if(chart&&record){const note=document.createElement('p');note.className='ctdDetailNote';note.textContent=`${record.error?'Last available data · ':''}${record.updated?`Updated ${date(record.updated)} · `:''}${record.error||(d?.state==='post'?'FINAL':d?.state==='in'?'LIVE':d?.state==='pre'?'UPCOMING':d?.status||'')}`;chart.appendChild(note)}
     tabs(g,d);
   }
   async function refresh(){
