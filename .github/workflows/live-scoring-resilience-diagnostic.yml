@@ -17,6 +17,7 @@ jobs:
         shell: bash
         run: |
           node <<'NODE'
+          const crypto=require('node:crypto');
           const PROD='https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev';
           const ESPN_SCORE='https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=20260917';
           const fetchJson=async(url)=>{
@@ -42,6 +43,14 @@ jobs:
             return out;
           };
           const canonical=o=>JSON.stringify(o,Object.keys(o||{}).sort());
+          const statHash=rows=>{
+            const normalized=(rows||[]).map(r=>({
+              player_id:String(r.player_id||''),
+              category:r.category||null,
+              stats:Object.fromEntries(Object.entries(r.stats||{}).sort(([a],[b])=>a.localeCompare(b)))
+            })).sort((a,b)=>`${a.player_id}|${a.category}`.localeCompare(`${b.player_id}|${b.category}`));
+            return crypto.createHash('sha256').update(JSON.stringify(normalized)).digest('hex');
+          };
           const main=async()=>{
             const espnScore=await fetchJson(ESPN_SCORE);
             const event=findDetBuf(espnScore.events);
@@ -72,6 +81,8 @@ jobs:
                 if(mismatchExamples.length<5)mismatchExamples.push({player_id:row.player_id,category:row.category,prod:row.stats,espn:ref.stats});
               }
             }
+            const providerStatHash=statHash(providerRows);
+            const productionStatHash=statHash(pg.player_stats||[]);
             const prodAwayScore=Number(pg.away_score??pg.away?.score);
             const prodHomeScore=Number(pg.home_score??pg.home?.score);
             const checks={
@@ -83,9 +94,9 @@ jobs:
               final_score:prodAwayScore===expected.away_score&&prodHomeScore===expected.home_score,
               teams:pg.away?.team===expected.away&&pg.home?.team===expected.home,
               player_ids:(pg.player_stats||[]).length>0&&missingIds===0,
-              provider_stat_snapshot:matched>0&&mismatched===0
+              provider_stat_snapshot:matched>0&&mismatched===0&&productionStatHash===providerStatHash
             };
-            const result={checked_at:new Date().toISOString(),event_id:eventId,expected,production:{scoreboard_health:prodScore.health||null,game_health:prodGame.health||null,state:pg.state,completed:pg.completed,away:pg.away,home:pg.home,away_score:pg.away_score,home_score:pg.home_score,player_rows:(pg.player_stats||[]).length,matched_provider_rows:matched,missing_player_ids:missingIds,stat_mismatches:mismatched,mismatch_examples:mismatchExamples},checks};
+            const result={checked_at:new Date().toISOString(),event_id:eventId,expected,production:{scoreboard_health:prodScore.health||null,game_health:prodGame.health||null,state:pg.state,completed:pg.completed,away:pg.away,home:pg.home,away_score:pg.away_score,home_score:pg.home_score,player_rows:(pg.player_stats||[]).length,matched_provider_rows:matched,missing_player_ids:missingIds,stat_mismatches:mismatched,production_stat_hash:productionStatHash,provider_stat_hash:providerStatHash,mismatch_examples:mismatchExamples},checks};
             console.log('RESILIENCE_DIAGNOSTIC='+JSON.stringify(result));
             const failed=Object.entries(checks).filter(([,v])=>!v).map(([k])=>k);
             if(failed.length){console.error('RESILIENCE_FAIL='+failed.join(','));process.exitCode=1;}
