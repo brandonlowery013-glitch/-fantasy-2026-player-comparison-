@@ -1,9 +1,13 @@
 name: Live Scoring Production Proof
 
-# Pull-request execution validates only the observer contract; scheduled execution is the production-proof path.
+# Pull-request execution validates only the observer contract. Production proof is accepted only from an autonomous
+# schedule or from the completion of the repository's already-proven scheduled Adaptive Pregame Market Refresh.
 on:
   schedule:
     - cron: '*/15 * * * *'
+  workflow_run:
+    workflows: ['Adaptive Pregame Market Refresh']
+    types: [completed]
   pull_request:
     paths:
       - '.github/workflows/live-scoring-production-proof.yml'
@@ -29,11 +33,23 @@ jobs:
         run: node --check scripts/verify-cloudflare-live-scoring-production.mjs
 
   live-window:
-    if: github.event_name == 'schedule'
+    if: >-
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.event == 'schedule' &&
+       github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     outputs:
       has_live_game: ${{ steps.espn.outputs.has_live_game }}
     steps:
+      - name: Record autonomous trigger provenance
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "Production observer triggered by scheduled Adaptive Pregame Market Refresh run ${{ github.event.workflow_run.id }}." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Production observer triggered by its native schedule." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Detect an NFL game currently in progress
         id: espn
         shell: bash
@@ -56,7 +72,12 @@ jobs:
           NODE
 
   production-proof:
-    if: github.event_name == 'schedule' && needs.live-window.outputs.has_live_game == 'true'
+    if: >-
+      needs.live-window.outputs.has_live_game == 'true' &&
+      (github.event_name == 'schedule' ||
+       (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.event == 'schedule' &&
+        github.event.workflow_run.head_branch == 'main'))
     needs: live-window
     runs-on: ubuntu-latest
     timeout-minutes: 15
