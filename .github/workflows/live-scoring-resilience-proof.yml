@@ -1,0 +1,110 @@
+name: Live Scoring Resilience Proof
+
+# Basic live scoring is already considered passed. This observer validates the non-blocking
+# post-pass resilience requirements against the deployed Cloudflare APIs and ESPN.
+on:
+  schedule:
+    - cron: '43 * * * *'
+  workflow_run:
+    workflows: ['Adaptive Pregame Market Refresh']
+    types: [completed]
+  pull_request:
+    paths:
+      - '.github/workflows/live-scoring-resilience-proof.yml'
+      - 'scripts/verify-cloudflare-live-scoring-resilience.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-scoring-resilience-proof
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate resilience observer syntax
+        run: node --check scripts/verify-cloudflare-live-scoring-resilience.mjs
+
+  resilience:
+    if: >-
+      github.event_name == 'schedule' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.event == 'schedule' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CTD_PRODUCTION_URL: https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev/
+      CTD_RESILIENCE_DIR: artifacts/live-scoring-resilience-proof
+      CTD_PREVIOUS_PROOF: artifacts/live-scoring-resilience-state/proof.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Restore prior provider snapshot
+        id: restore-state
+        uses: actions/cache/restore@v4
+        with:
+          path: artifacts/live-scoring-resilience-state
+          key: live-scoring-resilience-state-${{ github.run_id }}
+          restore-keys: |
+            live-scoring-resilience-state-
+
+      - name: Validate deployed final-state resilience
+        run: node scripts/verify-cloudflare-live-scoring-resilience.mjs
+
+      - name: Publish resilience summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "$CTD_RESILIENCE_DIR/proof.json" ]; then
+            node - <<'NODE'
+            const fs=require('node:fs');
+            const p=JSON.parse(fs.readFileSync('artifacts/live-scoring-resilience-proof/proof.json','utf8'));
+            const c=p.checks||{};
+            const lines=[
+              '## Live scoring resilience proof',
+              `- Result: **${p.result}**`,
+              p.event_id ? `- ESPN event: **${p.event_id}** (${p.matchup||'matchup unavailable'})` : null,
+              p.final_score ? `- Final score: **${p.final_score.away}-${p.final_score.home}**` : null,
+              c.feed_freshness_health ? `- Feed freshness/health: **${c.feed_freshness_health}**` : null,
+              c.provider_player_ids ? `- Stable provider IDs: **${c.provider_player_ids}**` : null,
+              c.final_state_reconciliation ? `- Final-state reconciliation: **${c.final_state_reconciliation}**` : null,
+              c.later_provider_stat_correction ? `- Later provider/stat correction: **${c.later_provider_stat_correction}**` : null,
+              p.error ? `- Error: ${String(p.error).split('\n')[0]}` : null,
+            ].filter(Boolean).join('\n')+'\n';
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines);
+            NODE
+          fi
+
+      - name: Stage successful provider snapshot
+        if: success()
+        shell: bash
+        run: |
+          mkdir -p artifacts/live-scoring-resilience-state
+          cp "$CTD_RESILIENCE_DIR/proof.json" artifacts/live-scoring-resilience-state/proof.json
+
+      - name: Save provider snapshot for correction comparison
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: artifacts/live-scoring-resilience-state
+          key: live-scoring-resilience-state-${{ github.run_id }}
+
+      - name: Upload resilience evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-scoring-resilience-proof-${{ github.run_id }}
+          path: artifacts/live-scoring-resilience-proof/
+          if-no-files-found: warn
+          retention-days: 30
