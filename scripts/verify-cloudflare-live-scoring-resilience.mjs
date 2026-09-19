@@ -68,7 +68,11 @@ async function completedEspnEvents() {
 }
 
 function categoryName(group) {
-  const raw = String(group?.name || group?.displayName || '').toLowerCase();
+  const source = String(group?.name || group?.displayName || '');
+  const raw = source
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .toLowerCase();
   if (raw.includes('pass')) return 'passing';
   if (raw.includes('rush')) return 'rushing';
   if (raw.includes('receiv')) return 'receiving';
@@ -120,7 +124,7 @@ function canonicalPlayers(rows) {
     .filter(row => row?.player_id && row?.category)
     .map(row => ({
       team: normTeam(row.team),
-      category: String(row.category),
+      category: categoryName({ name: row.category }),
       player_id: String(row.player_id),
       player: String(row.player || ''),
       stats: Object.fromEntries(Object.entries(row.stats || {}).sort(([a], [b]) => a.localeCompare(b))),
@@ -138,6 +142,16 @@ function fingerprint(snapshot) {
     completed: snapshot.completed,
     players: snapshot.players,
   })).digest('hex');
+}
+
+function firstPlayerDiff(expected, actual) {
+  const length = Math.max(expected.length, actual.length);
+  for (let index = 0; index < length; index += 1) {
+    const left = expected[index] || null;
+    const right = actual[index] || null;
+    if (JSON.stringify(left) !== JSON.stringify(right)) return { index, espn: left, cloudflare: right };
+  }
+  return null;
 }
 
 function cloudflareSnapshot(game) {
@@ -218,7 +232,10 @@ try {
 
     const espnFingerprint = fingerprint(espn);
     const cloudflareFingerprint = fingerprint(cloudflare);
-    assert(cloudflareFingerprint === espnFingerprint, 'Cloudflare final player/stat snapshot differs from the current ESPN provider snapshot.');
+    if (cloudflareFingerprint !== espnFingerprint) {
+      const diff = firstPlayerDiff(espn.players, cloudflare.players);
+      throw new Error(`Cloudflare final player/stat snapshot differs from the current ESPN provider snapshot. espn=${espnFingerprint} cloudflare=${cloudflareFingerprint} first_diff=${JSON.stringify(diff)}`);
+    }
 
     const espnIds = new Set(espn.players.map(row => row.player_id));
     const cloudflareIds = new Set(cloudflare.players.map(row => row.player_id));
