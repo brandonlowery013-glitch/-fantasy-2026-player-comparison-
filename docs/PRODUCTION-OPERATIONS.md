@@ -30,3 +30,18 @@ Existing workflow configuration determines cadence. Targets mentioned in chats a
 3. Confirm routine full publication and weekly rollover end to end. Do not rerun expensive sweeps merely to acknowledge this document.
 
 For each future repair record commit/PR, deployed version, actual verification and remaining limitations here or a linked dated evidence record. A working website and successful backend run are separate facts; verify both.
+
+## Weekly game-line feedback report — authorized requirement, not yet implemented
+Target Tuesday 08:00 America/Chicago, after prior-week final reconciliation/settlement and before next-week forecasts. This section records acceptance requirements only: the report generator and scheduling acceptance remain NOT implemented/verified and must not be described as running until independently proven.
+
+Analyze ALL saved pregame forecasts, including wins, losses and PASS decisions. Compare immutable original projected scores with actual scores; calculate spread and total errors; retain the original quote, odds, sportsbook and timestamp; report outcomes, coverage and calibration. Explain misses from evidence and separate data bugs, model weaknesses and outcome variance.
+
+Data lineage must link the team master to separate all-game results, immutable pregame prediction/input snapshots, pick/market history and evaluation. Never rewrite an original pick and never present a reconstructed forecast as the original. Existing settlement is grading only, not the full weekly analysis.
+
+Generate one structured backend report as the source for Excel and Word views. Any improvement recommendation must be bounded and tested on cached chronological history against an unchanged baseline. Do not automatically promote coefficients and do not run repeated 1000-combination searches.
+
+Usage controls: use incremental input hashes; skip unchanged reports; apply corrections only to affected rows; reuse existing cached stats, odds and splits; do not add duplicate/paid collectors or redundant sweeps.
+
+When implementation exists, its handoff must record repository/branch, model version, exact files and run entry point, outputs, last completed week, tests, deployed-versus-local status and blockers.
+
+Dated local audit supplied September 19: 32 personnel teams; 16 Week 2 games/projections using 16 prior completed games; 566 history records include PASS/revisions and are not 566 bets; 3 settlement records are not 3 bets. Personnel is attached with zero numerical influence. Treat these as dated audit facts and reverify current state when relevant.
