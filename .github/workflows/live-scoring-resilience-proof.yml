@@ -69,23 +69,7 @@ jobs:
         shell: bash
         run: |
           if [ -f "$CTD_RESILIENCE_DIR/proof.json" ]; then
-            node - <<'NODE'
-            const fs=require('node:fs');
-            const p=JSON.parse(fs.readFileSync('artifacts/live-scoring-resilience-proof/proof.json','utf8'));
-            const c=p.checks||{};
-            const lines=[
-              '## Live scoring resilience proof',
-              `- Result: **${p.result}**`,
-              p.event_id ? `- ESPN event: **${p.event_id}** (${p.matchup||'matchup unavailable'})` : null,
-              p.final_score ? `- Final score: **${p.final_score.away}-${p.final_score.home}**` : null,
-              c.feed_freshness_health ? `- Feed freshness/health: **${c.feed_freshness_health}**` : null,
-              c.provider_player_ids ? `- Stable provider IDs: **${c.provider_player_ids}**` : null,
-              c.final_state_reconciliation ? `- Final-state reconciliation: **${c.final_state_reconciliation}**` : null,
-              c.later_provider_stat_correction ? `- Later provider/stat correction: **${c.later_provider_stat_correction}**` : null,
-              p.error ? `- Error: ${String(p.error).split('\n')[0]}` : null,
-            ].filter(Boolean).join('\n')+'\n';
-            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines);
-            NODE
+            node -e "const fs=require('node:fs');const p=JSON.parse(fs.readFileSync('artifacts/live-scoring-resilience-proof/proof.json','utf8'));const c=p.checks||{};const lines=['## Live scoring resilience proof','- Result: **'+p.result+'**',p.event_id?'- ESPN event: **'+p.event_id+'** ('+(p.matchup||'matchup unavailable')+')':null,p.final_score?'- Final score: **'+p.final_score.away+'-'+p.final_score.home+'**':null,c.feed_freshness_health?'- Feed freshness/health: **'+c.feed_freshness_health+'**':null,c.provider_player_ids?'- Stable provider IDs: **'+c.provider_player_ids+'**':null,c.final_state_reconciliation?'- Final-state reconciliation: **'+c.final_state_reconciliation+'**':null,c.later_provider_stat_correction?'- Later provider/stat correction: **'+c.later_provider_stat_correction+'**':null,p.error?'- Error: '+String(p.error).split('\\n')[0]:null].filter(Boolean);fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\\n')+'\\n');"
           fi
 
       - name: Stage successful provider snapshot
