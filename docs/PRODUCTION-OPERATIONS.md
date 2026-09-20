@@ -45,3 +45,15 @@ Usage controls: use incremental input hashes; skip unchanged reports; apply corr
 When implementation exists, its handoff must record repository/branch, model version, exact files and run entry point, outputs, last completed week, tests, deployed-versus-local status and blockers.
 
 Dated local audit supplied September 19: 32 personnel teams; 16 Week 2 games/projections using 16 prior completed games; 566 history records include PASS/revisions and are not 566 bets; 3 settlement records are not 3 bets. Personnel is attached with zero numerical influence. Treat these as dated audit facts and reverify current state when relevant.
+
+## Upcoming projection / prop evaluation build stage
+When usage capacity is available and this layer is implemented, use this football-first sequence as the basis for weekly fantasy-point projections and player-prop evaluation:
+1. Game environment: projected total, team implied points, spread, pace and likely game script.
+2. Defensive matchup by role, not just team defense: slot/perimeter WR, TE coverage, RB receiving defense, pressure and QB environment, etc.
+3. Expected role and usage: snaps, routes, targets, first-read share, carries/touches, third-down/two-minute work and red-zone/goal-line work.
+4. Health/function risk: distinguish pain-management/contact-driven exit risk from injuries that directly limit speed, cutting or workload; reflect this in downside/ceiling rather than making automatic start/sit or over/under conclusions.
+5. Connected-player effects: teammate injuries, role shifts, coverage changes and redistributed opportunity.
+6. Projection distribution: median expectation plus downside/ceiling and uncertainty, not one deterministic point estimate.
+7. Market comparison last: compare the independently built football projection against sportsbook props/prices and fantasy market context only after the football model is complete. Market movement may validate/challenge the projection but must not create or rewrite it by itself.
+
+Use the Ladd McConkey / Caleb Douglas / Parker Washington comparison as the reasoning template: combine game total/team implied points, defensive matchup quality, expected volume/game script, and injury-specific exit/functional risk before deciding fantasy-point expectation or prop edge.
