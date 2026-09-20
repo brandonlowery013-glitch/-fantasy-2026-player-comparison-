@@ -12,6 +12,7 @@ on:
     paths:
       - '.github/workflows/live-scoring-production-proof.yml'
       - 'scripts/verify-cloudflare-live-scoring-production.mjs'
+      - 'runtime-live-game-center-2026.js'
 
 permissions:
   contents: read
@@ -30,7 +31,9 @@ jobs:
         with:
           node-version: '20'
       - name: Validate production observer syntax
-        run: node --check scripts/verify-cloudflare-live-scoring-production.mjs
+        run: |
+          node --check scripts/verify-cloudflare-live-scoring-production.mjs
+          node --check runtime-live-game-center-2026.js
 
   live-window:
     if: >-
@@ -100,20 +103,7 @@ jobs:
         shell: bash
         run: |
           if [ -f "$CTD_PROOF_DIR/proof.json" ]; then
-            node - <<'NODE'
-            const fs=require('node:fs');
-            const p=JSON.parse(fs.readFileSync('artifacts/live-scoring-production-proof/proof.json','utf8'));
-            const lines=[
-              `## Live scoring production proof`,
-              `- Result: **${p.result}**`,
-              `- Basic pass: **${Boolean(p.basic_pass)}**`,
-              p.espn ? `- Matchup: **${p.espn.away_team} @ ${p.espn.home_team}**` : null,
-              p.cloudflare_game ? `- Clock/state: **${p.cloudflare_game.clock} · ${p.cloudflare_game.status}**` : null,
-              p.rendered_player ? `- Mapped ESPN player rendered: **${p.rendered_player.player} (${p.rendered_player.team})**` : null,
-              p.error ? `- Error: ${String(p.error).split('\n')[0]}` : null,
-            ].filter(Boolean).join('\n')+'\n';
-            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines);
-            NODE
+            node -e 'const fs=require("node:fs"); const p=JSON.parse(fs.readFileSync("artifacts/live-scoring-production-proof/proof.json","utf8")); const lines=["## Live scoring production proof",`- Result: **${p.result}**`,`- Basic pass: **${Boolean(p.basic_pass)}**`,p.espn?`- Matchup: **${p.espn.away_team} @ ${p.espn.home_team}**`:null,p.cloudflare_game?`- Clock/state: **${p.cloudflare_game.clock} · ${p.cloudflare_game.status}**`:null,p.rendered_player?`- Mapped ESPN player rendered: **${p.rendered_player.player} (${p.rendered_player.team})**`:null,p.error?`- Error: ${String(p.error).split("\n")[0]}`:null].filter(Boolean).join("\n")+"\n"; fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines);'
           fi
       - name: Upload production proof evidence
         if: always()
