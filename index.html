@@ -306,7 +306,8 @@ function pregameRead(away,home,fp,mk,market,book){
   if(market===mk?.moneyline && side){
     return `${label}: ${side} on the moneyline. CTD gives that team the higher win probability after comparing both teams' projected scores.`;
   }
-  return 'PASS: the model does not see enough separation from the market to recommend a side.';
+  const scoreText=Number.isFinite(awayScore)&&Number.isFinite(homeScore)?` CTD projects ${away} ${awayScore.toFixed(1)} and ${home} ${homeScore.toFixed(1)}.`:'';
+  return `PASS: no side cleared CTD's edge threshold against the posted market.${scoreText} The projection and line are too close for a responsible wager.`;
 }
 function status(g){return first(g,['status','game_status','state','clock','kickoff','start_time'])||'Scheduled'}
 
@@ -598,7 +599,7 @@ async function loadFeed(){
         total_pick:totalSel||'PASS',
         model_spread_pick:spreadSel||'PASS',
         moneyline_pick:mlSel||'PASS',
-        model_summary:(()=>{const market=best===mk.spread?.recommendation?mk.spread:best===mk.total?.recommendation?mk.total:best===mk.moneyline?.recommendation?mk.moneyline:null;return market?pregameRead(away,home,fp,market,market,dk.book):'PASS: the model does not see enough separation from the market to recommend a side.'})(),
+        model_summary:(()=>{const market=best===mk.spread?.recommendation?mk.spread:best===mk.total?.recommendation?mk.total:best===mk.moneyline?.recommendation?mk.moneyline:null;return market?pregameRead(away,home,fp,mk,market,dk.book):pregameRead(away,home,fp,mk,null,dk.book)})(),
         venue:'Current Week 1 market · '+(dk.book||'sportsbook'),
         spread_breakdown:{
           model_projection_away:fp.away_score_mean?.toFixed?.(1)??fp.away_score_mean,
