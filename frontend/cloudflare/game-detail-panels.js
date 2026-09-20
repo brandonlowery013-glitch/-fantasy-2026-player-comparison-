@@ -14,13 +14,41 @@
   let issuedHistory=null,pickResults=null,historyError='',markets=null,history=null,scoreboard=null,feedError='',lastKey='',busy=false;
   const games=new Map();
   const style=document.createElement('style');
-  style.textContent=`.ctdDetailNote{font-size:12px!important;line-height:1.6!important;color:#a8bdd3;margin:10px 0}.ctdDetailRow{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #1d314b;font-size:12px;line-height:1.4}.ctdDetailRow b{text-align:right}.ctdDetailPlayer{padding:9px 0;border-bottom:1px solid #1d314b}.ctdDetailPlayer strong{display:block;font-size:14px}.ctdDetailPlayer span{font-size:12px;color:#a8bdd3;line-height:1.5}.ctdDetailColumns{display:grid;grid-template-columns:1fr 1fr;gap:16px}.ctdDetailTableWrap{overflow:auto;max-height:360px}.ctdDetailTable{width:100%;border-collapse:collapse;font-size:12px}.ctdDetailTable th,.ctdDetailTable td{text-align:left;padding:9px;border-bottom:1px solid #263e58;white-space:nowrap}.ctdDetailTable th{color:#a8bdd3}.ctdDetailList{padding-left:18px;font-size:12px;line-height:1.7}.ctdDetailList li{margin:6px 0}.ctdFlowChart{width:100%;height:auto;display:block}.ctdFlowRange{width:100%;accent-color:#72b8ff}.ctdDetailPanel h4{font-size:12px;margin:12px 0 6px;color:#b2cce7}.ctdDetailPanel details summary{font-size:12px;cursor:pointer;padding:10px 0;color:#a9d1ff}.ctdDetailPanel details{margin:6px 0}.ctdPickContext{font-size:11px;line-height:1.5;color:#a8bdd3;max-width:600px;margin-top:6px}#ctdGameTabContent{margin:12px 0;padding:16px;border:1px solid #263e58;border-radius:8px;background:#091524}#ctdGameTabContent[hidden]{display:none}#ctdGameTabContent h3{font-size:14px}.ctdDetailPanel .chart{height:auto}.ctdDetailPanel .kicker{font-size:10px}@media(max-width:600px){.ctdDetailColumns{grid-template-columns:1fr}.ctdDetailTable{font-size:11px}.ctdDetailTable th,.ctdDetailTable td{padding:8px 6px}}`;
+  style.textContent=`.ctdDetailNote{font-size:12px!important;line-height:1.6!important;color:#a8bdd3;margin:10px 0}.ctdDetailRow{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #1d314b;font-size:12px;line-height:1.4}.ctdDetailRow b{text-align:right}.ctdDetailPlayer{padding:9px 0;border-bottom:1px solid #1d314b}.ctdDetailPlayer strong{display:block;font-size:14px}.ctdDetailPlayer span{font-size:12px;color:#a8bdd3;line-height:1.5}.ctdDetailColumns{display:grid;grid-template-columns:1fr 1fr;gap:16px}.ctdDetailTableWrap{overflow:auto;max-height:360px}.ctdDetailTable{width:100%;border-collapse:collapse;font-size:12px}.ctdDetailTable th,.ctdDetailTable td{text-align:left;padding:9px;border-bottom:1px solid #263e58;white-space:nowrap}.ctdDetailTable th{color:#a8bdd3}.ctdDetailList{padding-left:18px;font-size:12px;line-height:1.7}.ctdDetailList li{margin:6px 0}.ctdFlowChart{width:100%;height:auto;display:block}.ctdFlowRange{width:100%;accent-color:#72b8ff}.ctdDetailPanel h4{font-size:12px;margin:12px 0 6px;color:#b2cce7}.ctdDetailPanel details summary{font-size:12px;cursor:pointer;padding:10px 0;color:#a9d1ff}.ctdDetailPanel details{margin:6px 0}.ctdPickContext{font-size:11px;line-height:1.5;color:#a8bdd3;max-width:760px;margin-top:10px}.ctdPickContext>span{display:block;margin:5px 0 10px}.ctdWhyPick{margin:8px 0;padding:10px 12px;border:1px solid #294a68;border-radius:8px;background:#0b1c2d}.ctdWhyPick b{color:#dcecff}.ctdWhyPick p{margin:5px 0;color:#c0d2e3}.ctdWhyPick small{color:#829ab2}#ctdGameTabContent{margin:12px 0;padding:16px;border:1px solid #263e58;border-radius:8px;background:#091524}#ctdGameTabContent[hidden]{display:none}#ctdGameTabContent h3{font-size:14px}.ctdDetailPanel .chart{height:auto}.ctdDetailPanel .kicker{font-size:10px}@media(max-width:600px){.ctdDetailColumns{grid-template-columns:1fr}.ctdDetailTable{font-size:11px}.ctdDetailTable th,.ctdDetailTable td{padding:8px 6px}}`;
   document.head.appendChild(style);
 
   async function get(url){const r=await fetch(url.startsWith(RAW)?`${url}?refresh=${Math.floor(Date.now()/60000)}`:url,{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error(`Request failed (${r.status})`);return r.json()}
   function marketGame(g){return Number(markets?.week)===Number(BET_FEED.week)?Object.values(markets.games||{}).find(x=>same(x,g)):null}
   function pregame(raw){return (raw?.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(raw.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at))}
   function snapshot(raw){const rows=pregame(raw);return rows.find(x=>x.book==='draftkings')||rows[0]}
+  function pickWhy(kind,e,s,raw,g){
+    const rec=e?.recommendation;if(rec?.decision!=='PICK')return '';
+    let side=null,marketLabel='';
+    if(kind==='spread'){
+      const home=String(rec.selection||'').startsWith(norm(g.home_team)+' ');side=home?e.side_a:e.side_b;
+      marketLabel=`${rec.selection} · ${side?.offered_odds>0?'+':''}${side?.offered_odds??'odds unavailable'}`;
+    }else if(kind==='total'){
+      const over=String(rec.selection||'').startsWith('OVER ');side=over?e.side_a:e.side_b;
+      marketLabel=`${rec.selection} · ${side?.offered_odds>0?'+':''}${side?.offered_odds??'odds unavailable'}`;
+    }else{
+      const home=String(rec.selection||'').startsWith(norm(g.home_team)+' ');side=home?e.side_a:e.side_b;
+      marketLabel=`${rec.selection} · ${side?.offered_odds>0?'+':''}${side?.offered_odds??'odds unavailable'}`;
+    }
+    if(!side)return '';
+    const fair=kind==='spread'||kind==='total'||kind==='moneyline'?e.fair_market:null;
+    const fairP=(side===e.side_a?fair?.side_a_probability:fair?.side_b_probability);
+    const edge=Number(side.probability_edge),ev=Number(side.expected_value),modelP=Number(side.conditional_win_probability);
+    const fp=raw?.football_projection||{};
+    let projection='';
+    if(kind==='spread'&&Number.isFinite(Number(fp.model_home_spread)))projection=`Independent football model: ${g.home_team} ${Number(fp.model_home_spread)>0?'+':''}${Number(fp.model_home_spread).toFixed(1)}.`;
+    if(kind==='total'&&Number.isFinite(Number(fp.model_total)))projection=`Independent football model total: ${Number(fp.model_total).toFixed(1)}.`;
+    if(kind==='moneyline'&&Number.isFinite(Number(fp.home_win_probability)))projection=`Independent football win probability: ${g.home_team} ${pct(Number(fp.home_win_probability))}, ${g.away_team} ${pct(Number(fp.away_win_probability))}.`;
+    const pieces=[];
+    if(Number.isFinite(modelP)&&Number.isFinite(Number(fairP)))pieces.push(`Model chance ${pct(modelP)} vs no-vig sportsbook chance ${pct(Number(fairP))}`);
+    if(Number.isFinite(edge))pieces.push(`${edge>=0?'+':''}${(edge*100).toFixed(1)} percentage-point edge`);
+    if(Number.isFinite(ev))pieces.push(`${ev>=0?'+':''}${(ev*100).toFixed(1)}% expected value per unit`);
+    return `<div class="ctdWhyPick"><b>${esc(kind.toUpperCase())} · ${esc(marketLabel)}</b><p>${esc(projection)} ${esc(pieces.join(' · '))}</p><small>${esc(rec.confidence||'')} confidence · ${esc(s.book)} · snapshot ${esc(date(s.captured_at))}</small></div>`;
+  }
   function modelPicks(g){
     const raw=marketGame(g),s=snapshot(raw);if(!s){const note=document.getElementById('ctdPickContext');if(note)note.textContent='No matching pregame snapshot has been published for this week and matchup.';for(const id of ['spreadPick','totalPick','mlPick']){const el=document.getElementById(id);if(el){el.textContent='Not published';el.title='Waiting for a matching pregame model snapshot';}}return;}
     for(const [kind,id,field] of [['spread','spreadPick','model_spread_pick'],['total','totalPick','total_pick'],['moneyline','mlPick','moneyline_pick']]){
@@ -32,7 +60,8 @@
     }
     const edge=document.getElementById('mlEdge');if(edge)edge.textContent=s.markets?.moneyline?.recommendation?.decision==='PICK'?pct(s.markets.moneyline.recommendation.probability_edge):'—';
     let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('p');note.id='ctdPickContext';note.className='ctdPickContext';document.getElementById('spreadPick')?.closest('.panel')?.appendChild(note)}
-    note.textContent=`Pregame model picks · ${s.book} · ${date(s.captured_at)}. ${Date.parse(raw.kickoff)<=Date.now()?'Archived for reference; these are not live recommendations. ':''}PASS means neither side met the model’s pick thresholds.`;
+    const why=['spread','total','moneyline'].map(kind=>pickWhy(kind,s.markets?.[kind],s,raw,g)).filter(Boolean).join('');
+    note.innerHTML=`<b>WHY IT GRADES WELL</b><br><span>Pregame model snapshot · ${esc(s.book)} · ${esc(date(s.captured_at))}. ${Date.parse(raw.kickoff)<=Date.now()?'Archived for reference; these are not live recommendations. ':''}PASS means neither side met the model’s locked probability-edge, EV and model-probability minimums.</span>${why||'<div class="ctdWhyPick"><p>No market cleared the locked pick thresholds in this snapshot.</p></div>'}`;
   }
   function playerRows(d,team,categories){return (d?.player_stats||[]).filter(p=>norm(p.team)===norm(team)&&categories.includes(p.category))}
   function leaders(d,team,defense=false){
