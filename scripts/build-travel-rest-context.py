@@ -18,8 +18,7 @@ def parse(t):
   rows.append((season,week,r.get('gameday') or r.get('game_date'),r.get('home_team'),r.get('away_team')))
  return rows
 allg=[]
-for s in SEASONS:
- with urllib.request.urlopen(f'https://github.com/nflverse/nflverse-data/releases/download/schedules/games_{s}.csv') as f:allg+=parse(f.read().decode())
+with urllib.request.urlopen('https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv') as f:allg+=parse(f.read().decode())
 by=defaultdict(list)
 for season,week,date,home,away in allg:
  if home not in LOC or away not in LOC:continue
