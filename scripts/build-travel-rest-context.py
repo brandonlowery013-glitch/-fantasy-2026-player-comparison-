@@ -34,7 +34,7 @@ for team,games in by.items():
   rest=(d-prev).days if d and prev else None
   isroad=team==away; road=road+1 if isroad else 0
   travel=dist(LOC[team],LOC[home]) if isroad else 0
-  rows.append({'season':season,'week':week,'rest_days':rest,'short_rest':rest is not None and rest<7,'road_game':isroad,'travel_miles':round(travel,1),'consecutive_road_games':road,'thursday_turnaround':False})
+  rows.append({'season':season,'week':week,'rest_days':rest,'short_rest':rest is not None and rest<7,'road_game':isroad,'travel_miles':round(travel,1),'consecutive_road_games':road,'thursday_turnaround':bool(d and d.weekday()==3 and rest is not None and rest<=4)})
   prev=d
  out[team]=rows
 result={'schema_version':'travel-rest-context.v1','history_window':SEASONS,'generated_at':datetime.utcnow().isoformat()+'Z','teams':out,'sportsbook_inputs_used':False,'status':'READY_FOR_BACKTEST','notes':['Travel uses approximate stadium coordinates.','No betting authority until grouped out-of-sample testing.']}
