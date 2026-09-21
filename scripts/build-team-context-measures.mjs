@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 const root=process.cwd();
-const seasons=[2023,2024,2025];
+const seasons=[2023,2024,2025,2026];
 const outPath=path.join(root,'data/probability/generated/team-context-measures-2023-2025.json');
 const reportPath=path.join(root,'guardrails/team-context-measures-report.json');
 const alias={LAR:'LA',WSH:'WAS',JAC:'JAX'};
