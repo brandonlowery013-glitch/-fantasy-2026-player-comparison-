@@ -6,21 +6,92 @@
   "mode": "SHADOW_ONLY",
   "actionable": false,
   "sportsbook_inputs_used": false,
-  "generated_at": "2026-09-18T04:36:39.996Z",
+  "generated_at": "2026-09-22T00:02:58.264Z",
   "model_version": "scoring-decay-rest-2026-v1",
   "artifact_sha256": "ab32efd745900e177e345ac62dcdcceea48ad7ae78e942ef5ef9f4af624fcfcf",
   "sources": [
     {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=1",
-      "sha256": "3a595d31e656c1d8018e519bf5583a136a187cd1daf428a90d526b1da1dd9f9f"
+      "sha256": "4492e62b1aeedfa6a1adddabc4c54e2969d162e66ca1c4db48ddf2481575b166"
     },
     {
       "url": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
-      "sha256": "a1a7c52b7a9f3057a76f3674cf7e440dcc0c4c72b504d87dd1303eecd18483a2"
+      "sha256": "6e18486e1c66ad55523a16e81aac7cf241a63462f9d2cbf71ea559f6c60dfbab"
     }
   ],
   "completed_games": 16,
   "games": {
+    "2026-W2-NYG-LA": {
+      "home_team": "LA",
+      "away_team": "NYG",
+      "event_start": "2026-09-22T00:15:00.000Z",
+      "home_score_mean": 27.264922043355472,
+      "away_score_mean": 19.486433840686257,
+      "distribution": {
+        "team_score_sd": 9.322092091970088,
+        "home_away_score_correlation": 0.004801120766302407,
+        "source": "Earlier-fit held-out 2024/2025 prediction residuals",
+        "games": 544
+      },
+      "model_version": "scoring-decay-rest-2026-v1",
+      "evidence": {
+        "method": "Historically calibrated scoring matchup and rest",
+        "half_life_games": 4,
+        "home_field_advantage_feature": 1.7442724458204335,
+        "home_field_advantage_contribution": 2.15108045027228,
+        "rest_days": {
+          "home": 11,
+          "away": 8
+        },
+        "margin_features": [
+          5.205239186088743,
+          3
+        ],
+        "total_features": [
+          48.17235177716404,
+          3
+        ],
+        "teams": {
+          "LAR": {
+            "prior_games": 17,
+            "current_games": 1,
+            "prior_weight": 0.8408964152537146,
+            "current_weight": 0.1591035847462854,
+            "prior_points_for": 30.470588235294116,
+            "prior_points_allowed": 20.352941176470587,
+            "current_points_for": 7,
+            "current_points_allowed": 27,
+            "blended_offense": 26.736333510954832,
+            "blended_defense_allowed": 21.410512063313544,
+            "completed_game_ids": [
+              "401872657"
+            ]
+          },
+          "NYG": {
+            "prior_games": 17,
+            "current_games": 1,
+            "prior_weight": 0.8408964152537146,
+            "current_weight": 0.1591035847462854,
+            "prior_points_for": 22.41176470588235,
+            "prior_points_allowed": 25.823529411764707,
+            "current_points_for": 28,
+            "current_points_allowed": 20,
+            "blended_offense": 23.300872973582184,
+            "blended_defense_allowed": 24.896985006477514,
+            "completed_game_ids": [
+              "401872930"
+            ]
+          }
+        },
+        "personnel_numeric_adjustment_applied": false,
+        "granular_matchup_numeric_adjustment_applied": false,
+        "excluded_numeric_features": [
+          "granular EPA/pace/explosive matchup extension failed ablation",
+          "observed personnel continuity failed ablation",
+          "injury and coaching coefficients not validated"
+        ]
+      }
+    },
     "2026-W2-DET-BUF": {
       "home_team": "BUF",
       "away_team": "DET",
@@ -1074,77 +1145,6 @@
             "blended_defense_allowed": 26.902618920746548,
             "completed_game_ids": [
               "401872659"
-            ]
-          }
-        },
-        "personnel_numeric_adjustment_applied": false,
-        "granular_matchup_numeric_adjustment_applied": false,
-        "excluded_numeric_features": [
-          "granular EPA/pace/explosive matchup extension failed ablation",
-          "observed personnel continuity failed ablation",
-          "injury and coaching coefficients not validated"
-        ]
-      }
-    },
-    "2026-W2-NYG-LA": {
-      "home_team": "LA",
-      "away_team": "NYG",
-      "event_start": "2026-09-22T00:15:00.000Z",
-      "home_score_mean": 27.264922043355472,
-      "away_score_mean": 19.486433840686257,
-      "distribution": {
-        "team_score_sd": 9.322092091970088,
-        "home_away_score_correlation": 0.004801120766302407,
-        "source": "Earlier-fit held-out 2024/2025 prediction residuals",
-        "games": 544
-      },
-      "model_version": "scoring-decay-rest-2026-v1",
-      "evidence": {
-        "method": "Historically calibrated scoring matchup and rest",
-        "half_life_games": 4,
-        "home_field_advantage_feature": 1.7442724458204335,
-        "home_field_advantage_contribution": 2.15108045027228,
-        "rest_days": {
-          "home": 11,
-          "away": 8
-        },
-        "margin_features": [
-          5.205239186088743,
-          3
-        ],
-        "total_features": [
-          48.17235177716404,
-          3
-        ],
-        "teams": {
-          "LAR": {
-            "prior_games": 17,
-            "current_games": 1,
-            "prior_weight": 0.8408964152537146,
-            "current_weight": 0.1591035847462854,
-            "prior_points_for": 30.470588235294116,
-            "prior_points_allowed": 20.352941176470587,
-            "current_points_for": 7,
-            "current_points_allowed": 27,
-            "blended_offense": 26.736333510954832,
-            "blended_defense_allowed": 21.410512063313544,
-            "completed_game_ids": [
-              "401872657"
-            ]
-          },
-          "NYG": {
-            "prior_games": 17,
-            "current_games": 1,
-            "prior_weight": 0.8408964152537146,
-            "current_weight": 0.1591035847462854,
-            "prior_points_for": 22.41176470588235,
-            "prior_points_allowed": 25.823529411764707,
-            "current_points_for": 28,
-            "current_points_allowed": 20,
-            "blended_offense": 23.300872973582184,
-            "blended_defense_allowed": 24.896985006477514,
-            "completed_game_ids": [
-              "401872930"
             ]
           }
         },
