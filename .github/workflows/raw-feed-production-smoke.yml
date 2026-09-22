@@ -7,6 +7,8 @@ on:
   pull_request:
     paths:
       - '.github/workflows/raw-feed-production-smoke.yml'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'players*.json'
       - 'guardrails/current-football-review.json'
       - 'data/market/weekly-matchup-market-snapshots-2026.json'
       - 'data/market/player-prop-market-snapshots-2026.json'
@@ -31,12 +33,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Verify canonical 166-player news feed coverage
+      - name: Verify canonical player news feed coverage
         run: |
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
-          if(Number(src.active_player_model)!==166) throw new Error(`Canonical universe is ${src.active_player_model}, expected 166`);
+          const expected=Number(src.active_player_model);
+          if(!Number.isInteger(expected)||expected<=0) throw new Error(`Invalid canonical universe size: ${src.active_player_model}`);
           let canonical=[];
           for(let i=0;i<Number(src.runtime_player_shards);i++) canonical.push(...require(`./players${i}.json`).map(p=>p.n));
           const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
@@ -45,13 +48,14 @@ jobs:
           const canonicalSet=new Set(canonical),nameSet=new Set(names);
           const missing=canonical.filter(n=>!nameSet.has(n));
           const extra=names.filter(n=>!canonicalSet.has(n));
-          if(canonical.length!==166||canonicalSet.size!==166) throw new Error(`Canonical load ${canonical.length}/${canonicalSet.size}, expected 166/166`);
-          if(rows.length!==166||nameSet.size!==166||missing.length||extra.length) throw new Error(`Raw news coverage failed: rows=${rows.length}, unique=${nameSet.size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
+          if(canonical.length!==expected||canonicalSet.size!==expected) throw new Error(`Canonical load ${canonical.length}/${canonicalSet.size}, expected ${expected}/${expected}`);
+          if(Number(review.active_player_count)!==expected) throw new Error(`Review header active_player_count=${review.active_player_count}, expected ${expected}`);
+          if(rows.length!==expected||nameSet.size!==expected||missing.length||extra.length) throw new Error(`Raw news coverage failed: rows=${rows.length}, unique=${nameSet.size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
           if(rows.some(r=>!r.reviewed_at)) throw new Error('At least one player is missing reviewed_at');
-          console.log(JSON.stringify({layer:'RAW_NEWS_FEED',result:'PASS',players:166},null,2));
+          console.log(JSON.stringify({layer:'RAW_NEWS_FEED',result:'PASS',players:expected},null,2));
           NODE
       - name: Raw news feed PASS
-        run: echo 'PASS — news was collected and mapped across the canonical 166-player universe. Model upgrade/downgrade decisions are intentionally outside this smoke check.'
+        run: echo 'PASS — news was collected and mapped across the canonical active-player universe. Model upgrade/downgrade decisions are intentionally outside this smoke check.'
 
   raw-game-lines-feed:
     name: Raw Game Lines Feed
