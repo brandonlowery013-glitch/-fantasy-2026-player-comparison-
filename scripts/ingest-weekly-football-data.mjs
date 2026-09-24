@@ -68,7 +68,15 @@ async function fetchScheduleCandidates(now,forcedWeek){
     return [];
   }
   const base=contract.schedule_source.automated_feed_url_template.replace('&week={week}','').replace('?week={week}&','?').replace('week={week}&','');
-  const r=await fetch(base,{headers:{'user-agent':'fantasy-2026-ingestion'}});if(r.ok){const all=espnEventsToGames(await r.json());if(all.length)return all;}
+  const discoveryUrl=new URL(base);
+  discoveryUrl.searchParams.set('limit','1000');
+  const r=await fetch(discoveryUrl,{headers:{'user-agent':'fantasy-2026-ingestion'}});
+  if(r.ok){
+    const all=espnEventsToGames(await r.json());
+    // A capped season response may contain only old weeks. Do not roll back
+    // the active slate: discover explicitly by week before selecting a past week.
+    if(all.some(g=>parseTime(g.event_start)>=now))return all;
+  }
   const payloads=await Promise.all(Array.from({length:18},(_,i)=>i+1).map(async week=>{
     const url=contract.schedule_source.automated_feed_url_template.replace('{week}',String(week));
     const x=await fetch(url,{headers:{'user-agent':'fantasy-2026-ingestion'}});return x.ok?espnEventsToGames(await x.json(),week):[];
