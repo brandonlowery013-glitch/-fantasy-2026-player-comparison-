@@ -19,3 +19,29 @@ const p1=captureHistory(prop);assert.equal(p1.added,1);assert.equal(p1.ledger.re
 prop.propRecs.players.Player.weekly.current_by_stat.yards.recommendation={decision:'WAIT',reason:'REPORTED_UNAVAILABLE'};
 const p2=captureHistory({...prop,ledger:p1.ledger});assert.equal(p2.added,1);assert.equal(p2.ledger.records[0].odds,100);assert.equal(p2.ledger.records[1].decision,'WAIT');
 console.log('PASS: prop event identity, original price preservation and PICK to WAIT revision');
+
+
+// The code checkout can predate the generated artifact. Preserve content independently.
+const evidenceSource=structuredClone(source);
+evidenceSource.sourceCommit='older-code-checkout';
+evidenceSource.gameRecs.games.g.football_projection={model_total:44};
+evidenceSource.gameRecs.games.g.scoring_evidence={teams:{H:{current_games:1}}};
+const captured=captureHistory(evidenceSource);
+const frozen=captured.ledger.records[0].source_provenance;
+assert.equal(frozen.source_code_commit,'older-code-checkout');
+assert.equal(frozen.evidence.football_projection.model_total,44);
+assert.match(frozen.artifact_json_sha256,/^[a-f0-9]{64}$/);
+evidenceSource.gameRecs.games.g.football_projection.model_total=99;
+assert.equal(frozen.evidence.football_projection.model_total,44);
+const other=captureHistory(evidenceSource);
+assert.notEqual(other.ledger.records[0].source_provenance.artifact_json_sha256,frozen.artifact_json_sha256);
+assert.equal(captureHistory({...evidenceSource,ledger:captured.ledger}).added,0,'evidence changes alone do not invent a new issued pick');
+const legacy=structuredClone(captured.ledger);delete legacy.records[0].source_provenance;
+assert.equal(captureHistory({...source,ledger:legacy}).added,0,'legacy records are not rewritten');
+assert.equal(legacy.records[0].source_provenance,undefined);
+const removed=captureHistory({...source,gameRecs:{week:2,games:{}},ledger:captured.ledger});
+assert.equal(removed.ledger.records.at(-1).source_provenance,null,'withdrawals must not inherit obsolete pick evidence');
+assert.deepEqual(p1.ledger.records[0].source_provenance.evidence.evaluation.model,prop.propRecs.players.Player.weekly.current_by_stat.yards.model);
+assert.equal(p1.ledger.records[0].source_provenance.evidence.evaluation.recommendation.side,'OVER');
+assert.equal(p1.ledger.records[0].source_provenance.evidence.quote_snapshot.game_id,'g');
+console.log('PASS: source content identity, detached evidence, legacy compatibility, decision deduplication and withdrawal provenance');
