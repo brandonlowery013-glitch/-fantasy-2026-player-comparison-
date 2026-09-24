@@ -6,10 +6,13 @@ const guardrails=read('guardrails/guardrails-config.json');
 const ledger=read(contract.outputs.event_ledger);
 const state=read(contract.outputs.current_state);
 const blocked=[];
+const canonical=read('MODEL_SOURCE_OF_TRUTH.json');
+const expectedCount=Number(canonical.active_player_model);
+const expectedShards=Number(canonical.runtime_player_shards);
 const req=foundation.foundation_layers.event_state_change.required_event_fields||[];
 if(contract.mode!=='TRIGGER_ONLY'||contract.actionable!==false) blocked.push('event ingestion must remain trigger-only/non-actionable');
-if(Number(guardrails.authoritative_player_shards)!==14) blocked.push('authoritative shard count is not 14');
-if(Number(guardrails.authoritative_player_count)!==166) blocked.push('authoritative player count is not 166');
+if(!Number.isInteger(expectedShards)||expectedShards<1||Number(guardrails.authoritative_player_shards)!==expectedShards) blocked.push('authoritative shard count differs from canonical source');
+if(!Number.isInteger(expectedCount)||expectedCount<1||Number(guardrails.authoritative_player_count)!==expectedCount) blocked.push('authoritative player count differs from canonical source');
 for(const e of ledger.events||[]){
   for(const k of req) if(!(k in e)) blocked.push(`${e.event_id||'event'} missing ${k}`);
   for(const k of ['o','tr','tp','pr','projection','weekly_projection','season_projection','market_value','betting_recommendation']) if(k in e) blocked.push(`${e.event_id} contains prohibited output ${k}`);
