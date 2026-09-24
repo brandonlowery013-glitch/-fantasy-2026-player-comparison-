@@ -23,7 +23,9 @@ const governance = read('data/calibration/calibration-governance-status-2026.jso
 if (contract.mode !== 'OBSERVATIONAL_ONLY' || contract.actionable !== false) fail('Step 22 must remain observational only');
 if (contract.guardrails?.sportsbook_inputs_may_mutate_football_projection !== false) fail('Market contamination guardrail missing');
 if (contract.guardrails?.automatic_challenger_promotion !== false) fail('Automatic promotion must remain prohibited');
-if (propRecs.player_universe_count !== 162) fail('Player recommendation universe must remain 162');
+const expectedPlayerCount = read('MODEL_SOURCE_OF_TRUTH.json').active_player_model;
+if (!Number.isInteger(expectedPlayerCount) || expectedPlayerCount <= 0) fail('Canonical player universe must be a positive integer');
+if (propRecs.player_universe_count !== expectedPlayerCount) fail(`Player recommendation universe must match canonical model (${expectedPlayerCount})`);
 if (health.actionable !== false || governance.actionable !== false || marketCal.actionable !== false) fail('Live governance/calibration artifacts must remain non-actionable');
 
 const scheduleCount = countObj(schedule,'games','events');
