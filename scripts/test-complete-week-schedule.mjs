@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {completeWeekSchedule} from '../lib/complete-week-schedule.mjs';
+const full=Array.from({length:16},(_,i)=>({week:2,away_team:`A${i}`,home_team:`H${i}`}));
+let requested=[];
+const fetchWeek=async week=>{requested.push(week);return full;};
+const result=await completeWeekSchedule({discover:async()=>full.slice(0,5),chooseWeek:()=>2,fetchWeek});
+assert.equal(result.length,16);assert.deepEqual(requested,[2]);
+assert.equal((await completeWeekSchedule({forcedWeek:2,discover:()=>{throw Error('forced week must skip discovery')},fetchWeek})).length,16);
+assert.equal((await completeWeekSchedule({forcedWeek:2,fetchWeek:async()=>full.slice(0,12)})).length,12);
+await assert.rejects(completeWeekSchedule({forcedWeek:2,fetchWeek:async()=>full.map(g=>({...g,week:1}))}));
+await assert.rejects(completeWeekSchedule({forcedWeek:2,fetchWeek:async()=>[full[0],full[0]]}));
+await assert.rejects(completeWeekSchedule({forcedWeek:19,fetchWeek}));
+console.log('PASS: capped discovery expands to full week; forced weeks, bye weeks, wrong weeks and duplicate teams checked');

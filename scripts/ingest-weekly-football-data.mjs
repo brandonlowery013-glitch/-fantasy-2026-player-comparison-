@@ -1,3 +1,4 @@
+import {completeWeekSchedule} from '../lib/complete-week-schedule.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -54,7 +55,7 @@ function authoritativeFallback(forcedWeek=null){
   return (authoritativeSeed.games||[]).map((g,i)=>({season:2026,week,away_team:canonicalTeam(g.away_team),home_team:canonicalTeam(g.home_team),event_start:new Date(parseTime(g.event_start)).toISOString(),event_id:`NFL-W${week}-${i+1}`,source:authoritativeSeed.source||contract.schedule_source.authoritative_cross_check}));
 }
 
-async function fetchSchedule(now,forcedWeek){
+async function fetchScheduleCandidates(now,forcedWeek){
   if(forcedWeek!=null){
     const url=contract.schedule_source.automated_feed_url_template.replace('{week}',String(forcedWeek));
     const r=await fetch(url,{headers:{'user-agent':'fantasy-2026-ingestion'}});
@@ -64,13 +65,25 @@ async function fetchSchedule(now,forcedWeek){
     return [];
   }
   const base=contract.schedule_source.automated_feed_url_template.replace('&week={week}','').replace('?week={week}&','?').replace('week={week}&','');
-  const r=await fetch(base,{headers:{'user-agent':'fantasy-2026-ingestion'}});if(r.ok){const all=espnEventsToGames(await r.json());if(all.length)return all;}
+  const discoveryUrl=new URL(base);
+  discoveryUrl.searchParams.set('limit','1000');
+  const r=await fetch(discoveryUrl,{headers:{'user-agent':'fantasy-2026-ingestion'}});
+  if(r.ok){
+    const all=espnEventsToGames(await r.json());
+    // A capped season response may contain only old weeks. Do not roll back
+    // the active slate: discover explicitly by week before selecting a past week.
+    if(all.some(g=>parseTime(g.event_start)>=now))return all;
+  }
   const payloads=await Promise.all(Array.from({length:18},(_,i)=>i+1).map(async week=>{
     const url=contract.schedule_source.automated_feed_url_template.replace('{week}',String(week));
     const x=await fetch(url,{headers:{'user-agent':'fantasy-2026-ingestion'}});return x.ok?espnEventsToGames(await x.json(),week):[];
   }));
   const all=payloads.flat();if(all.length)return all;
   return authoritativeFallback();
+}
+
+async function fetchSchedule(now,forcedWeek){
+  return completeWeekSchedule({forcedWeek,discover:()=>fetchScheduleCandidates(now,null),chooseWeek:games=>chooseWeek(games,now,null),fetchWeek:week=>fetchScheduleCandidates(now,week)});
 }
 
 function chooseWeek(games,now,forced){
