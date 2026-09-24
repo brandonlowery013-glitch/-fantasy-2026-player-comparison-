@@ -57,3 +57,8 @@ When usage capacity is available and this layer is implemented, use this footbal
 7. Market comparison last: compare the independently built football projection against sportsbook props/prices and fantasy market context only after the football model is complete. Market movement may validate/challenge the projection but must not create or rewrite it by itself.
 
 Use the Ladd McConkey / Caleb Douglas / Parker Washington comparison as the reasoning template: combine game total/team implied points, defensive matchup quality, expected volume/game script, and injury-specific exit/functional risk before deciding fantasy-point expectation or prop edge.
+
+## September 23 context reconciliation — Step 1 / Week 3 validator repair
+Context update only; preserve existing admission/review findings. Canonical roster remains 167 players / 14 shards. Current production Step 1 event ingestion is failing because a validator still hard-codes 166. PR #1674 replaces obsolete hard-coded player-count constants in event/foundation/connected validators with MODEL_SOURCE_OF_TRUTH comparisons and also repairs Week 3 discovery. Local validation passes with 167 and rejects an intentionally wrong 166 configuration. PR #1674 is OPEN and NOT DEPLOYED; local passing evidence is not production proof.
+
+Lifecycle PR #1673 is stale and would roll the schedule back to Week 2. Do not treat #1673 as healthy/current, do not merge or resurrect it without reconciling against current Week 3 state, and do not let it overwrite the repaired Week 3 discovery path. Before acting, inspect current PR #1674 status/checks and current deployed/main state. This context correction does not authorize a new sweep, collector, task, cadence change, or alteration of prior admission/review decisions.
