@@ -5,7 +5,7 @@ import path from 'node:path';
 import {fairTwoWayAmerican,americanNetProfitPerUnit} from '../lib/fair-market-probability.mjs';
 import {lineProbabilities} from './lib/distribution-tail-math.mjs';
 const root=process.cwd();const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));const exists=p=>fs.existsSync(path.join(root,p));
-const write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true});fs.writeFileSync(path.join(root,p),JSON.stringify(x,null,2)+'\n');};
+const write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true});fs.writeFileSync(path.join(root,p),JSON.stringify(x,null,p==='data/market/player-prop-recommendations-2026.json'?0:2)+'\n');};
 const contract=read('data/sources/player-prop-recommendation-layer-2026.json'),truth=read('MODEL_SOURCE_OF_TRUTH.json');
 const round=(x,d=6)=>Number(Number(x).toFixed(d));const eligibleKinds=new Set(['EARLY','OPEN','CURRENT','PREDICTION_TIME']);
 function players(){const a=[];for(let i=0;i<truth.runtime_player_shards;i++)a.push(...read(`players${i}.json`));return a;}
