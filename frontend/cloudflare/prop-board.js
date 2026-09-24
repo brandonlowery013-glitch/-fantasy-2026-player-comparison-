@@ -34,15 +34,20 @@
  }
  window.CTD_PROP_BOARD_ROWS=boardRows;
  function verdict(s){
-  if(Number.isFinite(Date.parse(s.kickoff))&&Date.parse(s.kickoff)<=Date.now())return ['CLOSED','Game has started. Stored pregame quote, not a current offer.'];
+  const e=s.evaluation,r=e?.recommendation,q=e?.model;
+  let pick=e?.model_pick;
+  if(!pick&&[q?.over_probability,q?.under_probability,q?.push_probability].every(x=>typeof x==='number'&&Number.isFinite(x)&&x>=0&&x<=1)&&Math.abs(q.over_probability+q.under_probability+q.push_probability-1)<1e-5){
+   pick={side:q.over_probability>q.under_probability?'OVER':q.under_probability>q.over_probability?'UNDER':null,status:q.over_probability===q.under_probability?'EVEN':'AVAILABLE'};
+  }
+  const model=pick?.side?`MODEL ${pick.side}`:pick?.status==='EVEN'?'MODEL EVEN':'MODEL UNAVAILABLE';
+  const direction=pick?.side?`${pick.side} ${s.line}. `:pick?.status==='EVEN'?'The model gives both sides equal probability. ':'A matching projection is unavailable. ';
+  if(Number.isFinite(Date.parse(s.kickoff))&&Date.parse(s.kickoff)<=Date.now())return [model,direction+'Betting: closed. Stored model analysis; not a new pregame pick.'];
   const age=Date.now()-Date.parse(s.captured_at);
-  if(age>6*3600000)return ['',''];
-  const r=s.evaluation?.recommendation;
-  if(!r)return ['',''];
-  if(r.decision==='WAIT')return ['',''];
-  if(['UNAVAILABLE','CONDITIONAL'].includes(window.CTD_WEEKLY_ELIGIBILITY?.(s.player,s.week)?.state))return ['',''];
-  if(r.decision==='PICK')return ['MODEL PICK',`${r.side} ${s.line} · analysis only`];
-  return ['PASS','Neither side meets the model’s pick thresholds.'];
+  if(age>6*3600000)return [model,direction+'Betting: wait for a fresh quote.'];
+  const conditional=pick?.conditional_on_availability||['UNAVAILABLE','CONDITIONAL'].includes(window.CTD_WEEKLY_ELIGIBILITY?.(s.player,s.week)?.state);
+  if(conditional||r?.decision==='WAIT')return [model,direction+'Betting: wait. Projection depends on player availability.'];
+  if(r?.decision==='PICK')return [model,direction+`Betting: recommended ${r.side} at this quote · analysis only.`];
+  return [model,direction+(r?.decision==='PASS'?'Betting: pass. The price does not meet recommendation thresholds.':'Betting recommendation unavailable.')];
  }
  function bookRow(s){const [state,reason]=verdict(s);return `<div class="ctdPropBook"><b>${esc(s.provider_book_title||s.book)}</b><span>Line ${esc(s.line)} · Over ${esc(price(s.over_price))} / Under ${esc(price(s.under_price))}</span><span>${esc(state)} · ${esc(reason)}</span><small>Quote ${esc(date(s.captured_at))}</small></div>`;}
  function render(){
