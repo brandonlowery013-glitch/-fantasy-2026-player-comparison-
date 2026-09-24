@@ -28,7 +28,9 @@ jobs:
       - name: Revalidate shared no-vig and EV math
         run: node scripts/test-ev-math.mjs
       - name: Revalidate Step 22 real-season chronology
-        run: node scripts/validate-real-season-validation.mjs --self-test
+        run: |
+          node scripts/build-player-prop-recommendations.mjs
+          node scripts/validate-real-season-validation.mjs --self-test
 
   manual-live-market-refresh:
     if: github.event_name == 'workflow_dispatch'

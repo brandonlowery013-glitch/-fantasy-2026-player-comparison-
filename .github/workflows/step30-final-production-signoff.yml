@@ -25,7 +25,9 @@ jobs:
           node scripts/validate-production-readiness-contract.mjs
           node scripts/build-production-readiness-status.mjs --self-test
       - name: Revalidate real-season chronology
-        run: node scripts/validate-real-season-validation.mjs --self-test
+        run: |
+          node scripts/build-player-prop-recommendations.mjs
+          node scripts/validate-real-season-validation.mjs --self-test
       - name: Revalidate pipeline health
         run: node scripts/check-weekly-pipeline-health.mjs --self-test
       - name: Revalidate calibration governance
