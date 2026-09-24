@@ -2,7 +2,7 @@
   "schema_version": "1.2.0",
   "season": 2026,
   "week": 3,
-  "generated_at": "2026-09-24T02:56:28.226Z",
+  "generated_at": "2026-09-24T19:03:44.827Z",
   "mode": "SHADOW_ONLY",
   "actionable": false,
   "input_status": "SHADOW_ONLY",
@@ -8912,7 +8912,59 @@
     },
     "Jayden Daniels": {
       "position": "QB",
-      "distributions": {}
+      "distributions": {
+        "pass_yards": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "QB",
+          "stat": "pass_yards",
+          "family": "normal",
+          "mean": 199.2127,
+          "sd": 83.7232,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "mu": 199.2127,
+            "sigma": 83.7232
+          }
+        },
+        "pass_tds": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "QB",
+          "stat": "pass_tds",
+          "family": "negative_binomial",
+          "mean": 1.3402,
+          "sd": 1.2575,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "mean": 1.3402,
+            "variance": 1.5813062500000001,
+            "r": 7.449562340254554,
+            "p": 0.8475271630653455
+          }
+        },
+        "rush_yards": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "QB",
+          "stat": "rush_yards",
+          "family": "lognormal_shifted",
+          "mean": 42.8523,
+          "sd": 26.844,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "shift": 0,
+            "log_mu": 3.5922393038881006,
+            "log_sigma": 0.5753607830358375
+          }
+        }
+      }
     },
     "Christian Watson": {
       "position": "WR",
@@ -10589,14 +10641,14 @@
           "position": "QB",
           "stat": "pass_yards",
           "family": "normal",
-          "mean": 230.0057,
-          "sd": 83.7586,
+          "mean": 189.4339,
+          "sd": 109.4131,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
-            "mu": 230.0057,
-            "sigma": 83.7586
+            "mu": 189.4339,
+            "sigma": 109.4131
           }
         },
         "pass_tds": {
@@ -10605,16 +10657,16 @@
           "position": "QB",
           "stat": "pass_tds",
           "family": "negative_binomial",
-          "mean": 1.4744,
-          "sd": 1.1522,
+          "mean": 1.173,
+          "sd": 1.1488,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
-            "mean": 1.4744,
-            "variance": 1.4744009999999999,
-            "r": 2173855.36,
-            "p": 0.9999993217584632
+            "mean": 1.173,
+            "variance": 1.31974144,
+            "r": 9.376553753322852,
+            "p": 0.8888104627524616
           }
         },
         "rush_yards": {
@@ -10623,22 +10675,148 @@
           "position": "QB",
           "stat": "rush_yards",
           "family": "lognormal_shifted",
-          "mean": 17.2256,
-          "sd": 21.5054,
+          "mean": 14.7435,
+          "sd": 20.1404,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
             "shift": 0,
-            "log_mu": 2.376658353919998,
-            "log_sigma": 0.9692660062794972
+            "log_mu": 2.1643261357860926,
+            "log_sigma": 1.0261346616371207
           }
         }
       }
     },
     "Alec Pierce": {
       "position": "WR",
-      "distributions": {}
+      "distributions": {
+        "targets": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "WR",
+          "stat": "targets",
+          "family": "negative_binomial",
+          "mean": 4.5596,
+          "sd": 2.5198,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "mean": 4.5596,
+            "variance": 6.349392040000001,
+            "r": 11.615847928343669,
+            "p": 0.7181159977640945
+          }
+        },
+        "receiving_yards": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "WR",
+          "stat": "receiving_yards",
+          "family": "student_t",
+          "mean": 44.6591,
+          "sd": 36.7012,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "mu": 44.6591,
+            "df": 8,
+            "scale": 31.784171549373436
+          }
+        },
+        "receptions": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "WR",
+          "stat": "receptions",
+          "family": "compound_receptions",
+          "conditional_family": "beta_binomial",
+          "mean": 2.5489540590560873,
+          "sd": 1.782866042975666,
+          "market_price_used_in_probability": false,
+          "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
+          "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
+          "parameters": {
+            "catch_rate": 0.5590301911859881,
+            "rho": 0.012633422760818603,
+            "target_distribution": {
+              "status": "SHADOW_ONLY",
+              "actionable": false,
+              "position": "WR",
+              "stat": "targets",
+              "family": "negative_binomial",
+              "mean": 4.5596,
+              "sd": 2.5198,
+              "market_price_used_in_probability": false,
+              "source": "2021-2025 football-only distribution-family calibration",
+              "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+              "parameters": {
+                "mean": 4.5596,
+                "variance": 6.349392040000001,
+                "r": 11.615847928343669,
+                "p": 0.7181159977640945
+              }
+            },
+            "pmf": [
+              0.10222019106263644,
+              0.20964675334984942,
+              0.23517229980976936,
+              0.19113012136736432,
+              0.12589918686316973,
+              0.07134536235907046,
+              0.036075606848655656,
+              0.016677900919645536,
+              0.007171702882131573,
+              0.002905124613231082,
+              0.001119337960417453,
+              0.00041331796160707144,
+              0.00014714363325693183,
+              0.00005075118298878012,
+              0.00001702691293275868,
+              0.000005575154461128591,
+              0.000001786592537464343,
+              5.616603021778975e-7,
+              1.73572946734543e-7,
+              5.282021236737446e-8,
+              1.5850770485351285e-8,
+              4.695683796659866e-9,
+              1.3739252653834318e-9,
+              3.96831146065276e-10,
+              1.1286404393468857e-10,
+              3.1428972012830194e-11,
+              8.478411123676717e-12,
+              2.177848876473468e-12,
+              5.193434065750236e-13,
+              1.1097896493373344e-13,
+              2.0231994701631254e-14,
+              2.9257671949581718e-15,
+              2.9615174564692306e-16,
+              1.5642942383933496e-17
+            ],
+            "support_max": 33,
+            "target_truncated_tail": 4.026179389882145e-11,
+            "normalized_mass": 0.9999999999999999,
+            "marginal_mean": 2.5489540590560873,
+            "marginal_variance": 3.1786113271957093,
+            "marginal_sd": 1.782866042975666
+          },
+          "catch_rate_prior": {
+            "catch_rate": 0.5590301911859881,
+            "rho": 0.012633422760818603,
+            "source": "player_shrunk_catch_rate",
+            "prior_player": "Alec Pierce",
+            "games": 48
+          },
+          "standalone_reception_projection": {
+            "mean": 2.4455,
+            "sd": 1.8049,
+            "mean_gap_pct": 0.042303847497888895
+          },
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+        }
+      }
     },
     "Brenton Strange": {
       "position": "TE",
@@ -11602,7 +11780,131 @@
     },
     "Jayden Reed": {
       "position": "WR",
-      "distributions": {}
+      "distributions": {
+        "targets": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "WR",
+          "stat": "targets",
+          "family": "negative_binomial",
+          "mean": 4.6581,
+          "sd": 2.4835,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "mean": 4.6581,
+            "variance": 6.167772249999999,
+            "r": 14.372586904210513,
+            "p": 0.7552321666870889
+          }
+        },
+        "receiving_yards": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "WR",
+          "stat": "receiving_yards",
+          "family": "student_t",
+          "mean": 44.5439,
+          "sd": 35.8958,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "mu": 44.5439,
+            "df": 8,
+            "scale": 31.086674689165452
+          }
+        },
+        "receptions": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "WR",
+          "stat": "receptions",
+          "family": "compound_receptions",
+          "conditional_family": "beta_binomial",
+          "mean": 2.968504402949278,
+          "sd": 1.9103376075886345,
+          "market_price_used_in_probability": false,
+          "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
+          "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
+          "parameters": {
+            "catch_rate": 0.6372779468999268,
+            "rho": 0.012633422760818603,
+            "target_distribution": {
+              "status": "SHADOW_ONLY",
+              "actionable": false,
+              "position": "WR",
+              "stat": "targets",
+              "family": "negative_binomial",
+              "mean": 4.6581,
+              "sd": 2.4835,
+              "market_price_used_in_probability": false,
+              "source": "2021-2025 football-only distribution-family calibration",
+              "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+              "parameters": {
+                "mean": 4.6581,
+                "variance": 6.167772249999999,
+                "r": 14.372586904210513,
+                "p": 0.7552321666870889
+              }
+            },
+            "pmf": [
+              0.0689098424664816,
+              0.16682586242882155,
+              0.21714007029194637,
+              0.2017151639811291,
+              0.14987256650325254,
+              0.09467053697579032,
+              0.05279544660925356,
+              0.02666152521985431,
+              0.012414589699468457,
+              0.005402233725573218,
+              0.0022196466984102923,
+              0.0008681291899494072,
+              0.0003253124915710064,
+              0.00011741934024631754,
+              0.00004100253289844755,
+              0.000013903177418759946,
+              0.000004592029133261139,
+              0.0000014812884988326792,
+              4.6775007036051086e-7,
+              1.4487127627707686e-7,
+              4.4082298953739894e-8,
+              1.3194932250990272e-8,
+              3.887396784971964e-9,
+              1.126289754411277e-9,
+              3.197062481921269e-10,
+              8.810426321345488e-11,
+              2.315384462154555e-11,
+              5.628158168406825e-12,
+              1.2060084867465269e-12,
+              2.1135829757739485e-13,
+              2.6625223390267856e-14,
+              1.7893490289677155e-15
+            ],
+            "support_max": 31,
+            "target_truncated_tail": 8.477818447261143e-11,
+            "normalized_mass": 0.9999999999999999,
+            "marginal_mean": 2.968504402949278,
+            "marginal_variance": 3.6493897749674673,
+            "marginal_sd": 1.9103376075886345
+          },
+          "catch_rate_prior": {
+            "catch_rate": 0.6372779468999268,
+            "rho": 0.012633422760818603,
+            "source": "position_catch_rate_prior",
+            "prior_player": null,
+            "games": 3618
+          },
+          "standalone_reception_projection": {
+            "mean": 3.3275,
+            "sd": 1.9037,
+            "mean_gap_pct": -0.10788748220908247
+          },
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+        }
+      }
     },
     "Jadarian Price": {
       "position": "RB",
@@ -15210,7 +15512,59 @@
     },
     "Jaxson Dart": {
       "position": "QB",
-      "distributions": {}
+      "distributions": {
+        "pass_yards": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "QB",
+          "stat": "pass_yards",
+          "family": "normal",
+          "mean": 169.43,
+          "sd": 99.7179,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "mu": 169.43,
+            "sigma": 99.7179
+          }
+        },
+        "pass_tds": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "QB",
+          "stat": "pass_tds",
+          "family": "negative_binomial",
+          "mean": 1.0982,
+          "sd": 1.0393,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "mean": 1.0982,
+            "variance": 1.098201,
+            "r": 1206043.2400000002,
+            "p": 0.9999990894198786
+          }
+        },
+        "rush_yards": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "QB",
+          "stat": "rush_yards",
+          "family": "lognormal_shifted",
+          "mean": 29.5115,
+          "sd": 23.7046,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "shift": 0,
+            "log_mu": 3.1358543057795463,
+            "log_sigma": 0.7055858730311021
+          }
+        }
+      }
     },
     "Stefon Diggs": {
       "position": "WR",
@@ -16532,16 +16886,16 @@
           "position": "WR",
           "stat": "targets",
           "family": "negative_binomial",
-          "mean": 7.1727,
-          "sd": 3.4383,
+          "mean": 3.7225,
+          "sd": 3.6131,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
-            "mean": 7.1727,
-            "variance": 11.82190689,
-            "r": 11.06589285167303,
-            "p": 0.60672952906331
+            "mean": 3.7225,
+            "variance": 13.054491610000001,
+            "r": 1.4848927034129642,
+            "p": 0.28515089757677664
           }
         },
         "receiving_yards": {
@@ -16550,15 +16904,15 @@
           "position": "WR",
           "stat": "receiving_yards",
           "family": "student_t",
-          "mean": 59.2919,
-          "sd": 39.3526,
+          "mean": 29.4949,
+          "sd": 35.5974,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
-            "mu": 59.2919,
+            "mu": 29.4949,
             "df": 8,
-            "scale": 34.0803513049675
+            "scale": 30.828252708676175
           }
         },
         "receptions": {
@@ -16568,8 +16922,8 @@
           "stat": "receptions",
           "family": "compound_receptions",
           "conditional_family": "beta_binomial",
-          "mean": 4.571003527998676,
-          "sd": 2.5735136302014228,
+          "mean": 2.372267153512722,
+          "sd": 2.495981444563619,
           "market_price_used_in_probability": false,
           "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
           "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
@@ -16582,72 +16936,100 @@
               "position": "WR",
               "stat": "targets",
               "family": "negative_binomial",
-              "mean": 7.1727,
-              "sd": 3.4383,
+              "mean": 3.7225,
+              "sd": 3.6131,
               "market_price_used_in_probability": false,
               "source": "2021-2025 football-only distribution-family calibration",
               "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
               "parameters": {
-                "mean": 7.1727,
-                "variance": 11.82190689,
-                "r": 11.06589285167303,
-                "p": 0.60672952906331
+                "mean": 3.7225,
+                "variance": 13.054491610000001,
+                "r": 1.4848927034129642,
+                "p": 0.28515089757677664
               }
             },
             "pmf": [
-              0.02272454893732876,
-              0.07214242423324994,
-              0.1253663870377504,
-              0.1578928361208747,
-              0.16117165165092023,
-              0.1414955651818875,
-              0.11078807697469346,
-              0.0792586341193318,
-              0.05270175394395215,
-              0.03298354148358414,
-              0.019616679513853222,
-              0.01117016562469477,
-              0.006126189648341918,
-              0.003251765958559493,
-              0.0016771637176564596,
-              0.0008433348286124205,
-              0.00041457867110947916,
-              0.00019972323247173022,
-              0.00009448226424166985,
-              0.00004396803546025935,
-              0.000020158319366762124,
-              0.00000911768130773298,
-              0.000004073237411473911,
-              0.0000017991746722809677,
-              7.864795641078798e-7,
-              3.405179977754261e-7,
-              1.4613342244029138e-7,
-              6.220081729994629e-8,
-              2.6273495818260024e-8,
-              1.1017852856199426e-8,
-              4.588033670029989e-9,
-              1.8969084840173702e-9,
-              7.780901081295804e-10,
-              3.1609019911706933e-10,
-              1.26750322154845e-10,
-              4.989477606322474e-11,
-              1.9121505593814942e-11,
-              7.051760887550749e-12,
-              2.464302240182263e-12,
-              8.001258662421643e-13,
-              2.3541335246028825e-13,
-              6.075686748584104e-14,
-              1.3152822078362727e-14,
-              2.231716153485404e-15,
-              2.631312044571996e-16,
-              1.613801596698153e-17
+              0.24356691326237687,
+              0.22147048987510584,
+              0.16869187841998326,
+              0.12026853670028227,
+              0.08285409525634091,
+              0.05590538151179012,
+              0.037205742045346796,
+              0.02452209461466605,
+              0.016048018034886494,
+              0.010446206577518581,
+              0.006771772135219967,
+              0.004375640180639922,
+              0.0028201258106591897,
+              0.0018138754750999379,
+              0.001164754768868348,
+              0.0007469469303983355,
+              0.00047850500278547243,
+              0.00030627908119556276,
+              0.00019591101646743582,
+              0.0001252491808067207,
+              0.00008004221835945749,
+              0.000051137202329213444,
+              0.00003266383286339513,
+              0.00002086136920653216,
+              0.000013322707393532772,
+              0.000008508261781936002,
+              0.000005433870225964405,
+              0.0000034706942805885855,
+              0.000002217064780330412,
+              0.0000014164770448543048,
+              9.051536068136333e-7,
+              5.785322108642109e-7,
+              3.6985789934190576e-7,
+              2.3651176014567444e-7,
+              1.512823848865595e-7,
+              9.679390146315687e-8,
+              6.194934759878036e-8,
+              3.966051223245091e-8,
+              2.5398881638674158e-8,
+              1.627063764666907e-8,
+              1.0426120471814217e-8,
+              6.682766086903693e-9,
+              4.284307213208492e-9,
+              2.746963862739286e-9,
+              1.7611758284981491e-9,
+              1.1288046022233944e-9,
+              7.229910229828771e-10,
+              4.624874870939029e-10,
+              2.952403590014725e-10,
+              1.878857377308953e-10,
+              1.1902682650242174e-10,
+              7.493065187893537e-11,
+              4.677328843771306e-11,
+              2.8876598668050568e-11,
+              1.7579986157289208e-11,
+              1.0518781769863955e-11,
+              6.162825983366468e-12,
+              3.5212973045583484e-12,
+              1.9535303949801954e-12,
+              1.0472541898193423e-12,
+              5.396675447407418e-13,
+              2.657888168300084e-13,
+              1.2430272666101398e-13,
+              5.47985081403226e-14,
+              2.2578577661501787e-14,
+              8.607175705593375e-15,
+              2.9983795593909e-15,
+              9.397500838230575e-16,
+              2.5966573765928183e-16,
+              6.152367363214574e-17,
+              1.2006032546419145e-17,
+              1.810252569170395e-18,
+              1.876021476343444e-19,
+              1.0030747643697195e-20
             ],
-            "support_max": 45,
-            "target_truncated_tail": 6.834599552973941e-11,
-            "normalized_mass": 0.9999999999999999,
-            "marginal_mean": 4.571003527998676,
-            "marginal_variance": 6.622972404832504,
-            "marginal_sd": 2.5735136302014228
+            "support_max": 73,
+            "target_truncated_tail": 8.234435355802816e-11,
+            "normalized_mass": 1.0000000000000002,
+            "marginal_mean": 2.372267153512722,
+            "marginal_variance": 6.229923371605889,
+            "marginal_sd": 2.495981444563619
           },
           "catch_rate_prior": {
             "catch_rate": 0.6372779468999268,
@@ -16657,9 +17039,9 @@
             "games": 3618
           },
           "standalone_reception_projection": {
-            "mean": 4.571,
-            "sd": 2.6195,
-            "mean_gap_pct": 7.718220687620835e-7
+            "mean": 2.3473,
+            "sd": 2.5258,
+            "mean_gap_pct": 0.010636541350795309
           },
           "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
         }
@@ -19895,7 +20277,143 @@
     },
     "Zach Charbonnet": {
       "position": "RB",
-      "distributions": {}
+      "distributions": {
+        "targets": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "RB",
+          "stat": "targets",
+          "family": "negative_binomial",
+          "mean": 2.3261,
+          "sd": 1.8089,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "mean": 2.3261,
+            "variance": 3.2721192099999996,
+            "r": 5.71948344473893,
+            "p": 0.7108848580122483
+          }
+        },
+        "rush_yards": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "RB",
+          "stat": "rush_yards",
+          "family": "lognormal_shifted",
+          "mean": 35.4968,
+          "sd": 29.1368,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "shift": 0,
+            "log_mu": 3.3119062207445777,
+            "log_sigma": 0.7176856287104986
+          }
+        },
+        "receiving_yards": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "RB",
+          "stat": "receiving_yards",
+          "family": "lognormal_shifted",
+          "mean": 13.8583,
+          "sd": 13.7684,
+          "market_price_used_in_probability": false,
+          "source": "2021-2025 football-only distribution-family calibration",
+          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+          "parameters": {
+            "shift": 0,
+            "log_mu": 2.285554261556491,
+            "log_sigma": 0.8286495876543432
+          }
+        },
+        "receptions": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "position": "RB",
+          "stat": "receptions",
+          "family": "compound_receptions",
+          "conditional_family": "beta_binomial",
+          "mean": 1.861582628273107,
+          "sd": 1.5747821185947282,
+          "market_price_used_in_probability": false,
+          "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
+          "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
+          "parameters": {
+            "catch_rate": 0.8003020634321757,
+            "rho": 0.012251375947309196,
+            "target_distribution": {
+              "status": "SHADOW_ONLY",
+              "actionable": false,
+              "position": "RB",
+              "stat": "targets",
+              "family": "negative_binomial",
+              "mean": 2.3261,
+              "sd": 1.8089,
+              "market_price_used_in_probability": false,
+              "source": "2021-2025 football-only distribution-family calibration",
+              "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+              "parameters": {
+                "mean": 2.3261,
+                "variance": 3.2721192099999996,
+                "r": 5.71948344473893,
+                "p": 0.7108848580122483
+              }
+            },
+            "pmf": [
+              0.2002835199207264,
+              0.2801977641019379,
+              0.23068864767065028,
+              0.14572157399808872,
+              0.07811651086923366,
+              0.03740632159747826,
+              0.016490018349702984,
+              0.006823292047781308,
+              0.002685527151644476,
+              0.0010149857663964016,
+              0.00037098175528731104,
+              0.0001318406461776792,
+              0.00004574882967856775,
+              0.00001555255521608581,
+              0.000005193906899109629,
+              0.0000017077543421167088,
+              5.538594252237572e-7,
+              1.7745561239740421e-7,
+              5.6241273211529576e-8,
+              1.7648941866945166e-8,
+              5.485417111951171e-9,
+              1.68566251925689e-9,
+              5.081689791551671e-10,
+              1.468233904078261e-10,
+              3.841237895313796e-11,
+              8.03359190125175e-12,
+              9.881516846330721e-13
+            ],
+            "support_max": 26,
+            "target_truncated_tail": 7.326428352882886e-11,
+            "normalized_mass": 1.0000000000000002,
+            "marginal_mean": 1.861582628273107,
+            "marginal_variance": 2.4799387210457002,
+            "marginal_sd": 1.5747821185947282
+          },
+          "catch_rate_prior": {
+            "catch_rate": 0.8003020634321757,
+            "rho": 0.012251375947309196,
+            "source": "player_shrunk_catch_rate",
+            "prior_player": "Zach Charbonnet",
+            "games": 33
+          },
+          "standalone_reception_projection": {
+            "mean": 1.8978,
+            "sd": 1.7006,
+            "mean_gap_pct": -0.0190838717077105
+          },
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+        }
+      }
     },
     "Tyler Shough": {
       "position": "QB",
@@ -20808,16 +21326,16 @@
           "position": "RB",
           "stat": "targets",
           "family": "negative_binomial",
-          "mean": 2.1915,
-          "sd": 2.0256,
+          "mean": 1.9214,
+          "sd": 2.1996,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
-            "mean": 2.1915,
-            "variance": 4.103055359999999,
-            "r": 2.5124421455416295,
-            "p": 0.5341141680330631
+            "mean": 1.9214,
+            "variance": 4.838240160000001,
+            "r": 1.2656771566118314,
+            "p": 0.3971278680800334
           }
         },
         "rush_yards": {
@@ -20826,15 +21344,15 @@
           "position": "RB",
           "stat": "rush_yards",
           "family": "lognormal_shifted",
-          "mean": 38.0252,
-          "sd": 31.6947,
+          "mean": 31.1658,
+          "sd": 35.8846,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
             "shift": 0,
-            "log_mu": 3.3744806667287532,
-            "log_sigma": 0.7263173288588651
+            "log_mu": 3.017301352266291,
+            "log_sigma": 0.918716482367628
           }
         },
         "receiving_yards": {
@@ -20843,15 +21361,15 @@
           "position": "RB",
           "stat": "receiving_yards",
           "family": "lognormal_shifted",
-          "mean": 12.3002,
-          "sd": 15.852,
+          "mean": 11.0693,
+          "sd": 16.6377,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
             "shift": 0,
-            "log_mu": 2.020283103933406,
-            "log_sigma": 0.9892749046401335
+            "log_mu": 1.8134413445262376,
+            "log_sigma": 1.0869536937968272
           }
         },
         "receptions": {
@@ -20861,8 +21379,8 @@
           "stat": "receptions",
           "family": "compound_receptions",
           "conditional_family": "beta_binomial",
-          "mean": 1.7137659888019288,
-          "sd": 1.7019895600337183,
+          "mean": 1.5025461873076698,
+          "sd": 1.8166158535804702,
           "market_price_used_in_probability": false,
           "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
           "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
@@ -20875,62 +21393,74 @@
               "position": "RB",
               "stat": "targets",
               "family": "negative_binomial",
-              "mean": 2.1915,
-              "sd": 2.0256,
+              "mean": 1.9214,
+              "sd": 2.1996,
               "market_price_used_in_probability": false,
               "source": "2021-2025 football-only distribution-family calibration",
               "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
               "parameters": {
-                "mean": 2.1915,
-                "variance": 4.103055359999999,
-                "r": 2.5124421455416295,
-                "p": 0.5341141680330631
+                "mean": 1.9214,
+                "variance": 4.838240160000001,
+                "r": 1.2656771566118314,
+                "p": 0.3971278680800334
               }
             },
             "pmf": [
-              0.27142077046110313,
-              0.27571207679735693,
-              0.19602081748434283,
-              0.1195087464014055,
-              0.06683752457609164,
-              0.035371241290851715,
-              0.0180154854723309,
-              0.00892212149235401,
-              0.004325409961076457,
-              0.002062185117673227,
-              0.0009700807324880959,
-              0.00045137255067731534,
-              0.00020812418146135632,
-              0.00009523651015227094,
-              0.00004329927773609777,
-              0.00001957760162832651,
-              0.000008809909266217693,
-              0.000003948123778601254,
-              0.0000017629775842256886,
-              7.847531228915793e-7,
-              3.483486219758025e-7,
-              1.542518549897041e-7,
-              6.815549130966132e-8,
-              3.0055252809332624e-8,
-              1.322953197904033e-8,
-              5.81218372540005e-9,
-              2.547119518279073e-9,
-              1.1114562601368067e-9,
-              4.807931706554015e-10,
-              2.0427108344105838e-10,
-              8.376777354759729e-11,
-              3.2196049302564686e-11,
-              1.1071971244215705e-11,
-              3.1666607018091395e-12,
-              6.632343393256321e-13,
-              7.563679952498703e-14
+              0.37192794359550596,
+              0.2550091307652483,
+              0.15661145383388236,
+              0.0924902451541801,
+              0.05355006489547977,
+              0.030640165161045143,
+              0.017396456479803774,
+              0.009824109811246278,
+              0.0055262805827891275,
+              0.003099640805647689,
+              0.0017347263310591489,
+              0.0009691959855673192,
+              0.000540776530584877,
+              0.00030142257618426157,
+              0.00016787422543795044,
+              0.00009343743880237197,
+              0.00005198160075735275,
+              0.000028908244816152128,
+              0.00001607235927130865,
+              0.000008934262590893887,
+              0.0000049657928341852605,
+              0.000002759906051791752,
+              0.000001533900038726577,
+              8.525404772698623e-7,
+              4.738748824435442e-7,
+              2.6342468392206096e-7,
+              1.46455211136141e-7,
+              8.1436397321612e-8,
+              4.5290342751646887e-8,
+              2.5192509720570212e-8,
+              1.4015761868390153e-8,
+              7.798867353286517e-9,
+              4.339920061437321e-9,
+              2.4147881442135254e-9,
+              1.3428310069135773e-9,
+              7.455615921448009e-10,
+              4.1251240529498043e-10,
+              2.2666573227799625e-10,
+              1.2297823611326754e-10,
+              6.529503173378628e-11,
+              3.34890398317638e-11,
+              1.6297792992305175e-11,
+              7.348063349156727e-12,
+              2.9725460652631892e-12,
+              1.0318516054458413e-12,
+              2.8720281018387665e-13,
+              5.683638580923899e-14,
+              5.9888908732728695e-15
             ],
-            "support_max": 35,
-            "target_truncated_tail": 8.135547790999453e-11,
-            "normalized_mass": 0.9999999999999997,
-            "marginal_mean": 1.7137659888019288,
-            "marginal_variance": 2.8967684624637697,
-            "marginal_sd": 1.7019895600337183
+            "support_max": 47,
+            "target_truncated_tail": 6.919631534429982e-11,
+            "normalized_mass": 1,
+            "marginal_mean": 1.5025461873076698,
+            "marginal_variance": 3.3000931594799,
+            "marginal_sd": 1.8166158535804702
           },
           "catch_rate_prior": {
             "catch_rate": 0.7820059279089779,
@@ -20940,9 +21470,9 @@
             "games": 2992
           },
           "standalone_reception_projection": {
-            "mean": 1.7207,
-            "sd": 1.7261,
-            "mean_gap_pct": -0.004029761839990198
+            "mean": 1.4967,
+            "sd": 1.8168,
+            "mean_gap_pct": 0.003906051518453823
           },
           "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
         }
