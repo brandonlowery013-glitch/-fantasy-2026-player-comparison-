@@ -1,21 +1,21 @@
 {
   "schema_version": "1.4.1",
-  "generated_at": "2026-09-25T21:37:27.480Z",
+  "generated_at": "2026-09-26T04:53:33.445Z",
   "authoritative": true,
   "status": "PASS",
   "policy": "SUBJECT_AWARE_PLAYER_EVENT_BINDING; VERIFIED SAME_TEAM_QB EVENTS MAY PROPAGATE AS CONNECTED OFFENSE CONTEXT; STARTER CHANGES ARE NONDIRECTIONAL UNLESS EVIDENCE SUPPORTS GOOD/BAD IMPACT; STATIC BASELINE UNTOUCHED; SEASON_LONG NUMERIC MOVES REQUIRE VALIDATED QUANTITATIVE SUPPORT",
   "universe": 167,
   "counts": {
     "players": 167,
-    "adjudicated": 54,
+    "adjudicated": 55,
     "player_specific": 31,
     "connected_context": 0,
-    "unbound_material": 23,
-    "near_term": 11,
-    "season_long": 10,
+    "unbound_material": 24,
+    "near_term": 10,
+    "season_long": 11,
     "upgrades": 3,
-    "downgrades": 20,
-    "holds": 144,
+    "downgrades": 18,
+    "holds": 146,
     "self_audit_errors": 0
   },
   "audit_errors": [],
@@ -368,21 +368,31 @@
       "implicated_components": []
     },
     {
-      "status": "NO_MATERIAL_CHANGE",
-      "horizon": "NONE",
+      "status": "ADJUDICATED",
+      "horizon": "CURRENT_OUTLOOK",
       "player_effect": "HOLD",
       "near_term_projection": "HOLD",
       "season_long_effect": "HOLD",
-      "confidence": "HIGH",
-      "binding_status": "NO_MATERIAL_EVIDENCE",
-      "reason": "No new material football evidence.",
+      "confidence": "MEDIUM",
+      "binding_status": "PLAYER_SPECIFIC",
+      "reason": "Player-specific material evidence requires current-outlook adjudication.",
+      "evidence_excerpt": "eagles' saquon barkley to be 'fearless' vs. eagles running back saquon barkley plans to play \"fearless\" monday night against the chicago bears as he eyes a return from a stinger injury. eagles saquon barkley to be fearless vs bears despite stinger eagles running back saquon barkley plans to play fearless monday night against the chicago bears as he eyes a return from a stinger injury",
+      "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
+      "proposed_projected_ppr": null,
+      "proposed_score": null,
+      "proposed_true_value_rank": null,
       "connected_player_effects": [],
       "player": "Saquon Barkley",
       "position": "RB",
       "team": "Philadelphia Eagles",
       "current_true_value_rank": 19,
       "current_overall_rank": 19,
-      "implicated_components": []
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling"
+      ]
     },
     {
       "status": "NO_MATERIAL_CHANGE",
@@ -403,18 +413,14 @@
     },
     {
       "status": "ADJUDICATED",
-      "horizon": "NEAR_TERM",
-      "player_effect": "DOWNGRADE",
-      "near_term_projection": "REDUCE",
+      "horizon": "CURRENT_OUTLOOK",
+      "player_effect": "HOLD",
+      "near_term_projection": "HOLD",
       "season_long_effect": "HOLD",
-      "confidence": "HIGH",
-      "binding_status": "PLAYER_SPECIFIC",
-      "reason": "Player-specific availability evidence materially deteriorated for the near term without establishing a season-long impairment.",
-      "evidence_excerpt": "raiders tight end brock bowers is questionable to play vs. raiders tight end brock bowers is questionable to play vs saints",
+      "confidence": "LOW",
+      "binding_status": "UNBOUND_MATERIAL_EVIDENCE",
+      "reason": "Material source text was present, but no player-specific event fragment, athlete-bound subject, or verified causal connected-player context was found; model/news impact is blocked pending review.",
       "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
-      "proposed_projected_ppr": null,
-      "proposed_score": null,
-      "proposed_true_value_rank": null,
       "connected_player_effects": [],
       "player": "Brock Bowers",
       "position": "TE",
@@ -425,9 +431,7 @@
         "availability",
         "weekly_reliability",
         "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
+        "ceiling"
       ]
     },
     {
@@ -650,14 +654,14 @@
     },
     {
       "status": "ADJUDICATED",
-      "horizon": "CURRENT_OUTLOOK",
-      "player_effect": "HOLD",
+      "horizon": "SEASON_LONG",
+      "player_effect": "DOWNGRADE",
       "near_term_projection": "HOLD",
-      "season_long_effect": "HOLD",
-      "confidence": "MEDIUM",
+      "season_long_effect": "DOWNGRADE",
+      "confidence": "HIGH",
       "binding_status": "PLAYER_SPECIFIC",
-      "reason": "Player-specific material evidence requires current-outlook adjudication.",
-      "evidence_excerpt": "zay flowers back at practice zay flowers back at practice nfl.com keeps you up to date with all of the latest league news from around the nfl.",
+      "reason": "Player-specific evidence indicates a potentially multi-week or season-long availability impairment.",
+      "evidence_excerpt": "botafogo brazil baltimore ravens defensive lineman nnamdi madubuike appears set to return more than a year after his last nfl game the two time pro bowl selection was a full participant at the ravens 39 friday afternoon practice in botafogo and was given no designation on the game 39 s final injury report paving the way for him to play sunday against the dallas cowboys at maracan 227 stadium it will be his first game since week 2 last year after which concerns about a neck injury surfaced the ravens however will not have starting left tackle ronnie stanley who didn 39 t practice all week because of a toe injury he has been ruled out second year pro carson vinson is expected to start in stanl",
       "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
       "proposed_projected_ppr": null,
       "proposed_score": null,
@@ -673,6 +677,7 @@
         "weekly_reliability",
         "production",
         "ceiling",
+        "role_volume",
         "offensive_environment"
       ]
     },
@@ -1384,7 +1389,6 @@
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ]
     },
@@ -1619,9 +1623,7 @@
         "availability",
         "weekly_reliability",
         "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
+        "ceiling"
       ]
     },
     {
@@ -1739,14 +1741,10 @@
       "player_effect": "HOLD",
       "near_term_projection": "HOLD",
       "season_long_effect": "HOLD",
-      "confidence": "MEDIUM",
-      "binding_status": "PLAYER_SPECIFIC",
-      "reason": "Player-specific material evidence requires current-outlook adjudication.",
-      "evidence_excerpt": "thirty passers are on the move in nick shook&#x27;s qb rankings, with dak prescott entering the top five.",
+      "confidence": "LOW",
+      "binding_status": "UNBOUND_MATERIAL_EVIDENCE",
+      "reason": "Material source text was present, but no player-specific event fragment, athlete-bound subject, or verified causal connected-player context was found; model/news impact is blocked pending review.",
       "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
-      "proposed_projected_ppr": null,
-      "proposed_score": null,
-      "proposed_true_value_rank": null,
       "connected_player_effects": [],
       "player": "Dak Prescott",
       "position": "QB",
@@ -1848,31 +1846,21 @@
       "implicated_components": []
     },
     {
-      "status": "ADJUDICATED",
-      "horizon": "CURRENT_OUTLOOK",
-      "player_effect": "DOWNGRADE",
+      "status": "NO_MATERIAL_CHANGE",
+      "horizon": "NONE",
+      "player_effect": "HOLD",
       "near_term_projection": "HOLD",
-      "season_long_effect": "REVIEW",
-      "confidence": "MEDIUM",
-      "binding_status": "PLAYER_SPECIFIC",
-      "reason": "Player-specific role/usage evidence reduced expected opportunity; season-long effect requires persistence confirmation.",
-      "evidence_excerpt": "seahawks encouraged by jadarian price leading rb room seahawks encouraged by jadarian price leading rb room seattle s running back committee has no touchdowns through two weeks but there s another opportunity this week at commanders",
-      "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
-      "proposed_projected_ppr": null,
-      "proposed_score": null,
-      "proposed_true_value_rank": null,
+      "season_long_effect": "HOLD",
+      "confidence": "HIGH",
+      "binding_status": "NO_MATERIAL_EVIDENCE",
+      "reason": "No new material football evidence.",
       "connected_player_effects": [],
       "player": "Jadarian Price",
       "position": "RB",
       "team": "Seattle Seahawks",
       "current_true_value_rank": 101,
       "current_overall_rank": 91,
-      "implicated_components": [
-        "role_volume",
-        "production",
-        "ceiling",
-        "weekly_reliability"
-      ]
+      "implicated_components": []
     },
     {
       "status": "NO_MATERIAL_CHANGE",
@@ -2246,13 +2234,13 @@
     {
       "status": "ADJUDICATED",
       "horizon": "CURRENT_OUTLOOK",
-      "player_effect": "DOWNGRADE",
+      "player_effect": "HOLD",
       "near_term_projection": "HOLD",
-      "season_long_effect": "REVIEW",
+      "season_long_effect": "HOLD",
       "confidence": "MEDIUM",
       "binding_status": "PLAYER_SPECIFIC",
-      "reason": "Player-specific role/usage evidence reduced expected opportunity; season-long effect requires persistence confirmation.",
-      "evidence_excerpt": "a and rookie a data player guid 7a7779bb 0a57 33bf 9d46 7c6e60323f91 href https www espn com nfl player id 4832846 demond claiborne demond claiborne a veteran a data player guid ca688cbe b781 01a6 69f2 eb87420aec83 href https www espn com nfl player id 4360569 jordan mason jordan mason a opened the season as jones backup but will be on injured reserve for at least two more weeks because of a fractured thumb p p i don t know what kind of load i m getting jones said but when my number transaction: placed rb jordan mason on reserve/injured. placed rb jordan mason on reserve/injured. transaction placed rb jordan mason on reserve injured signed rb deejay dallas from the practice squad to the acti",
+      "reason": "Player-specific material evidence requires current-outlook adjudication.",
+      "evidence_excerpt": "transaction: placed rb jordan mason on reserve/injured. placed rb jordan mason on reserve/injured. transaction placed rb jordan mason on reserve injured signed rb deejay dallas from the practice squad to the active roster signed rb jerome ford and s maceo beard aigret to the practice squad placed rb jordan mason on reserve injured signed rb deejay dallas from the practice squad to the active roster signed rb jerome ford and s maceo beard aigret to the practice squad",
       "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
       "proposed_projected_ppr": null,
       "proposed_score": null,
@@ -2268,7 +2256,6 @@
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ]
     },
@@ -2323,9 +2310,7 @@
         "availability",
         "weekly_reliability",
         "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
+        "ceiling"
       ]
     },
     {
@@ -2400,7 +2385,7 @@
       "confidence": "HIGH",
       "binding_status": "PLAYER_SPECIFIC",
       "reason": "Player-specific evidence indicates a potentially multi-week or season-long availability impairment.",
-      "evidence_excerpt": "bengals backup joe flacco doesn&#x27;t expect trade to giants after jaxson dart injury: &#x27;not true&#x27; bengals backup joe flacco doesn x27 t expect trade to giants after jaxson dart injury x27 not true x27 bengals backup joe flacco s ties to giants coach john harbaugh make the 41 year old an interesting trade target however flacco doesn t plan on leaving the queen city nfl news roundup: jaxson dart to undergo knee surgery; nfl news roundup jaxson dart to undergo knee surgery panthers x27 devin lloyd ruled out nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown jameis winston returns to starting qb",
+      "evidence_excerpt": "bengals backup joe flacco doesn&#x27;t expect trade to giants after jaxson dart injury: &#x27;not true&#x27; bengals backup joe flacco doesn x27 t expect trade to giants after jaxson dart injury x27 not true x27 bengals backup joe flacco s ties to giants coach john harbaugh make the 41 year old an interesting trade target however flacco doesn t plan on leaving the queen city jameis winston returns to starting qb role after jaxson dart injury: &#x27;this is what i dream of&#x27; the new york giants are now jameis winston s team it s a product of unfortunate circumstances usual starter jaxson dart suffered a knee injury that will require surgery but there s little time to waste on acknowledgin",
       "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
       "proposed_projected_ppr": null,
       "proposed_score": null,
@@ -2516,28 +2501,21 @@
       "implicated_components": []
     },
     {
-      "status": "ADJUDICATED",
-      "horizon": "CURRENT_OUTLOOK",
+      "status": "NO_MATERIAL_CHANGE",
+      "horizon": "NONE",
       "player_effect": "HOLD",
       "near_term_projection": "HOLD",
       "season_long_effect": "HOLD",
-      "confidence": "LOW",
-      "binding_status": "UNBOUND_MATERIAL_EVIDENCE",
-      "reason": "Material source text was present, but no player-specific event fragment, athlete-bound subject, or verified causal connected-player context was found; model/news impact is blocked pending review.",
-      "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
+      "confidence": "HIGH",
+      "binding_status": "NO_MATERIAL_EVIDENCE",
+      "reason": "No new material football evidence.",
       "connected_player_effects": [],
       "player": "Mike Washington Jr.",
       "position": "RB",
       "team": "Las Vegas Raiders",
       "current_true_value_rank": 118,
       "current_overall_rank": 123,
-      "implicated_components": [
-        "role_volume",
-        "production",
-        "ceiling",
-        "weekly_reliability",
-        "offensive_environment"
-      ]
+      "implicated_components": []
     },
     {
       "status": "NO_MATERIAL_CHANGE",
@@ -2669,14 +2647,14 @@
     },
     {
       "status": "ADJUDICATED",
-      "horizon": "NEAR_TERM",
-      "player_effect": "DOWNGRADE",
-      "near_term_projection": "REDUCE",
+      "horizon": "CURRENT_OUTLOOK",
+      "player_effect": "HOLD",
+      "near_term_projection": "HOLD",
       "season_long_effect": "HOLD",
-      "confidence": "HIGH",
+      "confidence": "MEDIUM",
       "binding_status": "PLAYER_SPECIFIC",
-      "reason": "Player-specific availability evidence materially deteriorated for the near term without establishing a season-long impairment.",
-      "evidence_excerpt": "p kansas city mo a href https www espn com nfl team name kc kansas city chiefs chiefs a rookie cornerback a href https www espn com nfl player id 4880124 mansoor delane mansoor delane a who is recovering from a right shoulder injury is expected to start in sunday s road game against the a href https www espn com nfl team name mia miami dolphins miami dolphins a p p coach andy reid said friday that delane has a good chance of playing after being a full participant in each of the chiefs three practices this week delane also does not have a designation on the injury report p p delane the chiefs top draft pick was in uniform last week for the team s overtime win against the a href https www espn",
+      "reason": "Player-specific material evidence requires current-outlook adjudication.",
+      "evidence_excerpt": "as raiders and los angeles chargers catch up on each afc west team s offseason developments and 2026 outlook below denver broncos kansas city chiefs las vegas raiders los angeles chargers three key storylines 1 nix s health receiving corps bo nix should be full go for training camp after suffering a broken ankle in last season s divisional round win but every step in the process bears watching when someone this important to a franchise is returning from injury once nix is out there",
       "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
       "proposed_projected_ppr": null,
       "proposed_score": null,
@@ -2691,9 +2669,7 @@
         "availability",
         "weekly_reliability",
         "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
+        "ceiling"
       ]
     },
     {
@@ -3034,21 +3010,33 @@
       "implicated_components": []
     },
     {
-      "status": "NO_MATERIAL_CHANGE",
-      "horizon": "NONE",
+      "status": "ADJUDICATED",
+      "horizon": "CURRENT_OUTLOOK",
       "player_effect": "HOLD",
       "near_term_projection": "HOLD",
       "season_long_effect": "HOLD",
-      "confidence": "HIGH",
-      "binding_status": "NO_MATERIAL_EVIDENCE",
-      "reason": "No new material football evidence.",
+      "confidence": "MEDIUM",
+      "binding_status": "PLAYER_SPECIFIC",
+      "reason": "Player-specific material evidence requires current-outlook adjudication.",
+      "evidence_excerpt": "2024 and he devotes significant time and resources to his body and career longevity he admitted he nbsp 34 probably wasn 39 t as great as i needed to be with my neck stability and strength in my neck 34 barkley 39 s backups are tank bigsby and will shipley both have also been on the injury report this week the eagles rank no 24 in the nfl in epa rush no 14 in rushing yards per game and no 16 in yards per carry barkley stopped himself when he was about",
+      "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
+      "proposed_projected_ppr": null,
+      "proposed_score": null,
+      "proposed_true_value_rank": null,
       "connected_player_effects": [],
       "player": "Tank Bigsby",
       "position": "RB",
       "team": "Philadelphia Eagles",
       "current_true_value_rank": 162,
       "current_overall_rank": 151,
-      "implicated_components": []
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ]
     },
     {
       "status": "ADJUDICATED",
@@ -3100,7 +3088,6 @@
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ]
     },
@@ -3224,21 +3211,32 @@
       "implicated_components": []
     },
     {
-      "status": "NO_MATERIAL_CHANGE",
-      "horizon": "NONE",
-      "player_effect": "HOLD",
-      "near_term_projection": "HOLD",
+      "status": "ADJUDICATED",
+      "horizon": "NEAR_TERM",
+      "player_effect": "DOWNGRADE",
+      "near_term_projection": "REDUCE",
       "season_long_effect": "HOLD",
       "confidence": "HIGH",
-      "binding_status": "NO_MATERIAL_EVIDENCE",
-      "reason": "No new material football evidence.",
+      "binding_status": "PLAYER_SPECIFIC",
+      "reason": "Player-specific availability evidence materially deteriorated for the near term without establishing a season-long impairment.",
+      "evidence_excerpt": "qb sam darnold back sunday, but seahawks down two safeties seahawks quarterback sam darnold will start sunday, but the defending super bowl champions will be without both starting safeties as julian love and ty okada have been ruled out. qb sam darnold back sunday but seahawks down two safeties seahawks quarterback sam darnold will start sunday but the defending super bowl champions will be without both starting safeties as julian love and ty okada have been ruled out",
+      "numeric_recalculation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE",
+      "proposed_projected_ppr": null,
+      "proposed_score": null,
+      "proposed_true_value_rank": null,
       "connected_player_effects": [],
       "player": "Sam Darnold",
       "position": "QB",
       "team": "Seattle Seahawks",
       "current_true_value_rank": 152,
       "current_overall_rank": 162,
-      "implicated_components": []
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "offensive_environment"
+      ]
     },
     {
       "status": "NO_MATERIAL_CHANGE",
