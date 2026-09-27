@@ -98,3 +98,46 @@
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
   attach();refresh();setInterval(refresh,60000);
 })();
+
+// Written context remains visible for every decision, including PASS.
+;(()=>{
+  let data=null,loading=false;
+  const canon=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t);
+  const finite=n=>typeof n==='number'&&Number.isFinite(n);
+  function renderAssessment(){
+    const host=document.querySelector('#gamesPage .lowgrid');if(!host)return;
+    let panel=document.getElementById('ctdMatchupAssessment');
+    if(!panel){panel=document.createElement('section');panel.id='ctdMatchupAssessment';panel.className='panel';host.before(panel)}
+    panel.replaceChildren();
+    const add=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;panel.append(el);return el};
+    add('h3','MATCHUP ASSESSMENT');
+    const g=BET_FEED.games?.[selectedGameIndex];
+    if(!g){add('p','Choose a game to read its assessment.');return}
+    const start=Date.parse(g.event_start||g.kickoff||g.start_at);
+    const m=data?.games?.find(x=>canon(x.home)===canon(g.home_team)&&canon(x.away)===canon(g.away_team)&&Number.isFinite(start)&&Math.abs(Date.parse(x.start_at)-start)<21600000);
+    add('h4',`${g.away_team} at ${g.home_team} — how CTD sees it`);
+    const fp=g.football_projection||{},a=fp.away_score_mean,h=fp.home_score_mean;
+    if(finite(a)&&finite(h)){
+      const leader=h>a?g.home_team:g.away_team,margin=Math.abs(h-a);
+      add('p',`The current model projects ${g.away_team} ${a.toFixed(1)}–${g.home_team} ${h.toFixed(1)}: ${margin<0.05?'an essentially even game':leader+' by '+margin.toFixed(1)}. The displayed market is ${g.spread||'unavailable'}, with a total of ${g.total??'unavailable'}. This is the numerical view; the football evidence below may support or challenge it.`);
+    }else add('p','A current score projection is unavailable. The matchup context below can still be read.');
+    add('p',`Displayed selections: spread ${g.model_spread_pick||'pending'}; total ${g.total_pick||'pending'}; winner ${g.moneyline_pick||'pending'}. PASS means no qualifying recommendation; it does not remove the matchup assessment.`);
+    if(!m){add('p',loading?'Loading written matchup context…':'A verified written football assessment has not been published for this dated matchup. No assessment from another week is substituted.');return}
+    add('p',`${m.review_type} · Written ${new Date(m.written_at).toLocaleString()} · Historical data through ${m.history_through}. ${Date.now()>=start?'Game has started: this is saved context, not live play-by-play analysis.':''} ${Date.parse(m.written_at)>=start?'Written after kickoff; not an original pregame record.':''}`);
+    for(const s of m.sections||[]){add('h4',s.title);add('p',s.text)}
+    const s=m.splits;
+    add('h4','Consensus and money — what the saved sample says');
+    const pair=(key)=>s?.spread?.length===2&&s.spread.every(x=>finite(x[key])&&x[key]>=0&&x[key]<=100)&&Math.abs(s.spread[0][key]+s.spread[1][key]-100)<=1;
+    if(pair('bets')&&pair('money')){
+      add('p',s.spread.map(x=>`${x.side}: ${x.bets}% of spread bets and ${x.money}% of spread money`).join('; ')+`. ${s.source}, observed ${new Date(s.observed_at).toLocaleString()}. This dated sample can disagree with the model. Money share is not proof of professional bettor identity, and these shares are not established drivers of the current live projection.`);
+    }else add('p','Verified complementary percentages are unavailable for this matchup.');
+    add('h4','Sources');
+    for(const s of m.sources||[]){try{const url=new URL(s.url);if(url.protocol!=='https:')continue;const a=add('a',s.title);a.href=url.href;a.target='_blank';a.rel='noopener noreferrer'}catch{}}
+  }
+  const original=renderSelectedGame;renderSelectedGame=function(){original();renderAssessment()};
+  async function refresh(){if(loading||document.hidden)return;loading=true;try{const r=await fetch(new URL('matchup-assessments.json',document.baseURI),{cache:'no-store'});if(!r.ok)throw Error();const d=await r.json();if(d.schema_version!==1||!Array.isArray(d.games))throw Error();data=d}catch{data=null}finally{loading=false;renderAssessment()}}
+  const css=document.createElement('style');css.textContent='#ctdMatchupAssessment{margin:16px 0;padding:20px;text-align:left}#ctdMatchupAssessment h4{margin:20px 0 8px;color:#e5eef7;font-size:15px}#ctdMatchupAssessment p{font-size:14px;line-height:1.75;color:#c4d4e4;max-width:95ch;white-space:normal}#ctdMatchupAssessment a{display:block;color:#8fcfff;margin:8px 0;overflow-wrap:anywhere}';document.head.append(css);
+  document.addEventListener('ctd:games-ready',renderAssessment);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
+  renderAssessment();refresh();setInterval(refresh,300000);
+})();
