@@ -57,3 +57,44 @@
   document.head.append(style);
   renderTicker();
 })();
+
+
+// Percentages belong to a dated matchup and market, independently of the odds book.
+;(()=>{
+  let splits=null,loading=false;
+  const canon=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t);
+  const percent=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=100?n:null;
+  const pair=(a,b)=>percent(a)!=null&&percent(b)!=null&&Math.abs(a+b-100)<=1;
+  function attach(){
+    document.querySelectorAll('#ctdGameTicker [data-game-index]').forEach(card=>{
+      card.querySelector('.ctdPercentages')?.remove();
+      const g=BET_FEED.games?.[Number(card.dataset.gameIndex)];if(!g)return;
+      const block=document.createElement('div');block.className='ctdPercentages';
+      const start=Date.parse(g.event_start||g.kickoff||g.start_at);
+      const match=splits?.games?.find(x=>canon(x.home)===canon(g.home_team)&&canon(x.away)===canon(g.away_team)&&Number.isFinite(start)&&Math.abs(Date.parse(x.start_at)-start)<21600000);
+      const add=(text,cls)=>{const el=document.createElement('div');el.textContent=text;if(cls)el.className=cls;block.append(el)};
+      add('CONSENSUS · MONEY','ctdPercentagesTitle');
+      block.title='Consensus = percentage of bets. Money = percentage of dollars wagered, the smart-money input; it does not identify professional bettors. Percentages use the named source, not necessarily the displayed odds book.';
+      const observed=Date.parse(match?.observed_at);
+      if(!match||!Number.isFinite(observed)||observed>Date.now()+300000){add('Percentages unavailable');card.append(block);return}
+      const row=(name,a,b)=>{
+        if(!a||!b){add(name+': unavailable');return}
+        const bets=pair(a.bets,b.bets),money=pair(a.money,b.money);
+        for(const s of [a,b])add(`${name} ${s.side}: Bets ${bets?s.bets+'%':'—'} · Money ${money?s.money+'%':'—'}`);
+      };
+      row('Spread',match.spread?.[0],match.spread?.[1]);
+      row('O/U',match.total?.[0],match.total?.[1]);
+      const age=Date.now()-observed;
+      add(`${age>3600000?'Older snapshot':'Snapshot'} · ${match.source} · ${new Date(observed).toLocaleString()}`,'ctdPercentagesTime');
+      card.append(block);
+    });
+  }
+  const original=renderTicker;renderTicker=function(){original();attach()};
+  async function refresh(){
+    if(loading||document.hidden)return;loading=true;
+    try{const r=await fetch(new URL('market-percentages.json',document.baseURI),{cache:'no-store'});if(!r.ok)throw Error('Percentages unavailable');const d=await r.json();if(d.schema_version!==1||!Array.isArray(d.games))throw Error('Invalid percentages');splits=d}catch{splits=null}finally{loading=false;attach()}
+  }
+  const css=document.createElement('style');css.textContent='.ctdPercentages{margin-top:9px;padding-top:8px;border-top:1px solid #294052;text-align:left;font-size:11px;line-height:1.6;white-space:normal;color:#c4d4e4}.ctdPercentagesTitle{font-weight:800;font-size:10px;letter-spacing:.06em}.ctdPercentagesTime{font-size:10px;color:#98afc4;margin-top:4px}';document.head.append(css);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
+  attach();refresh();setInterval(refresh,60000);
+})();
