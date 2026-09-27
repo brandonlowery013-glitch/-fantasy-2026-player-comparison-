@@ -6,98 +6,25 @@
   "mode": "SHADOW_ONLY",
   "actionable": false,
   "sportsbook_inputs_used": false,
-  "generated_at": "2026-09-27T01:21:31.223Z",
+  "generated_at": "2026-09-27T13:58:29.812Z",
   "model_version": "scoring-decay-rest-2026-v1",
   "artifact_sha256": "ab32efd745900e177e345ac62dcdcceea48ad7ae78e942ef5ef9f4af624fcfcf",
   "sources": [
     {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=1",
-      "sha256": "b04b651074738458e28697f806d302b09cec2e250c865c880c38e10bab28ad9e"
+      "sha256": "0d45350826e8daecfb66aef1ecad709187e0e8990a7e478ca5a2f29461b63bb4"
     },
     {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=2",
-      "sha256": "034211f22d8cf3d0f81f18cdeb73a83d75f27033afcd5f114389fe84099ace49"
+      "sha256": "d882b21533f3196cac184cd413dbdd023116a274be44e1c49e86895c6fb34af3"
     },
     {
       "url": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
-      "sha256": "5fef8abe310027e881e750023bf7cf4b34571d642b733d77fadd99f09bd85783"
+      "sha256": "11fd8b4874cec51fdd4c09652ccc54428aa9c6cf90df2fb1744e457cb0375b61"
     }
   ],
   "completed_games": 32,
   "games": {
-    "2026-W3-ATL-GB": {
-      "home_team": "GB",
-      "away_team": "ATL",
-      "event_start": "2026-09-25T00:15:00.000Z",
-      "home_score_mean": 25.58507229741176,
-      "away_score_mean": 18.45213924368944,
-      "distribution": {
-        "team_score_sd": 9.322092091970088,
-        "home_away_score_correlation": 0.004801120766302407,
-        "source": "Earlier-fit held-out 2024/2025 prediction residuals",
-        "games": 544
-      },
-      "model_version": "scoring-decay-rest-2026-v1",
-      "evidence": {
-        "method": "Historically calibrated scoring matchup and rest",
-        "half_life_games": 4,
-        "home_field_advantage_feature": 1.7442724458204335,
-        "home_field_advantage_contribution": 2.15108045027228,
-        "rest_days": {
-          "home": 4,
-          "away": 4
-        },
-        "margin_features": [
-          5.14461516204636,
-          0
-        ],
-        "total_features": [
-          43.60138888680483,
-          0
-        ],
-        "teams": {
-          "GB": {
-            "prior_games": 17,
-            "current_games": 2,
-            "prior_weight": 0.7071067811865475,
-            "current_weight": 0.29289321881345254,
-            "prior_points_for": 23,
-            "prior_points_allowed": 21.176470588235293,
-            "current_points_for": 21,
-            "current_points_allowed": 28,
-            "blended_offense": 22.414213562373092,
-            "blended_defense_allowed": 23.175036081315323,
-            "completed_game_ids": [
-              "401872927",
-              "401872936"
-            ]
-          },
-          "ATL": {
-            "prior_games": 17,
-            "current_games": 2,
-            "prior_weight": 0.7071067811865475,
-            "current_weight": 0.29289321881345254,
-            "prior_points_for": 20.764705882352942,
-            "prior_points_allowed": 23.58823529411765,
-            "current_points_for": 8,
-            "current_points_allowed": 27,
-            "blended_offense": 17.026010089263576,
-            "blended_defense_allowed": 24.58751804065766,
-            "completed_game_ids": [
-              "401872658",
-              "401872933"
-            ]
-          }
-        },
-        "personnel_numeric_adjustment_applied": false,
-        "granular_matchup_numeric_adjustment_applied": false,
-        "excluded_numeric_features": [
-          "granular EPA/pace/explosive matchup extension failed ablation",
-          "observed personnel continuity failed ablation",
-          "injury and coaching coefficients not validated"
-        ]
-      }
-    },
     "2026-W3-LAC-BUF": {
       "home_team": "BUF",
       "away_team": "LAC",
@@ -1108,6 +1035,79 @@
             "completed_game_ids": [
               "401872657",
               "401872947"
+            ]
+          }
+        },
+        "personnel_numeric_adjustment_applied": false,
+        "granular_matchup_numeric_adjustment_applied": false,
+        "excluded_numeric_features": [
+          "granular EPA/pace/explosive matchup extension failed ablation",
+          "observed personnel continuity failed ablation",
+          "injury and coaching coefficients not validated"
+        ]
+      }
+    },
+    "2026-W3-ATL-GB": {
+      "home_team": "GB",
+      "away_team": "ATL",
+      "event_start": "2026-09-25T00:15:00.000Z",
+      "home_score_mean": 25.58507229741176,
+      "away_score_mean": 18.45213924368944,
+      "distribution": {
+        "team_score_sd": 9.322092091970088,
+        "home_away_score_correlation": 0.004801120766302407,
+        "source": "Earlier-fit held-out 2024/2025 prediction residuals",
+        "games": 544
+      },
+      "model_version": "scoring-decay-rest-2026-v1",
+      "evidence": {
+        "method": "Historically calibrated scoring matchup and rest",
+        "half_life_games": 4,
+        "home_field_advantage_feature": 1.7442724458204335,
+        "home_field_advantage_contribution": 2.15108045027228,
+        "rest_days": {
+          "home": 4,
+          "away": 4
+        },
+        "margin_features": [
+          5.14461516204636,
+          0
+        ],
+        "total_features": [
+          43.60138888680483,
+          0
+        ],
+        "teams": {
+          "GB": {
+            "prior_games": 17,
+            "current_games": 2,
+            "prior_weight": 0.7071067811865475,
+            "current_weight": 0.29289321881345254,
+            "prior_points_for": 23,
+            "prior_points_allowed": 21.176470588235293,
+            "current_points_for": 21,
+            "current_points_allowed": 28,
+            "blended_offense": 22.414213562373092,
+            "blended_defense_allowed": 23.175036081315323,
+            "completed_game_ids": [
+              "401872927",
+              "401872936"
+            ]
+          },
+          "ATL": {
+            "prior_games": 17,
+            "current_games": 2,
+            "prior_weight": 0.7071067811865475,
+            "current_weight": 0.29289321881345254,
+            "prior_points_for": 20.764705882352942,
+            "prior_points_allowed": 23.58823529411765,
+            "current_points_for": 8,
+            "current_points_allowed": 27,
+            "blended_offense": 17.026010089263576,
+            "blended_defense_allowed": 24.58751804065766,
+            "completed_game_ids": [
+              "401872658",
+              "401872933"
             ]
           }
         },
