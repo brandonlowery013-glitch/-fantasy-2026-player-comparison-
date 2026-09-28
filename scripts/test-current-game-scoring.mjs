@@ -51,3 +51,9 @@ assert.throws(()=>parseCompletedWeek(payload,2),/week/);
 assert.throws(()=>parseCompletedWeek({...payload,season:{year:2025}},1),/season/);
 assert.throws(()=>parseCompletedWeek({...payload,events:[event,event]},1),/Duplicate/);
 console.log(JSON.stringify({result:'PASS',checks:['historical/live feature parity','current-season influence','neutral venue','no target-week leakage','no market influence','missing-data and duplicate rejection','held-out gates','completed-score provenance']}));
+
+assert.ok(Math.abs(actual.evidence.contributions.margin.reconstructed-(actual.home_score_mean-actual.away_score_mean))<1e-9);
+assert.equal(actual.evidence.contributions.venue_component.additive,false);
+assert.equal(neutral.evidence.contributions.venue_component.contribution,0);
+assert.equal(actual.evidence.contributions.model_version,actual.model_version);
+console.log('PASS: integrated attribution and neutral-venue evidence');
