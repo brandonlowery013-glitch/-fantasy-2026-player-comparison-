@@ -1,6 +1,6 @@
 {
   "schema_version": "1.5.0",
-  "generated_at": "2026-09-28T13:48:34.025Z",
+  "generated_at": "2026-09-28T23:15:18.700Z",
   "authoritative": false,
   "mutation_policy": "PROPOSAL_ONLY_NO_CANONICAL_WRITES",
   "universe": {
@@ -10,10 +10,10 @@
   "counts": {
     "UP": 0,
     "DOWN": 0,
-    "MATERIAL_HOLD": 49,
+    "MATERIAL_HOLD": 45,
     "POSITIVE_HOLD": 0,
     "NEGATIVE_HOLD": 0,
-    "NO_MATERIAL_UPDATE": 118
+    "NO_MATERIAL_UPDATE": 122
   },
   "validation": {
     "exact_universe": true,
@@ -159,20 +159,6 @@
           "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
           "published": "2026-09-18T15:00:09.493Z",
           "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-friday-sept-18",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "LA",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Fantasy football Week 3 inactives: Puka Nacua out for Sunday Night Football",
-          "matched_context": "fantasy football week 3 inactives puka nacua out for sunday night football updated inactives and analysis based on the latest reports and official announcements leading up to kickoff",
-          "description": "Updated inactives and analysis based on the latest reports and official announcements leading up to kickoff.",
-          "published": "2026-09-27T23:35:49Z",
-          "url": "https://www.espn.com/fantasy/football/story/_/id/50021286/fantasy-football-injuries-nfl-week-3-inactive-active",
           "match_evidence": "FULL_NAME_HEADER",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
@@ -469,10 +455,53 @@
       "player": "De'Von Achane",
       "pos": "RB",
       "team": "Miami Dolphins",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_LEAGUE",
+          "headline": "Sources: Dolphins RB De'Von Achane suffered torn ACL vs. Chiefs",
+          "matched_context": "sources dolphins rb de von achane suffered torn acl vs chiefs dolphins running back de von achane suffered a torn acl during sunday s loss to the chiefs and will be out for the rest of the 2026 season sources told espn and nfl network",
+          "description": "Dolphins running back De'Von Achane suffered a torn ACL during Sunday's loss to the Chiefs and will be out for the rest of the 2026 season, sources told ESPN and NFL Network.",
+          "published": "2026-09-28T20:24:41Z",
+          "url": "https://www.espn.com/nfl/story/_/id/50052064/sources-dolphins-rb-devon-achane-suffered-torn-acl-vs-chiefs",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "MIA",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "ESPN_TRANSACTIONS",
+          "headline": "Transaction: Placed RB De'Von Achane on injured reserve. Waived DT Keith Cooper Jr. Released DE Clelin Ferrell and DL Jordan Miller from the practice squad.",
+          "matched_context": "transaction placed rb de von achane on injured reserve waived dt keith cooper released de clelin ferrell and dl jordan miller from the practice squad placed rb de von achane on injured reserve waived dt keith cooper released de clelin ferrell and dl jordan miller from the practice squad",
+          "description": "Placed RB De'Von Achane on injured reserve. Waived DT Keith Cooper Jr. Released DE Clelin Ferrell and DL Jordan Miller from the practice squad.",
+          "published": "2026-09-28T07:00Z",
+          "url": null,
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "MIA",
+          "source_team": "MIA",
+          "context_lanes": null
+        },
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "Transaction: Placed RB De'Von Achane on injured reserve. Waived DT Keith Cooper Jr. Released DE Clelin Ferrell and DL Jordan Miller from the practice squad.",
+          "matched_context": "Transaction: Placed RB De'Von Achane on injured reserve. Waived DT Keith Cooper Jr. Released DE Clelin Ferrell and DL Jordan Miller from the practice squad. Placed RB De'Von Achane on injured reserve. Waived DT Keith Cooper Jr. Released DE Clelin Ferrell and DL Jordan Miller from the practice squad.",
+          "description": "Placed RB De'Von Achane on injured reserve. Waived DT Keith Cooper Jr. Released DE Clelin Ferrell and DL Jordan Miller from the practice squad.",
+          "published": "2026-09-28T07:00Z",
+          "url": null,
+          "match_evidence": null,
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": "DIRECT_PLAYER_TRANSITION",
+          "team": "MIA",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "CALF / SOFT-TISSUE WATCH",
         "score": 9.275,
@@ -488,21 +517,28 @@
           "sustainability": 8.8
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "sources dolphins rb de von achane suffered torn acl vs chiefs dolphins running back de von achane suffered a torn acl during sunday s loss to the chiefs and will be out for the rest of the 2026 season sources told espn and nfl network",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.275,
       "proposed_true_value_rank": 11,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Miami Dolphins"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Jonathan Taylor",
@@ -631,12 +667,12 @@
       "evidence_summary": [
         {
           "source": "NFL.com",
-          "headline": "Back from injury, Brock Bowers retakes his place at heart of Raiders offense",
-          "matched_context": "13 advantage at the break the completion 39 s improbability was representative of the chemistry cousins and bowers share such was evident in practices but the quarterback was pleased to see it translate when it mattered 34 i had this with minnesota vikings wide receiver justin jefferson where early on you don 39 t realize how good he was as a player 34 cousins said 34 and then you play with him longer and you start to realize 39 oh practice didn 39 t really show just how good he is 39",
-          "description": null,
-          "published": "2026-09-28T12:16:07Z",
-          "url": "https://www.nfl.com/news/back-from-injury-brock-bowers-retakes-his-place-at-heart-of-raiders-offense",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "headline": "NFL news roundup: Jaycee Horn out indefinitely; Justin Jefferson, Breece Hall avoid serious injuries",
+          "matched_context": "nfl news roundup jaycee horn out indefinitely justin jefferson breece hall avoid serious injuries nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
+          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
+          "published": "2026-09-28T15:16:12.103Z",
+          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-monday-sept-28",
+          "match_evidence": "FULL_NAME_HEADER",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
           "team": "MIN",
@@ -659,13 +695,12 @@
           "sustainability": 9.4
         }
       },
-      "changed_fact": "13 advantage at the break the completion 39 s improbability was representative of the chemistry cousins and bowers share such was evident in practices but the quarterback was pleased to see it translate when it mattered 34 i had this with minnesota vikings wide receiver justin jefferson where early on you don 39 t realize how good he was as a player 34 cousins said 34 and then you play with him longer and you start to realize 39 oh practice didn 39 t really show just how good he is 39",
+      "changed_fact": "nfl news roundup jaycee horn out indefinitely justin jefferson breece hall avoid serious injuries nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
         "ceiling",
-        "role_volume",
         "offensive_environment"
       ],
       "component_delta": null,
@@ -843,25 +878,10 @@
       "player": "Saquon Barkley",
       "pos": "RB",
       "team": "Philadelphia Eagles",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_NOW",
-          "headline": "How to bet Eagles-Bears on MNF: Analysis, tips and favorite plays",
-          "matched_context": "100 p p inline2 wide p p a name picks a p h2 betting outlook h2 p injuries have significantly affected line movement in this matchup with a data player guid 94486c18 dd3e 6081 a3fe 4a26b71ddcdc href https www espn com nfl player id 3929630 saquon barkley saquon barkley a sporting a cowboy collar and a data player guid 8d0f04b5 96e8 6985 13e2 0fa770882d9c href https www espn com nfl player id 15168 case keenum case keenum a projected to be the bears starter under center the public appears to be bracing",
-          "description": "Odds and analysis to help you bet Eagles-Bears on \"Monday Night Football.\"",
-          "published": "2026-09-28T12:53:18Z",
-          "url": "https://www.espn.com/espn/betting/story/_/id/50005767/nfl-week-3-odds-betting-tips-picks-philadelphia-eagles-chicago-bears",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "PHI",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.006,
@@ -877,29 +897,21 @@
           "sustainability": 8.4
         }
       },
-      "changed_fact": "100 p p inline2 wide p p a name picks a p h2 betting outlook h2 p injuries have significantly affected line movement in this matchup with a data player guid 94486c18 dd3e 6081 a3fe 4a26b71ddcdc href https www espn com nfl player id 3929630 saquon barkley saquon barkley a sporting a cowboy collar and a data player guid 8d0f04b5 96e8 6985 13e2 0fa770882d9c href https www espn com nfl player id 15168 case keenum case keenum a projected to be the bears starter under center the public appears to be bracing",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.006,
       "proposed_true_value_rank": 19,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Philadelphia Eagles"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "REACH",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Nico Collins",
@@ -944,25 +956,10 @@
       "player": "Brock Bowers",
       "pos": "TE",
       "team": "Las Vegas Raiders",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Raiders' Brock Bowers shines in return from knee procedure",
-          "matched_context": "raiders brock bowers shines in return from knee procedure brock bowers showed no rust in his regular season debut sunday after undergoing a meniscus procedure finishing with 10 catches for 116 yards and a td",
-          "description": "Brock Bowers showed no rust in his regular-season debut Sunday after undergoing a meniscus procedure, finishing with 10 catches for 116 yards and a TD.",
-          "published": "2026-09-28T04:50:14Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50049442/raiders-brock-bowers-shines-return-knee-procedure",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "LV",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.26,
@@ -978,27 +975,21 @@
           "sustainability": 9.2
         }
       },
-      "changed_fact": "raiders brock bowers shines in return from knee procedure brock bowers showed no rust in his regular season debut sunday after undergoing a meniscus procedure finishing with 10 catches for 116 yards and a td",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.26,
       "proposed_true_value_rank": 24,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Las Vegas Raiders"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Kenneth Walker III",
@@ -1066,10 +1057,25 @@
       "player": "Derrick Henry",
       "pos": "RB",
       "team": "Baltimore Ravens",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "NFL.com",
+          "headline": "As fervor of pulsating win over Cowboys fades, Ravens face crisis at center",
+          "matched_context": "was carted off the field with what the team said was an ankle injury pocic made it through just 10 offensive snaps before cowboys rookie safety caleb downs crashed into the center 39 s left knee while trying to make a play on running back derrick henry both centers were expected to undergo additional testing after the team returned to baltimore on monday morning ravens first round rookie vega ioane the team 39 s starting right guard moved to center for baltimore 39 s final two drives sunday while andrew vorhees entered",
+          "description": null,
+          "published": "2026-09-28T21:46:07Z",
+          "url": "https://www.nfl.com/news/as-fervor-of-pulsating-win-over-cowboys-fades-ravens-face-crisis-at-center",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "BAL",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.101,
@@ -1085,45 +1091,38 @@
           "sustainability": 8.1
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "was carted off the field with what the team said was an ankle injury pocic made it through just 10 offensive snaps before cowboys rookie safety caleb downs crashed into the center 39 s left knee while trying to make a play on running back derrick henry both centers were expected to undergo additional testing after the team returned to baltimore on monday morning ravens first round rookie vega ioane the team 39 s starting right guard moved to center for baltimore 39 s final two drives sunday while andrew vorhees entered",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.101,
       "proposed_true_value_rank": 22,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Baltimore Ravens"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "DeVonta Smith",
       "pos": "WR",
       "team": "Philadelphia Eagles",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Eagles' DeVonta Smith is headed into another stratosphere",
-          "matched_context": "eagles devonta smith is headed into another stratosphere the eagles go to guy in key moments has always seen himself as wr1 now everyone else is just catching up",
-          "description": "The Eagles' go-to guy in key moments has always seen himself as WR1 -- now everyone else is just catching up.",
-          "published": "2026-09-28T12:45:15Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50042344/philadelphia-eagles-devonta-smith-wr1-post-aj-brown-mnf",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "PHI",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "HAMSTRING — FULL PRACTICE RETURN",
         "score": 8.864,
@@ -1139,31 +1138,59 @@
           "sustainability": 9.2
         }
       },
-      "changed_fact": "eagles devonta smith is headed into another stratosphere the eagles go to guy in key moments has always seen himself as wr1 now everyone else is just catching up",
+      "changed_fact": null,
       "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.864,
       "proposed_true_value_rank": 23,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Philadelphia Eagles"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Breece Hall",
       "pos": "RB",
       "team": "New York Jets",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "NFL.com",
+          "headline": "NFL news roundup: Jaycee Horn out indefinitely; Justin Jefferson, Breece Hall avoid serious injuries",
+          "matched_context": "nfl news roundup jaycee horn out indefinitely justin jefferson breece hall avoid serious injuries nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
+          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
+          "published": "2026-09-28T15:16:12.103Z",
+          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-monday-sept-28",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "NYJ",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "ESPN_LEAGUE",
+          "headline": "Fantasy football buzz: Who steps up with Breece Hall, Travis Etienne Jr. out?",
+          "matched_context": "fantasy football buzz who steps up with breece hall travis etienne out which running backs will take on a bigger role for the new york jets and new orleans saints",
+          "description": "Which running backs will take on a bigger role for the New York Jets and New Orleans Saints?",
+          "published": "2026-09-28T21:20:13Z",
+          "url": "https://www.espn.com/fantasy/football/story/_/id/40699880/fantasy-football-injuries-position-battles-nfl-news-analysis",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "NYJ",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "GROIN / WEEK 1 WATCH",
         "score": 8.935,
@@ -1179,21 +1206,29 @@
           "sustainability": 8.8
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "nfl news roundup jaycee horn out indefinitely justin jefferson breece hall avoid serious injuries nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.935,
       "proposed_true_value_rank": 27,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "New York Jets"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Kyren Williams",
@@ -1238,25 +1273,10 @@
       "player": "A.J. Brown",
       "pos": "WR",
       "team": "New England Patriots",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "Drake Maye is falling apart and it&#x27;s not clear where the Patriots go from here",
-          "matched_context": "on another new low and a new worst game this one thanks to two interceptions and two fumbles would feel like rock bottom except it 39 s not clear how things are going to get better the patriots head to buffalo next week wide receiver a j brown is out at least a couple more weeks injuries are piling up on the offensive line they can 39 t run the ball and now the player who was the patriots 39 biggest source of optimism is suddenly their biggest concern 34 just unacceptable 34",
-          "description": null,
-          "published": "2026-09-27T23:31:08Z",
-          "url": "https://www.nfl.com/news/drake-maye-is-falling-apart-and-it-s-not-clear-where-the-patriots-go-from-here",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "NE",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.14525,
@@ -1272,29 +1292,21 @@
           "sustainability": 8.89
         }
       },
-      "changed_fact": "on another new low and a new worst game this one thanks to two interceptions and two fumbles would feel like rock bottom except it 39 s not clear how things are going to get better the patriots head to buffalo next week wide receiver a j brown is out at least a couple more weeks injuries are piling up on the offensive line they can 39 t run the ball and now the player who was the patriots 39 biggest source of optimism is suddenly their biggest concern 34 just unacceptable 34",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.14525,
       "proposed_true_value_rank": 25,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "New England Patriots"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "REACH",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Tetairoa McMillan",
@@ -1344,20 +1356,6 @@
       "team_context_only": false,
       "evidence_summary": [
         {
-          "source": "ESPN_NOW",
-          "headline": "College football Power Rankings: What we've learned about top teams",
-          "matched_context": "a data player guid 48fb595b ecda 3de2 9c05 fcc8090c4b84 href https www espn com nfl player id 4567750 emeka egbuka emeka egbuka a s receptions mark and a data player guid b36899c0 cd91 5c48 6b32 ec65159c9bb3 href https www espn com nfl player id 4361370 chris olave chris olave a s receiving touchdowns record even in a strong season for quarterbacks smith is a legitimate heisman trophy contender and could even be the favorite coming out of the weekend and even with several star receivers across the country smith stands clearly above",
-          "description": "After another round of big wins and surprising upsets, we break down the top 25 through Week 4.",
-          "published": "2026-09-28T11:57:30Z",
-          "url": "https://www.espn.com/college-football/story/_/id/50028427/2026-college-football-power-rankings-top-25-week-4",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "NO",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFC South training camp 2026 preview: Top storylines for Buccaneers, Falcons, Panthers, Saints",
           "matched_context": "NFC South training camp 2026 preview: Top storylines for Buccaneers, Falcons, Panthers, Saints As we hurtle toward the 2026 NFL season, Nick Shook breaks down the top NFC South training camp storylines to monitor for the Atlanta Falcons, Carolina Panthers, New Orleans Saints and Tampa Bay Buccaneers. s kendre miller and devin neal the receiver position welcomed a prestigious addition too when the saints followed their hearts and selected arizona state star jordyn tyson at no 8 overall adding to an intriguing receiver room that includes chris olave and devaughn vele as has long been the case in new orleans health will be paramount for this club tyson and olave have a history of missing time due to injury and kamara played in a career low 11 games last season beyond olave tyson and ve",
@@ -1387,14 +1385,12 @@
           "sustainability": 8.9
         }
       },
-      "changed_fact": "a data player guid 48fb595b ecda 3de2 9c05 fcc8090c4b84 href https www espn com nfl player id 4567750 emeka egbuka emeka egbuka a s receptions mark and a data player guid b36899c0 cd91 5c48 6b32 ec65159c9bb3 href https www espn com nfl player id 4361370 chris olave chris olave a s receiving touchdowns record even in a strong season for quarterbacks smith is a legitimate heisman trophy contender and could even be the favorite coming out of the weekend and even with several star receivers across the country smith stands clearly above",
+      "changed_fact": "NFC South training camp 2026 preview: Top storylines for Buccaneers, Falcons, Panthers, Saints As we hurtle toward the 2026 NFL season, Nick Shook breaks down the top NFC South training camp storylines to monitor for the Atlanta Falcons, Carolina Panthers, New Orleans Saints and Tampa Bay Buccaneers. s kendre miller and devin neal the receiver position welcomed a prestigious addition too when the saints followed their hearts and selected arizona state star jordyn tyson at no 8 overall adding to an intriguing receiver room that includes chris olave and devaughn vele as has long been the case in new orleans health will be paramount for this club tyson and olave have a history of missing time due to injury and kamara played in a career low 11 games last season beyond olave tyson and ve",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
+        "ceiling"
       ],
       "component_delta": null,
       "score_delta": 0,
@@ -1869,10 +1865,25 @@
       "player": "Lamar Jackson",
       "pos": "QB",
       "team": "Baltimore Ravens",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "NFL.com",
+          "headline": "NFL Week 3 picks: Upset and score predictions, matchup breakdowns for every game",
+          "matched_context": "nfl week 3 picks upset and score predictions matchup breakdowns for every game will the lamar jackson x27 s ravens or dak prescott x27 s cowboys prevail in brazil who takes a compelling sunday night clash between the rams and broncos which 0 2 teams could get in the win column check out the week 3 game picks",
+          "description": "Will the Lamar Jackson&#x27;s Ravens or Dak Prescott&#x27;s Cowboys prevail in Brazil? Who takes a compelling Sunday night clash between the Rams and Broncos? Which 0-2 teams could get in the win column? Check out the Week 3 game picks!",
+          "published": "2026-09-24T17:29:56.197Z",
+          "url": "https://www.nfl.com/news/nfl-picks-week-3-2026-nfl-season",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "BAL",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.54,
@@ -1888,21 +1899,29 @@
           "sustainability": 9
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "nfl week 3 picks upset and score predictions matchup breakdowns for every game will the lamar jackson x27 s ravens or dak prescott x27 s cowboys prevail in brazil who takes a compelling sunday night clash between the rams and broncos which 0 2 teams could get in the win column check out the week 3 game picks",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.54,
       "proposed_true_value_rank": 37,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Baltimore Ravens"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Drake Maye",
@@ -1986,25 +2005,10 @@
       "player": "Tee Higgins",
       "pos": "WR",
       "team": "Cincinnati Bengals",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Tee Higgins continues to put up WR1 numbers in fantasy",
-          "matched_context": "tee higgins continues to put up wr1 numbers in fantasy tee higgins continues to put up wr1 numbers in fantasy",
-          "description": "Tee Higgins continues to put up WR1 numbers in fantasy",
-          "published": "2026-09-28T01:19:39Z",
-          "url": "https://www.espn.com/video/clip/_/id/50048868/tee-higgins-continues-put-wr1-numbers-fantasy",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "CIN",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 8.607,
@@ -2020,22 +2024,21 @@
           "sustainability": 8.5
         }
       },
-      "changed_fact": "tee higgins continues to put up wr1 numbers in fantasy tee higgins continues to put up wr1 numbers in fantasy",
+      "changed_fact": null,
       "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.607,
       "proposed_true_value_rank": 42,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Cincinnati Bengals"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Luther Burden III",
@@ -2433,20 +2436,6 @@
           "context_lanes": null
         },
         {
-          "source": "ESPN_LEAGUE",
-          "headline": "Joe Burrow, Bengals can't 'close it out' against Steelers",
-          "matched_context": "joe burrow bengals can t close it out against steelers special teams gaffes and a burrow fumble late in the fourth sealed cincinnati s outcome",
-          "description": "Special teams gaffes and a Burrow fumble late in the fourth sealed Cincinnati's outcome.",
-          "published": "2026-09-28T10:00:02Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50048227/joe-burrow-cincinnati-bengals-cant-close-steelers",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "CIN",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "AFC North training camp 2026 preview: Top storylines for Bengals, Browns, Ravens, Steelers",
           "matched_context": "AFC North training camp 2026 preview: Top storylines for Bengals, Browns, Ravens, Steelers As we hurtle toward the 2026 NFL season, Nick Shook breaks down the top AFC North training camp storylines to monitor for the Baltimore Ravens, Cincinnati Bengals, Cleveland Browns and Pittsburgh Steelers. raded defensively and appears poised to chase a super bowl but we all know depth charts only matter so much the bengals defensive inadequacies have led to great frustration in the midst of a third straight playoff less season last december joe burrow openly wondered about his football future largely because he was exasperated by the frequent challenges and predictable disappointments if the d is fixed there s reason to believe these bengals can return to the postseason and embark on a ball future largely because he was exasperated by the frequent challenges and predictable disappointments if the d is fixed there s reason to believe these bengals can return to the postseason and embark on a deep run 2 burrow s health can joe burrow stay healthy for once while most of the blame for this team s recent struggles has been rightfully pinned on the defense burrow s lack of availability has also been a near annual problem last season a toe injury required surgery and knocke",
@@ -2543,10 +2532,39 @@
       "player": "Travis Etienne Jr.",
       "pos": "RB",
       "team": "New Orleans Saints",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_LEAGUE",
+          "headline": "Fantasy football buzz: Who steps up with Breece Hall, Travis Etienne Jr. out?",
+          "matched_context": "fantasy football buzz who steps up with breece hall travis etienne out which running backs will take on a bigger role for the new york jets and new orleans saints",
+          "description": "Which running backs will take on a bigger role for the New York Jets and New Orleans Saints?",
+          "published": "2026-09-28T21:20:13Z",
+          "url": "https://www.espn.com/fantasy/football/story/_/id/40699880/fantasy-football-injuries-position-battles-nfl-news-analysis",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "NO",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "ESPN_LEAGUE",
+          "headline": "Saints RB Travis Etienne Jr. to sit with hamstring injury",
+          "matched_context": "saints rb travis etienne to sit with hamstring injury saints running back travis etienne will miss time with a hamstring injury suffered in sunday s loss to the raiders new orleans coach kellen moore did not specify how long etienne will be out",
+          "description": "Saints running back Travis Etienne Jr. will miss time with a hamstring injury suffered in Sunday's loss to the Raiders. New Orleans coach Kellen Moore did not specify how long Etienne will be out.",
+          "published": "2026-09-28T20:01:42Z",
+          "url": "https://www.espn.com/nfl/story/_/id/50054057/saints-rb-travis-etienne-jr-sit-hamstring-injury",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "NO",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 8.5475,
@@ -2562,21 +2580,29 @@
           "sustainability": 8.3
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "fantasy football buzz who steps up with breece hall travis etienne out which running backs will take on a bigger role for the new york jets and new orleans saints",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.5475,
       "proposed_true_value_rank": 52,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "New Orleans Saints"
       },
       "market_impact": {
         "current_label": "REACH",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "David Montgomery",
@@ -2683,25 +2709,10 @@
       "player": "D'Andre Swift",
       "pos": "RB",
       "team": "Chicago Bears",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_NOW",
-          "headline": "How to bet Eagles-Bears on MNF: Analysis, tips and favorite plays",
-          "matched_context": "find any sort of flow or convert on several red zone opportunities p p the lone offensive bright spot came via the team s rbs a data player guid 53a49a95 4f5b fb94 9672 ef5787f431ee href https www espn com nfl player id 4259545 dandre swift d andre swift a led the squad with 99 scrimmage yards while a data player guid b00b9764 fa7b 326a ba35 9676bab28b09 href https www espn com nfl player id 4608686 kyle monangai kyle monangai a averaged 4 7 yards on 10 carries without a data player guid dd15176c",
-          "description": "Odds and analysis to help you bet Eagles-Bears on \"Monday Night Football.\"",
-          "published": "2026-09-28T12:53:18Z",
-          "url": "https://www.espn.com/espn/betting/story/_/id/50005767/nfl-week-3-odds-betting-tips-picks-philadelphia-eagles-chicago-bears",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "CHI",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "MONANGAI KNEE INJURY — EARLY ROLE UP",
         "score": 8.435,
@@ -2717,29 +2728,21 @@
           "sustainability": 8.4
         }
       },
-      "changed_fact": "find any sort of flow or convert on several red zone opportunities p p the lone offensive bright spot came via the team s rbs a data player guid 53a49a95 4f5b fb94 9672 ef5787f431ee href https www espn com nfl player id 4259545 dandre swift d andre swift a led the squad with 99 scrimmage yards while a data player guid b00b9764 fa7b 326a ba35 9676bab28b09 href https www espn com nfl player id 4608686 kyle monangai kyle monangai a averaged 4 7 yards on 10 carries without a data player guid dd15176c",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.435,
       "proposed_true_value_rank": 59,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Chicago Bears"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Jeremiyah Love",
@@ -2749,34 +2752,6 @@
       "meaningful_evidence": true,
       "team_context_only": false,
       "evidence_summary": [
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Cardinals rookie Jeremiyah Love earns bigger role in offense",
-          "matched_context": "cardinals rookie jeremiyah love earns bigger role in offense the running back out of notre dame rushed 21 times for 90 yards and caught five passes including a td",
-          "description": "The running back out of Notre Dame rushed 21 times for 90 yards and caught five passes, including a TD.",
-          "published": "2026-09-28T10:43:33Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50049013/cardinals-rookie-jeremiyah-love-earns-bigger-role-offense",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "ARI",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Why Jeremiyah Love's favorable schedule can help solidify his RB1 status",
-          "matched_context": "why jeremiyah love s favorable schedule can help solidify his rb1 status why jeremiyah love s favorable schedule can help solidify his rb1 status",
-          "description": "Why Jeremiyah Love's favorable schedule can help solidify his RB1 status",
-          "published": "2026-09-28T01:24:03Z",
-          "url": "https://www.espn.com/video/clip/_/id/50048977/why-jeremiyah-love-favorable-schedule-help-solidify-rb1-status",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "ARI",
-          "source_team": null,
-          "context_lanes": null
-        },
         {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFC West training camp 2026 preview: Top storylines for 49ers, Cardinals, Rams, Seahawks",
@@ -2807,7 +2782,7 @@
           "sustainability": 8
         }
       },
-      "changed_fact": "cardinals rookie jeremiyah love earns bigger role in offense the running back out of notre dame rushed 21 times for 90 yards and caught five passes including a td",
+      "changed_fact": "NFC West training camp 2026 preview: Top storylines for 49ers, Cardinals, Rams, Seahawks As we hurtle toward the 2026 NFL season, Grant Gordon breaks down the top NFC West training camp storylines to monitor for the Arizona Cardinals, Los Angeles Rams, San Francisco 49ers and Seattle Seahawks. eer best 3 366 yards in 12 starts during a tumultuous 3 14 season in 2025 if the journeyman settles harmoniously into lafleur s offense perhaps improvement or at least a little excitement lies ahead for the cards 2 a whole lotta love right jeremiyah love could be the most anticipated 2026 rookie in the league at least on the offensive side all due respect to no 1 overall pick fernando mendoza but love s talent and eye popping ability is off the charts so much so that the cardinals used the h charbonnet acl most likely absent to begin the season all eyes will be on first round draft pick jadarian price the notre dame product is a smooth runner who averaged 6 yards per carry in his career with the fighting irish however he was jeremiyah love s understudy and had 15 plus touches just once in his 41 games at nd the seahawks were adamant in balancing walker and charbonnet last season before the latter was injured asking price to take on a bell cow workload would seem unlikely cam",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -3243,6 +3218,20 @@
       "evidence_summary": [
         {
           "source": "NFL.com",
+          "headline": "Commanders QB Jayden Daniels expected to travel, practice in London",
+          "matched_context": "commanders qb jayden daniels expected to travel practice in london",
+          "description": null,
+          "published": "2026-09-28T19:31:06Z",
+          "url": "https://www.nfl.com/news/commanders-qb-jayden-daniels-expected-to-travel-practice-in-london",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "WAS",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "NFL.com",
           "headline": "Jayden Daniels (elbow) won&#x27;t be placed on IR; Commanders GM says surgery &#x27;not on the table&#x27;",
           "matched_context": "jayden daniels elbow won x27 t be placed on ir commanders gm says surgery x27 not on the table x27 washington commanders general manager adam peters took an optimistic stance on jayden daniels recovery from his latest elbow injury",
           "description": "Washington Commanders general manager Adam Peters took an optimistic stance on Jayden Daniels’ recovery from his latest elbow injury.",
@@ -3271,12 +3260,13 @@
           "sustainability": 8.6
         }
       },
-      "changed_fact": "jayden daniels elbow won x27 t be placed on ir commanders gm says surgery x27 not on the table x27 washington commanders general manager adam peters took an optimistic stance on jayden daniels recovery from his latest elbow injury",
+      "changed_fact": "commanders qb jayden daniels expected to travel practice in london",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
         "ceiling",
+        "role_volume",
         "offensive_environment"
       ],
       "component_delta": null,
@@ -4109,10 +4099,25 @@
       "player": "Dak Prescott",
       "pos": "QB",
       "team": "Dallas Cowboys",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "NFL.com",
+          "headline": "NFL Week 3 picks: Upset and score predictions, matchup breakdowns for every game",
+          "matched_context": "nfl week 3 picks upset and score predictions matchup breakdowns for every game will the lamar jackson x27 s ravens or dak prescott x27 s cowboys prevail in brazil who takes a compelling sunday night clash between the rams and broncos which 0 2 teams could get in the win column check out the week 3 game picks",
+          "description": "Will the Lamar Jackson&#x27;s Ravens or Dak Prescott&#x27;s Cowboys prevail in Brazil? Who takes a compelling Sunday night clash between the Rams and Broncos? Which 0-2 teams could get in the win column? Check out the Week 3 game picks!",
+          "published": "2026-09-24T17:29:56.197Z",
+          "url": "https://www.nfl.com/news/nfl-picks-week-3-2026-nfl-season",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "DAL",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.012,
@@ -4128,21 +4133,29 @@
           "sustainability": 9.2
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "nfl week 3 picks upset and score predictions matchup breakdowns for every game will the lamar jackson x27 s ravens or dak prescott x27 s cowboys prevail in brazil who takes a compelling sunday night clash between the rams and broncos which 0 2 teams could get in the win column check out the week 3 game picks",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.012,
       "proposed_true_value_rank": 69,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Dallas Cowboys"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Trevor Lawrence",
@@ -5127,25 +5140,10 @@
       "player": "Romeo Doubs",
       "pos": "WR",
       "team": "New England Patriots",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "Drake Maye is falling apart and it&#x27;s not clear where the Patriots go from here",
-          "matched_context": "the patriots don 39 t have any answers mack hollins who picked up a taunting penalty while his team trailed 28 3 is playing like the team 39 s best wide receiver which is great for hollins but not a great sign for the team romeo doubs isn 39 t playing like a 17 million player kyle williams was blanketed in coverage on what ended up as maye 39 s second interception and the offense remains totally unable to run the ball so if it 39 s going to get better it",
-          "description": null,
-          "published": "2026-09-27T23:31:08Z",
-          "url": "https://www.nfl.com/news/drake-maye-is-falling-apart-and-it-s-not-clear-where-the-patriots-go-from-here",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "NE",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PROJECTION / ROLE WATCH",
         "score": 7.52865,
@@ -5161,29 +5159,21 @@
           "sustainability": 8.2
         }
       },
-      "changed_fact": "the patriots don 39 t have any answers mack hollins who picked up a taunting penalty while his team trailed 28 3 is playing like the team 39 s best wide receiver which is great for hollins but not a great sign for the team romeo doubs isn 39 t playing like a 17 million player kyle williams was blanketed in coverage on what ended up as maye 39 s second interception and the offense remains totally unable to run the ball so if it 39 s going to get better it",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.52865,
       "proposed_true_value_rank": 106,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "New England Patriots"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Blake Corum",
@@ -5342,10 +5332,25 @@
       "player": "Chig Okonkwo",
       "pos": "TE",
       "team": "Washington Commanders",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "NFL.com",
+          "headline": "Commanders QB Jayden Daniels expected to travel, practice in London",
+          "matched_context": "see him go through the workouts the commanders leave for london on tuesday evening and are scheduled to practice wednesday through friday before hosting the colts at tottenham hotspur stadium on sunday at 9 30 a m et linebacker frankie luvu groin and tight end chig okonkwo hamstring will also return to practice in some form this week after missing the last two games because of injury the status of right guard sam cosmi concussion and safety nick cross internal injury however will be decided later after each player undergoes further testing",
+          "description": null,
+          "published": "2026-09-28T19:31:06Z",
+          "url": "https://www.nfl.com/news/commanders-qb-jayden-daniels-expected-to-travel-practice-in-london",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "WAS",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "TARGET-SHARE WATCH",
         "score": 7.711,
@@ -5361,21 +5366,29 @@
           "sustainability": 8.3
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "see him go through the workouts the commanders leave for london on tuesday evening and are scheduled to practice wednesday through friday before hosting the colts at tottenham hotspur stadium on sunday at 9 30 a m et linebacker frankie luvu groin and tight end chig okonkwo hamstring will also return to practice in some form this week after missing the last two games because of injury the status of right guard sam cosmi concussion and safety nick cross internal injury however will be decided later after each player undergoes further testing",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.711,
       "proposed_true_value_rank": 134,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Washington Commanders"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Michael Pittman Jr.",
@@ -5527,8 +5540,22 @@
       "evidence_summary": [
         {
           "source": "NFL.com",
-          "headline": "NFL Network: Giants&#x27; Brian Burns believed to have suffered torn ACL in win over Titans",
-          "matched_context": "three games burns generated five qb pressures per next gen stats including four on sunday the loss of burns is a big blow to the 2 1 giants who were already trying to stay on track in john harbaugh s first season without starting quarterback jaxson dart who was lost in week 2 with burns out the giants will lean on abdul carter and kayvon thibodeaux it will be interesting to see if big blue tweaks rookie linebacker arvell reese s role as well to help fill the void in two weeks",
+          "headline": "Giants trade for Vikings QB J.J. McCarthy following Jaxson Dart injury",
+          "matched_context": "giants trade for vikings qb j j mccarthy following jaxson dart injury the giants have acquired quarterback j j mccarthy from the vikings in a trade minnesota announced monday",
+          "description": "The Giants have acquired quarterback J.J. McCarthy from the Vikings in a trade, Minnesota announced Monday.",
+          "published": "2026-09-28T16:19:14.064Z",
+          "url": "https://www.nfl.com/news/jj-mccarthy-giants-vikings-trade",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "NYG",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "NFL.com",
+          "headline": "Giants&#x27; Brian Burns suffered torn ACL in win over Titans, will miss remainder of season",
+          "matched_context": "in three games burns generated five qb pressures per next gen stats including four on sunday the loss of burns is a big blow to the 2 1 giants who were already trying to stay on track in harbaugh s first season without starting quarterback jaxson dart who was lost in week 2 to a knee injury with burns out the giants will lean on abdul carter and kayvon thibodeaux it will be interesting to see if big blue tweaks rookie linebacker arvell reese s role as well to help fill the",
           "description": "The Giants have suffered another major injury early in the 2026 season. Star pass rusher Brian Burns is believed to have suffered a torn ACL in Sunday’s win over Tennessee.",
           "published": "2026-09-28T12:21:17.034Z",
           "url": "https://www.nfl.com/news/giants-brian-burns-torn-acl-win-titans",
@@ -5568,6 +5595,20 @@
           "context_lanes": null
         },
         {
+          "source": "ESPN_LEAGUE",
+          "headline": "J.J. McCarthy traded to Giants: Will he succeed in New York?",
+          "matched_context": "j j mccarthy traded to giants will he succeed in new york with jaxson dart out for the season the giants dealt a fifth round pick to minnesota for mccarthy but does this move the needle for new york can it work",
+          "description": "With Jaxson Dart out for the season, the Giants dealt a fifth-round pick to Minnesota for McCarthy. But does this move the needle for New York? Can it work?",
+          "published": "2026-09-28T21:05:41Z",
+          "url": "https://www.espn.com/nfl/story/_/id/50053035/jj-mccarthy-trade-giants-vikings-quarterback-deadline-barnwell",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "NYG",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
           "source": "ESPN_TRANSACTIONS",
           "headline": "Transaction: Placed QB Jaxson Dart on injured reserve.",
           "matched_context": "transaction placed qb jaxson dart on injured reserve placed qb jaxson dart on injured reserve",
@@ -5597,7 +5638,7 @@
           "sustainability": 8.1
         }
       },
-      "changed_fact": "three games burns generated five qb pressures per next gen stats including four on sunday the loss of burns is a big blow to the 2 1 giants who were already trying to stay on track in john harbaugh s first season without starting quarterback jaxson dart who was lost in week 2 with burns out the giants will lean on abdul carter and kayvon thibodeaux it will be interesting to see if big blue tweaks rookie linebacker arvell reese s role as well to help fill the void in two weeks",
+      "changed_fact": "giants trade for vikings qb j j mccarthy following jaxson dart injury the giants have acquired quarterback j j mccarthy from the vikings in a trade minnesota announced monday",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -5877,25 +5918,10 @@
       "player": "Mike Washington Jr.",
       "pos": "RB",
       "team": "Las Vegas Raiders",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "Back from injury, Brock Bowers retakes his place at heart of Raiders offense",
-          "matched_context": "and so i think games with brock will be important for us to continue to build that rapport 34 after the saints put up two touchdowns early in the third quarter another long bowers conversion helped the raiders rebuild momentum a touchdown run by rookie mike washington followed two plays later having taken a 28 27 lead on a touchdown from wide receiver cody white early in the fourth quarter bowers delivered valuable insurance he got open on another out breaking route on the goal line crossing the plane through a tackle",
-          "description": null,
-          "published": "2026-09-28T12:16:07Z",
-          "url": "https://www.nfl.com/news/back-from-injury-brock-bowers-retakes-his-place-at-heart-of-raiders-offense",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "LV",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "JEANTY ANKLE-SPRAIN / SHORT-TERM ROLE-EXPANSION WATCH",
         "score": 8.24425,
@@ -5911,29 +5937,21 @@
           "sustainability": 7.9
         }
       },
-      "changed_fact": "and so i think games with brock will be important for us to continue to build that rapport 34 after the saints put up two touchdowns early in the third quarter another long bowers conversion helped the raiders rebuild momentum a touchdown run by rookie mike washington followed two plays later having taken a 28 27 lead on a touchdown from wide receiver cody white early in the fourth quarter bowers delivered valuable insurance he got open on another out breaking route on the goal line crossing the plane through a tackle",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.24425,
       "proposed_true_value_rank": 118,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Las Vegas Raiders"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Aaron Jones Sr.",
@@ -6474,25 +6492,10 @@
       "player": "Jared Goff",
       "pos": "QB",
       "team": "Detroit Lions",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Has Jared Goff proven to be a viable starting QB in fantasy?",
-          "matched_context": "has jared goff proven to be a viable starting qb in fantasy has jared goff proven to be a viable starting qb in fantasy",
-          "description": "Has Jared Goff proven to be a viable starting QB in fantasy?",
-          "published": "2026-09-28T01:11:38Z",
-          "url": "https://www.espn.com/video/clip/_/id/50048804/has-jared-goff-proven-viable-starting-qb-fantasy",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "DET",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.058,
@@ -6508,26 +6511,21 @@
           "sustainability": 9.3
         }
       },
-      "changed_fact": "has jared goff proven to be a viable starting qb in fantasy has jared goff proven to be a viable starting qb in fantasy",
-      "implicated_components": [
-        "offensive_environment",
-        "production",
-        "ceiling"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.058,
       "proposed_true_value_rank": 123,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Detroit Lions"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Brian Robinson Jr.",
@@ -6867,25 +6865,10 @@
       "player": "Michael Mayer",
       "pos": "TE",
       "team": "Las Vegas Raiders",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "Back from injury, Brock Bowers retakes his place at heart of Raiders offense",
-          "matched_context": "his play caller showed during training camp despite his ailing knee the coach schemed up his star perfectly as bowers had an explosive play or touchdown in nearly every practice those opportunities were spread out during the raiders 39 2 0 start with tight end michael mayer and the team 39 s stable of receivers earning nearly equal opportunities across both wins but with bowers back there was no question of who would be the focal point cousins went to bowers on the team 39 s first offensive play connecting on an",
-          "description": null,
-          "published": "2026-09-28T12:16:07Z",
-          "url": "https://www.nfl.com/news/back-from-injury-brock-bowers-retakes-his-place-at-heart-of-raiders-offense",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "LV",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "TWO-TE USAGE WATCH",
         "score": 6.355,
@@ -6901,29 +6884,21 @@
           "sustainability": 7.6
         }
       },
-      "changed_fact": "his play caller showed during training camp despite his ailing knee the coach schemed up his star perfectly as bowers had an explosive play or touchdown in nearly every practice those opportunities were spread out during the raiders 39 2 0 start with tight end michael mayer and the team 39 s stable of receivers earning nearly equal opportunities across both wins but with bowers back there was no question of who would be the focal point cousins went to bowers on the team 39 s first offensive play connecting on an",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 6.355,
       "proposed_true_value_rank": 153,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Las Vegas Raiders"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "MarShawn Lloyd",
@@ -7141,20 +7116,6 @@
           "context_lanes": null
         },
         {
-          "source": "NFL.com",
-          "headline": "NFL news roundup: Vikings&#x27; Kyler Murray in concussion protocol; Eagles placing Pro Bowl guard Landon Dickerson on injured reserve",
-          "matched_context": "nfl news roundup vikings x27 kyler murray in concussion protocol eagles placing pro bowl guard landon dickerson on injured reserve nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
-          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
-          "published": "2026-09-14T15:33:50.545Z",
-          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-monday-sept-14",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "MIN",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "NFC West training camp 2026 preview: Top storylines for 49ers, Cardinals, Rams, Seahawks",
           "matched_context": "NFC West training camp 2026 preview: Top storylines for 49ers, Cardinals, Rams, Seahawks As we hurtle toward the 2026 NFL season, Grant Gordon breaks down the top NFC West training camp storylines to monitor for the Arizona Cardinals, Los Angeles Rams, San Francisco 49ers and Seattle Seahawks. s seattle seahawks three key storylines 1 sorting out brissett s contract drama installing rookie head coach mike lafleur s offense certainly hasn t gone off without a hitch jacoby brissett who took the quarterbacking reins from an injured kyler murray last season and never gave them back is the presumed starter and wants to get paid like one having skipped voluntary workouts brissett reported for mandatory minicamp to avoid fines but just how much actual work he got in isn t all that ap rrison 103 receptions 1 493 yards and 12 touchdowns in 29 games has likely been the most disappointing seen as a can t miss selection who s floundered or at the least failed to live up to his pedigree as a top five pick after seven seasons kyler murray is gone after three years jonathan gannon is gone there s a new coach in lafleur and whether it s brissett more than likely gardner minshew or rookie carson beck there will be a new week 1 starting quarterback love looks every bit the can",
@@ -7339,11 +7300,39 @@
       "evidence_summary": [
         {
           "source": "NFL.com",
+          "headline": "Buccaneers QB Baker Mayfield out at least 3 weeks with thumb injury; rookie Jalon Daniels to start",
+          "matched_context": "buccaneers qb baker mayfield out at least 3 weeks with thumb injury rookie jalon daniels to start jalon daniels will start at quarterback for the buccaneers with baker mayfield sidelined by his thumb injury",
+          "description": "Jalon Daniels will start at quarterback for the Buccaneers with Baker Mayfield sidelined by his thumb injury.",
+          "published": "2026-09-28T17:14:34.49Z",
+          "url": "https://www.nfl.com/news/buccaneers-qb-baker-mayfield-thumb-out-at-least-three-weeks-jalon-daniels",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "TB",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "NFL.com",
           "headline": "NFL Week 3 bold predictions: Raiders upset Saints to improve to 3-0! Baker Mayfield bounces back",
           "matched_context": "nfl week 3 bold predictions raiders upset saints to improve to 3 0 baker mayfield bounces back will the raiders accomplish a feat that has eluded them since 2021 who wins a qb duel between former no 1 overall picks out of oklahoma baker mayfield or kyler murray our analysts provide bold predictions for week 3 of the 2026 nfl season",
           "description": "Will the Raiders accomplish a feat that has eluded them since 2021? Who wins a QB duel between former No. 1 overall picks out of Oklahoma: Baker Mayfield or Kyler Murray? Our analysts provide bold predictions for Week 3 of the 2026 NFL season.",
           "published": "2026-09-25T15:52:57.5Z",
           "url": "https://www.nfl.com/news/nfl-week-3-bold-predictions-raiders-upset-saints-to-improve-to-3-0-baker-mayfield-bounces-back",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "TB",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "ESPN_LEAGUE",
+          "headline": "Buccaneers' Mayfield (thumb) out at least three weeks, Bowles says",
+          "matched_context": "buccaneers mayfield thumb out at least three weeks bowles says buccaneers quarterback baker mayfield is expected to miss at least three weeks with the dislocated thumb on his throwing hand he suffered sunday coach todd bowles announced monday",
+          "description": "Buccaneers quarterback Baker Mayfield is expected to miss at least three weeks with the dislocated thumb on his throwing hand he suffered Sunday, coach Todd Bowles announced Monday.",
+          "published": "2026-09-28T22:02:15Z",
+          "url": "https://www.espn.com/nfl/story/_/id/50052996/buccaneers-mayfield-thumb-least-three-weeks-bowles-says",
           "match_evidence": "FULL_NAME_HEADER",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
@@ -7367,7 +7356,7 @@
           "sustainability": 8.5
         }
       },
-      "changed_fact": "nfl week 3 bold predictions raiders upset saints to improve to 3 0 baker mayfield bounces back will the raiders accomplish a feat that has eluded them since 2021 who wins a qb duel between former no 1 overall picks out of oklahoma baker mayfield or kyler murray our analysts provide bold predictions for week 3 of the 2026 nfl season",
+      "changed_fact": "buccaneers qb baker mayfield out at least 3 weeks with thumb injury rookie jalon daniels to start jalon daniels will start at quarterback for the buccaneers with baker mayfield sidelined by his thumb injury",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -7550,25 +7539,10 @@
       "player": "Sam Darnold",
       "pos": "QB",
       "team": "Seattle Seahawks",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Sam Darnold laments 'bad decision' in return for Seahawks",
-          "matched_context": "sam darnold laments bad decision in return for seahawks sam darnold s return from the glute injury that sidelined him for most of the seahawks first two games was shaping up to be memorable until a bad decision late proved costly against the commanders",
-          "description": "Sam Darnold's return from the glute injury that sidelined him for most of the Seahawks' first two games was shaping up to be memorable until a \"bad decision\" late proved costly against the Commanders.",
-          "published": "2026-09-28T01:36:08Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50048232/sam-darnold-laments-bad-decision-return-seahawks",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "SEA",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 8.448,
@@ -7584,27 +7558,21 @@
           "sustainability": 8.5
         }
       },
-      "changed_fact": "sam darnold laments bad decision in return for seahawks sam darnold s return from the glute injury that sidelined him for most of the seahawks first two games was shaping up to be memorable until a bad decision late proved costly against the commanders",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.448,
       "proposed_true_value_rank": 152,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Seattle Seahawks"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "C.J. Stroud",
