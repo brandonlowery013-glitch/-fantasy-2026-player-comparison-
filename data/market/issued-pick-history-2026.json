@@ -256207,6 +256207,2094 @@
       "revision": 6,
       "previous_record_id": "a1dd740d655d7c093522092a3fa2fe01bcfa9ebc92f31b497897eb339aa094d8",
       "record_id": "b210c01ae8eda336bdef39292994e06554370ff9d0421817d275f30e568330aa"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|spread",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "spread",
+      "player": null,
+      "decision": "PICK",
+      "selection": "CHI +3.5",
+      "line": 3.5,
+      "odds": -115,
+      "win_probability": 0.694794,
+      "conditional_win_probability": 0.694794,
+      "push_probability": 0,
+      "book": "fanatics",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-3a946b32d40ae4be09eb",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:11.943Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "f29e83043e29be616d31e6d199e527f285fc47e78be97c7341a9feab8fb4bb8a",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 24.697,
+            "away_score_mean": 21.573,
+            "model_home_spread": -3.124,
+            "model_total": 46.27,
+            "home_win_probability": 0.576233,
+            "away_win_probability": 0.392975,
+            "tie_probability": 0.030792
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 8,
+              "away": 8
+            },
+            "margin_features": [
+              1.8941822612886767,
+              0
+            ],
+            "total_features": [
+              46.941937232766314,
+              0
+            ],
+            "teams": {
+              "CHI": {
+                "prior_games": 17,
+                "current_games": 2,
+                "prior_weight": 0.7071067811865475,
+                "current_weight": 0.29289321881345254,
+                "prior_points_for": 25.941176470588236,
+                "prior_points_allowed": 24.41176470588235,
+                "current_points_for": 31,
+                "current_points_allowed": 23,
+                "blended_offense": 27.422871577526877,
+                "blended_defense_allowed": 23.998268396969245,
+                "completed_game_ids": [
+                  "401872661",
+                  "401872937"
+                ]
+              },
+              "PHI": {
+                "prior_games": 17,
+                "current_games": 2,
+                "prior_weight": 0.7071067811865475,
+                "current_weight": 0.29289321881345254,
+                "prior_points_for": 22.294117647058822,
+                "prior_points_allowed": 19.11764705882353,
+                "current_points_for": 24,
+                "current_points_allowed": 21,
+                "blended_offense": 22.79375902032883,
+                "blended_defense_allowed": 19.668975470707675,
+                "completed_game_ids": [
+                  "401872929",
+                  "401872939"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": 1.8941822612886767,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": 1.06299185578706
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": 3.124417821772445
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 46.941937232766314,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": 1.115960058633439
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 46.269650667803674
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-3a946b32d40ae4be09eb",
+          "quote": {
+            "home_spread": 3.5,
+            "home_spread_price": -115,
+            "away_spread_price": -105,
+            "total": 42.5,
+            "over_price": -110,
+            "under_price": -110,
+            "home_moneyline": 165,
+            "away_moneyline": -200
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.047079,
+              "raw_probability_sum": 1.047079,
+              "side_a_probability": 0.510834,
+              "side_b_probability": 0.489166,
+              "side_a_fair_american": -104.43,
+              "side_b_fair_american": 104.43
+            },
+            "side_a": {
+              "win_probability": 0.694794,
+              "push_probability": 0,
+              "loss_probability": 0.305206,
+              "conditional_win_probability": 0.694794,
+              "probability_edge": 0.183959,
+              "expected_value": 0.298962,
+              "offered_odds": -115
+            },
+            "side_b": {
+              "win_probability": 0.305206,
+              "push_probability": 0,
+              "loss_probability": 0.694794,
+              "conditional_win_probability": 0.305206,
+              "probability_edge": -0.183959,
+              "expected_value": -0.404121,
+              "offered_odds": -105
+            },
+            "thresholds": {
+              "home_spread": 3.5,
+              "home_cover_margin_threshold": -3.5
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "CHI +3.5",
+              "confidence": "HIGH",
+              "probability_edge": 0.183959,
+              "expected_value": 0.298962,
+              "model_conditional_win_probability": 0.694794
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "CHI +3.5",
+            "confidence": "HIGH",
+            "probability_edge": 0.183959,
+            "expected_value": 0.298962,
+            "model_conditional_win_probability": 0.694794
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "b5cfd028ca53b6b7ef6c79e2fcd68fb969f972ac2d4f51546a7d0533629064a6",
+      "revision": 15,
+      "previous_record_id": "e0cb8a439f46d60bd1863487e694fd1bf7e7324d74ad9fbbac7f3a15cbd2d7b2",
+      "record_id": "3433f2b9d7a8f6046149f03f4108e38e2ec78cac0f31c9163aca98f286efb489"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|total",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "total",
+      "player": null,
+      "decision": "PICK",
+      "selection": "OVER 42.5",
+      "line": 42.5,
+      "odds": -110,
+      "win_probability": 0.617218,
+      "conditional_win_probability": 0.617218,
+      "push_probability": 0,
+      "book": "fanatics",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-3a946b32d40ae4be09eb",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:11.943Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "f29e83043e29be616d31e6d199e527f285fc47e78be97c7341a9feab8fb4bb8a",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 24.697,
+            "away_score_mean": 21.573,
+            "model_home_spread": -3.124,
+            "model_total": 46.27,
+            "home_win_probability": 0.576233,
+            "away_win_probability": 0.392975,
+            "tie_probability": 0.030792
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 8,
+              "away": 8
+            },
+            "margin_features": [
+              1.8941822612886767,
+              0
+            ],
+            "total_features": [
+              46.941937232766314,
+              0
+            ],
+            "teams": {
+              "CHI": {
+                "prior_games": 17,
+                "current_games": 2,
+                "prior_weight": 0.7071067811865475,
+                "current_weight": 0.29289321881345254,
+                "prior_points_for": 25.941176470588236,
+                "prior_points_allowed": 24.41176470588235,
+                "current_points_for": 31,
+                "current_points_allowed": 23,
+                "blended_offense": 27.422871577526877,
+                "blended_defense_allowed": 23.998268396969245,
+                "completed_game_ids": [
+                  "401872661",
+                  "401872937"
+                ]
+              },
+              "PHI": {
+                "prior_games": 17,
+                "current_games": 2,
+                "prior_weight": 0.7071067811865475,
+                "current_weight": 0.29289321881345254,
+                "prior_points_for": 22.294117647058822,
+                "prior_points_allowed": 19.11764705882353,
+                "current_points_for": 24,
+                "current_points_allowed": 21,
+                "blended_offense": 22.79375902032883,
+                "blended_defense_allowed": 19.668975470707675,
+                "completed_game_ids": [
+                  "401872929",
+                  "401872939"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": 1.8941822612886767,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": 1.06299185578706
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": 3.124417821772445
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 46.941937232766314,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": 1.115960058633439
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 46.269650667803674
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-3a946b32d40ae4be09eb",
+          "quote": {
+            "home_spread": 3.5,
+            "home_spread_price": -115,
+            "away_spread_price": -105,
+            "total": 42.5,
+            "over_price": -110,
+            "under_price": -110,
+            "home_moneyline": 165,
+            "away_moneyline": -200
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.047619,
+              "raw_probability_sum": 1.047619,
+              "side_a_probability": 0.5,
+              "side_b_probability": 0.5,
+              "side_a_fair_american": 100,
+              "side_b_fair_american": 100
+            },
+            "side_a": {
+              "win_probability": 0.617218,
+              "push_probability": 0,
+              "loss_probability": 0.382782,
+              "conditional_win_probability": 0.617218,
+              "probability_edge": 0.117218,
+              "expected_value": 0.178325,
+              "offered_odds": -110
+            },
+            "side_b": {
+              "win_probability": 0.382782,
+              "push_probability": 0,
+              "loss_probability": 0.617218,
+              "conditional_win_probability": 0.382782,
+              "probability_edge": -0.117218,
+              "expected_value": -0.269234,
+              "offered_odds": -110
+            },
+            "thresholds": {
+              "total": 42.5
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "OVER 42.5",
+              "confidence": "HIGH",
+              "probability_edge": 0.117218,
+              "expected_value": 0.178325,
+              "model_conditional_win_probability": 0.617218
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "OVER 42.5",
+            "confidence": "HIGH",
+            "probability_edge": 0.117218,
+            "expected_value": 0.178325,
+            "model_conditional_win_probability": 0.617218
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "9c51a0646ec8cca980ec3e5ea0023218f46aef2d52ad075bae6887229b5d4dc0",
+      "revision": 17,
+      "previous_record_id": "1c69725ccfb8fd7614255226c81ce85ad554439341cbe7a88a6b6d613a363a0c",
+      "record_id": "b7b7241a32e1b34df2b699d433d079b89aeb88f05c70741345b4d147a4720cc5"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|moneyline",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "moneyline",
+      "player": null,
+      "decision": "PICK",
+      "selection": "CHI ML",
+      "line": null,
+      "odds": 165,
+      "win_probability": 0.576233,
+      "conditional_win_probability": 0.59454,
+      "push_probability": 0.030792,
+      "book": "fanatics",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-3a946b32d40ae4be09eb",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:11.943Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "f29e83043e29be616d31e6d199e527f285fc47e78be97c7341a9feab8fb4bb8a",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 24.697,
+            "away_score_mean": 21.573,
+            "model_home_spread": -3.124,
+            "model_total": 46.27,
+            "home_win_probability": 0.576233,
+            "away_win_probability": 0.392975,
+            "tie_probability": 0.030792
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 8,
+              "away": 8
+            },
+            "margin_features": [
+              1.8941822612886767,
+              0
+            ],
+            "total_features": [
+              46.941937232766314,
+              0
+            ],
+            "teams": {
+              "CHI": {
+                "prior_games": 17,
+                "current_games": 2,
+                "prior_weight": 0.7071067811865475,
+                "current_weight": 0.29289321881345254,
+                "prior_points_for": 25.941176470588236,
+                "prior_points_allowed": 24.41176470588235,
+                "current_points_for": 31,
+                "current_points_allowed": 23,
+                "blended_offense": 27.422871577526877,
+                "blended_defense_allowed": 23.998268396969245,
+                "completed_game_ids": [
+                  "401872661",
+                  "401872937"
+                ]
+              },
+              "PHI": {
+                "prior_games": 17,
+                "current_games": 2,
+                "prior_weight": 0.7071067811865475,
+                "current_weight": 0.29289321881345254,
+                "prior_points_for": 22.294117647058822,
+                "prior_points_allowed": 19.11764705882353,
+                "current_points_for": 24,
+                "current_points_allowed": 21,
+                "blended_offense": 22.79375902032883,
+                "blended_defense_allowed": 19.668975470707675,
+                "completed_game_ids": [
+                  "401872929",
+                  "401872939"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": 1.8941822612886767,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": 1.06299185578706
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": 3.124417821772445
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 46.941937232766314,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": 1.115960058633439
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 46.269650667803674
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-3a946b32d40ae4be09eb",
+          "quote": {
+            "home_spread": 3.5,
+            "home_spread_price": -115,
+            "away_spread_price": -105,
+            "total": 42.5,
+            "over_price": -110,
+            "under_price": -110,
+            "home_moneyline": 165,
+            "away_moneyline": -200
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.044025,
+              "raw_probability_sum": 1.044025,
+              "side_a_probability": 0.361446,
+              "side_b_probability": 0.638554,
+              "side_a_fair_american": 176.67,
+              "side_b_fair_american": -176.67
+            },
+            "side_a": {
+              "win_probability": 0.576233,
+              "push_probability": 0.030792,
+              "loss_probability": 0.392975,
+              "conditional_win_probability": 0.59454,
+              "probability_edge": 0.233094,
+              "expected_value": 0.557809,
+              "offered_odds": 165
+            },
+            "side_b": {
+              "win_probability": 0.392975,
+              "push_probability": 0.030792,
+              "loss_probability": 0.576233,
+              "conditional_win_probability": 0.40546,
+              "probability_edge": -0.233094,
+              "expected_value": -0.379745,
+              "offered_odds": -200
+            },
+            "thresholds": null,
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "CHI ML",
+              "confidence": "HIGH",
+              "probability_edge": 0.233094,
+              "expected_value": 0.557809,
+              "model_conditional_win_probability": 0.59454
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "CHI ML",
+            "confidence": "HIGH",
+            "probability_edge": 0.233094,
+            "expected_value": 0.557809,
+            "model_conditional_win_probability": 0.59454
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "4a36588655895e468f7fb463dba6285b22d8adfc3906125f7d22fc13afd6e328",
+      "revision": 14,
+      "previous_record_id": "e6f747e46b30d69b61ab776a56945147f120e967b180e51a72f75a0a67cd3cf2",
+      "record_id": "5c44d2ca2294be2fa090f06a05c8a74e87241f839ab6cc269556307e625da6ed"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|Saquon Barkley|receiving_yards",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "receiving_yards",
+      "player": "Saquon Barkley",
+      "decision": "WAIT",
+      "selection": null,
+      "line": 12.5,
+      "odds": null,
+      "win_probability": null,
+      "conditional_win_probability": null,
+      "push_probability": null,
+      "book": "betmgm",
+      "model_version": null,
+      "model_version_status": "NOT_PUBLISHED",
+      "availability": {
+        "expected_active": null,
+        "availability_status": "UNKNOWN",
+        "eligible_for_pick": false
+      },
+      "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED",
+      "snapshot_id": "MKT-87a2234d795b37073cf9",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:12.854Z",
+      "source_artifact": "data/market/player-prop-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "9fe2add8af5a421737a51f2efb1da076e10d4298616a1dec78569fea75b42578",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": null,
+          "player": "Saquon Barkley",
+          "stat": "receiving_yards",
+          "evaluation": {
+            "snapshot_id": "MKT-87a2234d795b37073cf9",
+            "horizon": "WEEKLY",
+            "week": 3,
+            "player": "Saquon Barkley",
+            "position": "RB",
+            "stat": "receiving_yards",
+            "line": 12.5,
+            "book": "betmgm",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "snapshot_kind": "CURRENT",
+            "source": "The Odds API v4 event odds",
+            "raw_book_margin": 0.071521,
+            "model_pick": {
+              "status": "AVAILABLE",
+              "side": "OVER",
+              "win_probability": 0.5365727656028595,
+              "conditional_win_probability": 0.5365727656028595,
+              "push_probability": 0,
+              "conditional_on_availability": true
+            },
+            "model": {
+              "over_probability": 0.536573,
+              "under_probability": 0.463427,
+              "push_probability": 0
+            },
+            "sides": [
+              {
+                "side": "OVER",
+                "offered_odds": -111,
+                "model_win_probability": 0.536573,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.463427,
+                "model_conditional_win_probability": 0.536573,
+                "no_vig_market_probability": 0.490953,
+                "probability_edge": 0.04562,
+                "expected_value": 0.019972,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              },
+              {
+                "side": "UNDER",
+                "offered_odds": -120,
+                "model_win_probability": 0.463427,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.536573,
+                "model_conditional_win_probability": 0.463427,
+                "no_vig_market_probability": 0.509047,
+                "probability_edge": -0.04562,
+                "expected_value": -0.150383,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              }
+            ],
+            "recommendation": {
+              "decision": "WAIT",
+              "side": null,
+              "confidence": null,
+              "expected_value": 0.019972,
+              "probability_edge": 0.04562,
+              "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED"
+            },
+            "eligibility": {
+              "expected_active": null,
+              "availability_status": "UNKNOWN",
+              "eligible_for_pick": false
+            }
+          },
+          "quote_snapshot": {
+            "horizon": "WEEKLY",
+            "week": 3,
+            "game_id": "2026-W3-PHI-CHI",
+            "kickoff": "2026-09-29T00:15:00.000Z",
+            "player": "Saquon Barkley",
+            "position": "RB",
+            "stat": "receiving_yards",
+            "line": 12.5,
+            "over_price": -111,
+            "under_price": -120,
+            "book": "betmgm",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "source": "The Odds API v4 event odds",
+            "provider_event_id": "47dc7baa254659f3beb2ed2b38c207b6",
+            "provider_book_title": "BetMGM",
+            "snapshot_kind": "CURRENT",
+            "snapshot_id": "MKT-87a2234d795b37073cf9"
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "3897847ac02d3be00c1e1014051fb39ca096d2a42b051a5f83d9faa9bf8ac925",
+      "revision": 7,
+      "previous_record_id": "0eed29c06610d4e04c18eddc19614d476d186c777ed10ea70b65d9eaaec459ea",
+      "record_id": "c92136b2093da89bf09c37ec3b0c96368562e1602b06a8ed4593adff6b55eb1c"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|Saquon Barkley|receptions",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "receptions",
+      "player": "Saquon Barkley",
+      "decision": "WAIT",
+      "selection": null,
+      "line": 2.5,
+      "odds": null,
+      "win_probability": null,
+      "conditional_win_probability": null,
+      "push_probability": null,
+      "book": "bovada",
+      "model_version": null,
+      "model_version_status": "NOT_PUBLISHED",
+      "availability": {
+        "expected_active": null,
+        "availability_status": "UNKNOWN",
+        "eligible_for_pick": false
+      },
+      "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED",
+      "snapshot_id": "MKT-c05e57ae1deca0265307",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:12.854Z",
+      "source_artifact": "data/market/player-prop-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "9fe2add8af5a421737a51f2efb1da076e10d4298616a1dec78569fea75b42578",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": null,
+          "player": "Saquon Barkley",
+          "stat": "receptions",
+          "evaluation": {
+            "snapshot_id": "MKT-c05e57ae1deca0265307",
+            "horizon": "WEEKLY",
+            "week": 3,
+            "player": "Saquon Barkley",
+            "position": "RB",
+            "stat": "receptions",
+            "line": 2.5,
+            "book": "bovada",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "snapshot_kind": "CURRENT",
+            "source": "The Odds API v4 event odds",
+            "raw_book_margin": 0.066667,
+            "model_pick": {
+              "status": "AVAILABLE",
+              "side": "OVER",
+              "win_probability": 0.5020035864366208,
+              "conditional_win_probability": 0.5020035864366208,
+              "push_probability": 0,
+              "conditional_on_availability": true
+            },
+            "model": {
+              "over_probability": 0.502004,
+              "under_probability": 0.497996,
+              "push_probability": 0
+            },
+            "sides": [
+              {
+                "side": "OVER",
+                "offered_odds": 150,
+                "model_win_probability": 0.502004,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.497996,
+                "model_conditional_win_probability": 0.502004,
+                "no_vig_market_probability": 0.375,
+                "probability_edge": 0.127004,
+                "expected_value": 0.255009,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              },
+              {
+                "side": "UNDER",
+                "offered_odds": -200,
+                "model_win_probability": 0.497996,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.502004,
+                "model_conditional_win_probability": 0.497996,
+                "no_vig_market_probability": 0.625,
+                "probability_edge": -0.127004,
+                "expected_value": -0.253005,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              }
+            ],
+            "recommendation": {
+              "decision": "WAIT",
+              "side": null,
+              "confidence": null,
+              "expected_value": 0.255009,
+              "probability_edge": 0.127004,
+              "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED"
+            },
+            "eligibility": {
+              "expected_active": null,
+              "availability_status": "UNKNOWN",
+              "eligible_for_pick": false
+            }
+          },
+          "quote_snapshot": {
+            "horizon": "WEEKLY",
+            "week": 3,
+            "game_id": "2026-W3-PHI-CHI",
+            "kickoff": "2026-09-29T00:15:00.000Z",
+            "player": "Saquon Barkley",
+            "position": "RB",
+            "stat": "receptions",
+            "line": 2.5,
+            "over_price": 150,
+            "under_price": -200,
+            "book": "bovada",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "source": "The Odds API v4 event odds",
+            "provider_event_id": "47dc7baa254659f3beb2ed2b38c207b6",
+            "provider_book_title": "Bovada",
+            "snapshot_kind": "CURRENT",
+            "snapshot_id": "MKT-c05e57ae1deca0265307"
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "308d1b78612ff3227ee551b58db6d4f3c70da002e8875f5de6e3643d03e4787d",
+      "revision": 6,
+      "previous_record_id": "e55aed59fadded20f882f147e027ee8806e7b22bb3521ed002eceb063ae75972",
+      "record_id": "c66ba3ea880e0df56efc0259498e3a1afc72fef7a7b41d2d43bdf7341d584aad"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|DeVonta Smith|receiving_yards",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "receiving_yards",
+      "player": "DeVonta Smith",
+      "decision": "WAIT",
+      "selection": null,
+      "line": 73.5,
+      "odds": null,
+      "win_probability": null,
+      "conditional_win_probability": null,
+      "push_probability": null,
+      "book": "betmgm",
+      "model_version": null,
+      "model_version_status": "NOT_PUBLISHED",
+      "availability": {
+        "expected_active": null,
+        "availability_status": "UNKNOWN",
+        "eligible_for_pick": false
+      },
+      "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED",
+      "snapshot_id": "MKT-e5ac4d1fb7bfaa0dec54",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:12.854Z",
+      "source_artifact": "data/market/player-prop-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "9fe2add8af5a421737a51f2efb1da076e10d4298616a1dec78569fea75b42578",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": null,
+          "player": "DeVonta Smith",
+          "stat": "receiving_yards",
+          "evaluation": {
+            "snapshot_id": "MKT-e5ac4d1fb7bfaa0dec54",
+            "horizon": "WEEKLY",
+            "week": 3,
+            "player": "DeVonta Smith",
+            "position": "WR",
+            "stat": "receiving_yards",
+            "line": 73.5,
+            "book": "betmgm",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "snapshot_kind": "CURRENT",
+            "source": "The Odds API v4 event odds",
+            "raw_book_margin": 0.069767,
+            "model_pick": {
+              "status": "AVAILABLE",
+              "side": "UNDER",
+              "win_probability": 0.6462448083548511,
+              "conditional_win_probability": 0.6462448083548511,
+              "push_probability": 0,
+              "conditional_on_availability": true
+            },
+            "model": {
+              "over_probability": 0.353755,
+              "under_probability": 0.646245,
+              "push_probability": 0
+            },
+            "sides": [
+              {
+                "side": "UNDER",
+                "offered_odds": -115,
+                "model_win_probability": 0.646245,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.353755,
+                "model_conditional_win_probability": 0.646245,
+                "no_vig_market_probability": 0.5,
+                "probability_edge": 0.146245,
+                "expected_value": 0.208197,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              },
+              {
+                "side": "OVER",
+                "offered_odds": -115,
+                "model_win_probability": 0.353755,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.646245,
+                "model_conditional_win_probability": 0.353755,
+                "no_vig_market_probability": 0.5,
+                "probability_edge": -0.146245,
+                "expected_value": -0.338632,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              }
+            ],
+            "recommendation": {
+              "decision": "WAIT",
+              "side": null,
+              "confidence": null,
+              "expected_value": 0.208197,
+              "probability_edge": 0.146245,
+              "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED"
+            },
+            "eligibility": {
+              "expected_active": null,
+              "availability_status": "UNKNOWN",
+              "eligible_for_pick": false
+            }
+          },
+          "quote_snapshot": {
+            "horizon": "WEEKLY",
+            "week": 3,
+            "game_id": "2026-W3-PHI-CHI",
+            "kickoff": "2026-09-29T00:15:00.000Z",
+            "player": "DeVonta Smith",
+            "position": "WR",
+            "stat": "receiving_yards",
+            "line": 73.5,
+            "over_price": -115,
+            "under_price": -115,
+            "book": "betmgm",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "source": "The Odds API v4 event odds",
+            "provider_event_id": "47dc7baa254659f3beb2ed2b38c207b6",
+            "provider_book_title": "BetMGM",
+            "snapshot_kind": "CURRENT",
+            "snapshot_id": "MKT-e5ac4d1fb7bfaa0dec54"
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "ad551386453423bf8b8305675e5f879d1eba96c4df69ca54edbe278cf4bbcc1f",
+      "revision": 13,
+      "previous_record_id": "6bc0c4c6cbd2d862333136566910b43a087436a96b5341901be62ed88d35539c",
+      "record_id": "df2f2806974e39efdff5bc9847bdddb83c736e23c8fab2fe7a3cee645c1ed2cb"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|DeVonta Smith|receptions",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "receptions",
+      "player": "DeVonta Smith",
+      "decision": "WAIT",
+      "selection": null,
+      "line": 5.5,
+      "odds": null,
+      "win_probability": null,
+      "conditional_win_probability": null,
+      "push_probability": null,
+      "book": "bovada",
+      "model_version": null,
+      "model_version_status": "NOT_PUBLISHED",
+      "availability": {
+        "expected_active": null,
+        "availability_status": "UNKNOWN",
+        "eligible_for_pick": false
+      },
+      "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED",
+      "snapshot_id": "MKT-fed0997965cf41b47f93",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:12.854Z",
+      "source_artifact": "data/market/player-prop-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "9fe2add8af5a421737a51f2efb1da076e10d4298616a1dec78569fea75b42578",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": null,
+          "player": "DeVonta Smith",
+          "stat": "receptions",
+          "evaluation": {
+            "snapshot_id": "MKT-fed0997965cf41b47f93",
+            "horizon": "WEEKLY",
+            "week": 3,
+            "player": "DeVonta Smith",
+            "position": "WR",
+            "stat": "receptions",
+            "line": 5.5,
+            "book": "bovada",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "snapshot_kind": "CURRENT",
+            "source": "The Odds API v4 event odds",
+            "raw_book_margin": 0.069264,
+            "model_pick": {
+              "status": "AVAILABLE",
+              "side": "UNDER",
+              "win_probability": 0.6763768616847271,
+              "conditional_win_probability": 0.6763768616847271,
+              "push_probability": 0,
+              "conditional_on_availability": true
+            },
+            "model": {
+              "over_probability": 0.323623,
+              "under_probability": 0.676377,
+              "push_probability": 0
+            },
+            "sides": [
+              {
+                "side": "UNDER",
+                "offered_odds": -110,
+                "model_win_probability": 0.676377,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.323623,
+                "model_conditional_win_probability": 0.676377,
+                "no_vig_market_probability": 0.489879,
+                "probability_edge": 0.186498,
+                "expected_value": 0.291265,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              },
+              {
+                "side": "OVER",
+                "offered_odds": -120,
+                "model_win_probability": 0.323623,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.676377,
+                "model_conditional_win_probability": 0.323623,
+                "no_vig_market_probability": 0.510121,
+                "probability_edge": -0.186498,
+                "expected_value": -0.406691,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              }
+            ],
+            "recommendation": {
+              "decision": "WAIT",
+              "side": null,
+              "confidence": null,
+              "expected_value": 0.291265,
+              "probability_edge": 0.186498,
+              "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED"
+            },
+            "eligibility": {
+              "expected_active": null,
+              "availability_status": "UNKNOWN",
+              "eligible_for_pick": false
+            }
+          },
+          "quote_snapshot": {
+            "horizon": "WEEKLY",
+            "week": 3,
+            "game_id": "2026-W3-PHI-CHI",
+            "kickoff": "2026-09-29T00:15:00.000Z",
+            "player": "DeVonta Smith",
+            "position": "WR",
+            "stat": "receptions",
+            "line": 5.5,
+            "over_price": -120,
+            "under_price": -110,
+            "book": "bovada",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "source": "The Odds API v4 event odds",
+            "provider_event_id": "47dc7baa254659f3beb2ed2b38c207b6",
+            "provider_book_title": "Bovada",
+            "snapshot_kind": "CURRENT",
+            "snapshot_id": "MKT-fed0997965cf41b47f93"
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "4ff715a0019bb4ed218115697f0d7f0dbef6ab1293d11f10faa49136d0f07cb1",
+      "revision": 13,
+      "previous_record_id": "379116d6e9b8773d5e7d81d74ab744ae1faf261aa9f895f901c03e81ef254278",
+      "record_id": "2d25002a8cf0d836b63d53bdf21fb8143d15d9f8d6c0b16796d63ccc06398b19"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|Rome Odunze|receiving_yards",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "receiving_yards",
+      "player": "Rome Odunze",
+      "decision": "WAIT",
+      "selection": null,
+      "line": 24.5,
+      "odds": null,
+      "win_probability": null,
+      "conditional_win_probability": null,
+      "push_probability": null,
+      "book": "fanduel",
+      "model_version": null,
+      "model_version_status": "NOT_PUBLISHED",
+      "availability": {
+        "expected_active": null,
+        "availability_status": "UNKNOWN",
+        "eligible_for_pick": false
+      },
+      "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED",
+      "snapshot_id": "MKT-117f917efa8e496300df",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:12.854Z",
+      "source_artifact": "data/market/player-prop-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "9fe2add8af5a421737a51f2efb1da076e10d4298616a1dec78569fea75b42578",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": null,
+          "player": "Rome Odunze",
+          "stat": "receiving_yards",
+          "evaluation": {
+            "snapshot_id": "MKT-117f917efa8e496300df",
+            "horizon": "WEEKLY",
+            "week": 3,
+            "player": "Rome Odunze",
+            "position": "WR",
+            "stat": "receiving_yards",
+            "line": 24.5,
+            "book": "fanduel",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "snapshot_kind": "CURRENT",
+            "source": "The Odds API v4 event odds",
+            "raw_book_margin": 0.061033,
+            "model_pick": {
+              "status": "AVAILABLE",
+              "side": "OVER",
+              "win_probability": 0.7491307496152547,
+              "conditional_win_probability": 0.7491307496152547,
+              "push_probability": 0,
+              "conditional_on_availability": true
+            },
+            "model": {
+              "over_probability": 0.749131,
+              "under_probability": 0.250869,
+              "push_probability": 0
+            },
+            "sides": [
+              {
+                "side": "OVER",
+                "offered_odds": -113,
+                "model_win_probability": 0.749131,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.250869,
+                "model_conditional_win_probability": 0.749131,
+                "no_vig_market_probability": 0.5,
+                "probability_edge": 0.249131,
+                "expected_value": 0.412078,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              },
+              {
+                "side": "UNDER",
+                "offered_odds": -113,
+                "model_win_probability": 0.250869,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.749131,
+                "model_conditional_win_probability": 0.250869,
+                "no_vig_market_probability": 0.5,
+                "probability_edge": -0.249131,
+                "expected_value": -0.527123,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              }
+            ],
+            "recommendation": {
+              "decision": "WAIT",
+              "side": null,
+              "confidence": null,
+              "expected_value": 0.412078,
+              "probability_edge": 0.249131,
+              "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED"
+            },
+            "eligibility": {
+              "expected_active": null,
+              "availability_status": "UNKNOWN",
+              "eligible_for_pick": false
+            }
+          },
+          "quote_snapshot": {
+            "horizon": "WEEKLY",
+            "week": 3,
+            "game_id": "2026-W3-PHI-CHI",
+            "kickoff": "2026-09-29T00:15:00.000Z",
+            "player": "Rome Odunze",
+            "position": "WR",
+            "stat": "receiving_yards",
+            "line": 24.5,
+            "over_price": -113,
+            "under_price": -113,
+            "book": "fanduel",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "source": "The Odds API v4 event odds",
+            "provider_event_id": "47dc7baa254659f3beb2ed2b38c207b6",
+            "provider_book_title": "FanDuel",
+            "snapshot_kind": "CURRENT",
+            "snapshot_id": "MKT-117f917efa8e496300df"
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "0db324e08f69b863721d4f33512508c1a2f857ade279dd827e5c08fa8182ba88",
+      "revision": 7,
+      "previous_record_id": "d4ca0970ba70ecba5965f0cf852c64eb03d38a7648e7363823c20525e70e2005",
+      "record_id": "9083783ffd88648e47b680fb5581f30eadd6dc29c556a5121158a986c4b8a128"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|Rome Odunze|receptions",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "receptions",
+      "player": "Rome Odunze",
+      "decision": "WAIT",
+      "selection": null,
+      "line": 2.5,
+      "odds": null,
+      "win_probability": null,
+      "conditional_win_probability": null,
+      "push_probability": null,
+      "book": "fanduel",
+      "model_version": null,
+      "model_version_status": "NOT_PUBLISHED",
+      "availability": {
+        "expected_active": null,
+        "availability_status": "UNKNOWN",
+        "eligible_for_pick": false
+      },
+      "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED",
+      "snapshot_id": "MKT-5024e3ed4e9c9412a56f",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:12.854Z",
+      "source_artifact": "data/market/player-prop-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "9fe2add8af5a421737a51f2efb1da076e10d4298616a1dec78569fea75b42578",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": null,
+          "player": "Rome Odunze",
+          "stat": "receptions",
+          "evaluation": {
+            "snapshot_id": "MKT-5024e3ed4e9c9412a56f",
+            "horizon": "WEEKLY",
+            "week": 3,
+            "player": "Rome Odunze",
+            "position": "WR",
+            "stat": "receptions",
+            "line": 2.5,
+            "book": "fanduel",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "snapshot_kind": "CURRENT",
+            "source": "The Odds API v4 event odds",
+            "raw_book_margin": 0.070489,
+            "model_pick": {
+              "status": "AVAILABLE",
+              "side": "OVER",
+              "win_probability": 0.634411327297663,
+              "conditional_win_probability": 0.634411327297663,
+              "push_probability": 0,
+              "conditional_on_availability": true
+            },
+            "model": {
+              "over_probability": 0.634411,
+              "under_probability": 0.365589,
+              "push_probability": 0
+            },
+            "sides": [
+              {
+                "side": "OVER",
+                "offered_odds": 124,
+                "model_win_probability": 0.634411,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.365589,
+                "model_conditional_win_probability": 0.634411,
+                "no_vig_market_probability": 0.417032,
+                "probability_edge": 0.217379,
+                "expected_value": 0.421081,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              },
+              {
+                "side": "UNDER",
+                "offered_odds": -166,
+                "model_win_probability": 0.365589,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.634411,
+                "model_conditional_win_probability": 0.365589,
+                "no_vig_market_probability": 0.582968,
+                "probability_edge": -0.217379,
+                "expected_value": -0.414177,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              }
+            ],
+            "recommendation": {
+              "decision": "WAIT",
+              "side": null,
+              "confidence": null,
+              "expected_value": 0.421081,
+              "probability_edge": 0.217379,
+              "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED"
+            },
+            "eligibility": {
+              "expected_active": null,
+              "availability_status": "UNKNOWN",
+              "eligible_for_pick": false
+            }
+          },
+          "quote_snapshot": {
+            "horizon": "WEEKLY",
+            "week": 3,
+            "game_id": "2026-W3-PHI-CHI",
+            "kickoff": "2026-09-29T00:15:00.000Z",
+            "player": "Rome Odunze",
+            "position": "WR",
+            "stat": "receptions",
+            "line": 2.5,
+            "over_price": 124,
+            "under_price": -166,
+            "book": "fanduel",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "source": "The Odds API v4 event odds",
+            "provider_event_id": "47dc7baa254659f3beb2ed2b38c207b6",
+            "provider_book_title": "FanDuel",
+            "snapshot_kind": "CURRENT",
+            "snapshot_id": "MKT-5024e3ed4e9c9412a56f"
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "d6ce5c02e49f1816b02345b3dbffe654a90d262992a3a0b663de6413cf1eb443",
+      "revision": 5,
+      "previous_record_id": "b6cd54b3ae60be3c68700aeac22cf12e4e167427aa9eef50602704fbabdd0fbd",
+      "record_id": "bf68a63a7ef6087e51d3edce4c8dd19a7a6348af121a5a74ba94c242429d1ccc"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|Luther Burden III|receiving_yards",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "receiving_yards",
+      "player": "Luther Burden III",
+      "decision": "WAIT",
+      "selection": null,
+      "line": 36.5,
+      "odds": null,
+      "win_probability": null,
+      "conditional_win_probability": null,
+      "push_probability": null,
+      "book": "fanduel",
+      "model_version": null,
+      "model_version_status": "NOT_PUBLISHED",
+      "availability": {
+        "expected_active": null,
+        "availability_status": "UNKNOWN",
+        "eligible_for_pick": false
+      },
+      "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED",
+      "snapshot_id": "MKT-fe314c8f30233d27992d",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:12.854Z",
+      "source_artifact": "data/market/player-prop-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "9fe2add8af5a421737a51f2efb1da076e10d4298616a1dec78569fea75b42578",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": null,
+          "player": "Luther Burden III",
+          "stat": "receiving_yards",
+          "evaluation": {
+            "snapshot_id": "MKT-fe314c8f30233d27992d",
+            "horizon": "WEEKLY",
+            "week": 3,
+            "player": "Luther Burden III",
+            "position": "WR",
+            "stat": "receiving_yards",
+            "line": 36.5,
+            "book": "fanduel",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "snapshot_kind": "CURRENT",
+            "source": "The Odds API v4 event odds",
+            "raw_book_margin": 0.060018,
+            "model_pick": {
+              "status": "AVAILABLE",
+              "side": "OVER",
+              "win_probability": 0.5391023017781239,
+              "conditional_win_probability": 0.5391023017781239,
+              "push_probability": 0,
+              "conditional_on_availability": true
+            },
+            "model": {
+              "over_probability": 0.539102,
+              "under_probability": 0.460898,
+              "push_probability": 0
+            },
+            "sides": [
+              {
+                "side": "OVER",
+                "offered_odds": -106,
+                "model_win_probability": 0.539102,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.460898,
+                "model_conditional_win_probability": 0.539102,
+                "no_vig_market_probability": 0.485429,
+                "probability_edge": 0.053673,
+                "expected_value": 0.047689,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              },
+              {
+                "side": "UNDER",
+                "offered_odds": -120,
+                "model_win_probability": 0.460898,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.539102,
+                "model_conditional_win_probability": 0.460898,
+                "no_vig_market_probability": 0.514571,
+                "probability_edge": -0.053673,
+                "expected_value": -0.155021,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              }
+            ],
+            "recommendation": {
+              "decision": "WAIT",
+              "side": null,
+              "confidence": null,
+              "expected_value": 0.047689,
+              "probability_edge": 0.053673,
+              "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED"
+            },
+            "eligibility": {
+              "expected_active": null,
+              "availability_status": "UNKNOWN",
+              "eligible_for_pick": false
+            }
+          },
+          "quote_snapshot": {
+            "horizon": "WEEKLY",
+            "week": 3,
+            "game_id": "2026-W3-PHI-CHI",
+            "kickoff": "2026-09-29T00:15:00.000Z",
+            "player": "Luther Burden III",
+            "position": "WR",
+            "stat": "receiving_yards",
+            "line": 36.5,
+            "over_price": -106,
+            "under_price": -120,
+            "book": "fanduel",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "source": "The Odds API v4 event odds",
+            "provider_event_id": "47dc7baa254659f3beb2ed2b38c207b6",
+            "provider_book_title": "FanDuel",
+            "snapshot_kind": "CURRENT",
+            "snapshot_id": "MKT-fe314c8f30233d27992d"
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "e44aca5d23c0b10bc3dbc283bf6a1acea9cb0e0fc4ea9ea396096e504e899cbe",
+      "revision": 6,
+      "previous_record_id": "d8e36f2b28c2916ed68cc3550549493e0d6ab4720b4db0f0454b02954880c24d",
+      "record_id": "3d08ff22879499965503299f6238d385f3e505641138ba4540025425905be271"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|D'Andre Swift|receptions",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "receptions",
+      "player": "D'Andre Swift",
+      "decision": "WAIT",
+      "selection": null,
+      "line": 2.5,
+      "odds": null,
+      "win_probability": null,
+      "conditional_win_probability": null,
+      "push_probability": null,
+      "book": "fanduel",
+      "model_version": null,
+      "model_version_status": "NOT_PUBLISHED",
+      "availability": {
+        "expected_active": null,
+        "availability_status": "UNKNOWN",
+        "eligible_for_pick": false
+      },
+      "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED",
+      "snapshot_id": "MKT-8f70680aa3d7cc0a9ae2",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:12.854Z",
+      "source_artifact": "data/market/player-prop-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "9fe2add8af5a421737a51f2efb1da076e10d4298616a1dec78569fea75b42578",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": null,
+          "player": "D'Andre Swift",
+          "stat": "receptions",
+          "evaluation": {
+            "snapshot_id": "MKT-8f70680aa3d7cc0a9ae2",
+            "horizon": "WEEKLY",
+            "week": 3,
+            "player": "D'Andre Swift",
+            "position": "RB",
+            "stat": "receptions",
+            "line": 2.5,
+            "book": "fanduel",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "snapshot_kind": "CURRENT",
+            "source": "The Odds API v4 event odds",
+            "raw_book_margin": 0.070208,
+            "model_pick": {
+              "status": "AVAILABLE",
+              "side": "OVER",
+              "win_probability": 0.5145492714487665,
+              "conditional_win_probability": 0.5145492714487665,
+              "push_probability": 0,
+              "conditional_on_availability": true
+            },
+            "model": {
+              "over_probability": 0.514549,
+              "under_probability": 0.485451,
+              "push_probability": 0
+            },
+            "sides": [
+              {
+                "side": "OVER",
+                "offered_odds": 134,
+                "model_win_probability": 0.514549,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.485451,
+                "model_conditional_win_probability": 0.514549,
+                "no_vig_market_probability": 0.399315,
+                "probability_edge": 0.115234,
+                "expected_value": 0.204045,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              },
+              {
+                "side": "UNDER",
+                "offered_odds": -180,
+                "model_win_probability": 0.485451,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.514549,
+                "model_conditional_win_probability": 0.485451,
+                "no_vig_market_probability": 0.600685,
+                "probability_edge": -0.115234,
+                "expected_value": -0.244854,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              }
+            ],
+            "recommendation": {
+              "decision": "WAIT",
+              "side": null,
+              "confidence": null,
+              "expected_value": 0.204045,
+              "probability_edge": 0.115234,
+              "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED"
+            },
+            "eligibility": {
+              "expected_active": null,
+              "availability_status": "UNKNOWN",
+              "eligible_for_pick": false
+            }
+          },
+          "quote_snapshot": {
+            "horizon": "WEEKLY",
+            "week": 3,
+            "game_id": "2026-W3-PHI-CHI",
+            "kickoff": "2026-09-29T00:15:00.000Z",
+            "player": "D'Andre Swift",
+            "position": "RB",
+            "stat": "receptions",
+            "line": 2.5,
+            "over_price": 134,
+            "under_price": -180,
+            "book": "fanduel",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "source": "The Odds API v4 event odds",
+            "provider_event_id": "47dc7baa254659f3beb2ed2b38c207b6",
+            "provider_book_title": "FanDuel",
+            "snapshot_kind": "CURRENT",
+            "snapshot_id": "MKT-8f70680aa3d7cc0a9ae2"
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "b781f00d22e530752f7f90dbca440327d3a718f10a056d6164b38e78e8cb4608",
+      "revision": 7,
+      "previous_record_id": "484fea8aeecc2d483de3101911a87d07f9c04302c13a31bc4d2d1581458100e2",
+      "record_id": "b0bad420ce6b3c5e0f45ecee1b6bffa646fdc44592b5002057f10cebb6822069"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|Kyle Monangai|receptions",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "receptions",
+      "player": "Kyle Monangai",
+      "decision": "WAIT",
+      "selection": null,
+      "line": 1.5,
+      "odds": null,
+      "win_probability": null,
+      "conditional_win_probability": null,
+      "push_probability": null,
+      "book": "betonlineag",
+      "model_version": null,
+      "model_version_status": "NOT_PUBLISHED",
+      "availability": {
+        "expected_active": null,
+        "availability_status": "UNKNOWN",
+        "eligible_for_pick": false
+      },
+      "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED",
+      "snapshot_id": "MKT-9788d3b53062a7558b20",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:12.854Z",
+      "source_artifact": "data/market/player-prop-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "9fe2add8af5a421737a51f2efb1da076e10d4298616a1dec78569fea75b42578",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": null,
+          "player": "Kyle Monangai",
+          "stat": "receptions",
+          "evaluation": {
+            "snapshot_id": "MKT-9788d3b53062a7558b20",
+            "horizon": "WEEKLY",
+            "week": 3,
+            "player": "Kyle Monangai",
+            "position": "RB",
+            "stat": "receptions",
+            "line": 1.5,
+            "book": "betonlineag",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "snapshot_kind": "CURRENT",
+            "source": "The Odds API v4 event odds",
+            "raw_book_margin": 0.064004,
+            "model_pick": {
+              "status": "AVAILABLE",
+              "side": "UNDER",
+              "win_probability": 0.6179488944190841,
+              "conditional_win_probability": 0.6179488944190841,
+              "push_probability": 0,
+              "conditional_on_availability": true
+            },
+            "model": {
+              "over_probability": 0.382051,
+              "under_probability": 0.617949,
+              "push_probability": 0
+            },
+            "sides": [
+              {
+                "side": "UNDER",
+                "offered_odds": -152,
+                "model_win_probability": 0.617949,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.382051,
+                "model_conditional_win_probability": 0.617949,
+                "no_vig_market_probability": 0.566891,
+                "probability_edge": 0.051058,
+                "expected_value": 0.024494,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              },
+              {
+                "side": "OVER",
+                "offered_odds": 117,
+                "model_win_probability": 0.382051,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.617949,
+                "model_conditional_win_probability": 0.382051,
+                "no_vig_market_probability": 0.433109,
+                "probability_edge": -0.051058,
+                "expected_value": -0.170949,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              }
+            ],
+            "recommendation": {
+              "decision": "WAIT",
+              "side": null,
+              "confidence": null,
+              "expected_value": 0.024494,
+              "probability_edge": 0.051058,
+              "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED"
+            },
+            "eligibility": {
+              "expected_active": null,
+              "availability_status": "UNKNOWN",
+              "eligible_for_pick": false
+            }
+          },
+          "quote_snapshot": {
+            "horizon": "WEEKLY",
+            "week": 3,
+            "game_id": "2026-W3-PHI-CHI",
+            "kickoff": "2026-09-29T00:15:00.000Z",
+            "player": "Kyle Monangai",
+            "position": "RB",
+            "stat": "receptions",
+            "line": 1.5,
+            "over_price": 117,
+            "under_price": -152,
+            "book": "betonlineag",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "source": "The Odds API v4 event odds",
+            "provider_event_id": "47dc7baa254659f3beb2ed2b38c207b6",
+            "provider_book_title": "BetOnline.ag",
+            "snapshot_kind": "CURRENT",
+            "snapshot_id": "MKT-9788d3b53062a7558b20"
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "37e6cc9e65c482b6cfa33a61fcf0ff111db6bffb4303033fa0eed67ae39de530",
+      "revision": 3,
+      "previous_record_id": "e0bffa4da48b3ffa4a45443395c9107e7c76f96eb4f9ba0b7df8ef39f796acda",
+      "record_id": "f2c4041f1d8c72c165767e623b62fdb8c1ef044c04263d38659a27106987f86a"
+    },
+    {
+      "stream_id": "2026|2026-W3-PHI-CHI|Kyle Monangai|receiving_yards",
+      "game_id": "2026-W3-PHI-CHI",
+      "market": "receiving_yards",
+      "player": "Kyle Monangai",
+      "decision": "WAIT",
+      "selection": null,
+      "line": 8.5,
+      "odds": null,
+      "win_probability": null,
+      "conditional_win_probability": null,
+      "push_probability": null,
+      "book": "betonlineag",
+      "model_version": null,
+      "model_version_status": "NOT_PUBLISHED",
+      "availability": {
+        "expected_active": null,
+        "availability_status": "UNKNOWN",
+        "eligible_for_pick": false
+      },
+      "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED",
+      "snapshot_id": "MKT-793adf96717c75766fdc",
+      "quote_observed_at": "2026-09-28T21:53:05.497Z",
+      "source_generated_at": "2026-09-28T21:53:12.854Z",
+      "source_artifact": "data/market/player-prop-recommendations-2026.json",
+      "season": 2026,
+      "week": 3,
+      "kickoff": "2026-09-29T00:15:00.000Z",
+      "source_event_id": "401872963",
+      "home_team": "CHI",
+      "away_team": "PHI",
+      "captured_at": "2026-09-28T22:01:02.642Z",
+      "source_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "fdef95aa4c1d01793e98423c27222d1b67e70c94",
+        "artifact_json_sha256": "9fe2add8af5a421737a51f2efb1da076e10d4298616a1dec78569fea75b42578",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": null,
+          "player": "Kyle Monangai",
+          "stat": "receiving_yards",
+          "evaluation": {
+            "snapshot_id": "MKT-793adf96717c75766fdc",
+            "horizon": "WEEKLY",
+            "week": 3,
+            "player": "Kyle Monangai",
+            "position": "RB",
+            "stat": "receiving_yards",
+            "line": 8.5,
+            "book": "betonlineag",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "snapshot_kind": "CURRENT",
+            "source": "The Odds API v4 event odds",
+            "raw_book_margin": 0.063186,
+            "model_pick": {
+              "status": "AVAILABLE",
+              "side": "UNDER",
+              "win_probability": 0.6335478923955913,
+              "conditional_win_probability": 0.6335478923955913,
+              "push_probability": 0,
+              "conditional_on_availability": true
+            },
+            "model": {
+              "over_probability": 0.366452,
+              "under_probability": 0.633548,
+              "push_probability": 0
+            },
+            "sides": [
+              {
+                "side": "UNDER",
+                "offered_odds": -112,
+                "model_win_probability": 0.633548,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.366452,
+                "model_conditional_win_probability": 0.633548,
+                "no_vig_market_probability": 0.496905,
+                "probability_edge": 0.136643,
+                "expected_value": 0.199216,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              },
+              {
+                "side": "OVER",
+                "offered_odds": -115,
+                "model_win_probability": 0.366452,
+                "model_push_probability": 0,
+                "model_loss_probability": 0.633548,
+                "model_conditional_win_probability": 0.366452,
+                "no_vig_market_probability": 0.503095,
+                "probability_edge": -0.136643,
+                "expected_value": -0.314894,
+                "decision": "INELIGIBLE",
+                "confidence": null
+              }
+            ],
+            "recommendation": {
+              "decision": "WAIT",
+              "side": null,
+              "confidence": null,
+              "expected_value": 0.199216,
+              "probability_edge": 0.136643,
+              "reason": "EXPLICIT_ACTIVE_STATUS_REQUIRED"
+            },
+            "eligibility": {
+              "expected_active": null,
+              "availability_status": "UNKNOWN",
+              "eligible_for_pick": false
+            }
+          },
+          "quote_snapshot": {
+            "horizon": "WEEKLY",
+            "week": 3,
+            "game_id": "2026-W3-PHI-CHI",
+            "kickoff": "2026-09-29T00:15:00.000Z",
+            "player": "Kyle Monangai",
+            "position": "RB",
+            "stat": "receiving_yards",
+            "line": 8.5,
+            "over_price": -115,
+            "under_price": -112,
+            "book": "betonlineag",
+            "captured_at": "2026-09-28T21:53:05.497Z",
+            "source": "The Odds API v4 event odds",
+            "provider_event_id": "47dc7baa254659f3beb2ed2b38c207b6",
+            "provider_book_title": "BetOnline.ag",
+            "snapshot_kind": "CURRENT",
+            "snapshot_id": "MKT-793adf96717c75766fdc"
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "4988baae10724a9254136854f35a953f85f8c460f13171662346274ec059067e",
+      "revision": 3,
+      "previous_record_id": "4c336a102d25cbd03827b8d6aa6ac0caf002eb97277d437c8961d8fda98dc1e3",
+      "record_id": "177a8d455485d4c49ef36ba84f2828508ff3209c4bc9cd3ec7f1a8f25b167369"
     }
   ]
 }
