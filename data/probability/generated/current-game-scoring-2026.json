@@ -6,28 +6,28 @@
   "mode": "SHADOW_ONLY",
   "actionable": false,
   "sportsbook_inputs_used": false,
-  "generated_at": "2026-09-29T01:50:26.496Z",
+  "generated_at": "2026-10-01T21:47:41.845Z",
   "model_version": "scoring-decay-rest-2026-v1",
   "artifact_sha256": "ab32efd745900e177e345ac62dcdcceea48ad7ae78e942ef5ef9f4af624fcfcf",
   "sources": [
     {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=1",
-      "sha256": "b04b651074738458e28697f806d302b09cec2e250c865c880c38e10bab28ad9e"
+      "sha256": "5a19ea0f6f6d538f6cec76eca8abd61ede0d2ba0612e33ba567407f5f29f6976"
     },
     {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=2",
-      "sha256": "d4f46833a22cf35a4580a363e2c5676fdd6c955fd074dd0bbe41b42686b66a75"
+      "sha256": "df2b310bfb49533338d1ee30c58a678c43ab769389472abaaf908225bc111b4b"
     },
     {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=3",
-      "sha256": "decaeda7712324ac99d8383744e0776cb84c04f6f024113a845d2c871a58e2ed"
+      "sha256": "c2c0a388ee47d15837f49a8fb957f3d7bdfc3ef193029af2de7515e7620ee1ee"
     },
     {
       "url": "https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv",
-      "sha256": "26ccf150b2e15243e464d5d27899bf9f282fc477ba2611f4525c4c0cfd6c0111"
+      "sha256": "843660b8866b07e13ba264cfcdd9be9a399b0f667d185f720f97ef161abb5470"
     }
   ],
-  "completed_games": 47,
+  "completed_games": 48,
   "games": {
     "2026-W4-PIT-CLE": {
       "home_team": "CLE",
@@ -435,8 +435,8 @@
       "home_team": "CHI",
       "away_team": "NYJ",
       "event_start": "2026-10-04T17:00:00.000Z",
-      "home_score_mean": 27.992796314253695,
-      "away_score_mean": 19.003721484822236,
+      "home_score_mean": 28.334192855089846,
+      "away_score_mean": 17.896357436758834,
       "distribution": {
         "team_score_sd": 9.322092091970088,
         "home_away_score_correlation": 0.004801120766302407,
@@ -454,28 +454,29 @@
           "away": 7
         },
         "margin_features": [
-          6.804008819931585,
+          7.978782722733882,
           -1
         ],
         "total_features": [
-          48.199466166957734,
+          47.053297629270546,
           1
         ],
         "teams": {
           "CHI": {
             "prior_games": 17,
-            "current_games": 2,
-            "prior_weight": 0.7071067811865475,
-            "current_weight": 0.29289321881345254,
+            "current_games": 3,
+            "prior_weight": 0.5946035575013605,
+            "current_weight": 0.4053964424986395,
             "prior_points_for": 25.941176470588236,
             "prior_points_allowed": 24.41176470588235,
-            "current_points_for": 31,
-            "current_points_allowed": 23,
-            "blended_offense": 27.422871577526877,
-            "blended_defense_allowed": 23.998268396969245,
+            "current_points_for": 29.666666666666668,
+            "current_points_allowed": 17.666666666666668,
+            "blended_offense": 27.45147694264199,
+            "blended_defense_allowed": 21.677325956479763,
             "completed_game_ids": [
               "401872661",
-              "401872937"
+              "401872937",
+              "401872963"
             ]
           },
           "NYJ": {
@@ -511,11 +512,11 @@
             "terms": [
               {
                 "name": "scoring_matchup_including_venue",
-                "raw": 6.804008819931585,
+                "raw": 7.978782722733882,
                 "training_mean": 1.0322212853771517,
                 "training_scale": 4.0478595159637,
                 "coefficient": 4.99192169841483,
-                "contribution": 7.1179128916787455
+                "contribution": 8.566673480578306
               },
               {
                 "name": "rest_difference",
@@ -526,18 +527,18 @@
                 "contribution": -0.19138405194559852
               }
             ],
-            "reconstructed": 8.989074829431456
+            "reconstructed": 10.437835418331014
           },
           "total": {
             "intercept": 45.02354672553348,
             "terms": [
               {
                 "name": "combined_scoring_matchup",
-                "raw": 48.199466166957734,
+                "raw": 47.053297629270546,
                 "training_mean": 45.2720513740941,
                 "training_scale": 3.330240876050951,
                 "coefficient": 2.225550796781011,
-                "contribution": 1.9563480742846142
+                "contribution": 1.190380567057362
               },
               {
                 "name": "absolute_rest_difference",
@@ -548,7 +549,7 @@
                 "contribution": 0.016622999257839867
               }
             ],
-            "reconstructed": 46.99651779907593
+            "reconstructed": 46.23055029184868
           },
           "venue_component": {
             "parent_term": "scoring_matchup_including_venue",
@@ -836,8 +837,8 @@
       "home_team": "PHI",
       "away_team": "LA",
       "event_start": "2026-10-04T17:00:00.000Z",
-      "home_score_mean": 22.902037337059244,
-      "away_score_mean": 21.7688611665961,
+      "home_score_mean": 21.75678931500873,
+      "away_score_mean": 22.552311063654074,
       "distribution": {
         "team_score_sd": 9.322092091970088,
         "home_away_score_correlation": 0.004801120766302407,
@@ -855,28 +856,29 @@
           "away": 7
         },
         "margin_features": [
-          0.43380190077073166,
+          -1.130144550505097,
           -1
         ],
         "total_features": [
-          44.719486086995296,
+          44.178103294712386,
           1
         ],
         "teams": {
           "PHI": {
             "prior_games": 17,
-            "current_games": 2,
-            "prior_weight": 0.7071067811865475,
-            "current_weight": 0.29289321881345254,
+            "current_games": 3,
+            "prior_weight": 0.5946035575013605,
+            "current_weight": 0.4053964424986395,
             "prior_points_for": 22.294117647058822,
             "prior_points_allowed": 19.11764705882353,
-            "current_points_for": 24,
-            "current_points_allowed": 21,
-            "blended_offense": 22.79375902032883,
-            "blended_defense_allowed": 19.668975470707675,
+            "current_points_for": 18.333333333333332,
+            "current_points_allowed": 23,
+            "blended_offense": 20.688429776770093,
+            "blended_defense_allowed": 20.6915391297006,
             "completed_game_ids": [
               "401872929",
-              "401872939"
+              "401872939",
+              "401872963"
             ]
           },
           "LAR": {
@@ -912,11 +914,11 @@
             "terms": [
               {
                 "name": "scoring_matchup_including_venue",
-                "raw": 0.43380190077073166,
+                "raw": -1.130144550505097,
                 "training_mean": 1.0322212853771517,
                 "training_scale": 4.0478595159637,
                 "coefficient": 4.99192169841483,
-                "contribution": -0.7379857672895648
+                "contribution": -2.6666836863980534
               },
               {
                 "name": "rest_difference",
@@ -927,18 +929,18 @@
                 "contribution": -0.19138405194559852
               }
             ],
-            "reconstructed": 1.1331761704631442
+            "reconstructed": -0.7955217486453448
           },
           "total": {
             "intercept": 45.02354672553348,
             "terms": [
               {
                 "name": "combined_scoring_matchup",
-                "raw": 44.719486086995296,
+                "raw": 44.178103294712386,
                 "training_mean": 45.2720513740941,
                 "training_scale": 3.330240876050951,
                 "coefficient": 2.225550796781011,
-                "contribution": -0.3692712211359723
+                "contribution": -0.7310693461285156
               },
               {
                 "name": "absolute_rest_difference",
@@ -949,7 +951,7 @@
                 "contribution": 0.016622999257839867
               }
             ],
-            "reconstructed": 44.670898503655344
+            "reconstructed": 44.309100378662805
           },
           "venue_component": {
             "parent_term": "scoring_matchup_including_venue",
