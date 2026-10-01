@@ -343531,6 +343531,3067 @@
       "revision": 1,
       "previous_record_id": null,
       "record_id": "b8d42effbe08d6d8bba95ea739a689c66cec31babce77524024c8326b62125a4"
+    },
+    {
+      "stream_id": "2026|2026-W4-PIT-CLE|spread",
+      "game_id": "2026-W4-PIT-CLE",
+      "market": "spread",
+      "player": null,
+      "decision": "PICK",
+      "selection": "CLE +3",
+      "line": 3,
+      "odds": -118,
+      "win_probability": 0.564423,
+      "conditional_win_probability": 0.581768,
+      "push_probability": 0.029816,
+      "book": "betmgm",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-ae9e50657c1d40c60e34",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-02T00:15:00.000Z",
+      "source_event_id": "401872964",
+      "home_team": "CLE",
+      "away_team": "PIT",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 21.116,
+            "away_score_mean": 21.382,
+            "model_home_spread": 0.266,
+            "model_total": 42.499,
+            "home_win_probability": 0.475342,
+            "away_win_probability": 0.495667,
+            "tie_probability": 0.028992
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 4,
+              "away": 4
+            },
+            "margin_features": [
+              -0.8551056835934645,
+              0
+            ],
+            "total_features": [
+              41.29891172647432,
+              0
+            ],
+            "teams": {
+              "CLE": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 16.41176470588235,
+                "prior_points_allowed": 22.294117647058822,
+                "current_points_for": 18,
+                "current_points_allowed": 23.666666666666668,
+                "blended_offense": 17.055629643968427,
+                "blended_defense_allowed": 22.85054413676284,
+                "completed_game_ids": [
+                  "401872922",
+                  "401872935",
+                  "401872949"
+                ]
+              },
+              "PIT": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 23.352941176470587,
+                "prior_points_allowed": 22.764705882352942,
+                "current_points_for": 17.666666666666668,
+                "current_points_allowed": 20,
+                "blended_offense": 21.047745719125384,
+                "blended_defense_allowed": 21.643903953092,
+                "completed_game_ids": [
+                  "401872658",
+                  "401872946",
+                  "401872950"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": -0.8551056835934645,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": -2.327498869773622
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": -0.266072903788237
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 41.29891172647432,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": -2.655190551551902
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 42.49850005761833
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-ae9e50657c1d40c60e34",
+          "quote": {
+            "home_spread": 3,
+            "home_spread_price": -118,
+            "away_spread_price": -102,
+            "total": 37.5,
+            "over_price": -108,
+            "under_price": -110,
+            "home_moneyline": 125,
+            "away_moneyline": -150
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.046235,
+              "raw_probability_sum": 1.046235,
+              "side_a_probability": 0.517364,
+              "side_b_probability": 0.482636,
+              "side_a_fair_american": -107.2,
+              "side_b_fair_american": 107.2
+            },
+            "side_a": {
+              "win_probability": 0.564423,
+              "push_probability": 0.029816,
+              "loss_probability": 0.405762,
+              "conditional_win_probability": 0.581768,
+              "probability_edge": 0.064404,
+              "expected_value": 0.072563,
+              "offered_odds": -118
+            },
+            "side_b": {
+              "win_probability": 0.405762,
+              "push_probability": 0.029816,
+              "loss_probability": 0.564423,
+              "conditional_win_probability": 0.418232,
+              "probability_edge": -0.064404,
+              "expected_value": -0.166617,
+              "offered_odds": -102
+            },
+            "thresholds": {
+              "home_spread": 3,
+              "home_cover_margin_threshold": -3
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "CLE +3",
+              "confidence": "MODERATE",
+              "probability_edge": 0.064404,
+              "expected_value": 0.072563,
+              "model_conditional_win_probability": 0.581768
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "CLE +3",
+            "confidence": "MODERATE",
+            "probability_edge": 0.064404,
+            "expected_value": 0.072563,
+            "model_conditional_win_probability": 0.581768
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "0762946e9e352e2d38c07c2ac2487cd6eb3a4327f9d17a0e676ae2636f21f7a2",
+      "revision": 5,
+      "previous_record_id": "4a8b939e08e3b535d3d32648fa254786d7cc9a49a9f0b82fea728aaa5ee9f371",
+      "record_id": "8cf1671ef29820617e53279e87a7bb6e557fda2bf5aa9e7e1c14f7bb3f9501d2"
+    },
+    {
+      "stream_id": "2026|2026-W4-PIT-CLE|total",
+      "game_id": "2026-W4-PIT-CLE",
+      "market": "total",
+      "player": null,
+      "decision": "PICK",
+      "selection": "OVER 37.5",
+      "line": 37.5,
+      "odds": -108,
+      "win_probability": 0.645477,
+      "conditional_win_probability": 0.645477,
+      "push_probability": 0,
+      "book": "betmgm",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-ae9e50657c1d40c60e34",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-02T00:15:00.000Z",
+      "source_event_id": "401872964",
+      "home_team": "CLE",
+      "away_team": "PIT",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 21.116,
+            "away_score_mean": 21.382,
+            "model_home_spread": 0.266,
+            "model_total": 42.499,
+            "home_win_probability": 0.475342,
+            "away_win_probability": 0.495667,
+            "tie_probability": 0.028992
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 4,
+              "away": 4
+            },
+            "margin_features": [
+              -0.8551056835934645,
+              0
+            ],
+            "total_features": [
+              41.29891172647432,
+              0
+            ],
+            "teams": {
+              "CLE": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 16.41176470588235,
+                "prior_points_allowed": 22.294117647058822,
+                "current_points_for": 18,
+                "current_points_allowed": 23.666666666666668,
+                "blended_offense": 17.055629643968427,
+                "blended_defense_allowed": 22.85054413676284,
+                "completed_game_ids": [
+                  "401872922",
+                  "401872935",
+                  "401872949"
+                ]
+              },
+              "PIT": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 23.352941176470587,
+                "prior_points_allowed": 22.764705882352942,
+                "current_points_for": 17.666666666666668,
+                "current_points_allowed": 20,
+                "blended_offense": 21.047745719125384,
+                "blended_defense_allowed": 21.643903953092,
+                "completed_game_ids": [
+                  "401872658",
+                  "401872946",
+                  "401872950"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": -0.8551056835934645,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": -2.327498869773622
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": -0.266072903788237
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 41.29891172647432,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": -2.655190551551902
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 42.49850005761833
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-ae9e50657c1d40c60e34",
+          "quote": {
+            "home_spread": 3,
+            "home_spread_price": -118,
+            "away_spread_price": -102,
+            "total": 37.5,
+            "over_price": -108,
+            "under_price": -110,
+            "home_moneyline": 125,
+            "away_moneyline": -150
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.04304,
+              "raw_probability_sum": 1.04304,
+              "side_a_probability": 0.497805,
+              "side_b_probability": 0.502195,
+              "side_a_fair_american": 100.88,
+              "side_b_fair_american": -100.88
+            },
+            "side_a": {
+              "win_probability": 0.645477,
+              "push_probability": 0,
+              "loss_probability": 0.354523,
+              "conditional_win_probability": 0.645477,
+              "probability_edge": 0.147672,
+              "expected_value": 0.243141,
+              "offered_odds": -108
+            },
+            "side_b": {
+              "win_probability": 0.354523,
+              "push_probability": 0,
+              "loss_probability": 0.645477,
+              "conditional_win_probability": 0.354523,
+              "probability_edge": -0.147672,
+              "expected_value": -0.323184,
+              "offered_odds": -110
+            },
+            "thresholds": {
+              "total": 37.5
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "OVER 37.5",
+              "confidence": "HIGH",
+              "probability_edge": 0.147672,
+              "expected_value": 0.243141,
+              "model_conditional_win_probability": 0.645477
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "OVER 37.5",
+            "confidence": "HIGH",
+            "probability_edge": 0.147672,
+            "expected_value": 0.243141,
+            "model_conditional_win_probability": 0.645477
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "3d2950a003d58d4a88043172bbd43310fb16457dd15b5160875254f2b3bafbe6",
+      "revision": 5,
+      "previous_record_id": "0c4f906f2d1b8641bea931dc04411fa27265c577c17b372561ef3d658830485f",
+      "record_id": "a3972e3ec00f2b8e98ee62440591be2001828b75c0c5ab87a84e4dd17eeadf27"
+    },
+    {
+      "stream_id": "2026|2026-W4-IND-WAS|spread",
+      "game_id": "2026-W4-IND-WAS",
+      "market": "spread",
+      "player": null,
+      "decision": "PICK",
+      "selection": "WAS +4",
+      "line": 4,
+      "odds": -110,
+      "win_probability": 0.605682,
+      "conditional_win_probability": 0.622612,
+      "push_probability": 0.027191,
+      "book": "fanatics",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-7e5eb8c339f9c771c756",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-04T13:30:00.000Z",
+      "source_event_id": "401872965",
+      "home_team": "WAS",
+      "away_team": "IND",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 24.693,
+            "away_score_mean": 24.8,
+            "model_home_spread": 0.107,
+            "model_total": 49.493,
+            "home_win_probability": 0.482666,
+            "away_win_probability": 0.485962,
+            "tie_probability": 0.031372
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 7,
+              "away": 7
+            },
+            "margin_features": [
+              -0.726358055730099,
+              0
+            ],
+            "total_features": [
+              51.76465711359553,
+              0
+            ],
+            "teams": {
+              "WAS": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 20.941176470588236,
+                "prior_points_allowed": 26.529411764705884,
+                "current_points_for": 25,
+                "current_points_allowed": 30.666666666666668,
+                "blended_offense": 22.586609090141536,
+                "blended_defense_allowed": 28.206640183670842,
+                "completed_game_ids": [
+                  "401872929",
+                  "401872944",
+                  "401872955"
+                ]
+              },
+              "IND": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 27.41176470588235,
+                "prior_points_allowed": 24.235294117647058,
+                "current_points_for": 24,
+                "current_points_allowed": 30.333333333333332,
+                "blended_offense": 26.02864743147523,
+                "blended_defense_allowed": 26.707417521903466,
+                "completed_game_ids": [
+                  "401872659",
+                  "401872945",
+                  "401872951"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": -0.726358055730099,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": -2.1687240717313627
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": -0.10729810574597787
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 51.76465711359553,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": 4.338912533518285
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 49.49260314268852
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-7e5eb8c339f9c771c756",
+          "quote": {
+            "home_spread": 4,
+            "home_spread_price": -110,
+            "away_spread_price": -110,
+            "total": 47.5,
+            "over_price": -110,
+            "under_price": -110,
+            "home_moneyline": 165,
+            "away_moneyline": -200
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.047619,
+              "raw_probability_sum": 1.047619,
+              "side_a_probability": 0.5,
+              "side_b_probability": 0.5,
+              "side_a_fair_american": 100,
+              "side_b_fair_american": 100
+            },
+            "side_a": {
+              "win_probability": 0.605682,
+              "push_probability": 0.027191,
+              "loss_probability": 0.367126,
+              "conditional_win_probability": 0.622612,
+              "probability_edge": 0.122612,
+              "expected_value": 0.183494,
+              "offered_odds": -110
+            },
+            "side_b": {
+              "win_probability": 0.367126,
+              "push_probability": 0.027191,
+              "loss_probability": 0.605682,
+              "conditional_win_probability": 0.377388,
+              "probability_edge": -0.122612,
+              "expected_value": -0.271931,
+              "offered_odds": -110
+            },
+            "thresholds": {
+              "home_spread": 4,
+              "home_cover_margin_threshold": -4
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "WAS +4",
+              "confidence": "HIGH",
+              "probability_edge": 0.122612,
+              "expected_value": 0.183494,
+              "model_conditional_win_probability": 0.622612
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "WAS +4",
+            "confidence": "HIGH",
+            "probability_edge": 0.122612,
+            "expected_value": 0.183494,
+            "model_conditional_win_probability": 0.622612
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "f714f6dfa3211c646912c26cd7947ace1edbfcc73d1df3ecad6f80fd2db41357",
+      "revision": 6,
+      "previous_record_id": "3971e578ad37d843c10da6746789dae0fd82b6a7e597156210711c5087528886",
+      "record_id": "73690d4bcf0032e20c5b75e254a46a32f03608ff3c38d5bc94b9c3f8963be0e4"
+    },
+    {
+      "stream_id": "2026|2026-W4-ARI-NYG|spread",
+      "game_id": "2026-W4-ARI-NYG",
+      "market": "spread",
+      "player": null,
+      "decision": "PICK",
+      "selection": "NYG +2.5",
+      "line": 2.5,
+      "odds": -105,
+      "win_probability": 0.721771,
+      "conditional_win_probability": 0.721771,
+      "push_probability": 0,
+      "book": "fanatics",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-dd3d9f87a5c87abd53bc",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-04T17:00:00.000Z",
+      "source_event_id": "401872966",
+      "home_team": "NYG",
+      "away_team": "ARI",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 25.352,
+            "away_score_mean": 20.045,
+            "model_home_spread": -5.307,
+            "model_total": 45.397,
+            "home_win_probability": 0.640991,
+            "away_win_probability": 0.331116,
+            "tie_probability": 0.027893
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 7,
+              "away": 7
+            },
+            "margin_features": [
+              3.6639926040566877,
+              0
+            ],
+            "total_features": [
+              45.63679736648158,
+              0
+            ],
+            "teams": {
+              "NYG": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 22.41176470588235,
+                "prior_points_allowed": 25.823529411764707,
+                "current_points_for": 15.333333333333334,
+                "current_points_allowed": 18.333333333333332,
+                "blended_offense": 19.54219380898022,
+                "blended_defense_allowed": 22.78703056795137,
+                "completed_game_ids": [
+                  "401872930",
+                  "401872947",
+                  "401872956"
+                ]
+              },
+              "ARI": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 20.88235294117647,
+                "prior_points_allowed": 28.705882352941178,
+                "current_points_for": 21,
+                "current_points_allowed": 27,
+                "blended_offense": 20.93004664029396,
+                "blended_defense_allowed": 28.014323715737618,
+                "completed_game_ids": [
+                  "401872926",
+                  "401872943",
+                  "401872958"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": 3.6639926040566877,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": 3.2455662799489304
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": 5.306992245934316
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 45.63679736648158,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": 0.2437543601780668
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 45.3974449693483
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-dd3d9f87a5c87abd53bc",
+          "quote": {
+            "home_spread": 2.5,
+            "home_spread_price": -105,
+            "away_spread_price": -115,
+            "total": 44.5,
+            "over_price": -105,
+            "under_price": -115,
+            "home_moneyline": 115,
+            "away_moneyline": -140
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.047079,
+              "raw_probability_sum": 1.047079,
+              "side_a_probability": 0.489166,
+              "side_b_probability": 0.510834,
+              "side_a_fair_american": 104.43,
+              "side_b_fair_american": -104.43
+            },
+            "side_a": {
+              "win_probability": 0.721771,
+              "push_probability": 0,
+              "loss_probability": 0.278229,
+              "conditional_win_probability": 0.721771,
+              "probability_edge": 0.232605,
+              "expected_value": 0.409172,
+              "offered_odds": -105
+            },
+            "side_b": {
+              "win_probability": 0.278229,
+              "push_probability": 0,
+              "loss_probability": 0.721771,
+              "conditional_win_probability": 0.278229,
+              "probability_edge": -0.232605,
+              "expected_value": -0.479833,
+              "offered_odds": -115
+            },
+            "thresholds": {
+              "home_spread": 2.5,
+              "home_cover_margin_threshold": -2.5
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "NYG +2.5",
+              "confidence": "HIGH",
+              "probability_edge": 0.232605,
+              "expected_value": 0.409172,
+              "model_conditional_win_probability": 0.721771
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "NYG +2.5",
+            "confidence": "HIGH",
+            "probability_edge": 0.232605,
+            "expected_value": 0.409172,
+            "model_conditional_win_probability": 0.721771
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "13f69054ad2aa4bcc6d2b99290f35e8aa28af2f35aa608fdcdff7d725e058cb6",
+      "revision": 7,
+      "previous_record_id": "a54d05439c581641cf09718b1412e7a2396996c66130cd2d17a8a803b82d789c",
+      "record_id": "618ff569d433784f68036586add41cc23553828e9f02329b06cbcbe92b9799c7"
+    },
+    {
+      "stream_id": "2026|2026-W4-JAX-CIN|spread",
+      "game_id": "2026-W4-JAX-CIN",
+      "market": "spread",
+      "player": null,
+      "decision": "PICK",
+      "selection": "JAX +2.5",
+      "line": 2.5,
+      "odds": -105,
+      "win_probability": 0.691254,
+      "conditional_win_probability": 0.691254,
+      "push_probability": 0,
+      "book": "fanatics",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-d03d7dc900c209153876",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-04T17:00:00.000Z",
+      "source_event_id": "401872969",
+      "home_team": "CIN",
+      "away_team": "JAX",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 21.302,
+            "away_score_mean": 25.437,
+            "model_home_spread": 4.135,
+            "model_total": 46.739,
+            "home_win_probability": 0.363922,
+            "away_win_probability": 0.606079,
+            "tie_probability": 0.029999
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 7,
+              "away": 7
+            },
+            "margin_features": [
+              -3.992625117049279,
+              0
+            ],
+            "total_features": [
+              47.64473656258301,
+              0
+            ],
+            "teams": {
+              "CIN": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 24.352941176470587,
+                "prior_points_allowed": 28.941176470588236,
+                "current_points_for": 26.666666666666668,
+                "current_points_allowed": 21,
+                "blended_offense": 25.2909172591145,
+                "blended_defense_allowed": 25.721851780157863,
+                "completed_game_ids": [
+                  "401872925",
+                  "401872934",
+                  "401872950"
+                ]
+              },
+              "JAX": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 27.88235294117647,
+                "prior_points_allowed": 19.764705882352942,
+                "current_points_for": 27.333333333333332,
+                "current_points_allowed": 12,
+                "blended_offense": 27.659782345294865,
+                "blended_defense_allowed": 16.616921740598798,
+                "completed_game_ids": [
+                  "401872922",
+                  "401872940",
+                  "401872957"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": -3.992625117049279,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": -6.19676638691409
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": -4.1353404209287055
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 47.64473656258301,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": 1.5856304718755785
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 46.739321081045816
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-d03d7dc900c209153876",
+          "quote": {
+            "home_spread": -2.5,
+            "home_spread_price": -115,
+            "away_spread_price": -105,
+            "total": 51.5,
+            "over_price": -110,
+            "under_price": -110,
+            "home_moneyline": -145,
+            "away_moneyline": 120
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.047079,
+              "raw_probability_sum": 1.047079,
+              "side_a_probability": 0.510834,
+              "side_b_probability": 0.489166,
+              "side_a_fair_american": -104.43,
+              "side_b_fair_american": 104.43
+            },
+            "side_a": {
+              "win_probability": 0.308746,
+              "push_probability": 0,
+              "loss_probability": 0.691254,
+              "conditional_win_probability": 0.308746,
+              "probability_edge": -0.202088,
+              "expected_value": -0.422779,
+              "offered_odds": -115
+            },
+            "side_b": {
+              "win_probability": 0.691254,
+              "push_probability": 0,
+              "loss_probability": 0.308746,
+              "conditional_win_probability": 0.691254,
+              "probability_edge": 0.202088,
+              "expected_value": 0.34959,
+              "offered_odds": -105
+            },
+            "thresholds": {
+              "home_spread": -2.5,
+              "home_cover_margin_threshold": 2.5
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "JAX +2.5",
+              "confidence": "HIGH",
+              "probability_edge": 0.202088,
+              "expected_value": 0.34959,
+              "model_conditional_win_probability": 0.691254
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "JAX +2.5",
+            "confidence": "HIGH",
+            "probability_edge": 0.202088,
+            "expected_value": 0.34959,
+            "model_conditional_win_probability": 0.691254
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "3c0bc13bf646574adfdf7298a23c3a707422e42e2f64f5f9da1f519927b82a06",
+      "revision": 4,
+      "previous_record_id": "0da070a881fb55678c092f9b0c7f5f9fe6e9224c916dfd3c37f92f4865677dc6",
+      "record_id": "8ae8005fc46c84e1143a8213b673e8f2e5a4d0bb20692bd69e840b525c8b3f05"
+    },
+    {
+      "stream_id": "2026|2026-W4-JAX-CIN|total",
+      "game_id": "2026-W4-JAX-CIN",
+      "market": "total",
+      "player": null,
+      "decision": "PICK",
+      "selection": "UNDER 51.5",
+      "line": 51.5,
+      "odds": -110,
+      "win_probability": 0.642273,
+      "conditional_win_probability": 0.642273,
+      "push_probability": 0,
+      "book": "fanatics",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-d03d7dc900c209153876",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-04T17:00:00.000Z",
+      "source_event_id": "401872969",
+      "home_team": "CIN",
+      "away_team": "JAX",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 21.302,
+            "away_score_mean": 25.437,
+            "model_home_spread": 4.135,
+            "model_total": 46.739,
+            "home_win_probability": 0.363922,
+            "away_win_probability": 0.606079,
+            "tie_probability": 0.029999
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 7,
+              "away": 7
+            },
+            "margin_features": [
+              -3.992625117049279,
+              0
+            ],
+            "total_features": [
+              47.64473656258301,
+              0
+            ],
+            "teams": {
+              "CIN": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 24.352941176470587,
+                "prior_points_allowed": 28.941176470588236,
+                "current_points_for": 26.666666666666668,
+                "current_points_allowed": 21,
+                "blended_offense": 25.2909172591145,
+                "blended_defense_allowed": 25.721851780157863,
+                "completed_game_ids": [
+                  "401872925",
+                  "401872934",
+                  "401872950"
+                ]
+              },
+              "JAX": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 27.88235294117647,
+                "prior_points_allowed": 19.764705882352942,
+                "current_points_for": 27.333333333333332,
+                "current_points_allowed": 12,
+                "blended_offense": 27.659782345294865,
+                "blended_defense_allowed": 16.616921740598798,
+                "completed_game_ids": [
+                  "401872922",
+                  "401872940",
+                  "401872957"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": -3.992625117049279,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": -6.19676638691409
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": -4.1353404209287055
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 47.64473656258301,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": 1.5856304718755785
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 46.739321081045816
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-d03d7dc900c209153876",
+          "quote": {
+            "home_spread": -2.5,
+            "home_spread_price": -115,
+            "away_spread_price": -105,
+            "total": 51.5,
+            "over_price": -110,
+            "under_price": -110,
+            "home_moneyline": -145,
+            "away_moneyline": 120
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.047619,
+              "raw_probability_sum": 1.047619,
+              "side_a_probability": 0.5,
+              "side_b_probability": 0.5,
+              "side_a_fair_american": 100,
+              "side_b_fair_american": 100
+            },
+            "side_a": {
+              "win_probability": 0.357727,
+              "push_probability": 0,
+              "loss_probability": 0.642273,
+              "conditional_win_probability": 0.357727,
+              "probability_edge": -0.142273,
+              "expected_value": -0.317067,
+              "offered_odds": -110
+            },
+            "side_b": {
+              "win_probability": 0.642273,
+              "push_probability": 0,
+              "loss_probability": 0.357727,
+              "conditional_win_probability": 0.642273,
+              "probability_edge": 0.142273,
+              "expected_value": 0.226157,
+              "offered_odds": -110
+            },
+            "thresholds": {
+              "total": 51.5
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "UNDER 51.5",
+              "confidence": "HIGH",
+              "probability_edge": 0.142273,
+              "expected_value": 0.226157,
+              "model_conditional_win_probability": 0.642273
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "UNDER 51.5",
+            "confidence": "HIGH",
+            "probability_edge": 0.142273,
+            "expected_value": 0.226157,
+            "model_conditional_win_probability": 0.642273
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "d2071d833bf082a27626bb85c73ce86259a55c4052c6ca58513015758cb85a33",
+      "revision": 4,
+      "previous_record_id": "07e7eedf6430b60861a83e7419acbe41d902a0b75e8af27c1c2e5f73dcc7b1b4",
+      "record_id": "79ca350900e71ccd3c7d417f7c11308a7452d26d0c5984b1fece1de0ec70c601"
+    },
+    {
+      "stream_id": "2026|2026-W4-JAX-CIN|moneyline",
+      "game_id": "2026-W4-JAX-CIN",
+      "market": "moneyline",
+      "player": null,
+      "decision": "PICK",
+      "selection": "JAX ML",
+      "line": null,
+      "odds": 120,
+      "win_probability": 0.606079,
+      "conditional_win_probability": 0.624823,
+      "push_probability": 0.029999,
+      "book": "fanatics",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-d03d7dc900c209153876",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-04T17:00:00.000Z",
+      "source_event_id": "401872969",
+      "home_team": "CIN",
+      "away_team": "JAX",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 21.302,
+            "away_score_mean": 25.437,
+            "model_home_spread": 4.135,
+            "model_total": 46.739,
+            "home_win_probability": 0.363922,
+            "away_win_probability": 0.606079,
+            "tie_probability": 0.029999
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 7,
+              "away": 7
+            },
+            "margin_features": [
+              -3.992625117049279,
+              0
+            ],
+            "total_features": [
+              47.64473656258301,
+              0
+            ],
+            "teams": {
+              "CIN": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 24.352941176470587,
+                "prior_points_allowed": 28.941176470588236,
+                "current_points_for": 26.666666666666668,
+                "current_points_allowed": 21,
+                "blended_offense": 25.2909172591145,
+                "blended_defense_allowed": 25.721851780157863,
+                "completed_game_ids": [
+                  "401872925",
+                  "401872934",
+                  "401872950"
+                ]
+              },
+              "JAX": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 27.88235294117647,
+                "prior_points_allowed": 19.764705882352942,
+                "current_points_for": 27.333333333333332,
+                "current_points_allowed": 12,
+                "blended_offense": 27.659782345294865,
+                "blended_defense_allowed": 16.616921740598798,
+                "completed_game_ids": [
+                  "401872922",
+                  "401872940",
+                  "401872957"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": -3.992625117049279,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": -6.19676638691409
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": -4.1353404209287055
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 47.64473656258301,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": 1.5856304718755785
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 46.739321081045816
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-d03d7dc900c209153876",
+          "quote": {
+            "home_spread": -2.5,
+            "home_spread_price": -115,
+            "away_spread_price": -105,
+            "total": 51.5,
+            "over_price": -110,
+            "under_price": -110,
+            "home_moneyline": -145,
+            "away_moneyline": 120
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.046382,
+              "raw_probability_sum": 1.046382,
+              "side_a_probability": 0.565603,
+              "side_b_probability": 0.434397,
+              "side_a_fair_american": -130.2,
+              "side_b_fair_american": 130.2
+            },
+            "side_a": {
+              "win_probability": 0.363922,
+              "push_probability": 0.029999,
+              "loss_probability": 0.606079,
+              "conditional_win_probability": 0.375177,
+              "probability_edge": -0.190426,
+              "expected_value": -0.355098,
+              "offered_odds": -145
+            },
+            "side_b": {
+              "win_probability": 0.606079,
+              "push_probability": 0.029999,
+              "loss_probability": 0.363922,
+              "conditional_win_probability": 0.624823,
+              "probability_edge": 0.190426,
+              "expected_value": 0.363373,
+              "offered_odds": 120
+            },
+            "thresholds": null,
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "JAX ML",
+              "confidence": "HIGH",
+              "probability_edge": 0.190426,
+              "expected_value": 0.363373,
+              "model_conditional_win_probability": 0.624823
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "JAX ML",
+            "confidence": "HIGH",
+            "probability_edge": 0.190426,
+            "expected_value": 0.363373,
+            "model_conditional_win_probability": 0.624823
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "e4135450f037ea3748107dcc5f1282ab813fc8f5267d966b89fa1e493979c727",
+      "revision": 3,
+      "previous_record_id": "d03ab95f6706571ce39cc1abde8d8693a96dee521e4cdc9ea694e1d66a513f1c",
+      "record_id": "e9f3019a8c6f370140dfe7e9ca12d1af3ec66f28a5bcad73a10d422607a132d0"
+    },
+    {
+      "stream_id": "2026|2026-W4-GB-TB|total",
+      "game_id": "2026-W4-GB-TB",
+      "market": "total",
+      "player": null,
+      "decision": "PICK",
+      "selection": "OVER 38.5",
+      "line": 38.5,
+      "odds": -110,
+      "win_probability": 0.700226,
+      "conditional_win_probability": 0.700226,
+      "push_probability": 0,
+      "book": "fanatics",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-2957607e1770edd7f57f",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-04T17:00:00.000Z",
+      "source_event_id": "401872968",
+      "home_team": "TB",
+      "away_team": "GB",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 24.058,
+            "away_score_mean": 21.526,
+            "model_home_spread": -2.531,
+            "model_total": 45.584,
+            "home_win_probability": 0.568634,
+            "away_win_probability": 0.403137,
+            "tie_probability": 0.028229
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 7,
+              "away": 10
+            },
+            "margin_features": [
+              1.8761846978726986,
+              -3
+            ],
+            "total_features": [
+              46.42604940661404,
+              3
+            ],
+            "teams": {
+              "TB": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 22.352941176470587,
+                "prior_points_allowed": 24.176470588235293,
+                "current_points_for": 20.666666666666668,
+                "current_points_allowed": 26.333333333333332,
+                "blended_offense": 21.66933148911994,
+                "blended_defense_allowed": 25.05085507205589,
+                "completed_game_ids": [
+                  "401872925",
+                  "401872935",
+                  "401872959"
+                ]
+              },
+              "GB": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 23,
+                "prior_points_allowed": 21.176470588235293,
+                "current_points_for": 18.666666666666668,
+                "current_points_allowed": 30.333333333333332,
+                "blended_offense": 21.243282082505896,
+                "blended_defense_allowed": 24.888630169546367,
+                "completed_game_ids": [
+                  "401872927",
+                  "401872936",
+                  "401872948"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": 1.8761846978726986,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": 1.0407968099905092
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": -3,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.5719121084109507
+                  }
+                ],
+                "reconstructed": 2.531430691277866
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 46.42604940661404,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": 0.7711998429987399
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 3,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": -0.21041876949999308
+                  }
+                ],
+                "reconstructed": 45.58432779903222
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-2957607e1770edd7f57f",
+          "quote": {
+            "home_spread": 3.5,
+            "home_spread_price": -115,
+            "away_spread_price": -105,
+            "total": 38.5,
+            "over_price": -110,
+            "under_price": -110,
+            "home_moneyline": 155,
+            "away_moneyline": -190
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.047619,
+              "raw_probability_sum": 1.047619,
+              "side_a_probability": 0.5,
+              "side_b_probability": 0.5,
+              "side_a_fair_american": 100,
+              "side_b_fair_american": 100
+            },
+            "side_a": {
+              "win_probability": 0.700226,
+              "push_probability": 0,
+              "loss_probability": 0.299774,
+              "conditional_win_probability": 0.700226,
+              "probability_edge": 0.200226,
+              "expected_value": 0.336795,
+              "offered_odds": -110
+            },
+            "side_b": {
+              "win_probability": 0.299774,
+              "push_probability": 0,
+              "loss_probability": 0.700226,
+              "conditional_win_probability": 0.299774,
+              "probability_edge": -0.200226,
+              "expected_value": -0.427704,
+              "offered_odds": -110
+            },
+            "thresholds": {
+              "total": 38.5
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "OVER 38.5",
+              "confidence": "HIGH",
+              "probability_edge": 0.200226,
+              "expected_value": 0.336795,
+              "model_conditional_win_probability": 0.700226
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "OVER 38.5",
+            "confidence": "HIGH",
+            "probability_edge": 0.200226,
+            "expected_value": 0.336795,
+            "model_conditional_win_probability": 0.700226
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "081604e1906c02439e6b5fcf731f9374ed76553b5ed1e4666da7e0dd96548ccd",
+      "revision": 7,
+      "previous_record_id": "73add6dbb0bdf3b115c064f3391150184105711129e7208272be05e10387623e",
+      "record_id": "779c8a12ff234886ffdb13d79d8bb3cf354bc7bff448894099bbd4a0f74359fb"
+    },
+    {
+      "stream_id": "2026|2026-W4-MIA-MIN|total",
+      "game_id": "2026-W4-MIA-MIN",
+      "market": "total",
+      "player": null,
+      "decision": "PICK",
+      "selection": "OVER 39",
+      "line": 39,
+      "odds": -110,
+      "win_probability": 0.589478,
+      "conditional_win_probability": 0.60723,
+      "push_probability": 0.029236,
+      "book": "bovada",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-550234e91adb9067d535",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-04T20:05:00.000Z",
+      "source_event_id": "401872974",
+      "home_team": "MIN",
+      "away_team": "MIA",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 26.946,
+            "away_score_mean": 15.442,
+            "model_home_spread": -11.503,
+            "model_total": 42.388,
+            "home_win_probability": 0.797424,
+            "away_win_probability": 0.181091,
+            "tie_probability": 0.021484
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 7,
+              "away": 7
+            },
+            "margin_features": [
+              8.68853225933523,
+              0
+            ],
+            "total_features": [
+              41.1335774710343,
+              0
+            ],
+            "teams": {
+              "MIN": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 20.235294117647058,
+                "prior_points_allowed": 19.58823529411765,
+                "current_points_for": 23.666666666666668,
+                "current_points_allowed": 13.666666666666666,
+                "blended_offense": 21.626360341907095,
+                "blended_defense_allowed": 17.18765243853747,
+                "completed_game_ids": [
+                  "401872927",
+                  "401872937",
+                  "401872959"
+                ]
+              },
+              "MIA": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 20.41176470588235,
+                "prior_points_allowed": 24.941176470588236,
+                "current_points_for": 12,
+                "current_points_allowed": 28.666666666666668,
+                "blended_offense": 17.001665218982033,
+                "blended_defense_allowed": 26.451476942641992,
+                "completed_game_ids": [
+                  "401872928",
+                  "401872942",
+                  "401872952"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": 8.68853225933523,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": 9.441954378600437
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": 11.503380344585823
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 41.1335774710343,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": -2.765680992821745
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 42.38800961634849
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-550234e91adb9067d535",
+          "quote": {
+            "home_spread": -10.5,
+            "home_spread_price": -105,
+            "away_spread_price": -115,
+            "total": 39,
+            "over_price": -110,
+            "under_price": -110,
+            "home_moneyline": -600,
+            "away_moneyline": 425
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.047619,
+              "raw_probability_sum": 1.047619,
+              "side_a_probability": 0.5,
+              "side_b_probability": 0.5,
+              "side_a_fair_american": 100,
+              "side_b_fair_american": 100
+            },
+            "side_a": {
+              "win_probability": 0.589478,
+              "push_probability": 0.029236,
+              "loss_probability": 0.381287,
+              "conditional_win_probability": 0.60723,
+              "probability_edge": 0.10723,
+              "expected_value": 0.154602,
+              "offered_odds": -110
+            },
+            "side_b": {
+              "win_probability": 0.381287,
+              "push_probability": 0.029236,
+              "loss_probability": 0.589478,
+              "conditional_win_probability": 0.39277,
+              "probability_edge": -0.10723,
+              "expected_value": -0.242853,
+              "offered_odds": -110
+            },
+            "thresholds": {
+              "total": 39
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "OVER 39",
+              "confidence": "HIGH",
+              "probability_edge": 0.10723,
+              "expected_value": 0.154602,
+              "model_conditional_win_probability": 0.60723
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "OVER 39",
+            "confidence": "HIGH",
+            "probability_edge": 0.10723,
+            "expected_value": 0.154602,
+            "model_conditional_win_probability": 0.60723
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "b6a5e012a75a630f8713be216388cd1a5035a8720709731f5dc2d0d21267975b",
+      "revision": 6,
+      "previous_record_id": "ea0385212d4d089ceb3c26012a7cbc865b704e424abf5f104799da9d9426670a",
+      "record_id": "6a567421a25d32bfc013fa047e1d56cbde788e2254642de2c834951b1d5532f0"
+    },
+    {
+      "stream_id": "2026|2026-W4-DEN-SF|spread",
+      "game_id": "2026-W4-DEN-SF",
+      "market": "spread",
+      "player": null,
+      "decision": "PICK",
+      "selection": "SF -2.5",
+      "line": -2.5,
+      "odds": -120,
+      "win_probability": 0.641876,
+      "conditional_win_probability": 0.641876,
+      "push_probability": 0,
+      "book": "bovada",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-64dfc1ae2edb9285adeb",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-04T20:25:00.000Z",
+      "source_event_id": "401872975",
+      "home_team": "SF",
+      "away_team": "DEN",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 26.235,
+            "away_score_mean": 18.981,
+            "model_home_spread": -7.255,
+            "model_total": 45.216,
+            "home_win_probability": 0.69281,
+            "away_win_probability": 0.281128,
+            "tie_probability": 0.026062
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 7,
+              "away": 7
+            },
+            "margin_features": [
+              5.243384565071029,
+              0
+            ],
+            "total_features": [
+              45.365645190733076,
+              0
+            ],
+            "teams": {
+              "SF": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 25.705882352941178,
+                "prior_points_allowed": 21.823529411764707,
+                "current_points_for": 32.666666666666664,
+                "current_points_allowed": 16.666666666666668,
+                "blended_offense": 28.527759550725822,
+                "blended_defense_allowed": 19.732955600448193,
+                "completed_game_ids": [
+                  "401872657",
+                  "401872942",
+                  "401872958"
+                ]
+              },
+              "DEN": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 23.58823529411765,
+                "prior_points_allowed": 18.294117647058822,
+                "current_points_for": 20,
+                "current_points_allowed": 23.333333333333332,
+                "blended_offense": 22.133577471034293,
+                "blended_defense_allowed": 20.336997759257848,
+                "completed_game_ids": [
+                  "401872931",
+                  "401872940",
+                  "401872962"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": 5.243384565071029,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": 5.193311988364998
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": 7.254737954350383
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 45.365645190733076,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": 0.06254736547515385
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 45.21623797464539
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-64dfc1ae2edb9285adeb",
+          "quote": {
+            "home_spread": -2.5,
+            "home_spread_price": -120,
+            "away_spread_price": 100,
+            "total": 48.5,
+            "over_price": -110,
+            "under_price": -110,
+            "home_moneyline": -140,
+            "away_moneyline": 120
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.045455,
+              "raw_probability_sum": 1.045455,
+              "side_a_probability": 0.521739,
+              "side_b_probability": 0.478261,
+              "side_a_fair_american": -109.09,
+              "side_b_fair_american": 109.09
+            },
+            "side_a": {
+              "win_probability": 0.641876,
+              "push_probability": 0,
+              "loss_probability": 0.358124,
+              "conditional_win_probability": 0.641876,
+              "probability_edge": 0.120137,
+              "expected_value": 0.176773,
+              "offered_odds": -120
+            },
+            "side_b": {
+              "win_probability": 0.358124,
+              "push_probability": 0,
+              "loss_probability": 0.641876,
+              "conditional_win_probability": 0.358124,
+              "probability_edge": -0.120137,
+              "expected_value": -0.283752,
+              "offered_odds": 100
+            },
+            "thresholds": {
+              "home_spread": -2.5,
+              "home_cover_margin_threshold": 2.5
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "SF -2.5",
+              "confidence": "HIGH",
+              "probability_edge": 0.120137,
+              "expected_value": 0.176773,
+              "model_conditional_win_probability": 0.641876
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "SF -2.5",
+            "confidence": "HIGH",
+            "probability_edge": 0.120137,
+            "expected_value": 0.176773,
+            "model_conditional_win_probability": 0.641876
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "509137e1063abf6270993b15f6e178cedb664bacbda294cbcb67e859d9513634",
+      "revision": 5,
+      "previous_record_id": "3be4bb8b22d6c2890430d763b71432a9885cbbc6be5359be67402f55a20971aa",
+      "record_id": "5cd9fcbbd898e82809bd2dd6b6d70b77e0492b66c54d3abc278005d9baa6a95b"
+    },
+    {
+      "stream_id": "2026|2026-W4-KC-LV|spread",
+      "game_id": "2026-W4-KC-LV",
+      "market": "spread",
+      "player": null,
+      "decision": "PICK",
+      "selection": "LV +4",
+      "line": 4,
+      "odds": -110,
+      "win_probability": 0.540436,
+      "conditional_win_probability": 0.557483,
+      "push_probability": 0.030579,
+      "book": "fanatics",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-ac5941a48309aa8708d7",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-04T20:25:00.000Z",
+      "source_event_id": "401872976",
+      "home_team": "LV",
+      "away_team": "KC",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 20.613,
+            "away_score_mean": 22.859,
+            "model_home_spread": 2.246,
+            "model_total": 43.472,
+            "home_win_probability": 0.41748,
+            "away_win_probability": 0.550537,
+            "tie_probability": 0.031982
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 7,
+              "away": 7
+            },
+            "margin_features": [
+              -2.460868332643539,
+              0
+            ],
+            "total_features": [
+              42.755107969770464,
+              0
+            ],
+            "teams": {
+              "LV": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 14.176470588235293,
+                "prior_points_allowed": 25.41176470588235,
+                "current_points_for": 29.333333333333332,
+                "current_points_allowed": 18,
+                "blended_offense": 20.321008824538204,
+                "blended_defense_allowed": 22.40706166148067,
+                "completed_game_ids": [
+                  "401872928",
+                  "401872941",
+                  "401872961"
+                ]
+              },
+              "KC": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 21.294117647058822,
+                "prior_points_allowed": 19.294117647058822,
+                "current_points_for": 29.333333333333332,
+                "current_points_allowed": 16.666666666666668,
+                "blended_offense": 24.553187086753766,
+                "blended_defense_allowed": 18.228958366768282,
+                "completed_game_ids": [
+                  "401872931",
+                  "401872945",
+                  "401872952"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": -2.460868332643539,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": -4.307765570899182
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": -2.246339604913797
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 42.755107969770464,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": -1.6820361071261656
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 43.47165450204407
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-ac5941a48309aa8708d7",
+          "quote": {
+            "home_spread": 4,
+            "home_spread_price": -110,
+            "away_spread_price": -110,
+            "total": 47.5,
+            "over_price": -110,
+            "under_price": -110,
+            "home_moneyline": 175,
+            "away_moneyline": -215
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.047619,
+              "raw_probability_sum": 1.047619,
+              "side_a_probability": 0.5,
+              "side_b_probability": 0.5,
+              "side_a_fair_american": 100,
+              "side_b_fair_american": 100
+            },
+            "side_a": {
+              "win_probability": 0.540436,
+              "push_probability": 0.030579,
+              "loss_probability": 0.428986,
+              "conditional_win_probability": 0.557483,
+              "probability_edge": 0.057483,
+              "expected_value": 0.06232,
+              "offered_odds": -110
+            },
+            "side_b": {
+              "win_probability": 0.428986,
+              "push_probability": 0.030579,
+              "loss_probability": 0.540436,
+              "conditional_win_probability": 0.442517,
+              "probability_edge": -0.057483,
+              "expected_value": -0.150449,
+              "offered_odds": -110
+            },
+            "thresholds": {
+              "home_spread": 4,
+              "home_cover_margin_threshold": -4
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "LV +4",
+              "confidence": "MODERATE",
+              "probability_edge": 0.057483,
+              "expected_value": 0.06232,
+              "model_conditional_win_probability": 0.557483
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "LV +4",
+            "confidence": "MODERATE",
+            "probability_edge": 0.057483,
+            "expected_value": 0.06232,
+            "model_conditional_win_probability": 0.557483
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "831d10e1323a058adc533850d9058e0ef92d96e6ebbe3a343dd74199fcffe762",
+      "revision": 5,
+      "previous_record_id": "537b0cfec0d9a595cb914b03f10e3530dd04390d35147a7a39c5ce6922708d9a",
+      "record_id": "b6a3221e111c2e5ca59573907705bff5aaedd77028afcd05153bdd5c5d917d3f"
+    },
+    {
+      "stream_id": "2026|2026-W4-LAC-SEA|spread",
+      "game_id": "2026-W4-LAC-SEA",
+      "market": "spread",
+      "player": null,
+      "decision": "PICK",
+      "selection": "SEA -7.5",
+      "line": -7.5,
+      "odds": -105,
+      "win_probability": 0.609802,
+      "conditional_win_probability": 0.609802,
+      "push_probability": 0,
+      "book": "fanatics",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-7e67bf50ca2e4f6c707b",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-04T20:25:00.000Z",
+      "source_event_id": "401872977",
+      "home_team": "SEA",
+      "away_team": "LAC",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 27.249,
+            "away_score_mean": 16.045,
+            "model_home_spread": -11.204,
+            "model_total": 43.294,
+            "home_win_probability": 0.794342,
+            "away_win_probability": 0.183594,
+            "tie_probability": 0.022064
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 7,
+              "away": 7
+            },
+            "margin_features": [
+              8.44613805757874,
+              0
+            ],
+            "total_features": [
+              42.48889617970967,
+              0
+            ],
+            "teams": {
+              "SEA": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 28.41176470588235,
+                "prior_points_allowed": 17.176470588235293,
+                "current_points_for": 25,
+                "current_points_allowed": 16.666666666666668,
+                "blended_offense": 27.02864743147523,
+                "blended_defense_allowed": 16.969797892059518,
+                "completed_game_ids": [
+                  "401872656",
+                  "401872943",
+                  "401872955"
+                ]
+              },
+              "LAC": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 21.647058823529413,
+                "prior_points_allowed": 20,
+                "current_points_for": 14.666666666666666,
+                "current_points_allowed": 25.333333333333332,
+                "blended_offense": 18.817232675891848,
+                "blended_defense_allowed": 22.162114359992742,
+                "completed_game_ids": [
+                  "401872926",
+                  "401872941",
+                  "401872953"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": 8.44613805757874,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": 9.143027780346177
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": 11.204453746331563
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 42.48889617970967,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": -1.8599415150331324
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 43.293749094137105
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-7e67bf50ca2e4f6c707b",
+          "quote": {
+            "home_spread": -7.5,
+            "home_spread_price": -105,
+            "away_spread_price": -115,
+            "total": 43,
+            "over_price": -110,
+            "under_price": -110,
+            "home_moneyline": -350,
+            "away_moneyline": 275
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.047079,
+              "raw_probability_sum": 1.047079,
+              "side_a_probability": 0.489166,
+              "side_b_probability": 0.510834,
+              "side_a_fair_american": 104.43,
+              "side_b_fair_american": -104.43
+            },
+            "side_a": {
+              "win_probability": 0.609802,
+              "push_probability": 0,
+              "loss_probability": 0.390198,
+              "conditional_win_probability": 0.609802,
+              "probability_edge": 0.120636,
+              "expected_value": 0.190566,
+              "offered_odds": -105
+            },
+            "side_b": {
+              "win_probability": 0.390198,
+              "push_probability": 0,
+              "loss_probability": 0.609802,
+              "conditional_win_probability": 0.390198,
+              "probability_edge": -0.120636,
+              "expected_value": -0.2705,
+              "offered_odds": -115
+            },
+            "thresholds": {
+              "home_spread": -7.5,
+              "home_cover_margin_threshold": 7.5
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "SEA -7.5",
+              "confidence": "HIGH",
+              "probability_edge": 0.120636,
+              "expected_value": 0.190566,
+              "model_conditional_win_probability": 0.609802
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "SEA -7.5",
+            "confidence": "HIGH",
+            "probability_edge": 0.120636,
+            "expected_value": 0.190566,
+            "model_conditional_win_probability": 0.609802
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "53ba1ef1b9138abf99f1247f661234ff8d7ac7a69221d1dbb2a301956777fc39",
+      "revision": 5,
+      "previous_record_id": "81edf4203dc82201459cfe9e3941c427ce06e67f5b0177854e0b1f3db645ae0a",
+      "record_id": "ad586e8694bc7dd5faad6e63ae72e62f079d59ef9863422e0abd24c48e0e746e"
+    },
+    {
+      "stream_id": "2026|2026-W4-DET-CAR|spread",
+      "game_id": "2026-W4-DET-CAR",
+      "market": "spread",
+      "player": null,
+      "decision": "PICK",
+      "selection": "CAR +3.5",
+      "line": 3.5,
+      "odds": -110,
+      "win_probability": 0.623322,
+      "conditional_win_probability": 0.623322,
+      "push_probability": 0,
+      "book": "fanatics",
+      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version_status": "KNOWN",
+      "availability": null,
+      "reason": null,
+      "snapshot_id": "MKT-c31aaf430e7a9940526e",
+      "quote_observed_at": "2026-10-01T16:22:22.416Z",
+      "source_generated_at": "2026-10-01T16:22:25.734Z",
+      "source_artifact": "data/market/weekly-game-market-recommendations-2026.json",
+      "season": 2026,
+      "week": 4,
+      "kickoff": "2026-10-05T00:20:00.000Z",
+      "source_event_id": "401872978",
+      "home_team": "CAR",
+      "away_team": "DET",
+      "captured_at": "2026-10-01T16:22:28.768Z",
+      "source_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+      "source_provenance": {
+        "version": 1,
+        "source_code_commit": "0629f540ebcb246474a9a4e1760ae110e996cf61",
+        "artifact_json_sha256": "3619f52aaabaa30a3f41b1501ceef6e42c2b02c64cb0b9097620e07584ea0517",
+        "hash_encoding": "SHA256(JSON.stringify(parsed artifact)); not raw file bytes",
+        "evidence": {
+          "model_version": "scoring-decay-rest-2026-v1",
+          "football_projection": {
+            "home_score_mean": 25.165,
+            "away_score_mean": 24.514,
+            "model_home_spread": -0.651,
+            "model_total": 49.678,
+            "home_win_probability": 0.504425,
+            "away_win_probability": 0.46524,
+            "tie_probability": 0.030334
+          },
+          "scoring_evidence": {
+            "method": "Historically calibrated scoring matchup and rest",
+            "half_life_games": 4,
+            "home_field_advantage_feature": 1.7442724458204335,
+            "home_field_advantage_contribution": 2.15108045027228,
+            "rest_days": {
+              "home": 7,
+              "away": 7
+            },
+            "margin_features": [
+              -0.11110153411333101,
+              0
+            ],
+            "total_features": [
+              52.04280533343768,
+              0
+            ],
+            "teams": {
+              "CAR": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 18.294117647058822,
+                "prior_points_allowed": 22.352941176470587,
+                "current_points_for": 29.666666666666668,
+                "current_points_allowed": 27.666666666666668,
+                "blended_offense": 22.904508561749232,
+                "blended_defense_allowed": 24.50710658661042,
+                "completed_game_ids": [
+                  "401872661",
+                  "401872933",
+                  "401872949"
+                ]
+              },
+              "DET": {
+                "prior_games": 17,
+                "current_games": 3,
+                "prior_weight": 0.5946035575013605,
+                "current_weight": 0.4053964424986395,
+                "prior_points_for": 28.294117647058822,
+                "prior_points_allowed": 24.294117647058822,
+                "current_points_for": 31,
+                "current_points_allowed": 31.666666666666668,
+                "blended_offense": 29.391072726761024,
+                "blended_defense_allowed": 27.28292279175468,
+                "completed_game_ids": [
+                  "401872923",
+                  "401872932",
+                  "401872954"
+                ]
+              }
+            },
+            "personnel_numeric_adjustment_applied": false,
+            "granular_matchup_numeric_adjustment_applied": false,
+            "excluded_numeric_features": [
+              "granular EPA/pace/explosive matchup extension failed ablation",
+              "observed personnel continuity failed ablation",
+              "injury and coaching coefficients not validated"
+            ],
+            "contributions": {
+              "schema_version": 1,
+              "model_version": "scoring-decay-rest-2026-v1",
+              "margin": {
+                "intercept": 2.0625459896983074,
+                "terms": [
+                  {
+                    "name": "scoring_matchup_including_venue",
+                    "raw": -0.11110153411333101,
+                    "training_mean": 1.0322212853771517,
+                    "training_scale": 4.0478595159637,
+                    "coefficient": 4.99192169841483,
+                    "contribution": -1.4099743255414263
+                  },
+                  {
+                    "name": "rest_difference",
+                    "raw": 0,
+                    "training_mean": 0.005886681383370125,
+                    "training_scale": 2.3520149185335586,
+                    "coefficient": 0.44750383286354456,
+                    "contribution": -0.001120023712922303
+                  }
+                ],
+                "reconstructed": 0.6514516404439588
+              },
+              "total": {
+                "intercept": 45.02354672553348,
+                "terms": [
+                  {
+                    "name": "combined_scoring_matchup",
+                    "raw": 52.04280533343768,
+                    "training_mean": 45.2720513740941,
+                    "training_scale": 3.330240876050951,
+                    "coefficient": 2.225550796781011,
+                    "contribution": 4.524794881172056
+                  },
+                  {
+                    "name": "absolute_rest_difference",
+                    "raw": 0,
+                    "training_mean": 1.1464311994113319,
+                    "training_scale": 2.0537050262972074,
+                    "coefficient": -0.2331384108386849,
+                    "contribution": 0.13014388363675633
+                  }
+                ],
+                "reconstructed": 49.67848549034229
+              },
+              "venue_component": {
+                "parent_term": "scoring_matchup_including_venue",
+                "contribution": 2.15108045027228,
+                "additive": false
+              },
+              "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+              "excluded_numeric_features": [
+                "granular EPA/pace/explosive matchup extension failed ablation",
+                "observed personnel continuity failed ablation",
+                "injury and coaching coefficients not validated"
+              ]
+            }
+          },
+          "sportsbook_inputs_used_for_football_projection": false,
+          "snapshot_id": "MKT-c31aaf430e7a9940526e",
+          "quote": {
+            "home_spread": 3.5,
+            "home_spread_price": -110,
+            "away_spread_price": -110,
+            "total": 51.5,
+            "over_price": -105,
+            "under_price": -115,
+            "home_moneyline": 160,
+            "away_moneyline": -195
+          },
+          "evaluation": {
+            "fair_market": {
+              "method": "PROPORTIONAL_TWO_WAY",
+              "book_margin": 0.047619,
+              "raw_probability_sum": 1.047619,
+              "side_a_probability": 0.5,
+              "side_b_probability": 0.5,
+              "side_a_fair_american": 100,
+              "side_b_fair_american": 100
+            },
+            "side_a": {
+              "win_probability": 0.623322,
+              "push_probability": 0,
+              "loss_probability": 0.376678,
+              "conditional_win_probability": 0.623322,
+              "probability_edge": 0.123322,
+              "expected_value": 0.189977,
+              "offered_odds": -110
+            },
+            "side_b": {
+              "win_probability": 0.376678,
+              "push_probability": 0,
+              "loss_probability": 0.623322,
+              "conditional_win_probability": 0.376678,
+              "probability_edge": -0.123322,
+              "expected_value": -0.280887,
+              "offered_odds": -110
+            },
+            "thresholds": {
+              "home_spread": 3.5,
+              "home_cover_margin_threshold": -3.5
+            },
+            "recommendation": {
+              "decision": "PICK",
+              "selection": "CAR +3.5",
+              "confidence": "HIGH",
+              "probability_edge": 0.123322,
+              "expected_value": 0.189977,
+              "model_conditional_win_probability": 0.623322
+            }
+          },
+          "recommendation": {
+            "decision": "PICK",
+            "selection": "CAR +3.5",
+            "confidence": "HIGH",
+            "probability_edge": 0.123322,
+            "expected_value": 0.189977,
+            "model_conditional_win_probability": 0.623322
+          }
+        }
+      },
+      "record_kind": "PUBLISHED_FEED_CANDIDATE",
+      "mode": "SHADOW_ONLY",
+      "actionable": false,
+      "fingerprint": "ea1f4b9b9f30f411e2a80e849c64b3983a4858c172156930eaacef4b2628fc23",
+      "revision": 3,
+      "previous_record_id": "0cfb2ba574559e7c5ce1acc17ba21d038d564518c2e0d31581e75b5a48b6a04c",
+      "record_id": "a0e9aba73d6beb51dffc0e7778d464e3c474d95b6a96e693203ea1045cde3608"
     }
   ]
 }
