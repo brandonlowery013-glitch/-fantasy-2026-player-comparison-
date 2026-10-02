@@ -91,7 +91,9 @@ const out={
 };
 
 const blocked=[];
+const playersWithContext=rows.filter(r=>r.weekly_matchup_context.components.length>0).length;
 if(Object.keys(out.players).length!==expected) blocked.push(`Output universe ${Object.keys(out.players).length}/${expected}`);
+if(playersWithContext!==expected) blocked.push(`Weekly context coverage ${playersWithContext}/${expected}; full canonical universe context required`);
 if(rows.some(r=>!Number.isInteger(r.ros_overall_rank)||!r.ros_position_rank)) blocked.push('Missing ROS overall or positional rank');
 if(rows.some(r=>!Number.isInteger(r.weekly_overall_rank)||!r.weekly_position_rank)) blocked.push('Missing weekly rank');
 if(JSON.stringify(out).match(/\"adp\"\s*:\s*(?!\"DISABLED\")/i)) blocked.push('Active ADP value leaked into in-season ranking output');
@@ -103,7 +105,7 @@ write('guardrails/in-season-ranking-layer-report.json',{
   universe:expected,
   week:out.week,
   opponent_signal_multiplier:opponentMultiplier,
-  players_with_context:rows.filter(r=>r.weekly_matchup_context.components.length>0).length,
+  players_with_context:playersWithContext,
   players_expected_inactive:rows.filter(r=>r.weekly_availability==='EXPECTED_INACTIVE').length,
   blocked,
   safeguards:[
