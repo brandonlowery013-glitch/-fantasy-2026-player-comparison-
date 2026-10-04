@@ -60,3 +60,5 @@ export function buildAdmissionPackage({candidateId,base=root}){
 
 function main(){const args=process.argv.slice(2);const id=args.find(x=>!x.startsWith('--'));if(!id)throw new Error('usage: node scripts/build-admission-package.mjs <candidate_id>');console.log(JSON.stringify(buildAdmissionPackage({candidateId:id}),null,2));}
 if(process.argv[1]&&path.resolve(process.argv[1])===path.resolve(new URL(import.meta.url).pathname))main();
+
+// branch-protection refresh: admission logic unchanged; re-run required merge-queue status on current head.
