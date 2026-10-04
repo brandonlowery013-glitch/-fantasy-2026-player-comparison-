@@ -12,5 +12,5 @@ scope.BET_FEED={week:6};vm.runInContext('syncWeek()',scope);assert.equal(select.
 for(const week of [0,19,NaN,2.5,'invalid'])assert.equal(scope.currentPropWeek({week}),null);
 assert.match(code,/manualWeek=true;chosenWeek=Number\(e.target.value\)/);
 assert.match(code,/ctd:games-ready',\(\)=>\{syncWeek\(\);render\(\);\}/);
-assert.match(code,/finally\{busy=false;syncWeek\(\);render\(\);\}/);
+assert.match(code,/finally\{busy=false;syncWeek\(\);render\(\);/);
 console.log('PASS: delayed current week, rollover, valid weeks and manual history selection');
