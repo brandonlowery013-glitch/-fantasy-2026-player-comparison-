@@ -40,20 +40,20 @@
     const edge=Number(side.probability_edge),ev=Number(side.expected_value),modelP=Number(side.conditional_win_probability);
     const fp=raw?.football_projection||{};
     let projection='';
-    if(kind==='spread'&&Number.isFinite(Number(fp.model_home_spread)))projection=`CTD independent football model: ${g.home_team} ${Number(fp.model_home_spread)>0?'+':''}${Number(fp.model_home_spread).toFixed(1)}.`;
-    if(kind==='total'&&Number.isFinite(Number(fp.model_total)))projection=`CTD independent football model total: ${Number(fp.model_total).toFixed(1)}.`;
-    if(kind==='moneyline'&&Number.isFinite(Number(fp.home_win_probability)))projection=`CTD independent football win probability: ${g.home_team} ${pct(Number(fp.home_win_probability))}, ${g.away_team} ${pct(Number(fp.away_win_probability))}.`;
+    if(kind==='spread'&&Number.isFinite(Number(fp.model_home_spread)))projection=`Our projected spread: ${g.home_team} ${Number(fp.model_home_spread)>0?'+':''}${Number(fp.model_home_spread).toFixed(1)}.`;
+    if(kind==='total'&&Number.isFinite(Number(fp.model_total)))projection=`We expect this many combined points: ${Number(fp.model_total).toFixed(1)}.`;
+    if(kind==='moneyline'&&Number.isFinite(Number(fp.home_win_probability)))projection=`Our estimated chance of winning: ${g.home_team} ${pct(Number(fp.home_win_probability))}, ${g.away_team} ${pct(Number(fp.away_win_probability))}.`;
     const pieces=[];
-    if(Number.isFinite(modelP)&&Number.isFinite(Number(fairP)))pieces.push(`Model chance ${pct(modelP)} vs no-vig sportsbook chance ${pct(Number(fairP))}`);
-    if(Number.isFinite(edge))pieces.push(`${edge>=0?'+':''}${(edge*100).toFixed(1)} percentage-point edge`);
-    if(Number.isFinite(ev))pieces.push(`${ev>=0?'+':''}${(ev*100).toFixed(1)}% expected value per unit`);
+    if(Number.isFinite(modelP)&&Number.isFinite(Number(fairP)))pieces.push(`We estimate a ${pct(modelP)} chance. The sportsbook price suggests ${pct(Number(fairP))} after removing its built-in margin.`);
+    if(Number.isFinite(edge))pieces.push(`Our estimate is ${Math.abs(edge*100).toFixed(1)} percentage points ${edge>=0?'higher':'lower'}.`);
+    if(Number.isFinite(ev))pieces.push(`At this price, the estimated average result is ${ev>=0?'+':'−'}$${Math.abs(ev*100).toFixed(2)} per $100 bet over many similar bets. This is not a guaranteed return.`);
     return `<div class="ctdWhyPick"><b>${esc(kind.toUpperCase())} · ${esc(marketLabel)}</b><p>${esc(projection)} ${esc(pieces.join(' · '))}</p><small>${esc(rec.confidence||'')} confidence · ${esc(s.book)} · snapshot ${esc(date(s.captured_at))}</small></div>`;
   }
   function modelPicks(g){
     const raw=marketGame(g),s=snapshot(raw);if(!s){const note=document.getElementById('ctdPickContext');if(note)note.textContent='No matching pregame snapshot has been published for this week and matchup.';for(const id of ['spreadPick','totalPick','mlPick']){const el=document.getElementById(id);if(el){el.textContent='Not published';el.title='Waiting for a matching pregame model snapshot';}}return;}
     for(const [kind,id,field] of [['spread','spreadPick','model_spread_pick'],['total','totalPick','total_pick'],['moneyline','mlPick','moneyline_pick']]){
       const r=s.markets?.[kind]?.recommendation,el=document.getElementById(id);if(!el)continue;
-      const value=r?.decision==='PICK'?r.selection:r?.decision==='PASS'?'PASS':'Not published';
+      const value=r?.decision==='PICK'?r.selection:r?.decision==='PASS'?'No bet':'Not published';
       el.textContent=value;g[field]=value;
       el.title=r?.decision==='PASS'?(r.reason||'No side clears the model thresholds'):r?.decision==='PICK'?`Stored pregame model pick · ${date(s.captured_at)}`:'No stored decision';
       const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent=r?.decision==='PICK'&&typeof r.probability_edge==='number'?`${(r.probability_edge*100).toFixed(1)} percentage points`:'';
@@ -61,9 +61,9 @@
     const edge=document.getElementById('mlEdge');if(edge)edge.textContent=s.markets?.moneyline?.recommendation?.decision==='PICK'?pct(s.markets.moneyline.recommendation.probability_edge):'—';
     let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('p');note.id='ctdPickContext';note.className='ctdPickContext';document.getElementById('spreadPick')?.closest('.panel')?.appendChild(note)}
     const why=['spread','total','moneyline'].map(kind=>pickWhy(kind,s.markets?.[kind],s,raw,g)).filter(Boolean).join('');
-    note.innerHTML=`<b>WHY CTD GRADES IT WELL</b><br><span>CTD pregame model snapshot · ${esc(s.book)} · ${esc(date(s.captured_at))}. ${Date.parse(raw.kickoff)<=Date.now()?'Archived for reference; these are not live recommendations. ':''}PASS means neither side met CTD’s locked probability-edge, EV and model-probability minimums. External analyst picks are not used to create this decision.</span>${why||'<div class="ctdWhyPick"><p>No market cleared the locked pick thresholds in this snapshot.</p></div>'}`;
+    note.innerHTML=`<b>WHY WE LIKE THE PICK</b><br><span>Pregame forecast · ${esc(s.book)} · ${esc(date(s.captured_at))}. ${Date.parse(raw.kickoff)<=Date.now()?'This game has started. These are the picks saved before kickoff. ':''}“No bet” means we did not find enough value at the available price.</span>${why||'<div class="ctdWhyPick"><p>We did not recommend a bet at these prices.</p></div>'}`;
     let ext=document.getElementById('ctdExternalContext');if(!ext){ext=document.createElement('div');ext.id='ctdExternalContext';ext.className='ctdExternalContext';note.insertAdjacentElement('afterend',ext)}
-    ext.innerHTML='<b>EXTERNAL CONTEXT</b><p>Optional cross-check only. VSiN, Action Network, Covers, public betting splits, and other third-party commentary do not determine CTD picks. When external evidence is available, it must be shown separately with its source and timestamp.</p>';
+    ext.innerHTML='<b>OTHER SOURCES</b><p>We have not attached a current outside betting report for this game. Our picks above come from our own forecast.</p>';
   }
   function playerRows(d,team,categories){return (d?.player_stats||[]).filter(p=>norm(p.team)===norm(team)&&categories.includes(p.category))}
   function leaders(d,team,defense=false){
