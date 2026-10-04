@@ -62,7 +62,7 @@
   const pp=projection.players?.[s.player],cp=matches(context)&&context.sportsbook_inputs_used===false?context.players?.[s.player]:null;
   const signals=Object.entries(cp?.signals||{}).map(([kind,x])=>({kind,...x}));
   const team=cp?.signals?.role?.evidence?.team;
-  const work=window.CTD_SHOW_WORK?.propWork(e,distribution.distributions?.[s.player]?.distributions?.[s.stat],pp?.projections?.[s.stat],signals,Object.fromEntries(['attempts','targets','carries','routes','snaps'].map(k=>[k,pp?.projections?.[k]?.mean])),Date.now(),matches(gameMarkets)?window.CTD_SHOW_WORK.teamEnvironment(gameMarkets.games,team,s.week):null);
+  const work=window.CTD_SHOW_WORK?.propWork(e,window.CTD_SHOW_WORK.propStat(distribution.distributions?.[s.player]?.distributions,s.stat),window.CTD_SHOW_WORK.propStat(pp?.projections,s.stat),signals,Object.fromEntries(['attempts','targets','carries','routes','snaps'].map(k=>[k,pp?.projections?.[k]?.mean])),Date.now(),matches(gameMarkets)?window.CTD_SHOW_WORK.teamEnvironment(gameMarkets.games,team,s.week):null);
   if(work?.reader){const [state,reason]=verdict(s);if(!reason.includes('Betting: recommended'))work.reader.verdict=reason;}
   return window.CTD_FORMATTED_WORK?.(work)||'';
  }
