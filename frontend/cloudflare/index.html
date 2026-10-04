@@ -580,7 +580,7 @@ async function loadFeed(){
       const schedule=await sr.json();
       if(request!==feedRequest)return;
       const rows=schedule.games||schedule.data?.games||[];
-      BET_FEED={week:targetWeek,status:'SCHEDULE_ONLY',actionable:false,props:[],parlays:[],eligible_legs:[],games:rows.map(g=>({event_id:g.event_id,away_team:g.away.team,home_team:g.home.team,event_start:g.start_at,status:g.status,completed:g.state==='post',away_score:g.state==='pre'?null:g.away.score,home_score:g.state==='pre'?null:g.home.score,venue:g.venue||`Week ${targetWeek}`,model_pick:'PENDING',total_pick:'PENDING',model_spread_pick:'PENDING',moneyline_pick:'PENDING',model_summary:`Week ${targetWeek} games are available. Matching published lines and model analysis are pending.`}))};
+      BET_FEED={week:targetWeek,status:'SCHEDULE_ONLY',actionable:false,props:[],parlays:[],eligible_legs:[],games:rows.map(g=>({event_id:g.event_id,away_team:g.away.team,home_team:g.home.team,event_start:g.start_at,state:g.state,status:CTD_TIME.status(g),completed:g.state==='post',away_score:g.state==='pre'?null:g.away.score,home_score:g.state==='pre'?null:g.home.score,venue:g.venue||`Week ${targetWeek}`,model_pick:'PENDING',total_pick:'PENDING',model_spread_pick:'PENDING',moneyline_pick:'PENDING',model_summary:`Week ${targetWeek} games are available. Matching published lines and model analysis are pending.`}))};
       selectedGameIndex=0;
       renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);document.dispatchEvent(new Event('ctd:games-ready'));
       document.documentElement.dataset.gameFeedStatus=BET_FEED.status;
