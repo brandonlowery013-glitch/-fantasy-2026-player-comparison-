@@ -73,13 +73,14 @@
   }
   function matchupFacts(signals,now){
     const labels={fantasy_points_allowed:'Fantasy points allowed',qb_fantasy_points_allowed:'Fantasy points allowed to quarterbacks',rb_fantasy_points_allowed:'Fantasy points allowed to running backs',wr_fantasy_points_allowed:'Fantasy points allowed to receivers',te_fantasy_points_allowed:'Fantasy points allowed to tight ends',pass_rate:'Pass rate',rush_rate:'Run rate',proe:'Pass rate above expectation',pressure_rate:'Pressure rate',sack_rate:'Sack rate',yards_per_attempt_allowed:'Passing yards allowed per attempt',yards_per_carry_allowed:'Rushing yards allowed per carry',plays_per_game:'Plays per game',wind_mph:'Wind (mph)',temperature:'Temperature',venue:'Venue',home_away:'Location',status:'Injury report',practice_status:'Practice participation',snap_share:'Share of snaps',route_share:'Share of routes',target_share:'Share of targets',depth_rank:'Depth-chart position',attempts:'Pass attempts',targets:'Targets',carries:'Carries',routes:'Routes',snaps:'Snaps'};
+    Object.assign(labels,{pass_rate_over_expectation:'Pass rate above expectation',coverage_grade:'Coverage grade',run_defense_grade:'Run-defense grade',pace:'Pace',expected_game_script:'Expected game situation',dome:'Dome',precipitation:'Precipitation',offensive_line_injuries:'Offensive-line injuries',secondary_injuries:'Secondary injuries'});
     const facts=[];
     for(const signal of signals){if(!contextCurrent(signal,signal.kind||signal.signal,now))continue;
       for(const [key,label] of Object.entries(labels)){const v=signal.evidence?.[key];if(v==null||v===''||typeof v==='object')continue;
-        const value=num(v)!=null&&(/rate|share|proe/.test(key))?pct(v):String(v);
-        facts.push({text:`${signal.player?signal.player+': ':signal.evidence?.opponent?signal.evidence.opponent+': ':''}${label}: ${value}.`,source:signal.source,at:signal.kind==='injury'?signal.evidence.source_updated_at:signal.captured_at});
+        const value=typeof v==='boolean'?(v?'Yes':'No'):num(v)!=null&&(/rate|share|proe/.test(key))?pct(v):String(v);
+        facts.push({kind:signal.kind||signal.signal,field:key,text:`${signal.player?signal.player+': ':signal.evidence?.opponent?signal.evidence.opponent+': ':''}${label}: ${value}.`,source:signal.source,at:signal.kind==='injury'?signal.evidence.source_updated_at:signal.captured_at});
       }
-    }return facts.slice(0,6);
+    }return facts;
   }
   function verdictText(decision,selection,probability,confidence,complete){
     if(decision==='WAIT')return 'Wait. This is not a current recommendation.';
@@ -91,10 +92,14 @@
     if(!work?.reader)return '';
     const r=work.reader,escape=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const report=globalThis.CTD_MATCHUP_REPORTS?.get(r.matchupKey)||r.matchupIdentity,a=globalThis.CTD_MATCHUP_ASSESSMENT?.(r,report),facts=r.matchup||[];
-    const sources=a?.sources||facts.filter(f=>f.source).map(f=>({label:f.source,at:f.at}));
+    const sources=[...(a?.sources||facts.filter(f=>f.source).map(f=>({label:f.source,at:f.at}))),...(r.sources||[])];
     const unique=[...new Map(sources.filter(x=>x.label).map(x=>[x.url||x.label,x])).values()];
     const sourceHtml=unique.map(x=>`<li>${/^https:\/\//.test(x.url||'')?`<a href="${escape(x.url)}" target="_blank" rel="noopener noreferrer">${escape(x.label)}</a>`:escape(x.label)}${x.at?` <small>· ${escape(humanTime(x.at))}</small>`:''}</li>`).join('');
-    if(!r.kind)return `<section class="showWork ctdFormattedWork"><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${facts.length?`<p>${escape(facts[0].text)}</p>`:''}${r.hideVerdict?'':`<p><b>${escape(r.verdict)}</b></p>`}<details><summary>Numbers and sources</summary><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul><ul class="workSources">${sourceHtml}</ul></details></section>`;
+    if(!r.kind){
+      const availability=facts.find(f=>f.kind==='injury'&&f.field==='status'&&!/Injury report: Active\./i.test(f.text));
+      const lead=availability||facts[0];
+      return `<section class="showWork ctdFormattedWork"><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${lead?`<p>${escape(lead.text)}</p>`:''}${r.hideVerdict||!r.verdict?'':`<p><b>${escape(r.verdict)}</b></p>`}<details><summary>Numbers and sources</summary><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul>${r.reconciliation?`<p>${escape(r.reconciliation)}</p>`:''}${facts.length?`<h4>Matchup and workload</h4><ul>${facts.map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`:''}${sourceHtml?`<h4>Sources</h4><ul class="workSources">${sourceHtml}</ul>`:''}</details></section>`;
+    }
     return `<section class="showWork ctdFormattedWork"><h4>The forecast</h4><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${a?.sections?.length?(r.kind==='spread'?a.sections:[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join(''):`<h4>The matchup</h4><ul>${facts.slice(0,r.kind?facts.length:2).map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`}<h4>What this means for the pick</h4><p>${escape(a?.risk||r.reconciliation)}</p><p class="workVerdict"><b>${a?.risk?'Saved forecast: ':''}${escape(r.verdict)}</b></p><details><summary>Numbers and sources</summary><h4>The numbers</h4><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul>${a?`<p>${escape(r.reconciliation)}</p>${(a.comparisons||[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join('')}<h4>Recent form</h4><ul>${facts.map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`:''}<h4>Sources</h4><ul class="workSources">${sourceHtml}</ul></details></section>`;
   }
   function gameWork(game,snapshot,kind,now=Date.now()){
@@ -139,12 +144,18 @@
     const work=finish([`Baseline ${fmt(base)} → context-adjusted projection ${fmt(mean)} ${e.stat}; ${spec?.family||'unavailable'} distribution, SD ${fmt(spec?.sd??spec?.parameters?.sigma)}.`,`Market ${side||'unavailable'} ${e.line}; projection − line = ${mean!=null&&num(e.line)!=null?fmt(mean-e.line):'unavailable'}.`,...priceMath(s,s.no_vig_market_probability)],context,reconciliation,s.model_conditional_win_probability,e.recommendation?.confidence,e.recommendation?.decision,[`Model direction: ${e.model_pick?.side||'unavailable'}. Betting selection: ${e.recommendation?.side||'none'}.`,environmentText,`Opportunities: ${Object.entries(opportunities).filter(([,v])=>num(v)!=null).map(([k,v])=>`${k} ${fmt(v)}`).join(', ')||'unavailable; no attempts or volume inferred from yardage'}.`,`Existing applied adjustments: ${applied.map(a=>`${a.signal}: mean ${pct(a.mean_pct)}, uncertainty ${pct(a.sd_pct)} (${a.source||'source unavailable'})`).join('; ')||'none'}.`,`Availability: ${e.eligibility?.availability_status||'unavailable'}. Quote: ${e.book||'unavailable'}, ${e.captured_at||'unavailable'}.`]);
     const stat=String(e.stat||'').replaceAll('_',' ');
     work.reader={summary:`We project ${fmt(mean)} ${stat}, compared with a line of ${e.line??'unknown'}. ${side?`The model leans ${side.toLowerCase()}.`:'Neither side has a confirmed recommendation.'}`,details:[`The starting projection was ${fmt(base)}. After the supported matchup and usage adjustments, it is ${fmt(mean)}.`, `Estimated chance for ${side||'the selected side'}: ${pct(s.model_conditional_win_probability)} when the bet does not end in a refund.`,plainPrice(s),`Projected workload: ${Object.entries(opportunities).filter(([,v])=>num(v)!=null).map(([k,v])=>`${fmt(v)} ${k}`).join(', ')||'not available'}.`,environment?`The game total is ${fmt(environment.total)}. The spread and total imply ${fmt(environment.implied_total)} points for ${environment.team}.`:'We do not have matching game odds for this player.']};
+    const contextMean=num(projection?.mean);
+    work.math[0]=`Baseline ${fmt(base)} → context-adjusted projection ${fmt(contextMean)} → distribution average ${fmt(mean)} ${e.stat}; ${spec?.family||'unavailable'} distribution, SD ${fmt(spec?.sd??spec?.parameters?.sigma)}.`;
+    work.paragraphs[0]=work.math[0];
+    work.reader.details[0]=`The starting projection was ${fmt(base)}. After the recorded matchup and usage adjustments, it is ${fmt(contextMean)}.`;
+    if(contextMean!=null&&mean!=null&&Math.abs(contextMean-mean)>0.005)work.reader.details.splice(1,0,`The final outcome distribution has an average of ${fmt(mean)}. That difference comes from the distribution stage, not an additional matchup adjustment.`);
     const median=spec?.family==='lognormal_shifted'&&num(spec?.parameters?.log_mu)!=null?Math.exp(spec.parameters.log_mu)+(num(spec.parameters.shift)||0):null;
     const over=(e.sides||[]).find(x=>x.side==='OVER')?.model_conditional_win_probability,under=(e.sides||[]).find(x=>x.side==='UNDER')?.model_conditional_win_probability;
     if(mean!=null&&num(e.line)!=null&&((side==='UNDER'&&mean>e.line)||(side==='OVER'&&mean<e.line))){
       work.reader.distributionExplanation=`${fmt(mean)} is the average across the model’s possible outcomes, not the midpoint.${median!=null?` The midpoint is ${fmt(median)} ${stat}; a smaller number of big games pull the average higher.`:''} ${num(over)!=null&&num(under)!=null?`At this line, the model gives Over ${pct(over)} and Under ${pct(under)}.`:`The selected side has a ${pct(s.model_conditional_win_probability)} chance.`} That is why the direction can differ from comparing the average with the line.`;
     }
     work.reader.matchup=matchupFacts(signals,now);
+    work.reader.sources=applied.filter(a=>a.source).map(a=>({label:a.source}));
     const workload=Object.entries(opportunities).filter(([,v])=>num(v)!=null).map(([k,v])=>`${fmt(v)} ${k}`).join(', ');
     if(workload)work.reader.matchup.unshift({text:'Expected workload: '+workload+'.',source:'Player projection',at:null});
     const changes=applied.filter(a=>num(a.mean_pct)!=null).map(a=>`${String(a.signal||'Matchup').replaceAll('_',' ')} ${a.mean_pct>=0?'raises':'lowers'} the forecast by ${pct(Math.abs(a.mean_pct))}`);
@@ -157,7 +168,11 @@
   function fantasyWork(projection,signals=[],now=Date.now()){
     const context=contextReview(signals,now),base=num(projection?.baseline?.mean),mean=num(projection?.mean);
     const work=finish([`Historical baseline ${fmt(base)} × existing context multiplier ${fmt(projection?.adjustments?.mean_multiplier)} = ${fmt(mean)}.`,`Combined uncertainty ${fmt(projection?.combined_sd)}; performance ${fmt(projection?.performance_sd)}, projection error ${fmt(projection?.projection_error_sd)}.`],context,reconcile(base,mean),null,null,'PROJECTION_ONLY',['Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.']);
-    work.reader={summary:`Our starting forecast is ${fmt(base)}. The supported matchup and workload adjustments bring it to ${fmt(mean)}.`,details:[`Expected variation around the forecast: ${fmt(projection?.combined_sd)}. A wider range means a less predictable result.`]};
+    const applied=(projection?.adjustments?.applied||[]).filter(a=>num(a.mean_pct)!=null);
+    const changes=applied.map(a=>`${String(a.signal||'Matchup').replaceAll('_',' ')} ${a.mean_pct>=0?'raises':'lowers'} the forecast by ${pct(Math.abs(a.mean_pct))}`);
+    const direction=base==null||mean==null?'There is not enough information to compare the starting and final forecasts.':mean===base?'The supported adjustments leave the starting forecast unchanged.':`Together, the supported adjustments ${mean>base?'raise':'lower'} the starting forecast by ${fmt(Math.abs(mean-base))}.`;
+    work.reader={summary:`Our starting forecast is ${fmt(base)}. The supported matchup and workload adjustments bring it to ${fmt(mean)}.`,matchup:matchupFacts(signals,now),reconciliation:changes.length?changes.join('; ')+'. '+direction:direction,details:[`Expected variation around the forecast: ${fmt(projection?.combined_sd)}. A wider range means a less predictable result.`,`This is a player-stat projection. It does not establish a head-to-head start/sit win probability.`]};
+    work.reader.sources=applied.filter(a=>a.source).map(a=>({label:a.source}));
     return work;
   }
   function teamEnvironment(games,team,week){
