@@ -104,10 +104,10 @@ async function fetchSchedule(now,forcedWeek){
   return completeWeekSchedule({forcedWeek,discover,chooseWeek:games=>chooseWeek(games,now,null,validCurrent?currentWeek:null),fetchWeek:week=>fetchScheduleCandidates(now,week)});
 }
 
-function buildContext(players,week,nowIso){
+function buildContext(players,week,nowIso,snapshotRows=snapshots.snapshots||[]){
   const byPlayer=new Map(players.map(p=>[norm(p.name),p]));
   const latest=new Map(),blocked=[];
-  for(const s of snapshots.snapshots||[]){
+  for(const s of snapshotRows){
     if(Number(s.week)!==week)continue;
     const type=String(s.signal_type||'');if(!validSignals.has(type)){blocked.push(`unsupported signal_type ${type}`);continue;}
     if(marketWords.test(String(s.source||''))||marketWords.test(JSON.stringify(s.evidence||{}))){blocked.push(`${s.player} ${type} market contamination`);continue;}
@@ -145,7 +145,8 @@ async function main(){
     gameOut[id]={week,away_team:g.away_team,home_team:g.home_team,event_start:new Date(start).toISOString(),verified:true,source:g.source||contract.schedule_source.automated_feed_name,authoritative_cross_check:contract.schedule_source.authoritative_cross_check,event_id:g.event_id||null,completed:g.completed===true,players:players.filter(p=>p.team===g.away_team||p.team===g.home_team).map(p=>p.name)};
   }
   const schedule={schema_version:'1.3.0',season:2026,week,status:Object.keys(gameOut).length?'LIVE_SCHEDULE_INGESTED':'AWAITING_VERIFIED_EVENTS',generated_at:nowIso,sportsbook_inputs_used:false,games:gameOut};
-  const context=buildContext(players,week,nowIso),blocked=[...context.blocked];
+  // The fixed-time mapping self-test must not consume later production evidence.
+  const context=buildContext(players,week,nowIso,selfTest?[]:snapshots.snapshots||[]),blocked=[...context.blocked];
   if(selfTest){if(Object.keys(schedule.games).length!==1)blocked.push('self-test schedule game count');if(!schedule.games['2026-W1-ATL-CHI'])blocked.push('self-test game id');}
   if(!Object.keys(schedule.games).length)blocked.push(`no 2026 regular-season games found for week ${week}`);
   write('data/calibration/weekly-event-schedule-2026.json',schedule);write('data/probability/weekly-football-context-raw-2026.json',context.raw);

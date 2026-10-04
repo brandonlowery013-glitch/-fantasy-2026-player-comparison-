@@ -57,6 +57,12 @@ try{
   reset();run({MOCK_FINAL:'true'});assert.equal(JSON.parse(fs.readFileSync(schedule)).week,5);
   reset();const before=fs.readFileSync(schedule);assert.throws(()=>run({MOCK_FAIL:'true'}));assert.deepEqual(fs.readFileSync(schedule),before,'unverified current week must fail before writes');
   reset();run({NFL_WEEK:'5',MOCK_FAIL:'true'});assert.equal(JSON.parse(fs.readFileSync(schedule)).week,5,'explicit gated rollover bypasses discovery');
+  const player=JSON.parse(fs.readFileSync(path.join(tmp,'players0.json')))[0].n;
+  fs.writeFileSync(path.join(tmp,'data/ingestion/weekly-football-source-snapshots-2026.json'),JSON.stringify({snapshots:[{week:1,player,signal_type:'role',source:'TEST_SOURCE',captured_at:'2026-10-01T12:00:00Z'}]}));
+  const selfEnv={...process.env,INGEST_NOW:'2026-08-27T12:00:00Z',NFL_WEEK:'1'};
+  execFileSync(process.execPath,[path.join(tmp,'scripts/ingest-weekly-football-data.mjs'),'--self-test'],{cwd:tmp,env:selfEnv,stdio:'pipe'});
+  assert.equal(JSON.parse(fs.readFileSync(path.join(tmp,'guardrails/weekly-football-ingestion-report.json'))).result,'PASS','fixed-date self-test is isolated from production evidence');
+  assert.throws(()=>run({INGEST_NOW:'2026-08-27T12:00:00Z',NFL_WEEK:'1'}),'production must still reject future evidence');
   for(const [file,bytes] of baseline)assert.deepEqual(fs.readFileSync(path.join(tmp,file)),bytes,`${file} static baseline changed`);
 }finally{fs.rmSync(tmp,{recursive:true,force:true});}
 console.log('PASS: live/unknown weeks retained, final-only rollover, capped discovery/deployed output, fail-closed verification, forced week and static baseline separation');
