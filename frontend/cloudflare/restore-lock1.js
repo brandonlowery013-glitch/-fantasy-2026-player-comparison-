@@ -106,18 +106,7 @@
  get(RAW+'data/probability/generated/matchup-tidbits-2026.json').then(d=>{history=d;historyView()}).catch(err=>console.error('Historical context unavailable',err));
 })();
 
-(()=>{
- let scores=null;
- const norm=t=>({LA:'LAR',WAS:'WSH'}[t]||t);
- function applyScores(){if(!scores||Number(scores.week)!==Number(BET_FEED.week))return;
-  for(const g of BET_FEED.games){const s=scores.games.find(x=>norm(x.away_team)===norm(g.away_team)&&norm(x.home_team)===norm(g.home_team));if(!s)continue;Object.assign(g,{away_score:s.away_score,home_score:s.home_score,status:s.completed?'FINAL':s.state==='in'?'LIVE':new Date(s.date).toLocaleString([], {weekday:'short',hour:'numeric',minute:'2-digit'}),completed:s.completed,latest_scores:{away:[...s.away_periods.slice(0,4),s.away_score],home:[...s.home_periods.slice(0,4),s.home_score]}});
-   if(s.completed){g.model_summary=`Final: ${g.away_team} ${s.away_score}, ${g.home_team} ${s.home_score}. Pregame market analysis is archived.`;}
-  }
-  renderTicker();renderSelectedGame();
- }
- document.addEventListener('ctd:games-ready',applyScores);
- fetch('https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/data/weekly/scoreboard-2026.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw Error(r.status);return r.json()}).then(d=>{scores=d;applyScores()}).catch(e=>console.error('Scoreboard unavailable',e));
-})();
+/* Live scoreboard updates are owned by live-score-poller.js. */
 
 (()=>{
   let feed=null;
