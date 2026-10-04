@@ -1,0 +1,16 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const code=fs.readFileSync('frontend/cloudflare/prop-board.js','utf8');
+const select={value:null},scope=vm.createContext({BET_FEED:null,gameMarkets:null,projection:null,recs:null,page:{querySelector:()=>select}});
+vm.runInContext(code.slice(code.indexOf(' let manualWeek='),code.indexOf(' propsButton.addEventListener')),scope);
+assert.equal(select.value,'');
+scope.projection={week:4};vm.runInContext('syncWeek()',scope);assert.equal(select.value,4);
+scope.BET_FEED={week:5};vm.runInContext('syncWeek()',scope);assert.equal(select.value,5);
+vm.runInContext('manualWeek=true;chosenWeek=2;page.querySelector().value=2',scope);
+scope.BET_FEED={week:6};vm.runInContext('syncWeek()',scope);assert.equal(select.value,2);
+for(const week of [0,19,NaN,2.5,'invalid'])assert.equal(scope.currentPropWeek({week}),null);
+assert.match(code,/manualWeek=true;chosenWeek=Number\(e.target.value\)/);
+assert.match(code,/ctd:games-ready',\(\)=>\{syncWeek\(\);render\(\);\}/);
+assert.match(code,/finally\{busy=false;syncWeek\(\);render\(\);/);
+console.log('PASS: delayed current week, rollover, valid weeks and manual history selection');
