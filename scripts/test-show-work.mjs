@@ -62,3 +62,16 @@ assert.equal(propAvailability({...liveProp,captured_at:'2026-10-01T00:00:00Z'},[
 assert.match(w.reader.summary,/We expect/);assert.match(pw.reader.summary,/We project/);
 assert.doesNotMatch(w.reader.summary,/intercept|raw edge|locked/);
 console.log('PASS: readable explanations and current prop status, kickoff, and price checks');
+
+const explained=gameWork({...game,scoring_evidence:{teams:{NO:{current_points_for:24,current_points_allowed:20,current_games:3},ATL:{current_points_for:21,current_points_allowed:27,current_games:3}},rest_days:{home:7,away:6},contributions:{margin:{intercept:4,reconstructed:6,terms:[{name:'scoring_matchup',contribution:2}]}}}},snap,'spread',now);
+assert.match(explained.reader.matchup[0].text,/NO has scored 24.00.*ATL has allowed 27.00/);
+assert.match(explained.reader.reconciliation,/NO winning by 4.00 to NO winning by 6.00/);
+assert.match(explained.reader.verdict,/66.7%/);
+assert.match(pw.reader.verdict,/not a current recommendation/);
+assert.match(pw.reader.reconciliation,/work against this side/);
+const staleWork=propWork(e,{mean:80},p,[{...signal,kind:'opponent',captured_at:'2026-09-01T00:00:00Z',evidence:{pressure_rate:.9}}],{},now);
+assert.equal(staleWork.reader.matchup.length,0,'stale facts must not appear as current matchup support');
+console.log('PASS: concrete matchup facts, effect on the pick, final decision and stale-fact exclusion');
+
+const awaySelected=structuredClone(snap);awaySelected.markets.spread.recommendation.selection="ATL +3";awaySelected.markets.spread.side_b.conditional_win_probability=.4;
+assert.equal(gameWork(game,awaySelected,"spread",now).final_probability,.4,"explanation must describe the selected side even when the other side has higher EV");

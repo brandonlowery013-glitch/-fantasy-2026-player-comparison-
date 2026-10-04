@@ -328,9 +328,24 @@ border-radius:6px;overflow:hidden}
     if(!Number.isFinite(quote)||quote>now||now-quote>6*3600000)return {available:false,label:'Waiting for updated odds',reason:'This saved price is too old to treat as an available play.'};
     return {available:e.eligibility?.eligible_for_pick===true&&e.recommendation?.decision==='PICK',label:e.recommendation?.decision==='PICK'&&e.eligibility?.eligible_for_pick===true?'Model pick':'No bet',reason:e.recommendation?.decision==='PICK'?'Check the current price before placing a bet.':'The model does not recommend a bet at this price.'};
   }
+  function matchupFacts(signals,now){
+    const labels={fantasy_points_allowed:'Fantasy points allowed',qb_fantasy_points_allowed:'Fantasy points allowed to quarterbacks',rb_fantasy_points_allowed:'Fantasy points allowed to running backs',wr_fantasy_points_allowed:'Fantasy points allowed to receivers',te_fantasy_points_allowed:'Fantasy points allowed to tight ends',pass_rate:'Pass rate',rush_rate:'Run rate',proe:'Pass rate above expectation',pressure_rate:'Pressure rate',sack_rate:'Sack rate',yards_per_attempt_allowed:'Passing yards allowed per attempt',yards_per_carry_allowed:'Rushing yards allowed per carry',plays_per_game:'Plays per game',wind_mph:'Wind (mph)',temperature:'Temperature',venue:'Venue',home_away:'Location',status:'Injury report',practice_status:'Practice participation',snap_share:'Share of snaps',route_share:'Share of routes',target_share:'Share of targets',depth_rank:'Depth-chart position',attempts:'Pass attempts',targets:'Targets',carries:'Carries',routes:'Routes',snaps:'Snaps'};
+    const facts=[];
+    for(const signal of signals){if(!contextCurrent(signal,signal.kind||signal.signal,now))continue;
+      for(const [key,label] of Object.entries(labels)){const v=signal.evidence?.[key];if(v==null||v===''||typeof v==='object')continue;
+        const value=num(v)!=null&&(/rate|share|proe/.test(key))?pct(v):String(v);
+        facts.push({text:`${signal.player?signal.player+': ':signal.evidence?.opponent?signal.evidence.opponent+': ':''}${label}: ${value}.`,source:signal.source,at:signal.kind==='injury'?signal.evidence.source_updated_at:signal.captured_at});
+      }
+    }return facts.slice(0,6);
+  }
+  function verdictText(decision,selection,probability,confidence,complete){
+    if(decision==='WAIT')return 'Wait. This is not a current recommendation.';
+    if(decision!=='PICK')return 'No bet. Neither side meets the model’s requirements at this price.';
+    return `${selection}. The model estimates a ${pct(probability)} chance${confidence?` (${String(confidence).toLowerCase()} model confidence)`:''}. ${complete?'The available matchup reports have been checked.':'Matchup review is incomplete; this probability is the baseline model estimate.'}`;
+  }
   function gameWork(game,snapshot,kind,now=Date.now()){
     const p=game.football_projection||{},m=snapshot?.market||{},e=snapshot?.markets?.[kind]||{},r=e.recommendation||{decision:'WAIT'};
-    const a=e.side_a||{},b=e.side_b||{},isA=num(a.expected_value)!=null&&(num(b.expected_value)==null||a.expected_value>=b.expected_value),s=isA?a:b;
+    const a=e.side_a||{},b=e.side_b||{},chosen=String(r.selection||'').split(' ')[0],labelA=kind==='total'?'OVER':game.home_team,labelB=kind==='total'?'UNDER':game.away_team,isA=chosen===labelA?true:chosen===labelB?false:num(a.expected_value)!=null&&(num(b.expected_value)==null||a.expected_value>=b.expected_value),s=isA?a:b;
     const total=num(m.total),spread=num(m.home_spread),home=num(p.home_score_mean),away=num(p.away_score_mean);
     const implied=total!=null&&spread!=null?`${game.home_team} (${total} − (${spread})) / 2 = ${fmt((total-spread)/2)}; ${game.away_team} (${total} + (${spread})) / 2 = ${fmt((total+spread)/2)}`:'unavailable: both spread and total are required';
     const edge=home!=null&&away!=null?(kind==='spread'&&spread!=null?home-away+spread:kind==='total'&&total!=null?home+away-total:null):null;
@@ -345,6 +360,18 @@ border-radius:6px;overflow:hidden}
     const pick=r.selection||'No bet',projectedTotal=home!=null&&away!=null?home+away:null;
     const summary=kind==='total'?`We expect about ${fmt(projectedTotal)} combined points. The line is ${fmt(total)}, so our forecast is ${fmt(edge==null?null:Math.abs(edge))} points ${edge>=0?'above':'below'} it.`:kind==='spread'?`We expect ${game.away_team} to score ${fmt(away)} and ${game.home_team} ${fmt(home)}. With ${game.home_team} ${spread==null?'at an unknown spread':spread<0?'giving '+Math.abs(spread)+' points':'getting '+spread+' points'}, our forecast gives the home side ${fmt(edge)} points of room against the spread.`:`We give ${game.home_team} a ${pct(p.home_win_probability)} chance to win and ${game.away_team} ${pct(p.away_win_probability)}.`;
     work.reader={summary,details:[`Our choice at this saved price: ${pick}.`, `Our estimated chance for the evaluated side: ${pct(s.conditional_win_probability)} when the bet does not end in a refund.`,plainPrice(s),`The spread and total imply ${game.home_team} ${total!=null&&spread!=null?fmt((total-spread)/2):'unknown'} points and ${game.away_team} ${total!=null&&spread!=null?fmt((total+spread)/2):'unknown'} points. These are the sportsbook’s scoring expectations.`, `Odds from ${snapshot?.book||'an unknown sportsbook'}, recorded ${snapshot?.captured_at||'at an unknown time'}.`]};
+    const teamFacts=[];
+    for(const [team,opponent] of [[game.home_team,game.away_team],[game.away_team,game.home_team]]){
+      const t=game.scoring_evidence?.teams?.[team],o=game.scoring_evidence?.teams?.[opponent];
+      if(num(t?.current_points_for)!=null&&num(o?.current_points_allowed)!=null)teamFacts.push({text:`${team} has scored ${fmt(t.current_points_for)} points per game across ${t.current_games} completed games this season. ${opponent} has allowed ${fmt(o.current_points_allowed)} per game across ${o.current_games} games.`,source:'Completed-game scoring inputs',at:null});
+    }
+    const rest=game.scoring_evidence?.rest_days;
+    if(num(rest?.home)!=null&&num(rest?.away)!=null)teamFacts.push({text:`${game.home_team} has ${rest.home} days of rest; ${game.away_team} has ${rest.away} days.`,source:'Game schedule',at:null});
+    work.reader.matchup=[...teamFacts,...matchupFacts(signals,now)];
+    const baseline=num(contribution?.intercept),adjusted=num(contribution?.reconstructed);
+    work.reader.reconciliation=baseline!=null&&adjusted!=null?`${kind==='total'?`The scoring matchup and rest move the total from ${fmt(baseline)} to ${fmt(adjusted)} points.`:`The scoring matchup and rest change the forecast from ${baseline>=0?game.home_team:game.away_team} winning by ${fmt(Math.abs(baseline))} to ${adjusted>=0?game.home_team:game.away_team} winning by ${fmt(Math.abs(adjusted))}.`} ${kind==='total'?`That leaves the projection ${fmt(Math.abs(edge||0))} points ${edge>=0?'above':'below'} the line.`:kind==='moneyline'?'The score distribution gives each team’s chance of winning.':'The final score forecast is what we compare with the spread.'} These effects are already included in the projection.`:'The pick uses the score forecast above. There is not enough verified evidence to assign an additional matchup adjustment.';
+    work.reader.verdict=verdictText(r.decision,pick,s.conditional_win_probability,r.confidence,context.status==='COMPLETE');
+    work.reader.limit=context.status==='COMPLETE'?null:'Current injury, workload or matchup reports are incomplete. No extra probability boost has been applied.';
     return work;
   }
   function propWork(e,spec,projection,signals=[],opportunities={},now=Date.now(),environment=null){
@@ -356,6 +383,14 @@ border-radius:6px;overflow:hidden}
     const work=finish([`Baseline ${fmt(base)} → context-adjusted projection ${fmt(mean)} ${e.stat}; ${spec?.family||'unavailable'} distribution, SD ${fmt(spec?.sd??spec?.parameters?.sigma)}.`,`Market ${side||'unavailable'} ${e.line}; projection − line = ${mean!=null&&num(e.line)!=null?fmt(mean-e.line):'unavailable'}.`,...priceMath(s,s.no_vig_market_probability)],context,reconciliation,s.model_conditional_win_probability,e.recommendation?.confidence,e.recommendation?.decision,[`Model direction: ${e.model_pick?.side||'unavailable'}. Betting selection: ${e.recommendation?.side||'none'}.`,environmentText,`Opportunities: ${Object.entries(opportunities).filter(([,v])=>num(v)!=null).map(([k,v])=>`${k} ${fmt(v)}`).join(', ')||'unavailable; no attempts or volume inferred from yardage'}.`,`Existing applied adjustments: ${applied.map(a=>`${a.signal}: mean ${pct(a.mean_pct)}, uncertainty ${pct(a.sd_pct)} (${a.source||'source unavailable'})`).join('; ')||'none'}.`,`Availability: ${e.eligibility?.availability_status||'unavailable'}. Quote: ${e.book||'unavailable'}, ${e.captured_at||'unavailable'}.`]);
     const stat=String(e.stat||'').replaceAll('_',' ');
     work.reader={summary:`We project ${fmt(mean)} ${stat}, compared with a line of ${e.line??'unknown'}. ${side?`The model leans ${side.toLowerCase()}.`:'Neither side has a confirmed recommendation.'}`,details:[`The starting projection was ${fmt(base)}. After the supported matchup and usage adjustments, it is ${fmt(mean)}.`, `Estimated chance for ${side||'the selected side'}: ${pct(s.model_conditional_win_probability)} when the bet does not end in a refund.`,plainPrice(s),`Projected workload: ${Object.entries(opportunities).filter(([,v])=>num(v)!=null).map(([k,v])=>`${fmt(v)} ${k}`).join(', ')||'not available'}.`,environment?`The game total is ${fmt(environment.total)}. The spread and total imply ${fmt(environment.implied_total)} points for ${environment.team}.`:'We do not have matching game odds for this player.']};
+    work.reader.matchup=matchupFacts(signals,now);
+    const workload=Object.entries(opportunities).filter(([,v])=>num(v)!=null).map(([k,v])=>`${fmt(v)} ${k}`).join(', ');
+    if(workload)work.reader.matchup.unshift({text:'Expected workload: '+workload+'.',source:'Player projection',at:null});
+    const changes=applied.filter(a=>num(a.mean_pct)!=null).map(a=>`${String(a.signal||'Matchup').replaceAll('_',' ')} ${a.mean_pct>=0?'raises':'lowers'} the forecast by ${pct(Math.abs(a.mean_pct))}`);
+    const effect={STRENGTHENS:'Those adjustments support this side.',WEAKENS:'Those adjustments reduce the advantage for this side.',CONTRADICTS:'Those adjustments move the forecast across the line and work against this side.',UNCHANGED:'The context does not change the starting projection.'};
+    work.reader.reconciliation=(changes.length?changes.join('; ')+'. ':'')+(effect[reconciliation]||'There is not enough supported context to measure a matchup adjustment.');
+    work.reader.verdict=verdictText(e.recommendation?.decision,`${side||''} ${e.line??''}`.trim(),s.model_conditional_win_probability,e.recommendation?.confidence,context.status==='COMPLETE');
+    work.reader.limit=context.status==='COMPLETE'?null:'Some current matchup inputs are missing. The explanation includes only the evidence available for this forecast.';
     return work;
   }
   function fantasyWork(projection,signals=[],now=Date.now()){
@@ -404,7 +439,8 @@ function workHtml(work){
  const reader=work.reader||{},context=work.context||{};
 
  const details=reader.details||[];
- return `<section class="showWork"><h4>Why we lean this way</h4><p>${esc(reader.summary||'A written explanation is not available for this saved forecast.')}</p>${context.status!=='COMPLETE'?'<p>This is the baseline forecast. Current matchup reports are incomplete, so we cannot confirm that injuries, workload and conditions still support the pick.</p>':''}<details><summary>See the numbers</summary>${details.map(x=>`<p>${esc(x)}</p>`).join('')}</details></section>`;
+ const facts=reader.matchup||[];
+ return `<section class="showWork"><h4>The forecast</h4><p>${esc(reader.summary||'A written explanation is not available for this saved forecast.')}</p><h4>The matchup</h4>${facts.length?`<ul>${facts.map(f=>`<li>${esc(f.text)}</li>`).join('')}</ul>`:'<p>No current matchup facts are attached to this forecast.</p>'}<h4>How it affects the pick</h4><p>${esc(reader.reconciliation||'Only the supported adjustments shown below are included.')}</p>${reader.limit?`<p class="dataNote">${esc(reader.limit)}</p>`:''}<p class="workVerdict"><b>${esc(reader.verdict||'Projection only; no betting recommendation.')}</b></p><details><summary>See the numbers and sources</summary>${details.map(x=>`<p>${esc(x)}</p>`).join('')}${facts.filter(f=>f.source).map(f=>`<p class="dataNote">${esc(f.source)}${f.at?' · '+esc(new Date(f.at).toLocaleString()):''}</p>`).join('')}</details></section>`;
 }
 function currentInput(key){const x=WORK_INPUTS[key];return x?.season===2026&&Number(x.week)===Number(BET_FEED.week)?x:null;}
 function playerWork(name,stat){
