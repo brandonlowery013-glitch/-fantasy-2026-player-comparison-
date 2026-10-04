@@ -160,7 +160,7 @@
     }
     let context=document.getElementById('ctdMarketContext');if(!context){context=document.createElement('div');context.id='ctdMarketContext';context.className='panel';document.querySelector('.lowgrid').appendChild(context);}
     const books=new Map();for(const x of latest(raw))if(!books.has(x.book))books.set(x.book,x);
-    context.innerHTML='<h3>SPORTSBOOK COMPARISON</h3><p class="copy">Latest stored line per sportsbook; this is not public betting or smart-money data.</p>'+[...books.values()].map(x=>`<div class="breakrow"><span>${e(x.book)}</span><b>${e(raw.home_team)} ${e(x.market.home_spread)}</b><b>Total ${e(x.market.total)}</b></div>`).join('')+'<p class="copy">Bet counts, money percentages and identified sharp action are not supplied by the connected feed.</p>';
+    context.innerHTML='<h3>SPORTSBOOK COMPARISON</h3><p class="copy">Compare the latest saved prices from each sportsbook.</p>'+[...books.values()].map(x=>`<div class="breakrow"><span>${e(x.book)}</span><b>${e(raw.home_team)} ${e(x.market.home_spread)}</b><b>Total ${e(x.market.total)}</b></div>`).join('')+'';
   }
   function syncTicker(){
     if(!feed||Number(feed.week)!==Number(BET_FEED.week))return;
@@ -284,7 +284,7 @@ document.addEventListener('click',ev=>{const p=ev.target.closest('[data-profile]
 ;(()=>{
   const load=src=>new Promise((resolve,reject)=>{
     const script=document.createElement('script');
-    script.src=src;script.onload=resolve;
+    script.src=src;if(src.endsWith('.mjs'))script.type='module';script.onload=resolve;
     script.onerror=()=>reject(new Error('Failed to load '+src));
     document.head.appendChild(script);
   });
@@ -299,6 +299,8 @@ document.addEventListener('click',ev=>{const p=ev.target.closest('[data-profile]
     .catch(err=>console.error('CTD game detail panels failed',err))
     .then(()=>load('./live-odds.js'))
     .catch(err=>console.error('CTD live odds failed',err))
+    .then(()=>load('./runtime-public-splits-2026.js'))
+    .then(()=>load('./runtime-matchup-facts-2026.mjs'))
     .then(()=>load('./news-updates.js'))
     .catch(err=>console.error('CTD news updates failed',err));
 })();
