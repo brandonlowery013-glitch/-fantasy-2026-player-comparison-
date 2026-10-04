@@ -1,5 +1,6 @@
 import {gameWork,gameMarketView} from '../lib/show-work.mjs';
 import {gameContextEvidence} from '../lib/game-context-evidence.mjs';
+import {applyQuarterbackUpdates} from '../lib/game-quarterback-updates.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import {simulateGameDistribution,outcomeProbabilities,moneylineProbabilities,evaluateTwoWay,recommendation} from '../lib/game-market-probability.mjs';
@@ -13,6 +14,9 @@ const projections=read(rerun?'data/probability/generated/all-game-rerun-projecti
 const markets=read('data/market/weekly-matchup-market-snapshots-2026.json');
 const contextPath=path.join(root,'data/probability/weekly-football-context-inputs-2026.json');
 const footballContext=fs.existsSync(contextPath)?JSON.parse(fs.readFileSync(contextPath,'utf8')):null;
+const decisionNow=new Date().toISOString();
+const previousPath=path.join(root,'data/market/weekly-game-market-recommendations-2026.json');
+const previousRecommendations=!rerun&&!process.argv.includes('--self-test')&&fs.existsSync(previousPath)?JSON.parse(fs.readFileSync(previousPath,'utf8')):null;
 const roundObj=x=>JSON.parse(JSON.stringify(x,(k,v)=>typeof v==='number'?Number(v.toFixed(6)):v));
 
 function synthetic(){return {
@@ -90,7 +94,8 @@ for(const [gameId,mg] of Object.entries(marketGames)){
   const validated=gameMarketView(games[gameId],latest);
   if(rerun&&validated&&latest)latest.markets=validated.markets;
   if(validated&&games[gameId].current_recommendations)for(const kind of ['spread','total','moneyline'])if(validated.markets[kind])games[gameId].current_recommendations[kind]=validated.markets[kind].recommendation;
-  for(const snapshot of evaluations)for(const [kind,evaluation]of Object.entries(snapshot.markets)){evaluation.show_work=gameWork(games[gameId],snapshot,kind);}
+  if(!self&&!rerun)games[gameId]=applyQuarterbackUpdates(gameId,games[gameId],previousRecommendations?.games?.[gameId],decisionNow);
+  for(const snapshot of games[gameId].snapshot_evaluations)for(const [kind,evaluation]of Object.entries(snapshot.markets)){evaluation.show_work=gameWork(games[gameId],snapshot,kind);}
 }
 
 if(self){
