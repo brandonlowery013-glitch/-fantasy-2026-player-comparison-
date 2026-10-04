@@ -57,3 +57,27 @@ assert.equal(actual.evidence.contributions.venue_component.additive,false);
 assert.equal(neutral.evidence.contributions.venue_component.contribution,0);
 assert.equal(actual.evidence.contributions.model_version,actual.model_version);
 console.log('PASS: integrated attribution and neutral-venue evidence');
+
+const {applyRestPolicy,removeRestFromForecast,NO_REST_VERSION}=await import('../lib/scoring-rest-policy.mjs');
+const originalArtifact=JSON.stringify(fixture),originalForecast=JSON.stringify(actual);
+const noRestArtifact=applyRestPolicy(fixture,{rest_adjustment_enabled:false});
+const noRest=scoreCurrentGame(noRestArtifact,target,completed,null);
+assert.deepEqual(scoreCurrentGame(noRestArtifact,target,completed,{home:2,away:20}),noRest);
+assert.deepEqual(scoreCurrentGame(noRestArtifact,target,completed,{home:7,away:7}),noRest);
+assert.equal(noRest.model_version,NO_REST_VERSION);
+assert.equal(noRest.evidence.rest_adjustment_applied,false);
+assert.equal(noRest.evidence.rest_days,null);
+assert.equal(noRest.evidence.contributions.margin.terms.length,1);
+assert.equal(noRest.evidence.contributions.total.terms.length,1);
+const converted=removeRestFromForecast(fixture,actual);
+assert.equal(converted.home_score_mean,noRest.home_score_mean);
+assert.equal(converted.away_score_mean,noRest.away_score_mean);
+assert.equal(JSON.stringify(fixture),originalArtifact);
+assert.equal(JSON.stringify(actual),originalForecast);
+assert.equal(noRestArtifact.margin.a,fixture.margin.a);
+assert.equal(noRestArtifact.margin.beta[0],fixture.margin.beta[0]);
+assert.equal(noRestArtifact.total.beta[0],fixture.total.beta[0]);
+assert.throws(()=>removeRestFromForecast(fixture,{...actual,home_score_mean:999}),/reconstruct/);
+console.log('PASS: no-rest version, equal/unequal/missing rest invariance, exact conversion, original immutability and attribution');
+
+await import("./test-no-rest-refresh.mjs");

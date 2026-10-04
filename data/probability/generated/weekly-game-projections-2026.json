@@ -6,7 +6,7 @@
   "mode": "SHADOW_ONLY",
   "actionable": false,
   "sportsbook_inputs_used": false,
-  "generated_at": "2026-10-03T17:14:08.321Z",
+  "generated_at": "2026-10-04T19:13:01.417Z",
   "games": {
     "2026-W4-PIT-CLE": {
       "model_version": "scoring-decay-rest-2026-v1",
@@ -65647,23 +65647,20 @@
       }
     },
     "2026-W4-MIA-MIN": {
-      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version": "scoring-decay-no-rest-2026-v2",
       "scoring_evidence": {
-        "method": "Historically calibrated scoring matchup and rest",
+        "method": "Historically calibrated scoring matchup; rest removed by user instruction",
         "half_life_games": 4,
         "home_field_advantage_feature": 1.7442724458204335,
         "home_field_advantage_contribution": 2.15108045027228,
-        "rest_days": {
-          "home": 7,
-          "away": 7
-        },
+        "rest_days": null,
         "margin_features": [
           8.68853225933523,
-          0
+          0.005886681383370125
         ],
         "total_features": [
           41.1335774710343,
-          0
+          1.1464311994113319
         ],
         "teams": {
           "MIN": {
@@ -65706,11 +65703,12 @@
         "excluded_numeric_features": [
           "granular EPA/pace/explosive matchup extension failed ablation",
           "observed personnel continuity failed ablation",
-          "injury and coaching coefficients not validated"
+          "injury and coaching coefficients not validated",
+          "Days of rest removed by explicit user instruction"
         ],
         "contributions": {
           "schema_version": 1,
-          "model_version": "scoring-decay-rest-2026-v1",
+          "model_version": "scoring-decay-no-rest-2026-v2",
           "margin": {
             "intercept": 2.0625459896983074,
             "terms": [
@@ -65721,17 +65719,9 @@
                 "training_scale": 4.0478595159637,
                 "coefficient": 4.99192169841483,
                 "contribution": 9.441954378600437
-              },
-              {
-                "name": "rest_difference",
-                "raw": 0,
-                "training_mean": 0.005886681383370125,
-                "training_scale": 2.3520149185335586,
-                "coefficient": 0.44750383286354456,
-                "contribution": -0.001120023712922303
               }
             ],
-            "reconstructed": 11.503380344585823
+            "reconstructed": 11.504500368298745
           },
           "total": {
             "intercept": 45.02354672553348,
@@ -65743,30 +65733,24 @@
                 "training_scale": 3.330240876050951,
                 "coefficient": 2.225550796781011,
                 "contribution": -2.765680992821745
-              },
-              {
-                "name": "absolute_rest_difference",
-                "raw": 0,
-                "training_mean": 1.1464311994113319,
-                "training_scale": 2.0537050262972074,
-                "coefficient": -0.2331384108386849,
-                "contribution": 0.13014388363675633
               }
             ],
-            "reconstructed": 42.38800961634849
+            "reconstructed": 42.257865732711736
           },
           "venue_component": {
             "parent_term": "scoring_matchup_including_venue",
             "contribution": 2.15108045027228,
             "additive": false
           },
-          "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+          "scope": "Numerical attribution of scoring model with rest removed; not a causal explanation",
           "excluded_numeric_features": [
             "granular EPA/pace/explosive matchup extension failed ablation",
             "observed personnel continuity failed ablation",
-            "injury and coaching coefficients not validated"
+            "injury and coaching coefficients not validated",
+            "Days of rest removed by explicit user instruction"
           ]
-        }
+        },
+        "rest_adjustment_applied": false
       },
       "home_team": "MIN",
       "away_team": "MIA",
@@ -65774,14 +65758,14 @@
       "neutral_site": false,
       "home_field_advantage_applied": 2.151,
       "model": {
-        "home_score_mean": 26.946,
-        "away_score_mean": 15.442,
-        "home_minus_away_margin": 11.503,
-        "model_home_spread": -11.503,
-        "model_total": 42.388,
-        "home_win_probability": 0.797424,
-        "away_win_probability": 0.181091,
-        "tie_probability": 0.021484,
+        "home_score_mean": 26.881,
+        "away_score_mean": 15.377,
+        "home_minus_away_margin": 11.505,
+        "model_home_spread": -11.505,
+        "model_total": 42.258,
+        "home_win_probability": 0.797699,
+        "away_win_probability": 0.181122,
+        "tie_probability": 0.021179,
         "score_percentiles": {
           "home": {
             "p10": 15,
@@ -65801,7 +65785,7 @@
         },
         "total_percentiles": {
           "p10": 26,
-          "p50": 43,
+          "p50": 42,
           "p90": 59
         }
       },
@@ -65814,7 +65798,7 @@
       "mode": "SHADOW_ONLY",
       "actionable": false,
       "personnel_context": {
-        "status": "CONNECTED",
+        "status": "REVIEW_REQUIRED",
         "numeric_adjustment_applied": false,
         "teams": {
           "MIN": {
@@ -65859,7 +65843,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T23:45:00.000Z",
-                  "age_hours": 17.48553972222222
+                  "age_hours": 43.46695722222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -66002,7 +65986,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T17:25:00.000Z",
-                  "age_hours": 95.81887305555556
+                  "age_hours": 121.80029055555555
                 },
                 "latest_reported_status": "Active"
               },
@@ -66073,7 +66057,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T20:17:00.000Z",
-                  "age_hours": 188.9522063888889
+                  "age_hours": 214.9336238888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -66202,7 +66186,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T04:26:00.000Z",
-                  "age_hours": 108.80220638888889
+                  "age_hours": 134.78362388888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -66284,19 +66268,19 @@
                     "practice_status": null,
                     "source_updated_at": "2026-10-03T13:33:00.000Z",
                     "identity_method": "ESPN_ATHLETE_ID",
-                    "freshness_status": "CURRENT"
+                    "freshness_status": "REVIEW_REQUIRED"
                   }
                 ],
-                "game_availability": "EXPECTED_INACTIVE",
+                "game_availability": "UNKNOWN",
                 "availability": {
-                  "expected_active": false,
-                  "availability_status": "EXPECTED_INACTIVE",
-                  "basis": "CURRENT_EXPLICIT_INJURY_STATUS",
+                  "expected_active": null,
+                  "availability_status": "UNKNOWN",
+                  "basis": "LAST_REPORTED_DESIGNATION_NEEDS_GAME_CONFIRMATION",
                   "reported_designation": "Out",
                   "designation_confirmed_for_game": false,
-                  "status": "CURRENT",
+                  "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T13:33:00.000Z",
-                  "age_hours": 3.6855397222222224
+                  "age_hours": 29.666957222222223
                 },
                 "latest_reported_status": "Out"
               },
@@ -66336,7 +66320,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T04:53:00.000Z",
-                  "age_hours": 108.35220638888889
+                  "age_hours": 134.3336238888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -66376,7 +66360,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T23:39:00.000Z",
-                  "age_hours": 113.58553972222222
+                  "age_hours": 139.56695722222221
                 },
                 "latest_reported_status": "Active"
               },
@@ -66416,7 +66400,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T01:10:00.000Z",
-                  "age_hours": 136.06887305555554
+                  "age_hours": 162.05029055555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -66483,7 +66467,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T01:03:00.000Z",
-                  "age_hours": 136.18553972222222
+                  "age_hours": 162.1669572222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -66585,7 +66569,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:52:00.000Z",
-                  "age_hours": 118.36887305555555
+                  "age_hours": 144.35029055555555
                 },
                 "latest_reported_status": "Active"
               },
@@ -66706,7 +66690,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T22:09:00.000Z",
-                  "age_hours": 19.085539722222222
+                  "age_hours": 45.06695722222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -66773,7 +66757,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T01:08:00.000Z",
-                  "age_hours": 16.102206388888888
+                  "age_hours": 42.08362388888889
                 },
                 "latest_reported_status": "Out"
               },
@@ -66894,7 +66878,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T04:44:00.000Z",
-                  "age_hours": 84.5022063888889
+                  "age_hours": 110.48362388888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -66988,7 +66972,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T19:04:00.000Z",
-                  "age_hours": 142.16887305555557
+                  "age_hours": 168.15029055555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -67109,7 +67093,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T04:28:00.000Z",
-                  "age_hours": 84.76887305555556
+                  "age_hours": 110.75029055555555
                 },
                 "latest_reported_status": "Active"
               },
@@ -67230,7 +67214,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:52:00.000Z",
-                  "age_hours": 118.36887305555555
+                  "age_hours": 144.35029055555555
                 },
                 "latest_reported_status": "Active"
               },
@@ -67265,7 +67249,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:52:00.000Z",
-                  "age_hours": 118.36887305555555
+                  "age_hours": 144.35029055555555
                 },
                 "latest_reported_status": "Active"
               },
@@ -67359,7 +67343,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T00:20:00.000Z",
-                  "age_hours": 88.90220638888889
+                  "age_hours": 114.88362388888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -67399,7 +67383,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:52:00.000Z",
-                  "age_hours": 118.36887305555555
+                  "age_hours": 144.35029055555555
                 },
                 "latest_reported_status": "Active"
               },
@@ -67466,7 +67450,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:52:00.000Z",
-                  "age_hours": 118.36887305555555
+                  "age_hours": 144.35029055555555
                 },
                 "latest_reported_status": "Active"
               },
@@ -67506,7 +67490,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T04:04:00.000Z",
-                  "age_hours": 85.16887305555555
+                  "age_hours": 111.15029055555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -67573,7 +67557,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T02:38:00.000Z",
-                  "age_hours": 134.6022063888889
+                  "age_hours": 160.5836238888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -67617,7 +67601,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T01:10:00.000Z",
-                  "age_hours": 16.068873055555557
+                  "age_hours": 42.050290555555556
                 },
                 "latest_reported_status": "Out"
               },
@@ -67787,7 +67771,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T00:26:00.000Z",
-                  "age_hours": 88.80220638888889
+                  "age_hours": 114.78362388888888
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -67827,7 +67811,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-26T21:28:00.000Z",
-                  "age_hours": 163.76887305555556
+                  "age_hours": 189.75029055555555
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -68220,9 +68204,9 @@
                   "position": "WR",
                   "designation": "Out",
                   "reported_at": "2026-10-03T13:33:00.000Z",
-                  "update_status": "CURRENT",
+                  "update_status": "REVIEW_REQUIRED",
                   "practice_status": null,
-                  "game_availability": "EXPECTED_INACTIVE",
+                  "game_availability": "UNKNOWN",
                   "confirmed_for_game": false,
                   "long_term": false,
                   "depth_chart_starter": true,
@@ -68317,12 +68301,6 @@
             "availability_summary": {
               "expected_inactive": [
                 {
-                  "athlete_id": "4262921",
-                  "name": "Justin Jefferson",
-                  "position": "WR",
-                  "status": "Out"
-                },
-                {
                   "athlete_id": "3921690",
                   "name": "Josh Oliver",
                   "position": "TE",
@@ -68336,6 +68314,13 @@
                 }
               ],
               "unresolved_depth_leaders": [
+                {
+                  "athlete_id": "4262921",
+                  "name": "Justin Jefferson",
+                  "position": "WR",
+                  "status": "Out",
+                  "reason": "LAST_REPORTED_DESIGNATION_NEEDS_GAME_CONFIRMATION"
+                },
                 {
                   "athlete_id": "4799994",
                   "name": "Brett Thorson",
@@ -68389,7 +68374,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T20:10:00.000Z",
-                  "age_hours": 21.068873055555557
+                  "age_hours": 47.050290555555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -68429,7 +68414,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T19:58:00.000Z",
-                  "age_hours": 21.268873055555556
+                  "age_hours": 47.25029055555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -68469,7 +68454,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:41:00.000Z",
-                  "age_hours": 118.55220638888889
+                  "age_hours": 144.53362388888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -68513,7 +68498,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-23T04:17:00.000Z",
-                  "age_hours": 252.9522063888889
+                  "age_hours": 278.9336238888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -68553,7 +68538,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:41:00.000Z",
-                  "age_hours": 118.55220638888889
+                  "age_hours": 144.53362388888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -68593,7 +68578,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T15:08:00.000Z",
-                  "age_hours": 26.102206388888888
+                  "age_hours": 52.08362388888889
                 },
                 "latest_reported_status": "Out"
               },
@@ -68633,7 +68618,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T04:39:00.000Z",
-                  "age_hours": 108.58553972222222
+                  "age_hours": 134.56695722222221
                 },
                 "latest_reported_status": "Active"
               },
@@ -68677,7 +68662,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:41:00.000Z",
-                  "age_hours": 118.55220638888889
+                  "age_hours": 144.53362388888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -68717,7 +68702,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T21:03:00.000Z",
-                  "age_hours": 140.18553972222222
+                  "age_hours": 166.1669572222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -68946,7 +68931,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T16:29:00.000Z",
-                  "age_hours": 144.75220638888888
+                  "age_hours": 170.7336238888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -69160,7 +69145,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T02:17:00.000Z",
-                  "age_hours": 86.95220638888888
+                  "age_hours": 112.93362388888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -69200,7 +69185,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T21:05:00.000Z",
-                  "age_hours": 140.15220638888889
+                  "age_hours": 166.13362388888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -69244,7 +69229,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T21:21:00.000Z",
-                  "age_hours": 43.88553972222222
+                  "age_hours": 69.86695722222223
                 },
                 "latest_reported_status": "Active"
               },
@@ -69333,7 +69318,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T01:01:00.000Z",
-                  "age_hours": 16.218873055555555
+                  "age_hours": 42.200290555555554
                 },
                 "latest_reported_status": "Out"
               },
@@ -69400,7 +69385,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T15:37:00.000Z",
-                  "age_hours": 145.61887305555555
+                  "age_hours": 171.60029055555555
                 },
                 "latest_reported_status": "Active"
               },
@@ -69440,7 +69425,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T04:02:00.000Z",
-                  "age_hours": 85.20220638888888
+                  "age_hours": 111.18362388888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -69480,7 +69465,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:41:00.000Z",
-                  "age_hours": 118.55220638888889
+                  "age_hours": 144.53362388888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -69726,7 +69711,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T02:07:00.000Z",
-                  "age_hours": 207.11887305555555
+                  "age_hours": 233.10029055555555
                 },
                 "latest_reported_status": "Active"
               },
@@ -69766,7 +69751,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T03:59:00.000Z",
-                  "age_hours": 85.2522063888889
+                  "age_hours": 111.23362388888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -70022,7 +70007,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T19:57:00.000Z",
-                  "age_hours": 21.28553972222222
+                  "age_hours": 47.266957222222224
                 },
                 "latest_reported_status": "Active"
               },
@@ -70062,7 +70047,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T23:27:00.000Z",
-                  "age_hours": 113.78553972222223
+                  "age_hours": 139.76695722222223
                 },
                 "latest_reported_status": "Active"
               },
@@ -70133,7 +70118,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T20:10:00.000Z",
-                  "age_hours": 117.06887305555556
+                  "age_hours": 143.05029055555556
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -70200,7 +70185,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T01:21:00.000Z",
-                  "age_hours": 63.88553972222222
+                  "age_hours": 89.86695722222223
                 },
                 "latest_reported_status": "Out"
               },
@@ -70240,7 +70225,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T15:37:00.000Z",
-                  "age_hours": 25.618873055555557
+                  "age_hours": 51.60029055555555
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -70667,19 +70652,19 @@
                     "practice_status": null,
                     "source_updated_at": "2026-10-03T15:35:00.000Z",
                     "identity_method": "ESPN_ATHLETE_ID",
-                    "freshness_status": "CURRENT"
+                    "freshness_status": "REVIEW_REQUIRED"
                   }
                 ],
-                "game_availability": "EXPECTED_ACTIVE",
+                "game_availability": "UNKNOWN",
                 "availability": {
-                  "expected_active": true,
-                  "availability_status": "EXPECTED_ACTIVE",
-                  "basis": "CURRENT_EXPLICIT_POSITIVE_REPORT",
+                  "expected_active": null,
+                  "availability_status": "UNKNOWN",
+                  "basis": "LAST_REPORTED_DESIGNATION_NEEDS_GAME_CONFIRMATION",
                   "reported_designation": "Active",
                   "designation_confirmed_for_game": false,
-                  "status": "CURRENT",
+                  "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T15:35:00.000Z",
-                  "age_hours": 1.652206388888889
+                  "age_hours": 27.633623888888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -70814,7 +70799,7 @@
                       "athlete_id": "4248425",
                       "name": "Carlos Washington Jr.",
                       "designation": "Active",
-                      "availability": "EXPECTED_ACTIVE"
+                      "availability": "UNKNOWN"
                     }
                   ],
                   "replacement_confirmed": false
@@ -70866,7 +70851,10 @@
             }
           }
         },
-        "issues": []
+        "issues": [
+          "MIN: roster fetch older than 24 hours or invalid",
+          "MIA: roster fetch older than 24 hours or invalid"
+        ]
       },
       "behavior_learning_context": {
         "numeric_authority": 0,
@@ -70878,7 +70866,7 @@
             "player": null,
             "team": "MIA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "offensive_plays": {
@@ -70974,7 +70962,7 @@
             "player": "Malik Willis",
             "team": "MIA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "pass_attempts": {
@@ -71030,7 +71018,7 @@
             "player": "Ollie Gordon II",
             "team": "MIA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -71090,7 +71078,7 @@
             "player": "De'Von Achane",
             "team": "MIA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -71150,7 +71138,7 @@
             "player": "Malik Washington",
             "team": "MIA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -71210,7 +71198,7 @@
             "player": "Chris Bell",
             "team": "MIA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -71258,7 +71246,7 @@
             "player": "Greg Dulcich",
             "team": "MIA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -71306,7 +71294,7 @@
             "player": "Ryan Miller",
             "team": "MIA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -71354,7 +71342,7 @@
             "player": "Kevin Coleman Jr.",
             "team": "MIA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -71402,7 +71390,7 @@
             "player": null,
             "team": "MIN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "offensive_plays": {
@@ -71578,7 +71566,7 @@
             "player": "Kyler Murray",
             "team": "MIN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "pass_attempts": {
@@ -71714,7 +71702,7 @@
             "player": "Aaron Jones Sr.",
             "team": "MIN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -71854,7 +71842,7 @@
             "player": "DeeJay Dallas",
             "team": "MIN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -71978,7 +71966,7 @@
             "player": "Demond Claiborne",
             "team": "MIN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -72102,7 +72090,7 @@
             "player": "Jordan Addison",
             "team": "MIN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -72230,7 +72218,7 @@
             "player": "Justin Jefferson",
             "team": "MIN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -72358,7 +72346,7 @@
             "player": "T.J. Hockenson",
             "team": "MIN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -72486,7 +72474,7 @@
             "player": "Jauan Jennings",
             "team": "MIN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -72614,7 +72602,7 @@
             "player": "Tai Felton",
             "team": "MIN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -72737,27 +72725,24 @@
             "numeric_authority": 0
           }
         },
-        "as_of": "2026-10-04T16:16:51.976Z"
+        "as_of": "2026-10-04T19:22:05.116Z"
       }
     },
     "2026-W4-KC-LV": {
-      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version": "scoring-decay-no-rest-2026-v2",
       "scoring_evidence": {
-        "method": "Historically calibrated scoring matchup and rest",
+        "method": "Historically calibrated scoring matchup; rest removed by user instruction",
         "half_life_games": 4,
         "home_field_advantage_feature": 1.7442724458204335,
         "home_field_advantage_contribution": 2.15108045027228,
-        "rest_days": {
-          "home": 7,
-          "away": 7
-        },
+        "rest_days": null,
         "margin_features": [
           -2.460868332643539,
-          0
+          0.005886681383370125
         ],
         "total_features": [
           42.755107969770464,
-          0
+          1.1464311994113319
         ],
         "teams": {
           "LV": {
@@ -72800,11 +72785,12 @@
         "excluded_numeric_features": [
           "granular EPA/pace/explosive matchup extension failed ablation",
           "observed personnel continuity failed ablation",
-          "injury and coaching coefficients not validated"
+          "injury and coaching coefficients not validated",
+          "Days of rest removed by explicit user instruction"
         ],
         "contributions": {
           "schema_version": 1,
-          "model_version": "scoring-decay-rest-2026-v1",
+          "model_version": "scoring-decay-no-rest-2026-v2",
           "margin": {
             "intercept": 2.0625459896983074,
             "terms": [
@@ -72815,17 +72801,9 @@
                 "training_scale": 4.0478595159637,
                 "coefficient": 4.99192169841483,
                 "contribution": -4.307765570899182
-              },
-              {
-                "name": "rest_difference",
-                "raw": 0,
-                "training_mean": 0.005886681383370125,
-                "training_scale": 2.3520149185335586,
-                "coefficient": 0.44750383286354456,
-                "contribution": -0.001120023712922303
               }
             ],
-            "reconstructed": -2.246339604913797
+            "reconstructed": -2.2452195812008746
           },
           "total": {
             "intercept": 45.02354672553348,
@@ -72837,30 +72815,24 @@
                 "training_scale": 3.330240876050951,
                 "coefficient": 2.225550796781011,
                 "contribution": -1.6820361071261656
-              },
-              {
-                "name": "absolute_rest_difference",
-                "raw": 0,
-                "training_mean": 1.1464311994113319,
-                "training_scale": 2.0537050262972074,
-                "coefficient": -0.2331384108386849,
-                "contribution": 0.13014388363675633
               }
             ],
-            "reconstructed": 43.47165450204407
+            "reconstructed": 43.34151061840731
           },
           "venue_component": {
             "parent_term": "scoring_matchup_including_venue",
             "contribution": 2.15108045027228,
             "additive": false
           },
-          "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+          "scope": "Numerical attribution of scoring model with rest removed; not a causal explanation",
           "excluded_numeric_features": [
             "granular EPA/pace/explosive matchup extension failed ablation",
             "observed personnel continuity failed ablation",
-            "injury and coaching coefficients not validated"
+            "injury and coaching coefficients not validated",
+            "Days of rest removed by explicit user instruction"
           ]
-        }
+        },
+        "rest_adjustment_applied": false
       },
       "home_team": "LV",
       "away_team": "KC",
@@ -72868,14 +72840,14 @@
       "neutral_site": false,
       "home_field_advantage_applied": 2.151,
       "model": {
-        "home_score_mean": 20.613,
-        "away_score_mean": 22.859,
-        "home_minus_away_margin": -2.246,
-        "model_home_spread": 2.246,
-        "model_total": 43.472,
-        "home_win_probability": 0.41748,
-        "away_win_probability": 0.550537,
-        "tie_probability": 0.031982,
+        "home_score_mean": 20.548,
+        "away_score_mean": 22.793,
+        "home_minus_away_margin": -2.245,
+        "model_home_spread": 2.245,
+        "model_total": 43.342,
+        "home_win_probability": 0.417786,
+        "away_win_probability": 0.5513,
+        "tie_probability": 0.030914,
         "score_percentiles": {
           "home": {
             "p10": 9,
@@ -72895,7 +72867,7 @@
         },
         "total_percentiles": {
           "p10": 27,
-          "p50": 44,
+          "p50": 43,
           "p90": 60
         }
       },
@@ -72908,7 +72880,7 @@
       "mode": "SHADOW_ONLY",
       "actionable": false,
       "personnel_context": {
-        "status": "CONNECTED",
+        "status": "REVIEW_REQUIRED",
         "numeric_adjustment_applied": false,
         "teams": {
           "LV": {
@@ -72984,7 +72956,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T19:00:00.000Z",
-                  "age_hours": 142.23556083333332
+                  "age_hours": 168.21698194444446
                 },
                 "latest_reported_status": "Active"
               },
@@ -73051,7 +73023,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:36:00.000Z",
-                  "age_hours": 118.63556083333333
+                  "age_hours": 144.61698194444443
                 },
                 "latest_reported_status": "Active"
               },
@@ -73091,7 +73063,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T00:48:00.000Z",
-                  "age_hours": 136.43556083333334
+                  "age_hours": 162.41698194444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -73212,7 +73184,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T00:39:00.000Z",
-                  "age_hours": 136.58556083333335
+                  "age_hours": 162.56698194444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -73314,7 +73286,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T00:55:00.000Z",
-                  "age_hours": 136.31889416666667
+                  "age_hours": 162.30031527777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -73354,7 +73326,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T02:22:00.000Z",
-                  "age_hours": 86.86889416666666
+                  "age_hours": 112.85031527777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -73443,7 +73415,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T04:10:00.000Z",
-                  "age_hours": 109.06889416666667
+                  "age_hours": 135.05031527777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -73483,7 +73455,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T20:49:00.000Z",
-                  "age_hours": 68.41889416666666
+                  "age_hours": 94.40031527777778
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -73523,7 +73495,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T19:51:00.000Z",
-                  "age_hours": 21.385560833333333
+                  "age_hours": 47.36698194444445
                 },
                 "latest_reported_status": "Out"
               },
@@ -73617,7 +73589,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T01:17:00.000Z",
-                  "age_hours": 111.9522275
+                  "age_hours": 137.93364861111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -73657,7 +73629,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T00:42:00.000Z",
-                  "age_hours": 112.53556083333334
+                  "age_hours": 138.51698194444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -73697,7 +73669,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T23:29:00.000Z",
-                  "age_hours": 89.7522275
+                  "age_hours": 115.73364861111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -73741,7 +73713,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T02:40:00.000Z",
-                  "age_hours": 206.56889416666667
+                  "age_hours": 232.55031527777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -73862,7 +73834,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T01:45:00.000Z",
-                  "age_hours": 63.48556083333333
+                  "age_hours": 89.46698194444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -73929,7 +73901,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T01:38:00.000Z",
-                  "age_hours": 63.6022275
+                  "age_hours": 89.58364861111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -74050,7 +74022,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:36:00.000Z",
-                  "age_hours": 118.63556083333333
+                  "age_hours": 144.61698194444443
                 },
                 "latest_reported_status": "Active"
               },
@@ -74225,7 +74197,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:36:00.000Z",
-                  "age_hours": 118.63556083333333
+                  "age_hours": 144.61698194444443
                 },
                 "latest_reported_status": "Active"
               },
@@ -74265,7 +74237,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T21:35:00.000Z",
-                  "age_hours": 19.6522275
+                  "age_hours": 45.63364861111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -74386,7 +74358,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T19:01:00.000Z",
-                  "age_hours": 142.21889416666667
+                  "age_hours": 168.20031527777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -74426,7 +74398,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:36:00.000Z",
-                  "age_hours": 118.63556083333333
+                  "age_hours": 144.61698194444443
                 },
                 "latest_reported_status": "Active"
               },
@@ -74493,7 +74465,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T21:31:00.000Z",
-                  "age_hours": 19.718894166666665
+                  "age_hours": 45.700315277777776
                 },
                 "latest_reported_status": "Active"
               },
@@ -74560,7 +74532,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T23:53:00.000Z",
-                  "age_hours": 41.3522275
+                  "age_hours": 67.33364861111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -74658,7 +74630,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T03:32:00.000Z",
-                  "age_hours": 133.7022275
+                  "age_hours": 159.68364861111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -74752,7 +74724,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T22:27:00.000Z",
-                  "age_hours": 90.78556083333334
+                  "age_hours": 116.76698194444444
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -74958,7 +74930,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T21:43:00.000Z",
-                  "age_hours": 19.518894166666666
+                  "age_hours": 45.50031527777778
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -75506,7 +75478,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-23T00:21:00.000Z",
-                  "age_hours": 256.88556083333333
+                  "age_hours": 282.86698194444443
                 },
                 "latest_reported_status": "Active"
               },
@@ -75689,7 +75661,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-22T04:22:00.000Z",
-                  "age_hours": 276.8688941666667
+                  "age_hours": 302.8503152777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -75760,7 +75732,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T02:11:00.000Z",
-                  "age_hours": 87.0522275
+                  "age_hours": 113.0336486111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -75800,7 +75772,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T20:56:00.000Z",
-                  "age_hours": 140.3022275
+                  "age_hours": 166.28364861111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -75840,7 +75812,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T20:54:00.000Z",
-                  "age_hours": 140.33556083333335
+                  "age_hours": 166.31698194444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -75938,7 +75910,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:35:00.000Z",
-                  "age_hours": 118.6522275
+                  "age_hours": 144.6336486111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -75978,7 +75950,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:35:00.000Z",
-                  "age_hours": 118.6522275
+                  "age_hours": 144.6336486111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -76053,7 +76025,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T20:33:00.000Z",
-                  "age_hours": 140.68556083333334
+                  "age_hours": 166.66698194444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -76093,7 +76065,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-23T04:26:00.000Z",
-                  "age_hours": 252.8022275
+                  "age_hours": 278.7836486111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -76133,7 +76105,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T01:08:00.000Z",
-                  "age_hours": 16.1022275
+                  "age_hours": 42.08364861111111
                 },
                 "latest_reported_status": "Out"
               },
@@ -76266,7 +76238,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T02:17:00.000Z",
-                  "age_hours": 86.9522275
+                  "age_hours": 112.93364861111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -76333,7 +76305,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T20:31:00.000Z",
-                  "age_hours": 140.71889416666667
+                  "age_hours": 166.70031527777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -76373,7 +76345,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:35:00.000Z",
-                  "age_hours": 118.6522275
+                  "age_hours": 144.6336486111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -76417,7 +76389,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T00:48:00.000Z",
-                  "age_hours": 112.43556083333333
+                  "age_hours": 138.41698194444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -76457,7 +76429,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-24T20:59:00.000Z",
-                  "age_hours": 212.2522275
+                  "age_hours": 238.2336486111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -76524,7 +76496,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T04:44:00.000Z",
-                  "age_hours": 84.5022275
+                  "age_hours": 110.48364861111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -76640,7 +76612,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T23:24:00.000Z",
-                  "age_hours": 65.83556083333333
+                  "age_hours": 91.81698194444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -76680,7 +76652,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T04:46:00.000Z",
-                  "age_hours": 84.46889416666667
+                  "age_hours": 110.45031527777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -76720,7 +76692,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-21T19:16:00.000Z",
-                  "age_hours": 285.96889416666664
+                  "age_hours": 311.9503152777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -76863,7 +76835,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-23T01:20:00.000Z",
-                  "age_hours": 255.9022275
+                  "age_hours": 281.8836486111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -76903,7 +76875,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T21:01:00.000Z",
-                  "age_hours": 188.21889416666667
+                  "age_hours": 214.20031527777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -76997,7 +76969,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:35:00.000Z",
-                  "age_hours": 118.6522275
+                  "age_hours": 144.6336486111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -77059,7 +77031,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:35:00.000Z",
-                  "age_hours": 118.6522275
+                  "age_hours": 144.6336486111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -77099,7 +77071,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T21:39:00.000Z",
-                  "age_hours": 19.585560833333332
+                  "age_hours": 45.56698194444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -77305,7 +77277,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T04:31:00.000Z",
-                  "age_hours": 132.71889416666667
+                  "age_hours": 158.70031527777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -77868,7 +77840,10 @@
             }
           }
         },
-        "issues": []
+        "issues": [
+          "LV: roster fetch older than 24 hours or invalid",
+          "KC: roster fetch older than 24 hours or invalid"
+        ]
       },
       "behavior_learning_context": {
         "numeric_authority": 0,
@@ -77880,7 +77855,7 @@
             "player": null,
             "team": "KC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "offensive_plays": {
@@ -78016,7 +77991,7 @@
             "player": "Patrick Mahomes",
             "team": "KC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "pass_attempts": {
@@ -78112,7 +78087,7 @@
             "player": "Kenneth Walker III",
             "team": "KC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -78212,7 +78187,7 @@
             "player": "Emmett Johnson",
             "team": "KC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -78296,7 +78271,7 @@
             "player": "Rashee Rice",
             "team": "KC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -78384,7 +78359,7 @@
             "player": "Travis Kelce",
             "team": "KC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -78472,7 +78447,7 @@
             "player": "Noah Gray",
             "team": "KC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -78560,7 +78535,7 @@
             "player": "Tyquan Thornton",
             "team": "KC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -78648,7 +78623,7 @@
             "player": "Xavier Worthy",
             "team": "KC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -78736,7 +78711,7 @@
             "player": "Jalen Royals",
             "team": "KC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -78824,7 +78799,7 @@
             "player": "Brashard Smith",
             "team": "KC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -78912,7 +78887,7 @@
             "player": "Jake Briningstool",
             "team": "KC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -79000,7 +78975,7 @@
             "player": null,
             "team": "LV",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "offensive_plays": {
@@ -79146,7 +79121,7 @@
             "player": "Kirk Cousins",
             "team": "LV",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "pass_attempts": {
@@ -79252,7 +79227,7 @@
             "player": "Ashton Jeanty",
             "team": "LV",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -79362,7 +79337,7 @@
             "player": "Mike Washington Jr.",
             "team": "LV",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -79456,7 +79431,7 @@
             "player": "Brock Bowers",
             "team": "LV",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -79554,7 +79529,7 @@
             "player": "Tre Tucker",
             "team": "LV",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -79652,7 +79627,7 @@
             "player": "Michael Mayer",
             "team": "LV",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -79750,7 +79725,7 @@
             "player": "Jalen Nailor",
             "team": "LV",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -79848,7 +79823,7 @@
             "player": "Cody White",
             "team": "LV",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -79946,7 +79921,7 @@
             "player": "Malik Benson",
             "team": "LV",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -80039,27 +80014,24 @@
             "numeric_authority": 0
           }
         },
-        "as_of": "2026-10-04T16:16:51.976Z"
+        "as_of": "2026-10-04T19:22:05.116Z"
       }
     },
     "2026-W4-DEN-SF": {
-      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version": "scoring-decay-no-rest-2026-v2",
       "scoring_evidence": {
-        "method": "Historically calibrated scoring matchup and rest",
+        "method": "Historically calibrated scoring matchup; rest removed by user instruction",
         "half_life_games": 4,
         "home_field_advantage_feature": 1.7442724458204335,
         "home_field_advantage_contribution": 2.15108045027228,
-        "rest_days": {
-          "home": 7,
-          "away": 7
-        },
+        "rest_days": null,
         "margin_features": [
           5.243384565071029,
-          0
+          0.005886681383370125
         ],
         "total_features": [
           45.365645190733076,
-          0
+          1.1464311994113319
         ],
         "teams": {
           "SF": {
@@ -80102,11 +80074,12 @@
         "excluded_numeric_features": [
           "granular EPA/pace/explosive matchup extension failed ablation",
           "observed personnel continuity failed ablation",
-          "injury and coaching coefficients not validated"
+          "injury and coaching coefficients not validated",
+          "Days of rest removed by explicit user instruction"
         ],
         "contributions": {
           "schema_version": 1,
-          "model_version": "scoring-decay-rest-2026-v1",
+          "model_version": "scoring-decay-no-rest-2026-v2",
           "margin": {
             "intercept": 2.0625459896983074,
             "terms": [
@@ -80117,17 +80090,9 @@
                 "training_scale": 4.0478595159637,
                 "coefficient": 4.99192169841483,
                 "contribution": 5.193311988364998
-              },
-              {
-                "name": "rest_difference",
-                "raw": 0,
-                "training_mean": 0.005886681383370125,
-                "training_scale": 2.3520149185335586,
-                "coefficient": 0.44750383286354456,
-                "contribution": -0.001120023712922303
               }
             ],
-            "reconstructed": 7.254737954350383
+            "reconstructed": 7.255857978063306
           },
           "total": {
             "intercept": 45.02354672553348,
@@ -80139,30 +80104,24 @@
                 "training_scale": 3.330240876050951,
                 "coefficient": 2.225550796781011,
                 "contribution": 0.06254736547515385
-              },
-              {
-                "name": "absolute_rest_difference",
-                "raw": 0,
-                "training_mean": 1.1464311994113319,
-                "training_scale": 2.0537050262972074,
-                "coefficient": -0.2331384108386849,
-                "contribution": 0.13014388363675633
               }
             ],
-            "reconstructed": 45.21623797464539
+            "reconstructed": 45.08609409100863
           },
           "venue_component": {
             "parent_term": "scoring_matchup_including_venue",
             "contribution": 2.15108045027228,
             "additive": false
           },
-          "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+          "scope": "Numerical attribution of scoring model with rest removed; not a causal explanation",
           "excluded_numeric_features": [
             "granular EPA/pace/explosive matchup extension failed ablation",
             "observed personnel continuity failed ablation",
-            "injury and coaching coefficients not validated"
+            "injury and coaching coefficients not validated",
+            "Days of rest removed by explicit user instruction"
           ]
-        }
+        },
+        "rest_adjustment_applied": false
       },
       "home_team": "SF",
       "away_team": "DEN",
@@ -80170,14 +80129,14 @@
       "neutral_site": false,
       "home_field_advantage_applied": 2.151,
       "model": {
-        "home_score_mean": 26.235,
-        "away_score_mean": 18.981,
-        "home_minus_away_margin": 7.255,
-        "model_home_spread": -7.255,
-        "model_total": 45.216,
-        "home_win_probability": 0.69281,
+        "home_score_mean": 26.171,
+        "away_score_mean": 18.915,
+        "home_minus_away_margin": 7.256,
+        "model_home_spread": -7.256,
+        "model_total": 45.086,
+        "home_win_probability": 0.69342,
         "away_win_probability": 0.281128,
-        "tie_probability": 0.026062,
+        "tie_probability": 0.025452,
         "score_percentiles": {
           "home": {
             "p10": 14,
@@ -80210,7 +80169,7 @@
       "mode": "SHADOW_ONLY",
       "actionable": false,
       "personnel_context": {
-        "status": "CONNECTED",
+        "status": "REVIEW_REQUIRED",
         "numeric_adjustment_applied": false,
         "teams": {
           "SF": {
@@ -80282,7 +80241,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T23:49:00.000Z",
-                  "age_hours": 89.41891472222223
+                  "age_hours": 115.40033444444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -80376,7 +80335,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T20:22:00.000Z",
-                  "age_hours": 44.86891472222222
+                  "age_hours": 70.85033444444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -80424,7 +80383,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T16:32:00.000Z",
-                  "age_hours": 96.70224805555556
+                  "age_hours": 122.68366777777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -80464,7 +80423,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T19:05:00.000Z",
-                  "age_hours": 118.15224805555556
+                  "age_hours": 144.1336677777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -80504,7 +80463,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T21:08:00.000Z",
-                  "age_hours": 20.102248055555556
+                  "age_hours": 46.08366777777778
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -80652,7 +80611,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T01:47:00.000Z",
-                  "age_hours": 135.45224805555554
+                  "age_hours": 161.43366777777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -80827,7 +80786,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T01:35:00.000Z",
-                  "age_hours": 135.65224805555556
+                  "age_hours": 161.6336677777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -80867,7 +80826,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T19:05:00.000Z",
-                  "age_hours": 118.15224805555556
+                  "age_hours": 144.1336677777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -80911,7 +80870,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T02:26:00.000Z",
-                  "age_hours": 134.80224805555557
+                  "age_hours": 160.78366777777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -80955,7 +80914,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T16:27:00.000Z",
-                  "age_hours": 96.78558138888889
+                  "age_hours": 122.76700111111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -80995,7 +80954,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T01:34:00.000Z",
-                  "age_hours": 15.668914722222222
+                  "age_hours": 41.65033444444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -81089,7 +81048,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T19:05:00.000Z",
-                  "age_hours": 118.15224805555556
+                  "age_hours": 144.1336677777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -81129,7 +81088,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T21:16:00.000Z",
-                  "age_hours": 115.96891472222222
+                  "age_hours": 141.95033444444445
                 },
                 "latest_reported_status": "Out"
               },
@@ -81223,7 +81182,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T22:12:00.000Z",
-                  "age_hours": 19.03558138888889
+                  "age_hours": 45.017001111111114
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -81339,7 +81298,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T04:40:00.000Z",
-                  "age_hours": 84.56891472222222
+                  "age_hours": 110.55033444444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -81379,7 +81338,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T00:43:00.000Z",
-                  "age_hours": 16.518914722222224
+                  "age_hours": 42.50033444444445
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -81419,7 +81378,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T00:21:00.000Z",
-                  "age_hours": 64.8855813888889
+                  "age_hours": 90.86700111111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -81459,7 +81418,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T00:51:00.000Z",
-                  "age_hours": 16.385581388888887
+                  "age_hours": 42.36700111111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -81715,7 +81674,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T19:05:00.000Z",
-                  "age_hours": 118.15224805555556
+                  "age_hours": 144.1336677777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -81809,7 +81768,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T00:46:00.000Z",
-                  "age_hours": 112.46891472222222
+                  "age_hours": 138.45033444444445
                 },
                 "latest_reported_status": "Out"
               },
@@ -81898,7 +81857,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T04:37:00.000Z",
-                  "age_hours": 84.61891472222223
+                  "age_hours": 110.60033444444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -81938,7 +81897,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T22:36:00.000Z",
-                  "age_hours": 66.6355813888889
+                  "age_hours": 92.61700111111111
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -81978,7 +81937,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T04:15:00.000Z",
-                  "age_hours": 132.98558138888887
+                  "age_hours": 158.9670011111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -82242,7 +82201,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T21:08:00.000Z",
-                  "age_hours": 20.102248055555556
+                  "age_hours": 46.08366777777778
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -82529,7 +82488,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T23:11:00.000Z",
-                  "age_hours": 66.05224805555555
+                  "age_hours": 92.03366777777778
                 },
                 "latest_reported_status": "Out"
               },
@@ -83230,7 +83189,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-23T03:47:00.000Z",
-                  "age_hours": 253.45224805555554
+                  "age_hours": 279.43366777777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -83274,7 +83233,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-23T03:44:00.000Z",
-                  "age_hours": 253.50224805555555
+                  "age_hours": 279.4836677777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -83314,7 +83273,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:25:00.000Z",
-                  "age_hours": 118.81891472222222
+                  "age_hours": 144.80033444444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -83381,7 +83340,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T22:47:00.000Z",
-                  "age_hours": 90.45224805555556
+                  "age_hours": 116.43366777777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -83425,7 +83384,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:25:00.000Z",
-                  "age_hours": 118.81891472222222
+                  "age_hours": 144.80033444444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -83465,7 +83424,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T04:42:00.000Z",
-                  "age_hours": 132.5355813888889
+                  "age_hours": 158.5170011111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -83505,7 +83464,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:25:00.000Z",
-                  "age_hours": 118.81891472222222
+                  "age_hours": 144.80033444444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -83545,7 +83504,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T01:26:00.000Z",
-                  "age_hours": 87.80224805555555
+                  "age_hours": 113.78366777777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -83612,7 +83571,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-23T03:58:00.000Z",
-                  "age_hours": 253.26891472222223
+                  "age_hours": 279.25033444444443
                 },
                 "latest_reported_status": "Active"
               },
@@ -83656,7 +83615,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T04:41:00.000Z",
-                  "age_hours": 132.55224805555557
+                  "age_hours": 158.53366777777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -83780,7 +83739,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T22:44:00.000Z",
-                  "age_hours": 66.50224805555555
+                  "age_hours": 92.48366777777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -83820,7 +83779,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T04:27:00.000Z",
-                  "age_hours": 132.7855813888889
+                  "age_hours": 158.7670011111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -83990,7 +83949,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T04:44:00.000Z",
-                  "age_hours": 132.50224805555555
+                  "age_hours": 158.48366777777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -84030,7 +83989,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-16T00:13:00.000Z",
-                  "age_hours": 425.01891472222223
+                  "age_hours": 451.00033444444443
                 },
                 "latest_reported_status": "Active"
               },
@@ -84070,7 +84029,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T20:59:00.000Z",
-                  "age_hours": 68.25224805555555
+                  "age_hours": 94.23366777777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -84168,7 +84127,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-16T00:38:00.000Z",
-                  "age_hours": 424.60224805555555
+                  "age_hours": 450.5836677777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -84347,7 +84306,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T01:22:00.000Z",
-                  "age_hours": 63.86891472222222
+                  "age_hours": 89.85033444444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -84387,7 +84346,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-21T18:51:00.000Z",
-                  "age_hours": 286.3855813888889
+                  "age_hours": 312.3670011111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -84427,7 +84386,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T01:34:00.000Z",
-                  "age_hours": 63.66891472222222
+                  "age_hours": 89.65033444444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -84494,7 +84453,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:25:00.000Z",
-                  "age_hours": 118.81891472222222
+                  "age_hours": 144.80033444444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -84619,7 +84578,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:25:00.000Z",
-                  "age_hours": 118.81891472222222
+                  "age_hours": 144.80033444444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -84740,7 +84699,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T01:37:00.000Z",
-                  "age_hours": 63.61891472222222
+                  "age_hours": 89.60033444444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -84861,7 +84820,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T01:40:00.000Z",
-                  "age_hours": 15.568914722222223
+                  "age_hours": 41.550334444444445
                 },
                 "latest_reported_status": "Out"
               },
@@ -85013,7 +84972,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T23:30:00.000Z",
-                  "age_hours": 113.73558138888889
+                  "age_hours": 139.7170011111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -85084,7 +85043,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-26T20:36:00.000Z",
-                  "age_hours": 164.63558138888888
+                  "age_hours": 190.6170011111111
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -85632,7 +85591,10 @@
             }
           }
         },
-        "issues": []
+        "issues": [
+          "SF: roster fetch older than 24 hours or invalid",
+          "DEN: roster fetch older than 24 hours or invalid"
+        ]
       },
       "behavior_learning_context": {
         "numeric_authority": 0,
@@ -85644,7 +85606,7 @@
             "player": null,
             "team": "SF",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "offensive_plays": {
@@ -85780,7 +85742,7 @@
             "player": "Brock Purdy",
             "team": "SF",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "pass_attempts": {
@@ -85876,7 +85838,7 @@
             "player": "Christian McCaffrey",
             "team": "SF",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -85976,7 +85938,7 @@
             "player": "Kaelon Black",
             "team": "SF",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -86076,7 +86038,7 @@
             "player": "Deebo Samuel Sr.",
             "team": "SF",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -86176,7 +86138,7 @@
             "player": "George Kittle",
             "team": "SF",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -86264,7 +86226,7 @@
             "player": "Jordan Watkins",
             "team": "SF",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -86352,7 +86314,7 @@
             "player": "Mike Evans",
             "team": "SF",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -86440,7 +86402,7 @@
             "player": "Kyle Juszczyk",
             "team": "SF",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -86528,7 +86490,7 @@
             "player": "Luke Farrell",
             "team": "SF",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -86616,7 +86578,7 @@
             "player": "Jacob Cowing",
             "team": "SF",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -86704,7 +86666,7 @@
             "player": null,
             "team": "DEN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "offensive_plays": {
@@ -86850,7 +86812,7 @@
             "player": "Bo Nix",
             "team": "DEN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "pass_attempts": {
@@ -86956,7 +86918,7 @@
             "player": "J.K. Dobbins",
             "team": "DEN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -87066,7 +87028,7 @@
             "player": "Jaylen Waddle",
             "team": "DEN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -87176,7 +87138,7 @@
             "player": "RJ Harvey",
             "team": "DEN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -87286,7 +87248,7 @@
             "player": "Tyler Badie",
             "team": "DEN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -87396,7 +87358,7 @@
             "player": "Courtland Sutton",
             "team": "DEN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -87494,7 +87456,7 @@
             "player": "Pat Bryant",
             "team": "DEN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -87592,7 +87554,7 @@
             "player": "Troy Franklin",
             "team": "DEN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -87690,7 +87652,7 @@
             "player": "Nate Adkins",
             "team": "DEN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -87788,7 +87750,7 @@
             "player": "Evan Engram",
             "team": "DEN",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -87881,27 +87843,24 @@
             "numeric_authority": 0
           }
         },
-        "as_of": "2026-10-04T16:16:51.976Z"
+        "as_of": "2026-10-04T19:22:05.116Z"
       }
     },
     "2026-W4-LAC-SEA": {
-      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version": "scoring-decay-no-rest-2026-v2",
       "scoring_evidence": {
-        "method": "Historically calibrated scoring matchup and rest",
+        "method": "Historically calibrated scoring matchup; rest removed by user instruction",
         "half_life_games": 4,
         "home_field_advantage_feature": 1.7442724458204335,
         "home_field_advantage_contribution": 2.15108045027228,
-        "rest_days": {
-          "home": 7,
-          "away": 7
-        },
+        "rest_days": null,
         "margin_features": [
           8.44613805757874,
-          0
+          0.005886681383370125
         ],
         "total_features": [
           42.48889617970967,
-          0
+          1.1464311994113319
         ],
         "teams": {
           "SEA": {
@@ -87944,11 +87903,12 @@
         "excluded_numeric_features": [
           "granular EPA/pace/explosive matchup extension failed ablation",
           "observed personnel continuity failed ablation",
-          "injury and coaching coefficients not validated"
+          "injury and coaching coefficients not validated",
+          "Days of rest removed by explicit user instruction"
         ],
         "contributions": {
           "schema_version": 1,
-          "model_version": "scoring-decay-rest-2026-v1",
+          "model_version": "scoring-decay-no-rest-2026-v2",
           "margin": {
             "intercept": 2.0625459896983074,
             "terms": [
@@ -87959,17 +87919,9 @@
                 "training_scale": 4.0478595159637,
                 "coefficient": 4.99192169841483,
                 "contribution": 9.143027780346177
-              },
-              {
-                "name": "rest_difference",
-                "raw": 0,
-                "training_mean": 0.005886681383370125,
-                "training_scale": 2.3520149185335586,
-                "coefficient": 0.44750383286354456,
-                "contribution": -0.001120023712922303
               }
             ],
-            "reconstructed": 11.204453746331563
+            "reconstructed": 11.205573770044484
           },
           "total": {
             "intercept": 45.02354672553348,
@@ -87981,30 +87933,24 @@
                 "training_scale": 3.330240876050951,
                 "coefficient": 2.225550796781011,
                 "contribution": -1.8599415150331324
-              },
-              {
-                "name": "absolute_rest_difference",
-                "raw": 0,
-                "training_mean": 1.1464311994113319,
-                "training_scale": 2.0537050262972074,
-                "coefficient": -0.2331384108386849,
-                "contribution": 0.13014388363675633
               }
             ],
-            "reconstructed": 43.293749094137105
+            "reconstructed": 43.16360521050034
           },
           "venue_component": {
             "parent_term": "scoring_matchup_including_venue",
             "contribution": 2.15108045027228,
             "additive": false
           },
-          "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+          "scope": "Numerical attribution of scoring model with rest removed; not a causal explanation",
           "excluded_numeric_features": [
             "granular EPA/pace/explosive matchup extension failed ablation",
             "observed personnel continuity failed ablation",
-            "injury and coaching coefficients not validated"
+            "injury and coaching coefficients not validated",
+            "Days of rest removed by explicit user instruction"
           ]
-        }
+        },
+        "rest_adjustment_applied": false
       },
       "home_team": "SEA",
       "away_team": "LAC",
@@ -88012,14 +87958,14 @@
       "neutral_site": false,
       "home_field_advantage_applied": 2.151,
       "model": {
-        "home_score_mean": 27.249,
-        "away_score_mean": 16.045,
-        "home_minus_away_margin": 11.204,
-        "model_home_spread": -11.204,
-        "model_total": 43.294,
-        "home_win_probability": 0.794342,
-        "away_win_probability": 0.183594,
-        "tie_probability": 0.022064,
+        "home_score_mean": 27.185,
+        "away_score_mean": 15.979,
+        "home_minus_away_margin": 11.206,
+        "model_home_spread": -11.206,
+        "model_total": 43.164,
+        "home_win_probability": 0.794159,
+        "away_win_probability": 0.183899,
+        "tie_probability": 0.021942,
         "score_percentiles": {
           "home": {
             "p10": 15,
@@ -88052,7 +87998,7 @@
       "mode": "SHADOW_ONLY",
       "actionable": false,
       "personnel_context": {
-        "status": "CONNECTED",
+        "status": "REVIEW_REQUIRED",
         "numeric_adjustment_applied": false,
         "teams": {
           "SEA": {
@@ -88124,7 +88070,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T04:00:00.000Z",
-                  "age_hours": 109.2356025
+                  "age_hours": 135.21701972222223
                 },
                 "latest_reported_status": "Active"
               },
@@ -88191,7 +88137,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T23:21:00.000Z",
-                  "age_hours": 137.8856025
+                  "age_hours": 163.8670197222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -88231,7 +88177,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T19:07:00.000Z",
-                  "age_hours": 118.11893583333334
+                  "age_hours": 144.10035305555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -88302,7 +88248,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T21:36:00.000Z",
-                  "age_hours": 19.6356025
+                  "age_hours": 45.617019722222224
                 },
                 "latest_reported_status": "Active"
               },
@@ -88449,7 +88395,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T02:53:00.000Z",
-                  "age_hours": 134.35226916666667
+                  "age_hours": 160.33368638888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -88489,7 +88435,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T22:54:00.000Z",
-                  "age_hours": 186.3356025
+                  "age_hours": 212.31701972222223
                 },
                 "latest_reported_status": "Active"
               },
@@ -88556,7 +88502,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T19:07:00.000Z",
-                  "age_hours": 118.11893583333334
+                  "age_hours": 144.10035305555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -88627,7 +88573,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T20:39:00.000Z",
-                  "age_hours": 20.5856025
+                  "age_hours": 46.56701972222222
                 },
                 "latest_reported_status": "Out"
               },
@@ -88667,7 +88613,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-24T23:26:00.000Z",
-                  "age_hours": 209.80226916666666
+                  "age_hours": 235.7836863888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -88742,7 +88688,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T02:11:00.000Z",
-                  "age_hours": 87.05226916666666
+                  "age_hours": 113.0336863888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -88782,7 +88728,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T23:25:00.000Z",
-                  "age_hours": 137.81893583333334
+                  "age_hours": 163.80035305555555
                 },
                 "latest_reported_status": "Active"
               },
@@ -88880,7 +88826,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T20:53:00.000Z",
-                  "age_hours": 20.352269166666666
+                  "age_hours": 46.333686388888886
                 },
                 "latest_reported_status": "Active"
               },
@@ -88920,7 +88866,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T23:32:00.000Z",
-                  "age_hours": 41.70226916666667
+                  "age_hours": 67.68368638888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -88987,7 +88933,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T18:41:00.000Z",
-                  "age_hours": 142.55226916666666
+                  "age_hours": 168.5336863888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -89157,7 +89103,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T02:34:00.000Z",
-                  "age_hours": 206.66893583333334
+                  "age_hours": 232.65035305555554
                 },
                 "latest_reported_status": "Active"
               },
@@ -89251,7 +89197,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T00:22:00.000Z",
-                  "age_hours": 16.86893583333333
+                  "age_hours": 42.85035305555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -89453,7 +89399,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T19:07:00.000Z",
-                  "age_hours": 118.11893583333334
+                  "age_hours": 144.10035305555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -89493,7 +89439,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T00:32:00.000Z",
-                  "age_hours": 16.702269166666667
+                  "age_hours": 42.68368638888889
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -89533,7 +89479,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T01:40:00.000Z",
-                  "age_hours": 39.568935833333335
+                  "age_hours": 65.55035305555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -89600,7 +89546,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T23:32:00.000Z",
-                  "age_hours": 41.70226916666667
+                  "age_hours": 67.68368638888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -89640,7 +89586,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T19:07:00.000Z",
-                  "age_hours": 118.11893583333334
+                  "age_hours": 144.10035305555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -89680,7 +89626,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T21:39:00.000Z",
-                  "age_hours": 19.5856025
+                  "age_hours": 45.56701972222222
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -89859,7 +89805,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T04:09:00.000Z",
-                  "age_hours": 133.0856025
+                  "age_hours": 159.06701972222223
                 },
                 "latest_reported_status": "Active"
               },
@@ -89953,7 +89899,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-24T00:52:00.000Z",
-                  "age_hours": 232.36893583333332
+                  "age_hours": 258.35035305555556
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -89993,7 +89939,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T21:12:00.000Z",
-                  "age_hours": 20.0356025
+                  "age_hours": 46.01701972222222
                 },
                 "latest_reported_status": "Out"
               },
@@ -90744,7 +90690,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T20:37:00.000Z",
-                  "age_hours": 20.61893583333333
+                  "age_hours": 46.60035305555556
                 },
                 "latest_reported_status": "Out"
               },
@@ -90873,7 +90819,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T04:23:00.000Z",
-                  "age_hours": 108.85226916666667
+                  "age_hours": 134.83368638888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -90913,7 +90859,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T22:32:00.000Z",
-                  "age_hours": 138.70226916666667
+                  "age_hours": 164.6836863888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -90953,7 +90899,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:38:00.000Z",
-                  "age_hours": 118.60226916666667
+                  "age_hours": 144.58368638888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -90993,7 +90939,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T03:56:00.000Z",
-                  "age_hours": 133.30226916666666
+                  "age_hours": 159.2836863888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -91033,7 +90979,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T23:10:00.000Z",
-                  "age_hours": 138.06893583333334
+                  "age_hours": 164.05035305555555
                 },
                 "latest_reported_status": "Active"
               },
@@ -91095,7 +91041,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T22:31:00.000Z",
-                  "age_hours": 42.71893583333333
+                  "age_hours": 68.70035305555555
                 },
                 "latest_reported_status": "Active"
               },
@@ -91135,7 +91081,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T00:07:00.000Z",
-                  "age_hours": 113.11893583333334
+                  "age_hours": 139.10035305555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -91175,7 +91121,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T23:11:00.000Z",
-                  "age_hours": 18.052269166666665
+                  "age_hours": 44.03368638888889
                 },
                 "latest_reported_status": "Out"
               },
@@ -91215,7 +91161,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T22:59:00.000Z",
-                  "age_hours": 18.252269166666668
+                  "age_hours": 44.23368638888889
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -91259,7 +91205,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T20:41:00.000Z",
-                  "age_hours": 20.552269166666665
+                  "age_hours": 46.53368638888889
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -91303,7 +91249,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T20:44:00.000Z",
-                  "age_hours": 20.502269166666668
+                  "age_hours": 46.48368638888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -91482,7 +91428,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-24T21:37:00.000Z",
-                  "age_hours": 211.61893583333332
+                  "age_hours": 237.60035305555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -91553,7 +91499,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T23:16:00.000Z",
-                  "age_hours": 17.968935833333333
+                  "age_hours": 43.95035305555555
                 },
                 "latest_reported_status": "Out"
               },
@@ -91593,7 +91539,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:38:00.000Z",
-                  "age_hours": 118.60226916666667
+                  "age_hours": 144.58368638888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -91799,7 +91745,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T20:37:00.000Z",
-                  "age_hours": 20.61893583333333
+                  "age_hours": 46.60035305555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -91893,7 +91839,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T23:08:00.000Z",
-                  "age_hours": 18.102269166666666
+                  "age_hours": 44.083686388888886
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -91933,7 +91879,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T22:55:00.000Z",
-                  "age_hours": 18.318935833333335
+                  "age_hours": 44.300353055555554
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -92108,7 +92054,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T23:03:00.000Z",
-                  "age_hours": 18.1856025
+                  "age_hours": 44.16701972222222
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -92197,7 +92143,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T15:48:00.000Z",
-                  "age_hours": 145.4356025
+                  "age_hours": 171.41701972222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -92237,7 +92183,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T01:50:00.000Z",
-                  "age_hours": 63.40226916666666
+                  "age_hours": 89.38368638888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -92331,7 +92277,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T23:21:00.000Z",
-                  "age_hours": 17.8856025
+                  "age_hours": 43.867019722222224
                 },
                 "latest_reported_status": "Out"
               },
@@ -92371,7 +92317,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T01:55:00.000Z",
-                  "age_hours": 63.318935833333335
+                  "age_hours": 89.30035305555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -92487,7 +92433,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T23:51:00.000Z",
-                  "age_hours": 137.3856025
+                  "age_hours": 163.3670197222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -92705,7 +92651,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-26T21:25:00.000Z",
-                  "age_hours": 163.81893583333334
+                  "age_hours": 189.80035305555555
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -93393,7 +93339,10 @@
             }
           }
         },
-        "issues": []
+        "issues": [
+          "SEA: roster fetch older than 24 hours or invalid",
+          "LAC: roster fetch older than 24 hours or invalid"
+        ]
       },
       "behavior_learning_context": {
         "numeric_authority": 0,
@@ -93405,7 +93354,7 @@
             "player": null,
             "team": "LAC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "offensive_plays": {
@@ -93541,7 +93490,7 @@
             "player": "Justin Herbert",
             "team": "LAC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "pass_attempts": {
@@ -93637,7 +93586,7 @@
             "player": "Omarion Hampton",
             "team": "LAC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -93737,7 +93686,7 @@
             "player": "Keaton Mitchell",
             "team": "LAC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -93837,7 +93786,7 @@
             "player": "Kimani Vidal",
             "team": "LAC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -93937,7 +93886,7 @@
             "player": "Tre' Harris",
             "team": "LAC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -94025,7 +93974,7 @@
             "player": "Ladd McConkey",
             "team": "LAC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -94113,7 +94062,7 @@
             "player": "Quentin Johnston",
             "team": "LAC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -94201,7 +94150,7 @@
             "player": "Alec Ingold",
             "team": "LAC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -94289,7 +94238,7 @@
             "player": "Marquez Valdes-Scantling",
             "team": "LAC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -94377,7 +94326,7 @@
             "player": "Oronde Gadsden",
             "team": "LAC",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -94465,7 +94414,7 @@
             "player": null,
             "team": "SEA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "offensive_plays": {
@@ -94561,7 +94510,7 @@
             "player": "Sam Darnold",
             "team": "SEA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "pass_attempts": {
@@ -94617,7 +94566,7 @@
             "player": "Jaxon Smith-Njigba",
             "team": "SEA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "pass_attempts": {
@@ -94677,7 +94626,7 @@
             "player": "Jadarian Price",
             "team": "SEA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -94737,7 +94686,7 @@
             "player": "Emanuel Wilson",
             "team": "SEA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -94781,7 +94730,7 @@
             "player": "George Holani",
             "team": "SEA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -94841,7 +94790,7 @@
             "player": "AJ Barner",
             "team": "SEA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -94889,7 +94838,7 @@
             "player": "Tory Horton",
             "team": "SEA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -94937,7 +94886,7 @@
             "player": "Cooper Kupp",
             "team": "SEA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -94985,7 +94934,7 @@
             "player": "Brady Russell",
             "team": "SEA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -95033,7 +94982,7 @@
             "player": "Rashid Shaheed",
             "team": "SEA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -95081,7 +95030,7 @@
             "player": "Eric Saubert",
             "team": "SEA",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -95124,27 +95073,24 @@
             "numeric_authority": 0
           }
         },
-        "as_of": "2026-10-04T16:16:51.976Z"
+        "as_of": "2026-10-04T19:22:05.116Z"
       }
     },
     "2026-W4-DET-CAR": {
-      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version": "scoring-decay-no-rest-2026-v2",
       "scoring_evidence": {
-        "method": "Historically calibrated scoring matchup and rest",
+        "method": "Historically calibrated scoring matchup; rest removed by user instruction",
         "half_life_games": 4,
         "home_field_advantage_feature": 1.7442724458204335,
         "home_field_advantage_contribution": 2.15108045027228,
-        "rest_days": {
-          "home": 7,
-          "away": 7
-        },
+        "rest_days": null,
         "margin_features": [
           -0.11110153411333101,
-          0
+          0.005886681383370125
         ],
         "total_features": [
           52.04280533343768,
-          0
+          1.1464311994113319
         ],
         "teams": {
           "CAR": {
@@ -95187,11 +95133,12 @@
         "excluded_numeric_features": [
           "granular EPA/pace/explosive matchup extension failed ablation",
           "observed personnel continuity failed ablation",
-          "injury and coaching coefficients not validated"
+          "injury and coaching coefficients not validated",
+          "Days of rest removed by explicit user instruction"
         ],
         "contributions": {
           "schema_version": 1,
-          "model_version": "scoring-decay-rest-2026-v1",
+          "model_version": "scoring-decay-no-rest-2026-v2",
           "margin": {
             "intercept": 2.0625459896983074,
             "terms": [
@@ -95202,17 +95149,9 @@
                 "training_scale": 4.0478595159637,
                 "coefficient": 4.99192169841483,
                 "contribution": -1.4099743255414263
-              },
-              {
-                "name": "rest_difference",
-                "raw": 0,
-                "training_mean": 0.005886681383370125,
-                "training_scale": 2.3520149185335586,
-                "coefficient": 0.44750383286354456,
-                "contribution": -0.001120023712922303
               }
             ],
-            "reconstructed": 0.6514516404439588
+            "reconstructed": 0.6525716641568811
           },
           "total": {
             "intercept": 45.02354672553348,
@@ -95224,30 +95163,24 @@
                 "training_scale": 3.330240876050951,
                 "coefficient": 2.225550796781011,
                 "contribution": 4.524794881172056
-              },
-              {
-                "name": "absolute_rest_difference",
-                "raw": 0,
-                "training_mean": 1.1464311994113319,
-                "training_scale": 2.0537050262972074,
-                "coefficient": -0.2331384108386849,
-                "contribution": 0.13014388363675633
               }
             ],
-            "reconstructed": 49.67848549034229
+            "reconstructed": 49.548341606705534
           },
           "venue_component": {
             "parent_term": "scoring_matchup_including_venue",
             "contribution": 2.15108045027228,
             "additive": false
           },
-          "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+          "scope": "Numerical attribution of scoring model with rest removed; not a causal explanation",
           "excluded_numeric_features": [
             "granular EPA/pace/explosive matchup extension failed ablation",
             "observed personnel continuity failed ablation",
-            "injury and coaching coefficients not validated"
+            "injury and coaching coefficients not validated",
+            "Days of rest removed by explicit user instruction"
           ]
-        }
+        },
+        "rest_adjustment_applied": false
       },
       "home_team": "CAR",
       "away_team": "DET",
@@ -95255,14 +95188,14 @@
       "neutral_site": false,
       "home_field_advantage_applied": 2.151,
       "model": {
-        "home_score_mean": 25.165,
-        "away_score_mean": 24.514,
-        "home_minus_away_margin": 0.651,
-        "model_home_spread": -0.651,
-        "model_total": 49.678,
-        "home_win_probability": 0.504425,
-        "away_win_probability": 0.46524,
-        "tie_probability": 0.030334,
+        "home_score_mean": 25.1,
+        "away_score_mean": 24.448,
+        "home_minus_away_margin": 0.653,
+        "model_home_spread": -0.653,
+        "model_total": 49.548,
+        "home_win_probability": 0.504211,
+        "away_win_probability": 0.465637,
+        "tie_probability": 0.030151,
         "score_percentiles": {
           "home": {
             "p10": 13,
@@ -95295,7 +95228,7 @@
       "mode": "SHADOW_ONLY",
       "actionable": false,
       "personnel_context": {
-        "status": "CONNECTED",
+        "status": "REVIEW_REQUIRED",
         "numeric_adjustment_applied": false,
         "teams": {
           "CAR": {
@@ -95375,7 +95308,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T16:41:00.000Z",
-                  "age_hours": 24.552290833333334
+                  "age_hours": 50.533704722222225
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -95554,7 +95487,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T01:03:00.000Z",
-                  "age_hours": 16.185624166666667
+                  "age_hours": 42.16703805555556
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -95629,7 +95562,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T00:20:00.000Z",
-                  "age_hours": 136.90229083333332
+                  "age_hours": 162.88370472222223
                 },
                 "latest_reported_status": "Active"
               },
@@ -95696,7 +95629,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:17:00.000Z",
-                  "age_hours": 118.95229083333334
+                  "age_hours": 144.93370472222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -95744,7 +95677,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T16:46:00.000Z",
-                  "age_hours": 24.4689575
+                  "age_hours": 50.45037138888889
                 },
                 "latest_reported_status": "Out"
               },
@@ -95784,7 +95717,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T00:58:00.000Z",
-                  "age_hours": 16.2689575
+                  "age_hours": 42.25037138888889
                 },
                 "latest_reported_status": "Out"
               },
@@ -95824,7 +95757,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T22:19:00.000Z",
-                  "age_hours": 138.9189575
+                  "age_hours": 164.90037138888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -95907,7 +95840,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T15:31:00.000Z",
-                  "age_hours": 73.7189575
+                  "age_hours": 99.70037138888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -95978,7 +95911,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:17:00.000Z",
-                  "age_hours": 118.95229083333334
+                  "age_hours": 144.93370472222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -96018,7 +95951,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:17:00.000Z",
-                  "age_hours": 118.95229083333334
+                  "age_hours": 144.93370472222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -96085,7 +96018,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T15:05:00.000Z",
-                  "age_hours": 74.15229083333334
+                  "age_hours": 100.13370472222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -96156,7 +96089,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T15:29:00.000Z",
-                  "age_hours": 73.75229083333333
+                  "age_hours": 99.73370472222223
                 },
                 "latest_reported_status": "Active"
               },
@@ -96223,7 +96156,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T00:42:00.000Z",
-                  "age_hours": 136.53562416666668
+                  "age_hours": 162.51703805555556
                 },
                 "latest_reported_status": "Active"
               },
@@ -96263,7 +96196,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T18:56:00.000Z",
-                  "age_hours": 70.30229083333333
+                  "age_hours": 96.28370472222223
                 },
                 "latest_reported_status": "Active"
               },
@@ -96438,7 +96371,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-24T02:09:00.000Z",
-                  "age_hours": 231.08562416666666
+                  "age_hours": 257.06703805555554
                 },
                 "latest_reported_status": "Active"
               },
@@ -96505,7 +96438,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T19:36:00.000Z",
-                  "age_hours": 45.635624166666666
+                  "age_hours": 71.61703805555555
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -96572,7 +96505,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T16:39:00.000Z",
-                  "age_hours": 24.585624166666666
+                  "age_hours": 50.56703805555556
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -96693,7 +96626,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T20:04:00.000Z",
-                  "age_hours": 69.1689575
+                  "age_hours": 95.15037138888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -96809,7 +96742,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-24T22:34:00.000Z",
-                  "age_hours": 210.6689575
+                  "age_hours": 236.65037138888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -96876,7 +96809,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T20:01:00.000Z",
-                  "age_hours": 69.2189575
+                  "age_hours": 95.20037138888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -96970,7 +96903,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T19:37:00.000Z",
-                  "age_hours": 45.6189575
+                  "age_hours": 71.60037138888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -97037,7 +96970,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T02:46:00.000Z",
-                  "age_hours": 134.4689575
+                  "age_hours": 160.4503713888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -97282,7 +97215,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T15:25:00.000Z",
-                  "age_hours": 73.8189575
+                  "age_hours": 99.80037138888889
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -97322,7 +97255,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T19:44:00.000Z",
-                  "age_hours": 69.50229083333333
+                  "age_hours": 95.48370472222223
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -97597,7 +97530,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-26T18:03:00.000Z",
-                  "age_hours": 167.18562416666666
+                  "age_hours": 193.16703805555557
                 },
                 "latest_reported_status": "Active"
               },
@@ -98061,7 +97994,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T01:20:00.000Z",
-                  "age_hours": 15.902290833333334
+                  "age_hours": 41.88370472222222
                 },
                 "latest_reported_status": "Out"
               },
@@ -98128,7 +98061,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:26:00.000Z",
-                  "age_hours": 118.80229083333333
+                  "age_hours": 144.7837047222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -98222,7 +98155,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T22:44:00.000Z",
-                  "age_hours": 138.50229083333332
+                  "age_hours": 164.48370472222223
                 },
                 "latest_reported_status": "Active"
               },
@@ -98262,7 +98195,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T22:55:00.000Z",
-                  "age_hours": 138.3189575
+                  "age_hours": 164.3003713888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -98359,7 +98292,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T23:09:00.000Z",
-                  "age_hours": 138.08562416666666
+                  "age_hours": 164.06703805555554
                 },
                 "latest_reported_status": "Active"
               },
@@ -98399,7 +98332,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-26T01:32:00.000Z",
-                  "age_hours": 183.70229083333334
+                  "age_hours": 209.68370472222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -98524,7 +98457,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-26T01:34:00.000Z",
-                  "age_hours": 183.6689575
+                  "age_hours": 209.65037138888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -98564,7 +98497,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-26T01:43:00.000Z",
-                  "age_hours": 183.5189575
+                  "age_hours": 209.50037138888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -98689,7 +98622,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T22:48:00.000Z",
-                  "age_hours": 138.43562416666666
+                  "age_hours": 164.41703805555557
                 },
                 "latest_reported_status": "Active"
               },
@@ -98729,7 +98662,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T01:25:00.000Z",
-                  "age_hours": 87.8189575
+                  "age_hours": 113.80037138888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -98800,7 +98733,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T23:02:00.000Z",
-                  "age_hours": 138.20229083333334
+                  "age_hours": 164.18370472222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -98894,7 +98827,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T03:46:00.000Z",
-                  "age_hours": 85.4689575
+                  "age_hours": 111.45037138888888
                 },
                 "latest_reported_status": "Active"
               },
@@ -98961,7 +98894,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T03:37:00.000Z",
-                  "age_hours": 85.6189575
+                  "age_hours": 111.60037138888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -99028,7 +98961,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:26:00.000Z",
-                  "age_hours": 118.80229083333333
+                  "age_hours": 144.7837047222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -99095,7 +99028,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:26:00.000Z",
-                  "age_hours": 118.80229083333333
+                  "age_hours": 144.7837047222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -99162,7 +99095,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T03:25:00.000Z",
-                  "age_hours": 85.8189575
+                  "age_hours": 111.80037138888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -99467,7 +99400,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T23:23:00.000Z",
-                  "age_hours": 17.852290833333335
+                  "age_hours": 43.83370472222222
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -99583,7 +99516,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:26:00.000Z",
-                  "age_hours": 118.80229083333333
+                  "age_hours": 144.7837047222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -99650,7 +99583,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:26:00.000Z",
-                  "age_hours": 118.80229083333333
+                  "age_hours": 144.7837047222222
                 },
                 "latest_reported_status": "Active"
               },
@@ -99690,7 +99623,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T21:22:00.000Z",
-                  "age_hours": 43.8689575
+                  "age_hours": 69.85037138888889
                 },
                 "latest_reported_status": "Active"
               },
@@ -99757,7 +99690,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T04:20:00.000Z",
-                  "age_hours": 132.90229083333332
+                  "age_hours": 158.88370472222223
                 },
                 "latest_reported_status": "Active"
               },
@@ -99855,7 +99788,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T16:17:00.000Z",
-                  "age_hours": 24.952290833333333
+                  "age_hours": 50.933704722222224
                 },
                 "latest_reported_status": "Out"
               },
@@ -99922,7 +99855,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-26T21:03:00.000Z",
-                  "age_hours": 164.18562416666666
+                  "age_hours": 190.16703805555557
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -100016,7 +99949,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-23T00:33:00.000Z",
-                  "age_hours": 256.6856241666667
+                  "age_hours": 282.66703805555557
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -100083,7 +100016,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T01:05:00.000Z",
-                  "age_hours": 112.15229083333334
+                  "age_hours": 138.13370472222223
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -100642,7 +100575,10 @@
             }
           }
         },
-        "issues": []
+        "issues": [
+          "CAR: roster fetch older than 24 hours or invalid",
+          "DET: roster fetch older than 24 hours or invalid"
+        ]
       },
       "behavior_learning_context": {
         "numeric_authority": 0,
@@ -100654,7 +100590,7 @@
             "player": null,
             "team": "CAR",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "offensive_plays": {
@@ -100770,7 +100706,7 @@
             "player": "Bryce Young",
             "team": "CAR",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "pass_attempts": {
@@ -100834,7 +100770,7 @@
             "player": "Chuba Hubbard",
             "team": "CAR",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -100914,7 +100850,7 @@
             "player": "AJ Dillon",
             "team": "CAR",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -100994,7 +100930,7 @@
             "player": "Brycen Tremayne",
             "team": "CAR",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -101062,7 +100998,7 @@
             "player": "Darren Waller",
             "team": "CAR",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -101130,7 +101066,7 @@
             "player": "Tommy Tremble",
             "team": "CAR",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -101198,7 +101134,7 @@
             "player": "Mitchell Evans",
             "team": "CAR",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -101266,7 +101202,7 @@
             "player": "John Metchie III",
             "team": "CAR",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -101334,7 +101270,7 @@
             "player": "Jalen Coker",
             "team": "CAR",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -101402,7 +101338,7 @@
             "player": "Tetairoa McMillan",
             "team": "CAR",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -101470,7 +101406,7 @@
             "player": "David Moore",
             "team": "CAR",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -101538,7 +101474,7 @@
             "player": null,
             "team": "DET",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "offensive_plays": {
@@ -101644,7 +101580,7 @@
             "player": "Jared Goff",
             "team": "DET",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "pass_attempts": {
@@ -101710,7 +101646,7 @@
             "player": "Jahmyr Gibbs",
             "team": "DET",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -101780,7 +101716,7 @@
             "player": "Sione Vaki",
             "team": "DET",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -101850,7 +101786,7 @@
             "player": "Isaac TeSlaa",
             "team": "DET",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -101908,7 +101844,7 @@
             "player": "Jameson Williams",
             "team": "DET",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -101966,7 +101902,7 @@
             "player": "Sam LaPorta",
             "team": "DET",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -102024,7 +101960,7 @@
             "player": "Amon-Ra St. Brown",
             "team": "DET",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -102082,7 +102018,7 @@
             "player": "Jackson Meeks",
             "team": "DET",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -102140,7 +102076,7 @@
             "player": "Brock Wright",
             "team": "DET",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -102193,27 +102129,24 @@
             "numeric_authority": 0
           }
         },
-        "as_of": "2026-10-04T16:16:51.976Z"
+        "as_of": "2026-10-04T19:22:05.116Z"
       }
     },
     "2026-W4-ATL-NO": {
-      "model_version": "scoring-decay-rest-2026-v1",
+      "model_version": "scoring-decay-no-rest-2026-v2",
       "scoring_evidence": {
-        "method": "Historically calibrated scoring matchup and rest",
+        "method": "Historically calibrated scoring matchup; rest removed by user instruction",
         "half_life_games": 4,
         "home_field_advantage_feature": 1.7442724458204335,
         "home_field_advantage_contribution": 2.15108045027228,
-        "rest_days": {
-          "home": 8,
-          "away": 11
-        },
+        "rest_days": null,
         "margin_features": [
           2.250601694198231,
-          -3
+          0.005886681383370125
         ],
         "total_features": [
           44.35687338514063,
-          3
+          1.1464311994113319
         ],
         "teams": {
           "NO": {
@@ -102256,11 +102189,12 @@
         "excluded_numeric_features": [
           "granular EPA/pace/explosive matchup extension failed ablation",
           "observed personnel continuity failed ablation",
-          "injury and coaching coefficients not validated"
+          "injury and coaching coefficients not validated",
+          "Days of rest removed by explicit user instruction"
         ],
         "contributions": {
           "schema_version": 1,
-          "model_version": "scoring-decay-rest-2026-v1",
+          "model_version": "scoring-decay-no-rest-2026-v2",
           "margin": {
             "intercept": 2.0625459896983074,
             "terms": [
@@ -102271,17 +102205,9 @@
                 "training_scale": 4.0478595159637,
                 "coefficient": 4.99192169841483,
                 "contribution": 1.5025372238664467
-              },
-              {
-                "name": "rest_difference",
-                "raw": -3,
-                "training_mean": 0.005886681383370125,
-                "training_scale": 2.3520149185335586,
-                "coefficient": 0.44750383286354456,
-                "contribution": -0.5719121084109507
               }
             ],
-            "reconstructed": 2.9931711051538032
+            "reconstructed": 3.565083213564754
           },
           "total": {
             "intercept": 45.02354672553348,
@@ -102293,30 +102219,24 @@
                 "training_scale": 3.330240876050951,
                 "coefficient": 2.225550796781011,
                 "contribution": -0.6115999347551907
-              },
-              {
-                "name": "absolute_rest_difference",
-                "raw": 3,
-                "training_mean": 1.1464311994113319,
-                "training_scale": 2.0537050262972074,
-                "coefficient": -0.2331384108386849,
-                "contribution": -0.21041876949999308
               }
             ],
-            "reconstructed": 44.20152802127829
+            "reconstructed": 44.41194679077829
           },
           "venue_component": {
             "parent_term": "scoring_matchup_including_venue",
             "contribution": 2.15108045027228,
             "additive": false
           },
-          "scope": "Numerical attribution of scoring/rest model; not a causal explanation",
+          "scope": "Numerical attribution of scoring model with rest removed; not a causal explanation",
           "excluded_numeric_features": [
             "granular EPA/pace/explosive matchup extension failed ablation",
             "observed personnel continuity failed ablation",
-            "injury and coaching coefficients not validated"
+            "injury and coaching coefficients not validated",
+            "Days of rest removed by explicit user instruction"
           ]
-        }
+        },
+        "rest_adjustment_applied": false
       },
       "home_team": "NO",
       "away_team": "ATL",
@@ -102324,14 +102244,14 @@
       "neutral_site": false,
       "home_field_advantage_applied": 2.151,
       "model": {
-        "home_score_mean": 23.597,
-        "away_score_mean": 20.604,
-        "home_minus_away_margin": 2.993,
-        "model_home_spread": -2.993,
-        "model_total": 44.202,
-        "home_win_probability": 0.574341,
-        "away_win_probability": 0.395386,
-        "tie_probability": 0.030273,
+        "home_score_mean": 23.989,
+        "away_score_mean": 20.423,
+        "home_minus_away_margin": 3.565,
+        "model_home_spread": -3.565,
+        "model_total": 44.412,
+        "home_win_probability": 0.591583,
+        "away_win_probability": 0.37854,
+        "tie_probability": 0.029877,
         "score_percentiles": {
           "home": {
             "p10": 12,
@@ -102339,18 +102259,18 @@
             "p90": 36
           },
           "away": {
-            "p10": 9,
-            "p50": 21,
-            "p90": 33
+            "p10": 8,
+            "p50": 20,
+            "p90": 32
           }
         },
         "margin_percentiles": {
-          "p10": -14,
-          "p50": 3,
+          "p10": -13,
+          "p50": 4,
           "p90": 20
         },
         "total_percentiles": {
-          "p10": 27,
+          "p10": 28,
           "p50": 44,
           "p90": 61
         }
@@ -102364,7 +102284,7 @@
       "mode": "SHADOW_ONLY",
       "actionable": false,
       "personnel_context": {
-        "status": "CONNECTED",
+        "status": "REVIEW_REQUIRED",
         "numeric_adjustment_applied": false,
         "teams": {
           "NO": {
@@ -102409,7 +102329,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T00:41:00.000Z",
-                  "age_hours": 40.55231111111111
+                  "age_hours": 66.53372277777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -102457,7 +102377,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T16:45:00.000Z",
-                  "age_hours": 96.48564444444445
+                  "age_hours": 122.4670561111111
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -102578,7 +102498,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T20:29:00.000Z",
-                  "age_hours": 20.752311111111112
+                  "age_hours": 46.73372277777778
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -102645,7 +102565,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T01:27:00.000Z",
-                  "age_hours": 135.78564444444444
+                  "age_hours": 161.76705611111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -102685,7 +102605,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T00:03:00.000Z",
-                  "age_hours": 17.185644444444446
+                  "age_hours": 43.16705611111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -102783,7 +102703,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-03T00:08:00.000Z",
-                  "age_hours": 17.10231111111111
+                  "age_hours": 43.08372277777778
                 },
                 "latest_reported_status": "Active"
               },
@@ -102872,7 +102792,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T01:04:00.000Z",
-                  "age_hours": 136.16897777777777
+                  "age_hours": 162.15038944444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -103042,7 +102962,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T01:10:00.000Z",
-                  "age_hours": 136.06897777777777
+                  "age_hours": 162.05038944444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -103082,7 +103002,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T02:36:00.000Z",
-                  "age_hours": 86.63564444444444
+                  "age_hours": 112.61705611111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -103122,7 +103042,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:54:00.000Z",
-                  "age_hours": 118.33564444444444
+                  "age_hours": 144.3170561111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -103162,7 +103082,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T19:17:00.000Z",
-                  "age_hours": 141.9523111111111
+                  "age_hours": 167.93372277777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -103229,7 +103149,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T23:48:00.000Z",
-                  "age_hours": 17.435644444444446
+                  "age_hours": 43.41705611111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -103323,7 +103243,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T23:42:00.000Z",
-                  "age_hours": 17.535644444444443
+                  "age_hours": 43.51705611111111
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -103363,7 +103283,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T01:34:00.000Z",
-                  "age_hours": 39.668977777777776
+                  "age_hours": 65.65038944444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -103430,7 +103350,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T21:39:00.000Z",
-                  "age_hours": 43.58564444444445
+                  "age_hours": 69.56705611111111
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -103497,7 +103417,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T23:33:00.000Z",
-                  "age_hours": 137.68564444444445
+                  "age_hours": 163.66705611111112
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -103591,7 +103511,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T16:45:00.000Z",
-                  "age_hours": 96.48564444444445
+                  "age_hours": 122.4670561111111
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -103743,7 +103663,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:54:00.000Z",
-                  "age_hours": 118.33564444444444
+                  "age_hours": 144.3170561111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -103841,7 +103761,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T02:13:00.000Z",
-                  "age_hours": 207.0189777777778
+                  "age_hours": 233.00038944444444
                 },
                 "latest_reported_status": "Active"
               },
@@ -103962,7 +103882,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T23:46:00.000Z",
-                  "age_hours": 17.468977777777777
+                  "age_hours": 43.45038944444445
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -104002,7 +103922,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:54:00.000Z",
-                  "age_hours": 118.33564444444444
+                  "age_hours": 144.3170561111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -104123,7 +104043,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T23:32:00.000Z",
-                  "age_hours": 113.70231111111111
+                  "age_hours": 139.68372277777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -104194,7 +104114,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-26T00:47:00.000Z",
-                  "age_hours": 184.4523111111111
+                  "age_hours": 210.43372277777777
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -104292,7 +104212,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T20:44:00.000Z",
-                  "age_hours": 44.50231111111111
+                  "age_hours": 70.48372277777777
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -104529,7 +104449,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T20:53:00.000Z",
-                  "age_hours": 44.35231111111111
+                  "age_hours": 70.33372277777778
                 },
                 "latest_reported_status": "Injured Reserve"
               },
@@ -105375,7 +105295,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-26T23:57:00.000Z",
-                  "age_hours": 161.28564444444444
+                  "age_hours": 187.26705611111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -105419,7 +105339,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-26T23:14:00.000Z",
-                  "age_hours": 162.0023111111111
+                  "age_hours": 187.98372277777779
                 },
                 "latest_reported_status": "Active"
               },
@@ -105486,7 +105406,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T00:17:00.000Z",
-                  "age_hours": 160.9523111111111
+                  "age_hours": 186.93372277777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -105611,7 +105531,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T03:37:00.000Z",
-                  "age_hours": 205.6189777777778
+                  "age_hours": 231.60038944444443
                 },
                 "latest_reported_status": "Active"
               },
@@ -105678,7 +105598,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-22T23:24:00.000Z",
-                  "age_hours": 257.8356444444444
+                  "age_hours": 283.8170561111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -105745,7 +105665,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:12:00.000Z",
-                  "age_hours": 119.03564444444444
+                  "age_hours": 145.01705611111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -105785,7 +105705,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T04:27:00.000Z",
-                  "age_hours": 204.78564444444444
+                  "age_hours": 230.76705611111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -105825,7 +105745,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T04:46:00.000Z",
-                  "age_hours": 204.46897777777778
+                  "age_hours": 230.45038944444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -105865,7 +105785,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T03:30:00.000Z",
-                  "age_hours": 205.73564444444443
+                  "age_hours": 231.7170561111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -105909,7 +105829,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T04:32:00.000Z",
-                  "age_hours": 204.7023111111111
+                  "age_hours": 230.68372277777777
                 },
                 "latest_reported_status": "Active"
               },
@@ -105949,7 +105869,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:12:00.000Z",
-                  "age_hours": 119.03564444444444
+                  "age_hours": 145.01705611111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -105989,7 +105909,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:12:00.000Z",
-                  "age_hours": 119.03564444444444
+                  "age_hours": 145.01705611111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -106056,7 +105976,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-23T00:29:00.000Z",
-                  "age_hours": 256.7523111111111
+                  "age_hours": 282.73372277777776
                 },
                 "latest_reported_status": "Active"
               },
@@ -106131,7 +106051,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-26T23:45:00.000Z",
-                  "age_hours": 161.48564444444443
+                  "age_hours": 187.4670561111111
                 },
                 "latest_reported_status": "Active"
               },
@@ -106198,7 +106118,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T03:52:00.000Z",
-                  "age_hours": 157.3689777777778
+                  "age_hours": 183.35038944444443
                 },
                 "latest_reported_status": "Active"
               },
@@ -106238,7 +106158,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-24T23:12:00.000Z",
-                  "age_hours": 210.03564444444444
+                  "age_hours": 236.01705611111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -106309,7 +106229,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-02T21:19:00.000Z",
-                  "age_hours": 19.918977777777776
+                  "age_hours": 45.90038944444444
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -106349,7 +106269,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-10-01T21:25:00.000Z",
-                  "age_hours": 43.818977777777775
+                  "age_hours": 69.80038944444445
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -106389,7 +106309,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:12:00.000Z",
-                  "age_hours": 119.03564444444444
+                  "age_hours": 145.01705611111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -106429,7 +106349,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-30T23:58:00.000Z",
-                  "age_hours": 65.26897777777778
+                  "age_hours": 91.25038944444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -106496,7 +106416,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-29T16:45:00.000Z",
-                  "age_hours": 96.48564444444445
+                  "age_hours": 122.4670561111111
                 },
                 "latest_reported_status": "Questionable"
               },
@@ -106590,7 +106510,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-23T00:28:00.000Z",
-                  "age_hours": 256.76897777777776
+                  "age_hours": 282.75038944444447
                 },
                 "latest_reported_status": "Active"
               },
@@ -106765,7 +106685,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-28T18:12:00.000Z",
-                  "age_hours": 119.03564444444444
+                  "age_hours": 145.01705611111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -106967,7 +106887,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-27T03:46:00.000Z",
-                  "age_hours": 157.46897777777778
+                  "age_hours": 183.45038944444445
                 },
                 "latest_reported_status": "Active"
               },
@@ -107065,7 +106985,7 @@
                   "designation_confirmed_for_game": false,
                   "status": "REVIEW_REQUIRED",
                   "source_updated_at": "2026-09-25T04:33:00.000Z",
-                  "age_hours": 204.68564444444445
+                  "age_hours": 230.66705611111112
                 },
                 "latest_reported_status": "Active"
               },
@@ -107820,7 +107740,10 @@
             }
           }
         },
-        "issues": []
+        "issues": [
+          "NO: roster fetch older than 24 hours or invalid",
+          "ATL: roster fetch older than 24 hours or invalid"
+        ]
       },
       "behavior_learning_context": {
         "numeric_authority": 0,
@@ -107832,7 +107755,7 @@
             "player": null,
             "team": "NO",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "offensive_plays": {
@@ -107948,7 +107871,7 @@
             "player": "Tyler Shough",
             "team": "NO",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "pass_attempts": {
@@ -108024,7 +107947,7 @@
             "player": "Travis Etienne Jr.",
             "team": "NO",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -108104,7 +108027,7 @@
             "player": "Alvin Kamara",
             "team": "NO",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -108184,7 +108107,7 @@
             "player": "Kendre Miller",
             "team": "NO",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -108264,7 +108187,7 @@
             "player": "CJ Donaldson",
             "team": "NO",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "rush_attempts": {
@@ -108328,7 +108251,7 @@
             "player": "Chris Olave",
             "team": "NO",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -108396,7 +108319,7 @@
             "player": "Juwan Johnson",
             "team": "NO",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -108464,7 +108387,7 @@
             "player": "Devaughn Vele",
             "team": "NO",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -108532,7 +108455,7 @@
             "player": "Noah Fant",
             "team": "NO",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -108600,7 +108523,7 @@
             "player": "Bryce Lance",
             "team": "NO",
             "games": 1,
-            "as_of": "2026-10-04T16:16:51.976Z",
+            "as_of": "2026-10-04T19:22:05.116Z",
             "half_life_games": 4,
             "metrics": {
               "receptions": {
@@ -108663,7 +108586,7 @@
             "numeric_authority": 0
           }
         },
-        "as_of": "2026-10-04T16:16:51.976Z"
+        "as_of": "2026-10-04T19:22:05.116Z"
       }
     }
   }

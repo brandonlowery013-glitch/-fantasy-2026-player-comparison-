@@ -105,3 +105,10 @@ assert.match(distributionAdjusted.reader.details[0],/adjustments, it is 2.42/);
 assert.match(distributionAdjusted.reader.details[1],/distribution.*2.50/);
 assert.match(distributionAdjusted.reader.reconciliation,/does not change/);
 assert.match(distributionAdjusted.math[0],/context-adjusted projection 2.42 → distribution average 2.50/);
+
+const withoutRest=gameWork({...game,scoring_evidence:{rest_adjustment_applied:false,rest_days:null,contributions:{margin:{intercept:4,reconstructed:6,terms:[{name:'scoring_matchup',contribution:2},{name:'rest',contribution:0}]}}}},snap,'spread',now);
+assert.match(withoutRest.reader.reconciliation,/scoring matchup changes the forecast/);
+assert.match(withoutRest.reader.reconciliation,/Rest is excluded/);
+assert.doesNotMatch(withoutRest.reader.reconciliation,/matchup and rest/);
+assert.match(explained.reader.reconciliation,/matchup and rest/,'original rest-aware forecasts keep their original attribution');
+console.log('PASS: rest-free explanations match the versioned scoring policy without altering historical attribution');
