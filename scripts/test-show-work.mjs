@@ -47,3 +47,18 @@ assert.equal(contextCurrent({...injury,evidence:{source_updated_at:'2026-10-01T0
 assert.equal(contextReview([{...injury,kind:'injury',evidence:{status:'Active',source_updated_at:'2026-10-01T00:00:00Z'}}],now).rows[0].current,false);
 assert.equal(contextCurrent({...injury,evidence:{...injury.evidence,conflicting_reports:true}},'injury',now),false);
 console.log('PASS: context expiration is rechecked at use; injury capture cannot refresh an old report');
+
+const {propAvailability}=globalThis.CTD_SHOW_WORK;
+const liveProp={captured_at:'2026-10-03T23:00:00Z',eligibility:{eligible_for_pick:true},recommendation:{decision:'PICK'}};
+const activeSignal={...injury,kind:'injury',evidence:{...injury.evidence,status:'Active'}};
+const start='2026-10-04T12:00:00Z';
+assert.equal(propAvailability(liveProp,[activeSignal],start,now).available,true);
+for(const status of ['Out','Inactive','Questionable','Doubtful'])assert.equal(propAvailability(liveProp,[{...activeSignal,evidence:{...activeSignal.evidence,status}}],start,now).available,false);
+assert.equal(propAvailability(liveProp,[{...activeSignal,evidence:{...activeSignal.evidence,practice_status:'Limited'}}],start,now).available,false);
+assert.equal(propAvailability(liveProp,[],start,now).available,false);
+assert.equal(propAvailability(liveProp,[activeSignal],null,now).available,false);
+assert.equal(propAvailability(liveProp,[activeSignal],'2026-10-03T12:00:00Z',now).available,false);
+assert.equal(propAvailability({...liveProp,captured_at:'2026-10-01T00:00:00Z'},[activeSignal],start,now).available,false);
+assert.match(w.reader.summary,/We expect/);assert.match(pw.reader.summary,/We project/);
+assert.doesNotMatch(w.reader.summary,/intercept|raw edge|locked/);
+console.log('PASS: readable explanations and current prop status, kickoff, and price checks');
