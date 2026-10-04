@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const html=fs.readFileSync('index.html','utf8');
+const source=html.slice(html.indexOf('function edgePct('),html.indexOf("document.querySelectorAll('[data-bet-view]')"));
+const mount={innerHTML:''};const context=vm.createContext({document:{getElementById:()=>mount},esc:x=>String(x??'')});
+vm.runInContext(source,context);
+context.renderOurPicks({status:'READY',picksAvailable:false,eligible_legs:[]});
+assert.match(mount.innerHTML,/unavailable/);assert.doesNotMatch(mount.innerHTML,/<b>PASS/);
+context.renderOurPicks({status:'READY',picksAvailable:true,eligible_legs:[{label:'PICK',standalone_approved:false,selection:'BLOCKED'},{label:'PICK',standalone_approved:true,selection:'APPROVED',model_win_probability:.6}]});
+assert.match(mount.innerHTML,/APPROVED/);assert.doesNotMatch(mount.innerHTML,/BLOCKED/);
+context.renderOurPicks({status:'READY',picksAvailable:true,eligible_legs:[]});assert.match(mount.innerHTML,/<b>PASS/);
+console.log('PASS: unavailable approved feed differs from PASS; only approved picks render');
