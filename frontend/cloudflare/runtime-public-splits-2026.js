@@ -6,7 +6,7 @@
  function controls(){
   const ticker=document.getElementById('ctdGameTicker');if(!ticker)return;
   let host=document.getElementById('ctdSplitsControls');
-  if(!host){host=document.createElement('div');host.id='ctdSplitsControls';host.innerHTML='<span>Consensus &amp; smart money</span><div role="group" aria-label="Betting percentage market">'+Object.entries(markets).map(([key,label])=>`<button type="button" data-splits-market="${key}" aria-pressed="${key===market}">${label}</button>`).join('')+'</div>';ticker.before(host);
+  if(!host){host=document.createElement('div');host.id='ctdSplitsControls';host.innerHTML='<span>Consensus &amp; Smart Money</span><div role="group" aria-label="Betting percentage market">'+Object.entries(markets).map(([key,label])=>`<button type="button" data-splits-market="${key}" aria-pressed="${key===market}">${label}</button>`).join('')+'</div>';ticker.before(host);
    host.addEventListener('click',event=>{const button=event.target.closest('[data-splits-market]');if(!button)return;market=button.dataset.splitsMarket;render();});
   }
   host.querySelectorAll('[data-splits-market]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.splitsMarket===market)));
@@ -18,7 +18,7 @@
    const g=BET_FEED.games?.[Number(card.dataset.gameIndex)];if(!g)return;
    const start=Date.parse(g.event_start||g.kickoff||g.start_at),m=data?.games?.find(x=>canon(x.home)===canon(g.home_team)&&canon(x.away)===canon(g.away_team)&&Math.abs(Date.parse(x.start_at)-start)<3600000);
    const block=document.createElement('div');block.className='ctdCardSplits';
-   block.title='Bets is the share of tickets. Money is the share of dollars wagered at DraftKings; it does not identify professional bettors.';
+   block.title='Consensus is the share of bets. Smart Money shows the share of dollars wagered at DraftKings; it does not identify professional bettors.';
    block.innerHTML=`<div class="ctdSplitHeading"><strong>${markets[market]}</strong><span>DraftKings</span></div>`;
    const rows=m?.[market]||[],sides=market==='total'?['Over','Under']:[canon(g.away_team),canon(g.home_team)],pair=sides.map(side=>rows.find(r=>canon(r.side)===side));
    if(pair.some(r=>!r)||!['bets','money'].every(k=>pair.every(r=>Number.isFinite(r[k])&&r[k]>=0&&r[k]<=100)&&Math.abs(pair[0][k]+pair[1][k]-100)<=1)){
@@ -26,7 +26,7 @@
    }
    const labels=pair.map((r,i)=>market==='total'?r.label:market==='spread'?`${i===0?g.away_team:g.home_team} ${r.label.split(' ').at(-1)}`:i===0?g.away_team:g.home_team);
    block.innerHTML+=`<div class="ctdSplitSides"><span><i class="ctdSideA"></i>${esc(labels[0])}</span><span>${esc(labels[1])}<i class="ctdSideB"></i></span></div>`;
-   for(const [key,label] of [['bets','Bets'],['money','Money']]){
+   for(const [key,label] of [['bets','Consensus'],['money','Smart Money']]){
     block.innerHTML+=`<div class="ctdSplitMetric"><div class="ctdSplitValues"><b>${pair[0][key]}<small>%</small></b><span>${label}</span><b>${pair[1][key]}<small>%</small></b></div><div class="ctdSplitBar" role="img" aria-label="${esc(label+': '+labels[0]+' '+pair[0][key]+'%, '+labels[1]+' '+pair[1][key]+'%')}"><span class="ctdSideA" style="width:${pair[0][key]}%"></span><span class="ctdSideB" style="width:${pair[1][key]}%"></span></div></div>`;
    }
    block.innerHTML+=`<div class="ctdSplitChecked">Checked ${esc(new Date(m.observed_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</div>`;
