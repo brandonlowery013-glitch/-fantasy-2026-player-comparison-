@@ -30,10 +30,7 @@
       home_periods:(home.linescores||[]).map(x=>Number(x.value??x.displayValue)).filter(Number.isFinite)
     };
   }
-  function ctStart(value){
-    const d=new Date(value);if(!Number.isFinite(d.getTime()))return 'SCHEDULED';
-    return d.toLocaleString('en-US',{timeZone:'America/Chicago',weekday:'short',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
-  }
+  function ctStart(value){return CTD_TIME.kickoff(value);}
   function apply(rows){
     const feed=BET_FEED;
     if(!feed?.games?.length)return;
@@ -41,12 +38,14 @@
     for(const g of feed.games){
       const s=rows.find(x=>x.away_team===norm(g.away_team)&&x.home_team===norm(g.home_team));
       if(!s)continue;
-      const nextStatus=s.completed?'FINAL':s.state==='in'?(s.status||'LIVE'):ctStart(s.date);
+      const nextStatus=CTD_TIME.status({...s,event_start:s.date});
       if(g.away_score!==s.away_score||g.home_score!==s.home_score||g.status!==nextStatus||g.completed!==s.completed)changed=true;
       Object.assign(g,{
         away_score:s.away_score,
         home_score:s.home_score,
         status:nextStatus,
+        state:s.state,
+        event_start:s.date||g.event_start,
         completed:s.completed,
         latest_scores:{away:[...s.away_periods.slice(0,4),s.away_score],home:[...s.home_periods.slice(0,4),s.home_score]}
       });
