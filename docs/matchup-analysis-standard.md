@@ -16,6 +16,57 @@ Before publishing a new slate, refresh `lib/weekly-matchup-notes.mjs` with origi
 
 ## Implementation map and remaining model gaps
 
+### Complete required inputs
+
+The preserved **Live Game Production Proof** handoff (conversation `6ab8ee35-8530-83ea-b93e-725b30e76e44`) records the agreement after the Shough/Lawrence comparison. It does not contain the original full comparison or establish additional coefficients. The requirements below preserve that agreement individually; do not replace this list with a generic “math plus context” requirement. Consensus and Smart Money are additional requirements from later user requests.
+
+Status is deliberately scoped: **implemented** means the identified calculation exists, **partial** means only some inputs or players are covered, **descriptive** means available evidence affects the explanation but not the score probability, and **missing** means the complete required capability is not present. Recognizing a field name is not evidence of populated, fresh data or numerical integration.
+
+| Required variable or decision step | Current status and precise limitation |
+| --- | --- |
+| Baseline model projection | Implemented for existing game scores and supported player-stat projections; missing player projections remain unavailable. |
+| Actual sportsbook line and price | Implemented for saved quotes with book and capture time; freshness and eligibility remain separate from model direction. |
+| Implied probability and no-vig market probability | Implemented from the matching price pair where supplied. |
+| EV and probability edge | Implemented at the evaluated side, line and price, including win/loss/push treatment. |
+| Spread edge and total edge | Implemented from the existing score projection versus the offered spread/total. |
+| Game total and team implied totals | Implemented as market context; not extra independent football-score inputs. |
+| Expected pass attempts | Partial: opportunity fields display when the projection supplies them; recent observed attempts are not a future attempt forecast. |
+| Expected targets | Partial: supported player projections supply targets; not universal coverage. |
+| Expected carries | Partial: supported player projections supply carries; recent carries do not by themselves establish next-game volume. |
+| Expected routes | Missing complete sourced projection coverage; do not infer routes from targets or receiving yards. |
+| Expected snaps | Missing complete sourced projection coverage; depth rank is not a snap projection. |
+| Opponent QB production allowed | Partial/descriptive: recent team passing-defense box scores are available; complete QB-position production coverage is not established. |
+| Opponent RB production allowed | Partial/descriptive: team rushing defense is available; it does not isolate RB production or receiving production. |
+| Opponent WR production allowed | Missing complete position-specific coverage; total passing yards allowed are not WR-only production. |
+| Opponent QB fantasy points allowed | Missing complete current, scoring-format-specific coverage. |
+| Opponent RB fantasy points allowed | Missing complete current, scoring-format-specific coverage. |
+| Opponent WR fantasy points allowed | Missing complete current, scoring-format-specific coverage. |
+| Pass tendencies and run tendencies | Partial/descriptive: recent pass/run play mix; not a complete opponent-adjusted tendency model. |
+| PROE (pass rate over expectation) | Missing complete sourced coverage; ordinary pass share is not PROE. |
+| Pressure rate | Missing complete sourced coverage; sack counts do not measure all pressures. |
+| Sack rate | Partial/descriptive: recent sacks and box-score volume; a validated pressure/sack adjustment is not added to game scoring. |
+| Coverage quality | Missing complete coverage-grade or coverage-scheme inputs; passing yards allowed are not a coverage grade. |
+| Run-defense quality | Partial/descriptive: recent rushing yards/efficiency; complete personnel and opponent-adjusted quality are not established. |
+| Teammate injuries | Partial: available current team reports and existing prop signals; not universal fresh availability or numerical effects. |
+| Opponent injuries | Partial/descriptive: both teams’ current reports; no new calibrated opponent-injury score coefficient. |
+| Offensive-line injuries and effects | Partial/descriptive: named absences where reported; missing validated blocking/score/volume effects. |
+| Secondary injuries and effects | Partial/descriptive: named absences where reported; missing validated coverage/score effects. |
+| Pace | Partial/descriptive: recent plays per game; not equivalent to neutral-situation seconds per play or projected possessions. |
+| Expected game script | Descriptive: matchup case and countercase; no new validated script-to-volume adjustment. |
+| Home versus road | Implemented existing home-field feature plus descriptive location; preserve neutral-site handling. |
+| Dome/roof conditions | Missing complete verified coverage; venue identity alone does not establish roof status. |
+| Weather | Missing complete fresh game-time coverage and validated effects. |
+| Recent role and usage changes | Partial: supported role/context signals and recent leaders/workload; not complete snap, route, target-share or replacement-role coverage. |
+| Projected stat distribution | Implemented for supported existing distributions; retain family, uncertainty and exact-line probabilities. Missing distributions are not filled with invented values. |
+| Modeled Over/Under probability | Implemented using the distribution at the actual line; a mean above the line does not necessarily imply an Over lean. |
+| Reconcile strengthens / weakens / contradicts | Partial: existing applied adjustments are attributed and new descriptive risks are explained. The complete new contextual numerical adjustment layer is missing. |
+| Final probability and confidence | Existing model output is implemented; do not relabel it as fully adjusted for every input above. |
+| Fantasy projections and start/sit | Partial: `fantasyWork` exposes existing projection/context calculations. Full fresh coverage and shared decision logic for all required variables are not complete. |
+| Consensus moneyline/spread/total percentages | Implemented display of published ticket shares; missing validated numerical model integration. |
+| Smart Money percentages | Implemented display of published handle shares; missing validated numerical model integration. Handle is not proof of professional betting. |
+
+For every eventual numerical integration, retain the baseline, source/observation time, exact feature value, applied coefficient or transformation, resulting projection/distribution change, and final probability/confidence. Validate out of sample before changing weights. A missing input must not silently become zero, a neutral effect, or an invented confidence boost. This checklist is a specification and implementation audit, not a claim that all requirements are complete.
+
 | Requirement | Actual current path | Changes numeric output? |
 | --- | --- | --- |
 | Scoring baseline, opponent scoring, rest, home-field feature | `data/probability/generated/game-scoring-model-2026.json`, current-game scoring, `lib/game-market-probability.mjs` | Yes, existing validated scoring/rest model; weights unchanged here |
