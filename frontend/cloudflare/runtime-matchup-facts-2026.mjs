@@ -9,7 +9,7 @@ globalThis.CTD_MATCHUP_ASSESSMENT=(reader,data)=>{
  const g=Object.values(structured?.games||{}).find(g=>canon(g.away_team)===data?.away&&canon(g.home_team)===data?.home&&Date.parse(g.kickoff)===Date.parse(data?.kickoff));
  if(!g?.sections?.length)return base;
  const extra=(base?.sections||[]).filter(s=>/availability|Where it is played/.test(s.title));
- return {...base,sections:[...g.sections,...extra],sources:[...(base?.sources||[]),{label:'Weeks 1–3 team statistics',url:'https://github.com/nflverse/nflverse-data/releases/tag/stats_team'},{label:'Weeks 1–3 play-by-play',url:'https://github.com/nflverse/nflverse-data/releases/tag/pbp'}]};
+ return {...base,comparisons:[],sections:[...g.sections,...extra],sources:[...(base?.sources||[]),{label:'Weeks 1–3 team statistics',url:'https://github.com/nflverse/nflverse-data/releases/tag/stats_team'},{label:'Weeks 1–3 play-by-play',url:'https://github.com/nflverse/nflverse-data/releases/tag/pbp'}]};
 };
 fetch(new URL('./matchup-writeups.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('Matchup write-ups unavailable');return r.json();}).then(d=>{structured=d;renderSelectedGame();}).catch(()=>{});
 const key=g=>`${canon(g.away_team)}@${canon(g.home_team)}:${Date.parse(g.kickoff||g.event_start||g.start_at)}`;
