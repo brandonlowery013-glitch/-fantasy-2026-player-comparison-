@@ -22,6 +22,14 @@ def matchup_sections(g,context):
             sentences.append(f"On the ground, {team} has averaged {f(o['carries_per_game'])} carries at {f(o['rushing_yards_per_carry'])} yards each, against a defense allowing {f(d['rushing_yards_per_carry'])}. " + ("The run matchup offers a way to stay out of long passing downs." if d['rushing_yards_per_carry']>o['rushing_yards_per_carry'] else "The run game faces a defense that has conceded less per carry than this offense usually gains." if d['rushing_yards_per_carry']<o['rushing_yards_per_carry'] else "The rushing averages are evenly matched."))
         proe=own.get('play_context',{}).get('proe_percentage_points')
         if numeric(proe):sentences.append(f"{team} passed {abs(proe):.1f} percentage points {'more' if proe>=0 else 'less'} often than expected for the situations it faced.")
+        roster=[p for p in context.get('players',{}).values() if p['team']==canon(team)]
+        leaders=[]
+        for field,label in [('observed_attempts_per_game','pass attempts'),('observed_carries_per_game','carries'),('observed_targets_per_game','targets')]:
+            candidates=[p for p in roster if numeric(p.get(field)) and p[field]>0]
+            if candidates:
+                p=max(candidates,key=lambda p:p[field]*p['games'])
+                leaders.append(f"{p['name']} averaged {p[field]:.1f} {label} across {p['games']} games")
+        if leaders:sentences.append('Through Week 3, '+ '; '.join(leaders)+'. These describe prior usage, not confirmation that each player will play in this matchup.')
         if sentences: result.append((f'{team} offense against {opp}', ' '.join(sentences)))
     return result
 

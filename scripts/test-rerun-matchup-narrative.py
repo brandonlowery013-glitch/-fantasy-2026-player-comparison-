@@ -16,6 +16,7 @@ for g in r['games'].values():
  wrong=copy.deepcopy(g);wrong['kickoff']='2026-10-11T00:00:00.000Z';assert m.matchup_sections(wrong,c)==[]
 assert json.dumps(r,sort_keys=True)==original
 missing=copy.deepcopy(c)
+missing["players"]={}
 for t in missing['teams'].values():
  for k in t['offense']:t['offense'][k]=None
  for k in t['defense']:t['defense'][k]=None
