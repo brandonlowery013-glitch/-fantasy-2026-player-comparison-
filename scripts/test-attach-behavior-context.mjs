@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {attachBehaviorContext} from '../lib/attach-behavior-context.mjs';
+const game = {home_team:'WAS',away_team:'LA',event_start:'2026-10-04T17:00:00Z',model:{home_score_mean:24,away_score_mean:20}};
+const projections = {season:2026,week:4,games:{upcoming:game,started:{...game,event_start:'2026-10-04T13:30:00Z'}}};
+const recommendations = {season:2026,week:4,games:Object.fromEntries(Object.entries(projections.games).map(([id,g])=>[id,{home_team:g.home_team,away_team:g.away_team,kickoff:g.event_start,current_recommendations:{decision:'PICK'},snapshot_evaluations:[{win_probability:.6}]}]))};
+const observation = {observation_key:'prior',season:2026,week:3,event_id:'prior',entity_type:'team',entity_id:'WSH',team:'WSH',verified_final:true,event_start:'2026-09-27T17:00:00Z',observed_at:'2026-09-27T21:00:00Z',metrics:{pass_attempts:30}};
+const result = attachBehaviorContext(projections,recommendations,{observations:[observation,{...observation,observation_key:'future',week:4,metrics:{pass_attempts:99}}]},'2026-10-04T16:00:00Z');
+assert.deepEqual(result.updated,['upcoming']);
+assert.deepEqual(result.projections.games.started,projections.games.started);
+assert.deepEqual(result.recommendations.games.started,recommendations.games.started);
+assert.equal(result.projections.games.upcoming.behavior_learning_context.state['team|WSH'].metrics.pass_attempts.mean,30);
+assert.equal(result.projections.games.upcoming.behavior_learning_context.numeric_authority,0);
+assert.deepEqual(result.projections.games.upcoming.model,game.model);
+assert.deepEqual(result.recommendations.games.upcoming.snapshot_evaluations,recommendations.games.upcoming.snapshot_evaluations);
+assert.equal(projections.games.upcoming.behavior_learning_context,undefined);
+assert.throws(()=>attachBehaviorContext(projections,{...recommendations,week:5},{},'2026-10-04T16:00:00Z'),/week mismatch/);
+console.log('PASS: previous-week behavior attached, aliases matched, current-week outcomes excluded, started games and numerical forecasts unchanged');
