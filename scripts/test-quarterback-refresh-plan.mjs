@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {quarterbackRefreshPlan as plan} from '../lib/quarterback-refresh-plan.mjs';
+const g={id:'g',verified:true,kickoff:'2026-10-11T17:00:00Z',completed:false};
+const run=(now,extra={})=>plan({games:[g],now,...extra});
+assert.equal(run('2026-10-11T15:29:00Z').length,0);assert.equal(run('2026-10-11T15:30:00Z').length,1);
+assert.equal(run(g.kickoff).length,0);
+const task=run('2026-10-11T15:30:00Z')[0];assert.equal(run('2026-10-11T15:34:00Z',{completedKeys:[task.key]}).length,0);
+assert.equal(run('2026-10-11T15:35:00Z',{completedKeys:[task.key]}).length,1);
+const r={game_id:'g',id:'report',verified:true,received_at:'2026-10-08T18:00:00Z'};
+assert.equal(run(r.received_at,{reports:[r]}).length,1);assert.equal(run('2026-10-08T17:00:00Z',{reports:[r]}).length,0);
+assert.equal(run('2026-10-11T21:00:00Z').length,0,'Do not assume final after a fixed duration');
+assert.equal(run('2026-10-11T21:00:00Z',{games:[{...g,completed:true}]}).length,1);
+assert.equal(run('2026-10-11T21:00:00Z',{games:[{...g,completed:true},{...g,id:'overtime'}]}).length,0);
+assert.equal(run('2026-11-08T16:30:00Z',{games:[{...g,kickoff:'2026-11-08T18:00:00Z'}]}).length,1);
+assert.equal(run('2026-10-11T12:00:00Z',{games:[{...g,kickoff:'2026-10-11T13:30:00Z'}]}).length,1);
+console.log('PASS: Central/DST, early kickoff, midweek news, five-minute dedupe, kickoff stop and final-only waves.');
