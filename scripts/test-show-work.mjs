@@ -59,7 +59,7 @@ assert.equal(propAvailability(liveProp,[],start,now).available,false);
 assert.equal(propAvailability(liveProp,[activeSignal],null,now).available,false);
 assert.equal(propAvailability(liveProp,[activeSignal],'2026-10-03T12:00:00Z',now).available,false);
 assert.equal(propAvailability({...liveProp,captured_at:'2026-10-01T00:00:00Z'},[activeSignal],start,now).available,false);
-assert.match(w.reader.summary,/We expect/);assert.match(pw.reader.summary,/We project/);
+assert.match(w.reader.summary,/favors NO by 3.00 points/);assert.match(pw.reader.summary,/We project/);
 assert.doesNotMatch(w.reader.summary,/intercept|raw edge|locked/);
 console.log('PASS: readable explanations and current prop status, kickoff, and price checks');
 
