@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {parseCSV,canon,rows,ridge,pred} from '../lib/game-scoring-calibration.mjs';
 import {fitCandidate,metrics} from '../lib/matchup-score-candidate.mjs';
+import {probabilityMetrics} from '../lib/quarterback-probability-validation.mjs';
 const root='.cache/matchup-context/',read=f=>parseCSV(fs.readFileSync(root+f,'utf8'));
 const schedule=read('games.csv').filter(g=>g.game_type==='REG').sort((a,b)=>+a.season-+b.season||+a.week-+b.week);
 const history=schedule.filter(g=>+g.season>=2020&&+g.season<=2025&&g.home_score!==''&&g.away_score!=='');
@@ -44,7 +45,16 @@ for(const year of [2024,2025]){
  const team=canon(g[side+'_team']);const prev=history.filter(p=>+p.season===year&&+p.week<+g.week&&[canon(p.home_team),canon(p.away_team)].includes(team)).at(-1);
  return prev&&prev[canon(prev.home_team)===team?'home_qb_id':'away_qb_id']!==g[side+'_qb_id'];
  })).map(g=>g.game_id));
- folds.push({season:year,lambda:best.lambda,baseline:metrics(baseline.predictions),candidate:metrics(predictions),starter_change:{baseline:metrics(baseline.predictions.filter(r=>changed.has(r.id))),candidate:metrics(predictions.filter(r=>changed.has(r.id)))}});
+ const validation=rs.filter(r=>r.season===year-1),training=rs.filter(r=>r.season<year-1);
+ const candidateResiduals=predict(fit(training,best.lambda),validation).map(r=>r.ym-r.predictedMargin);
+ const baseFit=ridge(training.map(r=>r.xm),training.map(r=>r.ym),baseline.ridge_lambda);
+ const baselineResiduals=validation.map(r=>r.ym-pred(baseFit,[r.xm])[0]);
+ const rookies=new Set(history.filter(g=>+g.season===year&&['home','away'].some(side=>{
+ const id=g[side+'_qb_id'];return +players.get(id)?.rookie_season===year&&!schedule.some(p=>prior(p,g)&&[p.home_qb_id,p.away_qb_id].includes(id));
+ })).map(g=>g.game_id));
+ const probability_validation={residual_source_season:year-1,method:'Empirical earlier-season out-of-sample margin residuals; rounded integer margins; three-outcome Brier score (lower is better). Hyperparameters selected on that earlier season.',groups:{}};
+ for(const [name,ids] of [['all',null],['starter_changes',changed],['rookie_first_starts',rookies]])probability_validation.groups[name]={baseline:probabilityMetrics(baseline.predictions.filter(r=>!ids||ids.has(r.id)),baselineResiduals),candidate:probabilityMetrics(predictions.filter(r=>!ids||ids.has(r.id)),candidateResiduals)};
+ folds.push({season:year,lambda:best.lambda,baseline:metrics(baseline.predictions),candidate:metrics(predictions),starter_change:{baseline:metrics(baseline.predictions.filter(r=>changed.has(r.id))),candidate:metrics(predictions.filter(r=>changed.has(r.id)))},probability_validation});
 }
 const target=schedule.find(g=>+g.season===2026&&+g.week===4&&canon(g.home_team)==='TB'&&canon(g.away_team)==='GB');
 let scenario=null;

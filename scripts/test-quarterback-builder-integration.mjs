@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {execFileSync} from 'node:child_process';
+const root=process.cwd(),temp=fs.mkdtempSync(path.join(os.tmpdir(),'ctd-qb-builder-'));
+const read=p=>JSON.parse(fs.readFileSync(path.join(root,p)));
+const write=(p,v)=>{fs.mkdirSync(path.dirname(path.join(temp,p)),{recursive:true});fs.writeFileSync(path.join(temp,p),JSON.stringify(v));};
+const output='data/market/weekly-game-market-recommendations-2026.json';
+try{
+ const projections=read('data/probability/generated/weekly-game-projections-2026.json'),markets=read('data/market/weekly-matchup-market-snapshots-2026.json');
+ const id=Object.keys(projections.games).find(id=>projections.games[id].home_team==='TB'&&projections.games[id].away_team==='GB');assert(id,'GB–TB fixture must exist');
+ projections.games={[id]:projections.games[id]};markets.games={[id]:markets.games[id]};
+ const game=projections.games[id],market=markets.games[id],now=Date.now(),kickoff=new Date(now+3600000).toISOString();
+ game.event_start=kickoff;market.kickoff=kickoff;
+ game.personnel_context={teams:{TB:{players:[{name:'Baker Mayfield',position:'QB',depth_roles:[{position:'QB',rank:1}],injury_reports:[{status:'Out',source_updated_at:new Date(now-600000).toISOString()}]}]}}};
+ for(const s of market.snapshots)s.captured_at=new Date(now-60000).toISOString();
+ write('data/sources/game-market-recommendation-layer-2026.json',read('data/sources/game-market-recommendation-layer-2026.json'));
+ write('data/market/weekly-matchup-market-snapshots-2026.json',markets);
+ const run=()=>{write('data/probability/generated/weekly-game-projections-2026.json',projections);execFileSync(process.execPath,[path.join(root,'scripts/build-game-market-recommendations.mjs')],{cwd:temp,stdio:'pipe'});return JSON.parse(fs.readFileSync(path.join(temp,output))).games[id];};
+ const held=run();
+ assert.equal(held.current_recommendations.spread.decision,'WAIT');
+ const current=held.snapshot_evaluations.find(s=>s.snapshot_id===held.current_recommendations.snapshot_id);
+ assert.equal(current.markets.spread.recommendation.decision,'WAIT');
+ assert.equal(current.markets.spread.show_work.decision,'WAIT');
+ assert.match(current.markets.spread.show_work.reader.hold,/Baker Mayfield/);
+ game.personnel_context.teams.TB.players[0].injury_reports.push({status:'Active',source_updated_at:new Date(now).toISOString()});
+ const cleared=run();assert.equal(cleared.current_recommendations.spread.decision,'WAIT');
+ assert.equal(cleared.quarterback_updates.TB.spread.history.length,2);
+ assert.deepEqual(cleared.quarterback_updates.TB.spread.history[0],held.quarterback_updates.TB.spread.history[0]);
+ game.event_start=new Date(now-1000).toISOString();market.kickoff=game.event_start;
+ write('data/market/weekly-matchup-market-snapshots-2026.json',markets);
+ const locked=run();assert.deepEqual(locked.current_recommendations,cleared.current_recommendations);
+ assert.equal(locked.quarterback_updates.TB.spread.locked_at,game.event_start);
+ console.log('PASS: actual builder writes consistent held cards, explanations and revision history; clearance does not reuse old pick; kickoff preserves issued record. Production files untouched.');
+}finally{fs.rmSync(temp,{recursive:true,force:true});}
