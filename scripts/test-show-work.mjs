@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import {teamEnvironment,contextReview,reconcile,gameWork,propWork,fantasyWork} from '../lib/show-work.mjs';
+import {marketConsensus,teamEnvironment,contextReview,reconcile,gameWork,propWork,fantasyWork} from '../lib/show-work.mjs';
 const now=Date.parse('2026-10-04T00:00:00Z');
 const signal={status:'CURRENT',source:'fixture',captured_at:'2026-10-03T23:00:00Z',freshness_limit_hours:2,evidence:{pressure_rate:0,wind_mph:0}};
 assert.equal(contextReview([signal],now).rows[0].current,true);
@@ -17,7 +17,7 @@ const before=JSON.stringify([game,snap]);const w=gameWork(game,snap,'spread',now
 assert.equal(JSON.stringify([game,snap]),before);
 assert.match(w.paragraphs.join(' '),/25.75/);assert.match(w.paragraphs.join(' '),/22.75/);assert.match(w.paragraphs.join(' '),/= 3.00 points/);
 assert.equal(w.final_probability,2/3);assert.equal(w.additional_probability_adjustment,0);
-assert.match(w.paragraphs.join(' '),/= 0.25/);
+assert.match(w.paragraphs.join(' '),/≈ 0.25/);
 const missing=gameWork({home_team:'A',away_team:'B'},null,'spread',now);
 assert.equal(missing.final_probability,null);assert.match(missing.paragraphs[0],/unavailable/);
 assert.doesNotMatch(missing.paragraphs.join(' '),/NaN|Infinity/);
@@ -35,3 +35,6 @@ assert.equal(teamEnvironment({g:{...game,week:4,snapshot_evaluations:[{...snap,e
 assert.equal(teamEnvironment({g:{...game,week:3,snapshot_evaluations:[{...snap,eligible_for_current_recommendation:true}]}},'NO',4),null);
 const opposite=propWork({...e,recommendation:{decision:'PICK',side:'UNDER',confidence:'LEAN'},sides:[...e.sides,{side:'UNDER',model_conditional_win_probability:.6}]},{mean:80},p,[],{},now);
 assert.equal(opposite.final_probability,.6);
+
+const consensus=marketConsensus([{book:'A',captured_at:'2026-10-01',eligible_for_current_recommendation:true,market:{home_spread:-3,total:44}},{book:'A',captured_at:'2026-10-02',eligible_for_current_recommendation:true,market:{home_spread:0,total:46}},{book:'B',captured_at:'2026-10-02',eligible_for_current_recommendation:true,market:{home_spread:-2,total:48}},{book:'C',captured_at:'2026-10-02',eligible_for_current_recommendation:false,market:{home_spread:99,total:99}}]);
+assert.equal(consensus.home_spread.value,-1);assert.equal(consensus.total.value,47);assert.equal(consensus.books.length,2);assert.equal(marketConsensus([]).total.value,null);

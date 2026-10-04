@@ -41,7 +41,7 @@
     const profit=odds===null||Math.abs(odds)<100?null:odds>0?odds/100:100/-odds;
     const implied=profit==null?null:1/(1+profit);
     const ev=win!=null&&loss!=null&&profit!=null?win*profit-loss:null;
-    return [`Price ${odds??'unavailable'} implies ${pct(implied)}; no-vig market ${pct(fair)}.`,`Model win ${pct(win)}, push ${pct(push)}, loss ${pct(loss)}; conditional win ${pct(s.model_conditional_win_probability??s.conditional_win_probability)}.`,`EV per unit = win × net payout − loss = ${fmt(win)} × ${fmt(profit)} − ${fmt(loss)} = ${fmt(ev)}. Probability edge ${pct(s.probability_edge)}.`];
+    return [`Price ${odds??'unavailable'} implies ${pct(implied)}; no-vig market ${pct(fair)}.`,`Model win ${pct(win)}, push ${pct(push)}, loss ${pct(loss)}; conditional win ${pct(s.model_conditional_win_probability??s.conditional_win_probability)}.`,`EV per unit = win × net payout − loss = ${fmt(win)} × ${fmt(profit)} − ${fmt(loss)} ≈ ${fmt(ev)}. Probability edge ${pct(s.probability_edge)}.`];
   }
   function gameWork(game,snapshot,kind,now=Date.now()){
     const p=game.football_projection||{},m=snapshot?.market||{},e=snapshot?.markets?.[kind]||{},r=e.recommendation||{decision:'WAIT'};
@@ -77,5 +77,16 @@
     if(total==null||homeSpread==null)return null;
     return {team,total,implied_total:(total-(team===g.home_team?homeSpread:-homeSpread))/2,book:snap.book,captured_at:snap.captured_at};
   }
-  root.CTD_SHOW_WORK={teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
+  function marketConsensus(snapshots=[]){
+    const latest=new Map();
+    for(const s of snapshots){
+      if(s.eligible_for_current_recommendation!==true||!s.book||!Number.isFinite(Date.parse(s.captured_at)))continue;
+      const key=s.book.toLowerCase(),old=latest.get(key);
+      if(!old||Date.parse(s.captured_at)>Date.parse(old.captured_at))latest.set(key,s);
+    }
+    const books=[...latest.values()];
+    const median=key=>{const values=books.map(s=>num(s.market?.[key])).filter(x=>x!=null).sort((a,b)=>a-b);const n=values.length;return {count:n,value:n<2?null:n%2?values[(n-1)/2]:(values[n/2-1]+values[n/2])/2};};
+    return {home_spread:median('home_spread'),total:median('total'),books:books.map(s=>({book:s.book,captured_at:s.captured_at,home_spread:num(s.market?.home_spread),total:num(s.market?.total)}))};
+  }
+  root.CTD_SHOW_WORK={marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
 })(globalThis);
