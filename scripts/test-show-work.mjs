@@ -38,3 +38,12 @@ assert.equal(opposite.final_probability,.6);
 
 const consensus=marketConsensus([{book:'A',captured_at:'2026-10-01',eligible_for_current_recommendation:true,market:{home_spread:-3,total:44}},{book:'A',captured_at:'2026-10-02',eligible_for_current_recommendation:true,market:{home_spread:0,total:46}},{book:'B',captured_at:'2026-10-02',eligible_for_current_recommendation:true,market:{home_spread:-2,total:48}},{book:'C',captured_at:'2026-10-02',eligible_for_current_recommendation:false,market:{home_spread:99,total:99}}]);
 assert.equal(consensus.home_spread.value,-1);assert.equal(consensus.total.value,47);assert.equal(consensus.books.length,2);assert.equal(marketConsensus([]).total.value,null);
+const {contextCurrent}=await import('../lib/show-work.mjs');
+assert.equal(contextCurrent(signal,'role',now),true);
+for(const change of [{status:undefined},{status:'SELF_TEST'},{captured_at:'2026-10-01T00:00:00Z'},{source:' '},{sportsbook_inputs_used:true}])assert.equal(contextCurrent({...signal,...change},'role',now),false);
+const injury={...signal,evidence:{source_updated_at:'2026-10-03T23:00:00Z'}};
+assert.equal(contextCurrent(injury,'injury',now),true);
+assert.equal(contextCurrent({...injury,evidence:{source_updated_at:'2026-10-01T00:00:00Z'}},'injury',now),false);
+assert.equal(contextReview([{...injury,kind:'injury',evidence:{status:'Active',source_updated_at:'2026-10-01T00:00:00Z'}}],now).rows[0].current,false);
+assert.equal(contextCurrent({...injury,evidence:{...injury.evidence,conflicting_reports:true}},'injury',now),false);
+console.log('PASS: context expiration is rechecked at use; injury capture cannot refresh an old report');

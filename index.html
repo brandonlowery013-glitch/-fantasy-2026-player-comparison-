@@ -268,11 +268,20 @@ border-radius:6px;overflow:hidden}
     'Home / road / dome / weather':['home_away','venue','dome','temperature','wind_mph','precipitation'],
     'Role / usage / opportunities':['depth_rank','snap_share','route_share','target_share','attempts','targets','carries','routes','snaps']
   };
+  function contextCurrent(s,kind=s?.kind,now=Date.now()){
+    if(!s||s.status!=='CURRENT'||typeof s.source!=='string'||!s.source.trim()||s.sportsbook_inputs_used===true)return false;
+    const limit=num(s.freshness_limit_hours),captured=Date.parse(s.captured_at);
+    if(limit==null||limit<=0||!Number.isFinite(captured)||captured>now||now-captured>limit*3600000)return false;
+    if(kind==='injury'){
+      const updated=Date.parse(s.evidence?.source_updated_at);
+      if(!Number.isFinite(updated)||updated>now||now-updated>limit*3600000||s.evidence?.conflicting_reports)return false;
+    }
+    return true;
+  }
   function contextReview(signals=[],now=Date.now()){
     const rows=[],covered=new Set();
     for(const s of signals){
-      const captured=Date.parse(s.captured_at),hours=num(s.freshness_limit_hours);
-      const current=s.status==='CURRENT'&&!!s.source&&Number.isFinite(captured)&&captured<=now&&hours>0&&now-captured<=hours*3600000;
+      const current=contextCurrent(s,s.kind||s.signal,now);
       const facts=[];
       for(const [category,keys]of Object.entries(fields))for(const key of keys){const value=s.evidence?.[key];if(value!=null&&value!==''&&typeof value!=='object'){facts.push(`${key.replaceAll('_',' ')}: ${value}`);if(current)covered.add(category);}}
       rows.push({kind:s.kind||s.signal||'context',current,source:s.source||null,captured_at:s.captured_at||null,text:`${s.player?`${s.player}: `:''}${facts.join('; ')||'No supported contextual metric supplied'}. ${current?'Current evidence':'Review required: stale, missing freshness, or unverified evidence'}. Source: ${s.source||'unavailable'}; captured ${s.captured_at||'unavailable'}.`});
@@ -343,7 +352,7 @@ border-radius:6px;overflow:hidden}
     const median=key=>{const values=books.map(s=>num(s.market?.[key])).filter(x=>x!=null).sort((a,b)=>a-b);const n=values.length;return {count:n,value:n<2?null:n%2?values[(n-1)/2]:(values[n/2-1]+values[n/2])/2};};
     return {home_spread:median('home_spread'),total:median('total'),books:books.map(s=>({book:s.book,captured_at:s.captured_at,home_spread:num(s.market?.home_spread),total:num(s.market?.total)}))};
   }
-  root.CTD_SHOW_WORK={marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
+  root.CTD_SHOW_WORK={contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
 })(globalThis);
 </script>
 <!-- END SHARED SHOW WORK -->
