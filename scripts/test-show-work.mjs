@@ -100,3 +100,8 @@ assert.doesNotMatch(staleFantasy,/Pressure rate/);
 const unsafe=globalThis.CTD_SHOW_WORK.renderWork(fantasyWork(p,[{...detailSignals[1],player:'<img src=x onerror=alert(1)>'}],now));
 assert.ok(!unsafe.includes('<img'),'source text must remain escaped');
 console.log('PASS: complete prop/fantasy context, visible reconciliation, injury priority, stale exclusion and immutable forecasts');
+const distributionAdjusted=propWork({...e,stat:'receptions',line:2.5},{mean:2.5,family:'compound'}, {baseline:{mean:2.42},mean:2.42,adjustments:{applied:[]}},[],{},now);
+assert.match(distributionAdjusted.reader.details[0],/adjustments, it is 2.42/);
+assert.match(distributionAdjusted.reader.details[1],/distribution.*2.50/);
+assert.match(distributionAdjusted.reader.reconciliation,/does not change/);
+assert.match(distributionAdjusted.math[0],/context-adjusted projection 2.42 → distribution average 2.50/);
