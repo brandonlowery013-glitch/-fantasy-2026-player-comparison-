@@ -134,7 +134,7 @@ function detailData(){
     const s=selected(raw);if(!s)return;
     const ended=g.completed===true||Date.parse(raw.kickoff)<=Date.now();
     const summary=explain(raw,s);g.model_summary=summary;
-    if(activeGameTab==='OVERVIEW')document.getElementById('gameSummary').textContent=(ended?'Pregame analysis (archived). ':'')+summary;
+    if(activeGameTab==='OVERVIEW')document.getElementById('gameSummary').textContent=(feed.rerun?(ended?'Updated model calculation after kickoff. ':'Updated model calculation. '):(ended?'Pregame analysis (archived). ':''))+summary;
     const p=raw.football_projection;
     window.ctdScoreComparison?.render(raw,s,feed.week);
     document.querySelector('#awayProb + span').textContent=raw.away_team;
@@ -180,7 +180,7 @@ function detailData(){
   for(const [label,direction] of [['Previous games',-1],['Next games',1]]){const b=document.createElement('button');b.className='btn';b.textContent=label;b.onclick=()=>lane.scrollBy({left:direction*lane.clientWidth*.75,behavior:'smooth'});controls.appendChild(b);}
   lane.before(controls);lane.style.cssText+=';overflow-x:auto;max-width:100%;min-width:0;scrollbar-width:auto';
   const css=document.createElement('style');css.textContent='#gamesPage{min-width:0;max-width:100%}#gamesPage .ticker{display:flex}#gamesPage .gamecard{flex:0 0 190px}#gamesPage .grid3,#gamesPage .lowgrid,#gamesPage .midgrid{min-width:0}#gamesPage .panel{min-width:0;overflow-wrap:anywhere}@media(max-width:1100px){#gamesPage .grid3,#gamesPage .lowgrid,#gamesPage .midgrid{grid-template-columns:1fr}}';document.head.appendChild(css);
-  async function load(){const version=++requestVersion;try{const r=await fetch(RAW+'data/market/weekly-game-market-recommendations-2026.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);const incoming=await r.json();if(version!==requestVersion)return;feed=incoming;syncTicker();detail();try{const pr=await fetch(RAW+'data/probability/generated/weekly-game-projections-2026.json?ts='+Date.now(),{cache:'no-store'});if(pr.ok){const projections=await pr.json();if(version!==requestVersion)return;window.ctdScoreComparison?.setData(projections);detail();}}catch(err){console.error('Score distributions unavailable',err);}}catch(err){console.error('Detailed game feed unavailable',err);}}
+  async function load(){const version=++requestVersion;try{const incoming=await window.CTD_GAME_MODEL.load();if(version!==requestVersion)return;feed=incoming;syncTicker();detail();try{const projections=await window.CTD_GAME_MODEL.load('projections');if(projections){if(version!==requestVersion)return;window.ctdScoreComparison?.setData(projections);detail();}}catch(err){console.error('Score distributions unavailable',err);}}catch(err){console.error('Detailed game feed unavailable',err);}}
   load();setInterval(load,60000);
 })();
 

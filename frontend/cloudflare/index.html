@@ -246,6 +246,7 @@ border-radius:6px;overflow:hidden}
 
 <script src="runtime-central-time-2026.js"></script>
 <script src="reading-state.js"></script>
+<script src="game-model-source.js"></script>
 <script>
 const PLAYERS=[];
 
@@ -576,9 +577,7 @@ async function loadFeed(){
   let targetWeek=selectedLiveWeek;
 
   try{
-    const r=await fetch(`${RAW}${FEED_PATH}?ts=${Date.now()}`,{cache:'no-store'});
-    if(!r.ok)throw new Error(`feed ${r.status}`);
-    let raw=await r.json();
+    let raw=await window.CTD_GAME_MODEL.load();
     if(targetWeek===null){
       try{const sr=await fetch(`${RAW}data/calibration/weekly-event-schedule-2026.json?ts=${Date.now()}`,{cache:'no-store'});if(sr.ok){const schedule=await sr.json();targetWeek=Number(schedule.week)}}catch{}
       if(!Number.isInteger(targetWeek)||targetWeek<1||targetWeek>18)targetWeek=Number(raw.week)||1;

@@ -62,7 +62,7 @@
     const edge=document.getElementById('mlEdge');if(edge)edge.textContent=s.markets?.moneyline?.recommendation?.decision==='PICK'?pct(s.markets.moneyline.recommendation.probability_edge):'—';
     let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('section');note.id='ctdPickContext';note.className='ctdPickContext panel';note.style.maxWidth='none';document.getElementById('spreadPick')?.closest('.grid3')?.insertAdjacentElement('afterend',note)}
     const why=['spread','total','moneyline'].map(kind=>pickWhy(kind,s.markets?.[kind],s,raw,g)).filter(Boolean).join('');
-    note.innerHTML=`<h3>OUR MATCHUP ASSESSMENT</h3><span>Pregame forecast · ${esc(s.book)} · ${esc(date(s.captured_at))}. ${Date.parse(raw.kickoff)<=Date.now()?'This game has started. These are the picks saved before kickoff. ':''}“No bet” means we did not find enough value at the available price.</span>${why||'<div class="ctdWhyPick"><p>We did not recommend a bet at these prices.</p></div>'}`;
+    note.innerHTML=`<h3>OUR MATCHUP ASSESSMENT</h3><span>${markets?.rerun?"Updated model calculation":"Pregame forecast"} · ${esc(s.book)} · ${esc(date(s.captured_at))}. ${Date.parse(raw.kickoff)<=Date.now()?(markets?.rerun?'Recalculated after kickoff using saved odds. Original picks remain in History. ':'This game has started. These are the picks saved before kickoff. '):''}“No bet” means we did not find enough value at the available price.</span>${why||'<div class="ctdWhyPick"><p>We did not recommend a bet at these prices.</p></div>'}`;
     document.getElementById('ctdExternalContext')?.remove();
   }
   function playerRows(d,team,categories){return (d?.player_stats||[]).filter(p=>norm(p.team)===norm(team)&&categories.includes(p.category))}
@@ -175,7 +175,7 @@ function renderData(){
   document.addEventListener('ctd:live-scores-updated',()=>{render();void refresh()});
   document.addEventListener('input',e=>{if(e.target.id!=='ctdFlowRange')return;const g=selected(),p=games.get(key(g))?.data?.win_probability?.[Number(e.target.value)];const label=document.getElementById('ctdFlowReadout');if(label)label.textContent=flowLabel(g,p)});
   async function loadFeeds(){
-    const results=await Promise.allSettled([get(RAW+'data/market/weekly-game-market-recommendations-2026.json'),get(RAW+'data/probability/generated/matchup-tidbits-2026.json'),get(RAW+'data/market/issued-pick-history-2026.json'),get(RAW+'data/market/issued-pick-results-2026.json')]);
+    const results=await Promise.allSettled([window.CTD_GAME_MODEL.load(),get(RAW+'data/probability/generated/matchup-tidbits-2026.json'),get(RAW+'data/market/issued-pick-history-2026.json'),get(RAW+'data/market/issued-pick-results-2026.json')]);
     if(results[0].status==='fulfilled')markets=results[0].value;
     if(results[1].status==='fulfilled')history=results[1].value;
     if(results[2].status==='fulfilled')issuedHistory=results[2].value;
