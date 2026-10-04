@@ -79,3 +79,5 @@ assert.equal(noRestArtifact.margin.beta[0],fixture.margin.beta[0]);
 assert.equal(noRestArtifact.total.beta[0],fixture.total.beta[0]);
 assert.throws(()=>removeRestFromForecast(fixture,{...actual,home_score_mean:999}),/reconstruct/);
 console.log('PASS: no-rest version, equal/unequal/missing rest invariance, exact conversion, original immutability and attribution');
+
+await import("./test-no-rest-refresh.mjs");
