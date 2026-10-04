@@ -3,17 +3,29 @@
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  let data=null,busy=false,lastFetch=0;
  function render(){
-  const g=BET_FEED.games?.[selectedGameIndex];if(!g)return;
-  let panel=document.getElementById('ctdPublicSplits');if(!panel){panel=document.createElement('section');panel.id='ctdPublicSplits';panel.className='panel';const anchor=document.getElementById('marketContext')||document.querySelector('#gamesPage .lowgrid');if(!anchor)return;anchor.before(panel);}
-  const start=Date.parse(g.event_start||g.kickoff||g.start_at),m=data?.games?.find(x=>canon(x.home)===canon(g.home_team)&&canon(x.away)===canon(g.away_team)&&Math.abs(Date.parse(x.start_at)-start)<3600000);
-  panel.innerHTML='<h3>CONSENSUS & MONEY</h3>';
-  if(!m){panel.innerHTML+='<p>DraftKings has no published betting splits for this game in the current snapshot.</p>';return;}
-  panel.innerHTML+=`<p class="dataNote">DraftKings Sportsbook · Checked ${esc(new Date(m.observed_at).toLocaleString())}${Date.now()>=start?' · Pregame snapshot':''}</p><div class="ctdSplitsWrap"><table><thead><tr><th>Market / side</th><th>Bets</th><th>Money</th></tr></thead><tbody>${[['moneyline','Moneyline'],['spread','Spread'],['total','Total']].map(([key,label])=>(m[key]||[]).map(s=>`<tr><td><small>${label}</small><br>${esc(s.label)}</td><td>${esc(s.bets)}%</td><td>${esc(s.money)}%</td></tr>`).join('')).join('')}</tbody></table></div>`;
-  const signals=[['moneyline','moneyline'],['spread','spread'],['total','total']].flatMap(([k,label])=>(m[k]||[]).filter(s=>s.money-s.bets>=10).map(s=>`On ${s.label}, ${s.bets}% of ${label} bets account for ${s.money}% of the money.`));
-  panel.innerHTML+=`<p><b>Where the larger bets lean</b><br>${esc(signals.join(' ')||'Bets and money are relatively close on these markets.')}</p><details><summary>About these percentages</summary><p>Bets counts tickets; money counts dollars wagered. A larger money share can suggest bigger wagers, but does not establish that professional bettors placed them. These are DraftKings customers, not the whole market.</p><a href="${esc(data.source_url)}" target="_blank" rel="noopener noreferrer">View DraftKings betting splits</a></details>`;
+  document.getElementById('ctdPublicSplits')?.remove();
+  document.querySelectorAll('#ctdGameTicker [data-game-index]').forEach(card=>{
+   card.querySelector('.ctdCardSplits')?.remove();
+   const g=BET_FEED.games?.[Number(card.dataset.gameIndex)];if(!g)return;
+   const start=Date.parse(g.event_start||g.kickoff||g.start_at),m=data?.games?.find(x=>canon(x.home)===canon(g.home_team)&&canon(x.away)===canon(g.away_team)&&Math.abs(Date.parse(x.start_at)-start)<3600000);
+   const block=document.createElement('div');block.className='ctdCardSplits';
+   block.title='Consensus is the share of bets. Money is the share of dollars wagered at DraftKings; it does not identify professional bettors.';
+   block.innerHTML='<div class="ctdCardSplitsTitle">CONSENSUS · SMART MONEY</div>';
+   if(!m){block.innerHTML+='<div class="ctdCardSplitsDate">'+(data?'No published percentages for this game':'Loading percentages…')+'</div>';card.append(block);return;}
+   block.innerHTML+='<div class="ctdCardSplitsRow ctdCardSplitsHead"><span></span><span>Bets</span><span>Money</span></div>';
+   for(const [key,name] of [['moneyline','Moneyline'],['spread','Spread'],['total','Total']]){
+    const rows=m[key]||[];
+    for(const row of rows){const team=canon(row.side)===canon(g.home_team)?g.home_team:g.away_team;const side=key==='moneyline'?team:key==='spread'?`${team} ${row.label.split(' ').at(-1)}`:row.label;
+     block.innerHTML+=`<div class="ctdCardSplitsRow"><span><small>${name}</small> ${esc(side)}</span><b>${esc(row.bets)}%</b><b>${esc(row.money)}%</b></div>`;
+    }
+   }
+   block.innerHTML+=`<div class="ctdCardSplitsDate">DraftKings · ${esc(new Date(m.observed_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</div>`;
+   card.append(block);
+  });
  }
  async function load(){if(busy||document.hidden||Date.now()-lastFetch<300000)return;busy=true;lastFetch=Date.now();try{const local=['localhost','127.0.0.1'].includes(location.hostname),api=location.hostname.endsWith('.pages.dev')?'/api/live/splits':'https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev/api/live/splits';let r;try{r=await fetch(local?new URL('market-percentages.json',base):api,{cache:'no-store',signal:AbortSignal.timeout(15000)});}catch{}if(!r?.ok)r=await fetch(new URL('market-percentages.json',base),{cache:'no-store'});if(!r.ok)throw Error();const next=await r.json();if(next.schema_version===1&&Array.isArray(next.games))data=next;}catch{}finally{busy=false;render();}}
- const original=renderSelectedGame;renderSelectedGame=function(){original();render();};
- const style=document.createElement('style');style.textContent='#ctdPublicSplits{margin:16px 0;padding:20px}#ctdPublicSplits p{font-size:14px;line-height:1.6;color:#bacee0}#ctdPublicSplits table{width:100%;border-collapse:collapse}#ctdPublicSplits th,#ctdPublicSplits td{text-align:right;padding:10px;border-bottom:1px solid #294052}#ctdPublicSplits th:first-child,#ctdPublicSplits td:first-child{text-align:left}#ctdPublicSplits small{color:#92aac1}#ctdPublicSplits a{color:#80bdff}';document.head.append(style);
+ const originalTicker=renderTicker;renderTicker=function(){originalTicker();render();};
+ const originalSelection=renderSelectedGame;renderSelectedGame=function(){originalSelection();render();};
+ const style=document.createElement('style');style.textContent=`#ctdGameTicker .gamecard{display:flex;flex-direction:column;justify-content:flex-start;gap:0;min-width:280px;flex:0 0 280px!important;align-self:stretch} .ctdCardSplits{margin-top:10px;padding-top:8px;border-top:1px solid #294052;text-align:left;white-space:normal}.ctdCardSplitsTitle{font-size:10px;font-weight:800;letter-spacing:.04em;color:#a9c9e8;margin-bottom:5px}.ctdCardSplitsRow{display:grid;grid-template-columns:minmax(0,1fr) 42px 46px;gap:6px;align-items:center;font-size:11px;line-height:1.65;color:#e2ecf7}.ctdCardSplitsRow>:not(:first-child){text-align:right}.ctdCardSplitsRow small{font-size:10px;color:#8fa9c4}.ctdCardSplitsHead{font-size:10px;color:#8fa9c4}.ctdCardSplitsDate{font-size:9px;color:#8fa9c4;margin-top:6px;line-height:1.5}`;document.head.append(style);
  document.addEventListener('ctd:games-ready',render);document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});load();setInterval(load,300000);
 })();
