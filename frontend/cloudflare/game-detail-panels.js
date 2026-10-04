@@ -22,7 +22,7 @@
   function pregame(raw){return (raw?.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(raw.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at))}
   function snapshot(raw){const rows=pregame(raw);return rows.find(x=>x.book==='draftkings')||rows[0]}
   function pickWhy(kind,e,s,raw,g){
-    const rec=e?.recommendation;if(!rec)return '';if(rec.decision!=='PICK'){if(kind!=='spread')return '';const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);return `<div class="ctdWhyPick"><b>SPREAD · No bet</b>${window.CTD_FORMATTED_WORK?.(work)||''}</div>`;}
+    const rec=e?.recommendation;if(!rec)return '';if(rec.decision!=='PICK'){if(kind!=='spread')return '';const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);return `<div class="ctdWhyPick"><b>SPREAD · ${rec.decision==='WAIT'?'On hold':'No bet'}</b>${window.CTD_FORMATTED_WORK?.(work)||''}</div>`;}
     let side=null,marketLabel='';
     if(kind==='spread'){
       const home=norm(String(rec.selection||'').split(' ')[0])===norm(g.home_team);side=home?e.side_a:e.side_b;
@@ -54,7 +54,7 @@
     const raw=marketGame(g),s=snapshot(raw);if(!s){const note=document.getElementById('ctdPickContext');if(note)note.textContent='No matching pregame snapshot has been published for this week and matchup.';for(const id of ['spreadPick','totalPick','mlPick']){const el=document.getElementById(id);if(el){el.textContent='Not published';el.title='Waiting for a matching pregame model snapshot';}}return;}
     for(const [kind,id,field] of [['spread','spreadPick','model_spread_pick'],['total','totalPick','total_pick'],['moneyline','mlPick','moneyline_pick']]){
       const r=s.markets?.[kind]?.recommendation,el=document.getElementById(id);if(!el)continue;
-      const value=r?.decision==='PICK'?r.selection:r?.decision==='PASS'?'No bet':'Not published';
+      const value=r?.decision==='PICK'?r.selection:r?.decision==='WAIT'?'On hold':r?.decision==='PASS'?'No bet':'Not published';
       el.textContent=value;g[field]=value;
       el.title=r?.decision==='PASS'?(r.reason||'No side clears the model thresholds'):r?.decision==='PICK'?`Stored pregame model pick · ${date(s.captured_at)}`:'No stored decision';
       const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent=r?.decision==='PICK'&&typeof r.probability_edge==='number'?`${(r.probability_edge*100).toFixed(1)} percentage points`:'';
