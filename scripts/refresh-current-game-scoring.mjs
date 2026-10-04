@@ -18,12 +18,19 @@ for(let week=1;week<schedule.week;week++) {
 const restUrl='https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv';
 const restText=artifact.rest_adjustment_enabled===false?'':await fetchText(restUrl);
 // Discard every market and target-result field immediately.
-const restRows=parseCSV(restText).filter(r=>+r.season===2026&&+r.week===schedule.week&&r.game_type==='REG')
+const restRows=(artifact.rest_adjustment_enabled===false?[]:parseCSV(restText)).filter(r=>+r.season===2026&&+r.week===schedule.week&&r.game_type==='REG')
   .map(r=>({home:canon(r.home_team),away:canon(r.away_team),home_rest:r.home_rest===''?null:Number(r.home_rest),away_rest:r.away_rest===''?null:Number(r.away_rest),date:r.gameday}));
 if(artifact.rest_adjustment_enabled!==false)sources.push({url:restUrl,sha256:createHash('sha256').update(restText).digest('hex')});
+const previousPath='data/probability/generated/current-game-scoring-2026.json';
+const previous=fs.existsSync(previousPath)?read(previousPath):null;
 const games={};
 for(const [id,g] of Object.entries(schedule.games||{})) {
   if(g.verified!==true||g.week!==schedule.week)throw Error(`Unverified game ${id}`);
+  if(Date.parse(g.event_start)<=Date.now()){
+    const saved=previous?.games?.[id];
+    if(!saved||saved.home_team!==g.home_team||saved.away_team!==g.away_team||saved.event_start!==g.event_start)throw Error(`No original started-game forecast ${id}`);
+    games[id]=saved;continue;
+  }
   const restEnabled=artifact.rest_adjustment_enabled!==false;
   const matches=restRows.filter(r=>r.home===canon(g.home_team)&&r.away===canon(g.away_team));
   if(restEnabled&&matches.length!==1)throw Error(`Missing or duplicate rest schedule ${id}`);
