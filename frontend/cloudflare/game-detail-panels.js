@@ -25,13 +25,13 @@
     const rec=e?.recommendation;if(!rec)return '';if(rec.decision!=='PICK'){if(kind!=='spread')return '';const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);return `<div class="ctdWhyPick"><b>SPREAD · No bet</b>${window.CTD_FORMATTED_WORK?.(work)||''}</div>`;}
     let side=null,marketLabel='';
     if(kind==='spread'){
-      const home=String(rec.selection||'').startsWith(norm(g.home_team)+' ');side=home?e.side_a:e.side_b;
+      const home=norm(String(rec.selection||'').split(' ')[0])===norm(g.home_team);side=home?e.side_a:e.side_b;
       marketLabel=`${rec.selection} · ${side?.offered_odds>0?'+':''}${side?.offered_odds??'odds unavailable'}`;
     }else if(kind==='total'){
       const over=String(rec.selection||'').startsWith('OVER ');side=over?e.side_a:e.side_b;
       marketLabel=`${rec.selection} · ${side?.offered_odds>0?'+':''}${side?.offered_odds??'odds unavailable'}`;
     }else{
-      const home=String(rec.selection||'').startsWith(norm(g.home_team)+' ');side=home?e.side_a:e.side_b;
+      const home=norm(String(rec.selection||'').split(' ')[0])===norm(g.home_team);side=home?e.side_a:e.side_b;
       marketLabel=`${rec.selection} · ${side?.offered_odds>0?'+':''}${side?.offered_odds??'odds unavailable'}`;
     }
     if(!side)return '';
