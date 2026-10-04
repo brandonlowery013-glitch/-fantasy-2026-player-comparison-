@@ -122,6 +122,7 @@
       if(!role)continue;
       const team=canon(role.team||role.evidence?.team),injury=p.signals?.find(s=>s.kind==='injury'&&canon(s.team||s.evidence?.team)===team&&Date.parse(s.evidence?.source_updated_at||s.captured_at)<=now);
       const at=injury?.evidence?.source_updated_at||injury?.captured_at;
+      if(injury&&contextCurrent(injury,'injury',now)&&/^(active|healthy|available)$/i.test(String(injury.evidence?.status||''))&&Date.parse(at)>Date.parse(concerns.get(team)?.reported_at||0))concerns.delete(team);
       if(injury&&!(latestPersonnel.get(team)>Date.parse(at))&&risky(injury.evidence?.status)&&(!concerns.has(team)||Date.parse(at)>Date.parse(concerns.get(team).reported_at)))concerns.set(team,{player:p.player,team,status:injury.evidence.status,reported_at:at});
     }
     return [...concerns.values()];
@@ -129,7 +130,7 @@
   function gameMarketView(game,snapshot,now=Date.now()){
     if(!snapshot||!Number.isFinite(Date.parse(game.kickoff||game.event_start)))return snapshot;
     if(Date.parse(game.kickoff||game.event_start)<=now&&game.rerun!==true)return snapshot;
-    const concerns=quarterbackConcerns(game,now);if(!concerns.length)return snapshot;
+    const concerns=quarterbackConcerns(game,Math.min(now,Date.parse(game.kickoff||game.event_start)));if(!concerns.length)return snapshot;
     const reason=concerns.map(p=>`${p.player}: last reported ${String(p.status).toLowerCase()}`).join('; ')+'. This forecast has not accounted for the starting-quarterback uncertainty. No recommended bet until availability and the replacement are evaluated.';
     return {...snapshot,markets:Object.fromEntries(Object.entries(snapshot.markets||{}).map(([kind,e])=>[kind,{...e,baseline_recommendation:e.baseline_recommendation||e.recommendation,recommendation:{decision:'WAIT',selection:null,confidence:null,reason},context_validation:{status:'HOLD',reason,quarterbacks:concerns,checked_at:new Date(now).toISOString(),numeric_adjustment:0}}]))};
   }
