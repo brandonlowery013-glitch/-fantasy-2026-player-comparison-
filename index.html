@@ -106,6 +106,11 @@ border-radius:6px;overflow:hidden}
 .categoryCard h3{font-size:9px;margin:0 0 8px;color:#83b8f1;letter-spacing:.06em}.catPlayer{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid #172a42;font-size:9px}.catPlayer:last-child{border:0}.catPlayer span{color:#879aaf}.catPlayer b{font-size:9px}
 @media(max-width:900px){.pickCards,.categoryGrid{grid-template-columns:1fr}.bettingHead{align-items:flex-start;flex-direction:column}.betTabs{margin-left:0}}
 .showWork{font-size:12px;line-height:1.6;overflow-wrap:anywhere;padding:12px 0;text-transform:none;letter-spacing:normal}.showWork h4{color:var(--blue2);margin:8px 0}.showWork p{margin:8px 0;color:var(--muted)}
+
+.showWork{font-size:12px;line-height:1.6;max-width:100%;overflow-wrap:anywhere;white-space:normal;color:#b9c9dc}
+.showWork p{margin:7px 0;max-width:78ch}.showWork h4{margin:10px 0 5px;color:#f3f7fd}.showWork summary{cursor:pointer;color:#72b8ff;padding:8px 0}
+.panel,.categoryCard,.topgrid>*{min-width:0}.workVerdict{border-left:2px solid #238dff;padding-left:10px}.filterBar{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0}.filterBar label{display:grid;gap:5px;font-size:12px;color:#b9c9dc}.filterBar input,.filterBar select{max-width:100%;background:#0a1422;color:#f3f7fd;border:1px solid #2e5684;border-radius:6px;padding:9px}.compareGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.statTable{width:100%;font-size:12px;border-collapse:collapse}.statTable td,.statTable th{padding:9px;text-align:left;border-bottom:1px solid #1d314b}.tableScroll{overflow-x:auto}.dataNote{color:#8397ad;font-size:12px;line-height:1.6}.categoryCard details{margin-top:10px;font-size:12px;line-height:1.6}.categoryCard summary{cursor:pointer;color:#72b8ff}
+@media(max-width:650px){.compareGrid{grid-template-columns:1fr}.showWork{font-size:12px}.topbar{padding:0 8px}.brand{min-width:140px}.nav button{padding:0 8px}}
 </style>
 </head>
 <body>
@@ -135,7 +140,7 @@ border-radius:6px;overflow:hidden}
   <div class="content">
     <div class="livebar">
       <h2>NFL LIVE BOARD</h2>
-      <select><option>Week 1</option></select>
+      <select id="displayWeek" aria-label="Published week" disabled><option>Loading week</option></select>
       <select><option>All Games</option></select>
       <div class="oddsby">Odds by <b>SPORTSBOOK</b></div>
       <div class="refresh">Auto-Refresh: <b>On</b></div>
@@ -191,7 +196,7 @@ border-radius:6px;overflow:hidden}
       <div class="panel"><h3>LATEST SCORES</h3><table class="scoretable"><thead><tr><th>TEAM</th><th>1</th><th>2</th><th>3</th><th>4</th><th>T</th></tr></thead><tbody><tr><td>AWAY</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>HOME</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table><div class="halftime">Live score feed</div></div>
     </div>
 
-    <div class="panel history"><h3>BETTING HISTORY (THIS MATCHUP)</h3><div class="historygrid"><div class="hist"><span>ATS</span><b>—</b></div><div class="hist"><span>O/U</span><b>—</b></div><div class="hist"><span>Avg Margin</span><b>—</b></div><div class="hist"><span>Last 5 Meetings</span><b>—</b></div><div class="hist"><span>CLV</span><b>—</b></div></div></div>
+    <div class="panel"><h3>MARKET CONSENSUS &amp; SMART MONEY</h3><p class="dataNote">The selected sportsbook quote is shown above. A verified multi-book consensus and ticket/handle splits feed are not connected, so smart-money direction is unavailable. Model edge is not evidence of sharp betting activity.</p></div><div class="panel history"><h3>BETTING HISTORY (THIS MATCHUP)</h3><div class="historygrid"><div class="hist"><span>ATS</span><b>—</b></div><div class="hist"><span>O/U</span><b>—</b></div><div class="hist"><span>Avg Margin</span><b>—</b></div><div class="hist"><span>Last 5 Meetings</span><b>—</b></div><div class="hist"><span>CLV</span><b>—</b></div></div></div>
     <div class="bettingTools">
       <div class="bettingHead">
         <div><div class="kicker">CURRENT WEEK · MODEL VS MARKET</div><h2>BETTING TOOLS</h2></div>
@@ -223,17 +228,17 @@ border-radius:6px;overflow:hidden}
       <button data-season="overpriced">OVERPRICED</button>
       <button data-season="upside">HIGH UPSIDE</button>
     </div>
-    <div id="seasonCategoryMount"></div>
+    <div class="filterBar"><label>Find a player<input id="boardSearch" type="search" placeholder="Player or team"></label><label>Position<select id="boardPosition"><option value="">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select></label></div><p id="boardCount" class="dataNote" aria-live="polite"></p><div id="seasonCategoryMount"></div>
   </div>
 </section>
-<section class="page" id="comparePage"><div class="blank">Compare workspace.</div></section>
+<section class="page" id="comparePage"><div class="categoryWrap"><h2>COMPARE PLAYERS</h2><p class="dataNote">Compare season value and matching-week football projections. Unvalidated projections remain for review; no start/sit probability is inferred.</p><div class="filterBar"><label>Player one<select id="compareOne"></select></label><label>Player two<select id="compareTwo"></select></label></div><div id="compareMount" class="compareGrid"></div></div></section>
 
 <section class="page" id="weeklyPage">
   <div class="categoryWrap">
-    <h2>WEEK 1 FANTASY</h2>
-    <div class="categoryIntro">Weekly action layer using current board strength, role, ceiling, availability, news and verified Week 1 participation context. Matchup-specific labels remain conservative when the matchup engine has not produced a verified edge.</div>
+    <h2 id="weeklyHeading">WEEKLY FANTASY</h2>
+    <div class="categoryIntro">Matching-week projections, opportunity and availability, with the same math and context review used in comparisons. Season-board shortlists remain separate from weekly recommendations.</div>
     <div class="categoryTabs" id="weeklyTabs">
-      <button class="active" data-weekly="starts">STARTS OF THE WEEK</button>
+      <button class="active" data-weekly="projections">PLAYER PROJECTIONS</button><button data-weekly="starts">START REVIEW</button>
       <button data-weekly="fades">FADES OF THE WEEK</button>
       <button data-weekly="sleepers">SLEEPERS</button>
       <button data-weekly="busts">BUSTS / AVOIDS</button>
@@ -343,7 +348,9 @@ let BET_FEED={status:'WAITING_FOR_CURRENT_WEEK',games:[],props:[],parlays:[]};
 let selectedGameIndex=0;
 let WORK_INPUTS={},WORK_GAMES={};
 function workHtml(work){
-  return `<section class="showWork"><h4>Show your work</h4>${(work?.paragraphs||['Waiting for the matching model, market and context explanation.']).map(p=>`<p>${esc(p)}</p>`).join('')}${work?.context?.rows?.length>4?`<details><summary>All contextual evidence (${work.context.rows.length})</summary>${work.context.rows.map(x=>`<p>${esc(x.text)}</p>`).join('')}</details>`:''}</section>`;
+ if(!work)return '<section class="showWork"><p>Matching model explanation unavailable.</p></section>';
+ const paragraphs=work.paragraphs||[],math=work.math||[];
+ return `<section class="showWork"><h4>Show your work</h4><p>${esc(math[0])}</p><p class="workVerdict">${esc(work.decision)} · Model probability ${work.final_probability==null?'unavailable':(work.final_probability*100).toFixed(1)+'%'} · Model confidence ${esc(work.final_confidence||'unavailable')}</p><p>Existing adjustments: ${esc(work.reconciliation)}. Context review: ${esc(work.context?.status)}. Additional probability adjustment: 0.</p><details><summary>See the math and contextual reasoning</summary>${paragraphs.map(p=>`<p>${esc(p)}</p>`).join('')}${(work.context?.rows||[]).slice(4).map(x=>`<p>${esc(x.text)}</p>`).join('')}</details></section>`;
 }
 function currentInput(key){const x=WORK_INPUTS[key];return x?.season===2026&&Number(x.week)===Number(BET_FEED.week)?x:null;}
 function playerWork(name,stat){
@@ -595,6 +602,7 @@ function edgePct(x){
 function renderOurPicks(feed){
   const mount=document.getElementById('ourPicksMount'); if(!mount)return;
   if(feed.status!=='READY'){mount.innerHTML=`<div class="copy">Current market feed: ${esc(feed.status||'WAITING')}.</div>`;return}
+  if(!feed.picksAvailable){mount.innerHTML='<p class="copy">Approved-picks feed unavailable or does not match this week. Individual model directions are shown above; no approval is inferred.</p>';return;}
   const legs=(feed.eligible_legs||[]).filter(x=>x.label==='PICK'&&x.standalone_approved===true)
     .sort((a,b)=>(Number(b.expected_value||0)+Number(b.probability_edge||0))-(Number(a.expected_value||0)+Number(a.probability_edge||0)));
   if(!legs.length){mount.innerHTML='<div class="copy"><b>PASS:</b> no current spread, total, moneyline or prop clears the model threshold.</div>';return}
@@ -625,12 +633,27 @@ function seasonGroups(){
   };
 }
 function renderPlayerRows(rows,limit=30){
- return `<div class="categoryGrid">${rows.slice(0,limit).map(p=>`<div class="categoryCard"><h3>#${p.overall} · ${esc(p.pos)} · ${esc(p.team)}</h3><div class="catPlayer"><b>${esc(p.name)}</b><span>${esc(marketRead(p))}</span></div><div class="catPlayer"><span>True Value</span><b>#${p.trueRank}</b></div><div class="catPlayer"><span>ADP</span><b>${p.adp??'—'}</b></div><div class="catPlayer"><span>Ceiling / Role</span><b>${p.ceiling??'—'} / ${p.role??'—'}</b></div></div>`).join('')}</div>`;
+ return `<div class="categoryGrid">${rows.slice(0,limit).map(p=>`<div class="categoryCard"><h3>#${p.overall} · ${esc(p.pos)} · ${esc(p.team)}</h3><div class="catPlayer"><b>${esc(p.name)}</b><span>${esc(marketRead(p))}</span></div><div class="catPlayer"><span>True Value</span><b>#${p.trueRank}</b></div><div class="catPlayer"><span>ADP</span><b>${p.adp??'—'}</b></div><div class="catPlayer"><span>Ceiling / Role</span><b>${p.ceiling??'—'} / ${p.role??'—'}</b></div><details><summary>Consensus, news and model impact</summary>${playerDetails(p)}</details></div>`).join('')}</div>`;
 }
+function numberText(x){return typeof x==='number'&&Number.isFinite(x)?x.toFixed(1):'Unavailable';}
+function playerDetails(p){
+ const c=p.consensus||{},news=p.newsFeed||[];
+ return `<p><b>Season consensus (PPR)</b>: ${numberText(c.normalizedPPR)} points · Our season median: ${numberText(c.ourMedianPPR)}</p><p class="dataNote">${esc(c.source||'Consensus source unavailable')} · Captured ${esc(c.captured||'date unavailable')}. This is a season snapshot, not a live weekly consensus.</p><h4>News and availability</h4>${news.length?news.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,3).map(n=>`<p><b>${esc(n.headline)}</b><br>${esc(n.summary)}<br><span class="dataNote">${esc(n.source)} · ${esc(n.date)}</span></p>`).join(''):'<p>No player-specific news attached. This does not confirm a healthy or unchanged status.</p>'}<p>Model impact: ${esc(p.newsMaterialityReview?.rationale||p.currentModelImpact?.projectionStatus||'Review unavailable')}</p>`;
+}
+function projectionTable(p){
+ const pp=currentInput('projections')?.players?.[p.name];
+ if(!pp)return '<p class="dataNote">Matching-week projection unavailable.</p>';
+ return `<p class="dataNote">Week ${esc(BET_FEED.week)} · ${esc(pp.status)} · Season rank #${esc(p.overall)}</p><div class="tableScroll"><table class="statTable"><thead><tr><th>Stat</th><th>Projection</th><th>Status</th></tr></thead><tbody>${Object.entries(pp.projections||{}).map(([stat,v])=>`<tr><td>${esc(stat.replaceAll('_',' '))}</td><td>${numberText(v.mean)}</td><td>${esc(v.status||'Review required')}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function renderCompare(){
+ document.getElementById('compareMount').innerHTML=['compareOne','compareTwo'].map(id=>PLAYERS.find(p=>p.name===document.getElementById(id).value)).filter(Boolean).map(p=>`<article class="panel"><h3>${esc(p.name)}</h3><p>${esc(p.pos)} · ${esc(p.team)}</p><p>Season rank #${esc(p.overall)} · True value #${esc(p.trueRank)} · ADP ${esc(p.adp??'Unavailable')}</p>${projectionTable(p)}${playerDetails(p)}</article>`).join('');
+}
+for(const [i,id]of ['compareOne','compareTwo'].entries()){const el=document.getElementById(id);el.innerHTML=PLAYERS.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${esc(p.name)}">${esc(p.name)} · ${esc(p.pos)}</option>`).join('');el.value=PLAYERS[i].name;el.addEventListener('change',renderCompare);}
+for(const id of ['boardSearch','boardPosition'])document.getElementById(id).addEventListener('input',()=>renderSeason());
 let seasonMode='board';
 function renderSeason(){
   const groups=seasonGroups(), rows=groups[seasonMode]||groups.board;
-  document.getElementById('seasonCategoryMount').innerHTML=renderPlayerRows(rows,seasonMode==='board'?60:30);
+  const q=document.getElementById('boardSearch').value.toLowerCase(),pos=document.getElementById('boardPosition').value;const filtered=rows.filter(p=>(!pos||p.pos===pos)&&(`${p.name} ${p.team}`).toLowerCase().includes(q));document.getElementById('boardCount').textContent=`${filtered.length} players · Season-long rankings`;document.getElementById('seasonCategoryMount').innerHTML=renderPlayerRows(filtered,filtered.length);
 }
 document.getElementById('seasonTabs')?.addEventListener('click',e=>{
  const b=e.target.closest('[data-season]');if(!b)return;seasonMode=b.dataset.season;
@@ -647,18 +670,18 @@ function weeklyGroups(){
   const matchups=current.filter(p=>healthy(p)&&(p.environment||0)>=8.8&&(p.role||0)>=8.2).sort((a,b)=>(b.environment+b.role)-(a.environment+a.role));
   return {starts,fades,sleepers,busts,waivers,matchups};
 }
-let weeklyMode='starts';
+let weeklyMode='projections';
 function renderWeekly(){
-  const rows=weeklyGroups()[weeklyMode]||[];
+  const rows=weeklyMode==='projections'?PLAYERS.slice().sort((a,b)=>a.overall-b.overall):weeklyGroups()[weeklyMode]||[];
   const note=weeklyMode==='matchups'?'<div class="categoryIntro">These are high-environment weekly targets from the current football model. A sportsbook/game-line disagreement is shown separately under Games and is not treated as a fantasy matchup edge by itself.</div>':'';
   const projections=currentInput('projections');
-  document.getElementById('weeklyCategoryMount').innerHTML=note+'<div class="categoryIntro">Season-board candidates below retain the existing ordering. Use the current-week projection and context review before a start/sit decision; these are not calibrated weekly win probabilities.</div>'+rows.slice(0,24).map(p=>`<article class="panel"><h3>${esc(p.name)} · ${esc(p.pos)}</h3>${Object.keys(projections?.players?.[p.name]?.projections||{}).map(stat=>`<h4>${esc(stat)}</h4>${workHtml(playerWork(p.name,stat))}`).join('')||'<p>Current-week football projection unavailable. Start/sit requires review.</p>'}</article>`).join('');
+  document.getElementById('weeklyCategoryMount').innerHTML=note+'<div class="categoryIntro">Season-board candidates below retain the existing ordering. Use the current-week projection and context review before a start/sit decision; these are not calibrated weekly win probabilities.</div>'+rows.map(p=>`<article class="panel"><h3>${esc(p.name)} · ${esc(p.pos)}</h3>${projectionTable(p)}<details><summary>Projection math and context</summary>${Object.keys(projections?.players?.[p.name]?.projections||{}).map(stat=>`<h4>${esc(stat)}</h4>${workHtml(playerWork(p.name,stat))}`).join('')||'<p>Current-week football projection unavailable. Start/sit requires review.</p>'}</details></article>`).join('');
 }
 document.getElementById('weeklyTabs')?.addEventListener('click',e=>{
  const b=e.target.closest('[data-weekly]');if(!b)return;weeklyMode=b.dataset.weekly;
  document.querySelectorAll('[data-weekly]').forEach(x=>x.classList.toggle('active',x===b));renderWeekly();
 });
-renderSeason();renderWeekly();
+renderSeason();renderWeekly();renderCompare();
 async function loadFeed(){
   try{
     const r=await fetch(`${RAW}${FEED_PATH}?ts=${Date.now()}`,{cache:'no-store'});
@@ -666,8 +689,8 @@ async function loadFeed(){
     const raw=await r.json();
     if(raw.season!==2026||!Number.isInteger(raw.week))throw Error('Unverified game season/week');
     WORK_GAMES=raw.games||{};
-    const extra=await Promise.allSettled(['data/market/player-prop-recommendations-2026.json','data/probability/generated/weekly-probability-distributions-2026.json','data/probability/weekly-projection-inputs-2026.json','data/probability/weekly-football-context-inputs-2026.json'].map(p=>fetch(`${RAW}${p}?ts=${Date.now()}`,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error(r.status);return r.json()})));
-    WORK_INPUTS=Object.fromEntries(['props','distributions','projections','context'].map((k,i)=>[k,extra[i].status==='fulfilled'?extra[i].value:null]));
+    const extra=await Promise.allSettled(['data/market/player-prop-recommendations-2026.json','data/probability/generated/weekly-probability-distributions-2026.json','data/probability/weekly-projection-inputs-2026.json','data/probability/weekly-football-context-inputs-2026.json','data/market/final-betting-ui-feed-2026.json'].map(p=>fetch(`${RAW}${p}?ts=${Date.now()}`,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error(r.status);return r.json()})));
+    WORK_INPUTS=Object.fromEntries(['props','distributions','projections','context','final'].map((k,i)=>[k,extra[i].status==='fulfilled'?extra[i].value:null]));
     const games=[];
     for(const [gameId,g] of Object.entries(raw.games||{})){
       const snaps=(g.snapshot_evaluations||[]).filter(x=>x.eligible_for_current_recommendation===true).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));
@@ -698,7 +721,7 @@ async function loadFeed(){
         model_spread_pick:spreadSel||'PASS',
         moneyline_pick:mlSel||'PASS',
         model_summary:picks.length?`Our model has ${picks.length} qualified market edge${picks.length===1?'':'s'} at the current ${dk.book||'sportsbook'} lines.`:'No current game market clears the locked betting threshold.',
-        venue:'Current Week 1 market · '+(dk.book||'sportsbook'),
+        venue:`Week ${raw.week} market · ${dk.book||'sportsbook'} · Captured ${dk.captured_at||'unavailable'}`,
         spread_breakdown:{
           model_projection_away:fp.away_score_mean?.toFixed?.(1)??fp.away_score_mean,
           model_projection_home:fp.home_score_mean?.toFixed?.(1)??fp.home_score_mean,
@@ -719,13 +742,13 @@ async function loadFeed(){
         }
       });
     }
-    BET_FEED={status:'READY',week:raw.week,games,props:[],parlays:[],eligible_legs:[]};
-    renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);renderWorkProps();renderWeekly();
+    const final=WORK_INPUTS.final;const finalMatches=final?.season===raw.season&&Number(final.week)===Number(raw.week)&&final.status==='READY';BET_FEED={status:'READY',week:raw.week,games,props:[],parlays:[],eligible_legs:finalMatches?final.eligible_legs||[]:[],picksAvailable:finalMatches};document.getElementById('weeklyHeading').textContent=`WEEK ${raw.week} FANTASY`;document.getElementById('displayWeek').innerHTML=`<option>Week ${raw.week}</option>`;
+    renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);renderWorkProps();renderWeekly();renderCompare();
     document.documentElement.dataset.gameFeedStatus='READY';
   }catch(err){
     WORK_INPUTS={};WORK_GAMES={};
     BET_FEED={status:'FEED_UNAVAILABLE',games:[],props:[],parlays:[],eligible_legs:[]};
-    renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);renderWorkProps();renderWeekly();
+    renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);renderWorkProps();renderWeekly();renderCompare();
     document.getElementById('gameVenue').textContent=`Live market feed unavailable: ${err.message}`;
   }
 }
