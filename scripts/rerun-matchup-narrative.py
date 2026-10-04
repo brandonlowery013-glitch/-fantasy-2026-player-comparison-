@@ -38,7 +38,7 @@ def pick_narrative(g,snapshot,kind):
     selection=q.get('selection'); decision=q.get('decision'); home,away=g['home_team'],g['away_team']; hm,am=p['home_score_mean'],p['away_score_mean']; total=hm+am
     paragraphs=[('What the score means',f"The model projects {away} {am:.1f}, {home} {hm:.1f}. " + (f"That puts {home if hm>am else away} ahead by {abs(hm-am):.1f} points." if hm!=am else 'That is an even game.'))]
     if not selection:
-        paragraphs.append(('The decision', 'This pick is on hold because of the personnel check.' if decision=='WAIT' else 'Neither side offers enough value at the saved odds to qualify as a bet. A projected winner alone is not enough; the price also has to make sense.'))
+        paragraphs.append(('The decision', q.get('reason','This pick is on hold because of the personnel check.') if decision=='WAIT' else 'Neither side offers enough value at the saved odds to qualify as a bet. A projected winner alone is not enough; the price also has to make sense.'))
         return paragraphs
     side_a=selection.startswith(home+' ') or (kind=='moneyline' and selection==home) or (kind=='total' and selection.upper().startswith('OVER'))
     side=details['side_a' if side_a else 'side_b'];odds=side['offered_odds'];payout=odds/100 if odds>0 else 100/abs(odds);breakeven=1/(1+payout)
