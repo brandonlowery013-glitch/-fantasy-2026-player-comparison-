@@ -402,9 +402,9 @@ let WORK_INPUTS={},WORK_GAMES={};let PLAYER_SOURCE_READY=false;
 function workHtml(work){
  if(!work)return '<section class="showWork"><p>We do not have an explanation for this pick yet.</p></section>';
  const reader=work.reader||{},context=work.context||{};
- const missing={ 'Positional production / fantasy allowed':'How this defense performs against the player’s position','Pass/run tendencies and PROE':'How often each team chooses to pass or run','Pressure / sacks':'Pass rush and sacks','Coverage / run defense':'Pass coverage and run defense','Injuries / offensive line / secondary':'Injuries, including blockers and defensive backs','Pace / script':'Expected pace and likely game situation','Home / road / dome / weather':'Venue and weather','Role / usage / opportunities':'Playing time and expected workload'};
+
  const details=reader.details||[];
- return `<section class="showWork"><h4>Why we lean this way</h4><p>${esc(reader.summary||'A written explanation is not available for this saved forecast.')}</p>${context.status!=='COMPLETE'?'<p>Some matchup information is missing or out of date. The forecast has not been increased to make up for it.</p>':''}<details><summary>See the numbers</summary>${details.map(x=>`<p>${esc(x)}</p>`).join('')}</details><details><summary>What we still need to check</summary>${(context.missing||[]).map(x=>`<p>${esc(missing[x]||x)}</p>`).join('')||'<p>The listed matchup checks are up to date.</p>'}</details></section>`;
+ return `<section class="showWork"><h4>Why we lean this way</h4><p>${esc(reader.summary||'A written explanation is not available for this saved forecast.')}</p>${context.status!=='COMPLETE'?'<p>This is the baseline forecast. Current matchup reports are incomplete, so we cannot confirm that injuries, workload and conditions still support the pick.</p>':''}<details><summary>See the numbers</summary>${details.map(x=>`<p>${esc(x)}</p>`).join('')}</details></section>`;
 }
 function currentInput(key){const x=WORK_INPUTS[key];return x?.season===2026&&Number(x.week)===Number(BET_FEED.week)?x:null;}
 function playerWork(name,stat){
@@ -875,6 +875,7 @@ window.CTD_INTERFACE_LOCK = {
 })();
 </script>
 
+<script src="runtime-league-refresh-2026.js"></script>
 <script src="runtime-league-hub-2026.js"></script>
 <script src="runtime-news-dashboard-2026.js"></script>
 </body>
