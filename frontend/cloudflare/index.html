@@ -303,6 +303,18 @@ function tickerCard(g,i){
   </button>`;
 }
 
+let rememberedGame=null;
+function gameIdentity(game,feed=BET_FEED){
+ if(!game)return null;
+ const norm=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t);
+ return {id:String(game.event_id||game.game_id||game.id||''),pair:`${feed.season||2026}:${feed.week}:${norm(game.away_team)}@${norm(game.home_team)}`};
+}
+function replaceGameFeed(next){
+ rememberedGame=gameIdentity(BET_FEED.games?.[selectedGameIndex])||rememberedGame;
+ BET_FEED=next;
+ if(!rememberedGame){selectedGameIndex=next.games?.length?0:-1;return;}
+ selectedGameIndex=(next.games||[]).findIndex(g=>gameIdentity(g,next).pair===rememberedGame.pair);
+}
 function orderGameFeed(){
  const games=BET_FEED.games;if(!Array.isArray(games))return;
  const selected=games[selectedGameIndex];
@@ -350,8 +362,9 @@ function renderSelectedGame(){
   const games=BET_FEED.games||[];
   const g=games[selectedGameIndex];
   if(!g){
-    document.getElementById('gameTitle').innerHTML=`CURRENT-WEEK FEED <span class="status">${esc(BET_FEED.status||'WAITING')}</span>`;
-    document.getElementById('gameVenue').textContent='The page is connected. Game boxes will populate when the current-week game feed publishes.';
+    document.getElementById('ctdPickContext')?.remove();document.getElementById('ctdGameTabContent')?.replaceChildren();
+    document.getElementById('gameTitle').innerHTML=`${rememberedGame?'SELECTED GAME UNAVAILABLE':'CURRENT-WEEK FEED'} <span class="status">${esc(BET_FEED.status||'WAITING')}</span>`;
+    document.getElementById('gameVenue').textContent=rememberedGame?'Your selected game is missing from this update. Select another game or wait for the next refresh.':'Waiting for the current-week games.';
     document.getElementById('gameSummary').textContent='No current-week game payload has been published yet.';
     ['spreadPick','totalPick','mlPick','mlEdge','awayProb','homeProb'].forEach(id=>document.getElementById(id).textContent='—');
     document.getElementById('awayPlayers').innerHTML='<div class="copy">Waiting for current-week game data.</div>';
@@ -555,7 +568,7 @@ document.getElementById('weeklyTabs')?.addEventListener('click',e=>{
 document.getElementById('weeklyCategoryMount').textContent='Loading published weekly data…';
 let selectedLiveWeek=null, feedRequest=0;
 const weekSelector=document.getElementById('liveWeekSelect');
-weekSelector.addEventListener('change',()=>{selectedLiveWeek=Number(weekSelector.value);selectedGameIndex=0;loadFeed()});
+weekSelector.addEventListener('change',()=>{selectedLiveWeek=Number(weekSelector.value);rememberedGame=null;selectedGameIndex=-1;loadFeed()});
 async function loadFeed(){
   const request=++feedRequest;
   let targetWeek=selectedLiveWeek;
@@ -580,8 +593,7 @@ async function loadFeed(){
       const schedule=await sr.json();
       if(request!==feedRequest)return;
       const rows=schedule.games||schedule.data?.games||[];
-      BET_FEED={week:targetWeek,status:'SCHEDULE_ONLY',actionable:false,props:[],parlays:[],eligible_legs:[],games:rows.map(g=>({event_id:g.event_id,away_team:g.away.team,home_team:g.home.team,event_start:g.start_at,state:g.state,status:CTD_TIME.status(g),completed:g.state==='post',away_score:g.state==='pre'?null:g.away.score,home_score:g.state==='pre'?null:g.home.score,venue:g.venue||`Week ${targetWeek}`,model_pick:'PENDING',total_pick:'PENDING',model_spread_pick:'PENDING',moneyline_pick:'PENDING',model_summary:`Week ${targetWeek} games are available. Matching published lines and model analysis are pending.`}))};
-      selectedGameIndex=0;
+      replaceGameFeed({week:targetWeek,status:'SCHEDULE_ONLY',actionable:false,props:[],parlays:[],eligible_legs:[],games:rows.map(g=>({event_id:g.event_id,away_team:g.away.team,home_team:g.home.team,event_start:g.start_at,state:g.state,status:CTD_TIME.status(g),completed:g.state==='post',away_score:g.state==='pre'?null:g.away.score,home_score:g.state==='pre'?null:g.home.score,venue:g.venue||`Week ${targetWeek}`,model_pick:'PENDING',total_pick:'PENDING',model_spread_pick:'PENDING',moneyline_pick:'PENDING',model_summary:`Week ${targetWeek} games are available. Matching published lines and model analysis are pending.`}))});
       renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);document.dispatchEvent(new Event('ctd:games-ready'));
       document.documentElement.dataset.gameFeedStatus=BET_FEED.status;
       return;
@@ -637,12 +649,12 @@ async function loadFeed(){
         }
       });
     }
-    BET_FEED={status:raw.status||'UNKNOWN',mode:raw.mode,actionable:raw.actionable===true,week:raw.week,games,props:[],parlays:[],eligible_legs:[]};
+    replaceGameFeed({status:raw.status||'UNKNOWN',mode:raw.mode,actionable:raw.actionable===true,week:raw.week,games,props:[],parlays:[],eligible_legs:[]});
     renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);document.dispatchEvent(new Event('ctd:games-ready'));
     document.documentElement.dataset.gameFeedStatus=BET_FEED.status;
   }catch(err){
     if(request!==feedRequest)return;
-    BET_FEED={week:targetWeek,status:'FEED_UNAVAILABLE',games:[],props:[],parlays:[],eligible_legs:[]};
+    replaceGameFeed({week:targetWeek,status:'FEED_UNAVAILABLE',games:[],props:[],parlays:[],eligible_legs:[]});
     renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);document.dispatchEvent(new Event('ctd:games-ready'));
     document.getElementById('gameVenue').textContent=`Live market feed unavailable: ${err.message}`;
   }

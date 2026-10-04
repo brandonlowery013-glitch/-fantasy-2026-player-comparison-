@@ -24,3 +24,14 @@ heroScope.renderSelectedGame();assert.match(hero.innerHTML,/IND/);assert.match(h
 heroScope.selectedGameIndex=1;heroScope.renderSelectedGame();assert.match(hero.innerHTML,/ARI/);assert.doesNotMatch(hero.innerHTML,/IND|WSH|6 — 6/);assert.match(hero.innerHTML,/>VS</);
 heroScope.selectedGameIndex=99;heroScope.renderSelectedGame();assert(hero.removed);
 console.log('PASS: header logos and scores switch synchronously; scheduled games show VS and missing selections clear the header');
+
+const html=fs.readFileSync('frontend/cloudflare/index.html','utf8');
+const a={event_id:'a',away_team:'PIT',home_team:'CLE'},b={event_id:'b',away_team:'IND',home_team:'WAS'},c={event_id:'c',away_team:'ARI',home_team:'NYG'};
+const selection=vm.createContext({BET_FEED:{week:4,games:[a,b,c]},selectedGameIndex:1});
+vm.runInContext(html.slice(html.indexOf('let rememberedGame='),html.indexOf('function orderGameFeed(){')),selection);
+selection.replaceGameFeed({week:4,games:[{...c},{...a},{...b,home_team:'WSH',event_id:'provider-b'}]});assert.equal(selection.selectedGameIndex,2);
+selection.replaceGameFeed({week:4,games:[{...a},{...c}]});assert.equal(selection.selectedGameIndex,-1);
+selection.replaceGameFeed({week:4,games:[{...b},{...a},{...c}]});assert.equal(selection.selectedGameIndex,0);
+selection.selectedGameIndex=2;selection.replaceGameFeed({week:4,games:[{...c},{...b},{...a}]});assert.equal(selection.selectedGameIndex,0);
+assert.equal((html.match(/replaceGameFeed\(\{/g)||[]).length,3);
+console.log('PASS: cloned/reordered feeds preserve matchup identity, missing games do not switch teams, return restores selection, and later user choices win');
