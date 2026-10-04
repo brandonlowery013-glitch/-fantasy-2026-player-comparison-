@@ -4,6 +4,9 @@ const contract=read('data/sources/connected-impact-resolver-2026.json');
 const foundation=read('data/sources/model-foundation-contract-2026.json');
 const config=read('guardrails/guardrails-config.json');
 const blocked=[];
+const canonical=read('MODEL_SOURCE_OF_TRUTH.json');
+const expectedCount=Number(canonical.active_player_model);
+const expectedShards=Number(canonical.runtime_player_shards);
 const required=['direct_player','connected_players','team_offense','opponent','weekly_projection','team_scoring','market_comparison','decision_outputs'];
 if(contract.mode!=='ROUTING_AND_REASSESSMENT')blocked.push('resolver mode must be ROUTING_AND_REASSESSMENT');
 if(contract.actionable!==false)blocked.push('resolver must not be independently actionable');
@@ -14,7 +17,7 @@ if(contract.connection_rules?.market_movement_is_comparison_evidence_not_footbal
 if(contract.decision_contract?.resolver_may_not_invent_projection_delta!==true)blocked.push('projection invention block missing');
 if(contract.decision_contract?.resolver_may_not_invent_rank_delta!==true)blocked.push('rank invention block missing');
 if(contract.decision_contract?.resolver_may_not_invent_team_point_delta!==true)blocked.push('team scoring invention block missing');
-if(Number(config.authoritative_player_count)!==166||Number(config.authoritative_player_shards)!==14)blocked.push('authoritative universe drifted from current 166/14 state');
+if(!Number.isInteger(expectedCount)||expectedCount<1||!Number.isInteger(expectedShards)||expectedShards<1||Number(config.authoritative_player_count)!==expectedCount||Number(config.authoritative_player_shards)!==expectedShards)blocked.push('authoritative universe differs from canonical source');
 if(foundation.foundation_layers?.dependency_graph?.connected_reassessment_required!==true)blocked.push('foundation dependency graph does not require connected reassessment');
 if(foundation.foundation_layers?.market?.may_directly_rewrite_core_football_projection!==false)blocked.push('foundation market separation missing');
 console.log(JSON.stringify({result:blocked.length?'BLOCKED':'PASS',status:contract.status,authoritative_player_count:config.authoritative_player_count,authoritative_player_shards:config.authoritative_player_shards,blocked},null,2));

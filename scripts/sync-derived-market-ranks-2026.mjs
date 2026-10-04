@@ -6,10 +6,12 @@ const write = (p, x) => fs.writeFileSync(p, JSON.stringify(x, null, 2) + '\n');
 const fail = m => { throw new Error(`SYNC_DERIVED_MARKET_RANKS: ${m}`); };
 
 const sot = read('MODEL_SOURCE_OF_TRUTH.json');
-if (sot.active_player_model !== 166) fail('canonical universe is not 166');
+const active=Array.from({length:sot.runtime_player_shards},(_,i)=>read(`players${i}.json`)).flat();
+if(active.length!==sot.active_player_model||new Set(active.map(p=>p.n)).size!==sot.active_player_model)fail('active roster differs from canonical source');
 const core = read(sot.current_update_layer);
 const canonical = core.players || {};
 const names = Object.keys(canonical);
+if(!names.every(n=>active.some(p=>p.n===n)))fail('historical board contains a player outside the active roster');
 if (names.length !== 166) fail(`canonical player count ${names.length} != 166`);
 
 const edgePath = 'data/market/draft-edge-opportunity-screen-166.json';

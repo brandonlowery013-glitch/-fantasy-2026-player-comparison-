@@ -14,6 +14,7 @@ for (const p of [contractPath, guardrailPath, contextPath, marketPath, compariso
 }
 if (process.exitCode) process.exit();
 
+const canonical = readJson('MODEL_SOURCE_OF_TRUTH.json');
 const c = readJson(contractPath);
 const g = readJson(guardrailPath);
 const f = readJson(contextPath);
@@ -22,8 +23,8 @@ const d = readJson(comparisonPath);
 
 if (c.season !== 2026) fail('contract season must be 2026');
 if (c.status !== 'FOUNDATION_LOCKED_FOR_INTEGRATION') fail('foundation status is not locked');
-if (g.authoritative_player_count !== 166) fail(`authoritative player count expected 166, found ${g.authoritative_player_count}`);
-if (!Number.isInteger(g.authoritative_player_shards) || g.authoritative_player_shards < 1) fail('authoritative shard count invalid');
+if (!Number.isInteger(canonical.active_player_model) || canonical.active_player_model < 1 || g.authoritative_player_count !== canonical.active_player_model) fail('authoritative player count differs from canonical source');
+if (!Number.isInteger(g.authoritative_player_shards) || g.authoritative_player_shards < 1 || g.authoritative_player_shards !== canonical.runtime_player_shards) fail('authoritative shard count invalid');
 
 const layers = c.foundation_layers || {};
 for (const name of ['canonical_state','event_state_change','dependency_graph','football_projection','market','historical_evidence','decision','audit_provenance']) {

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {onRequestGet} from '../functions/api/live/splits.js';
+import {onRequestGet,preservePublished} from '../functions/api/live/splits.js';
 const originalFetch=globalThis.fetch,RealDate=Date;let now=Date.parse('2026-10-04T13:00Z');globalThis.Date=class extends RealDate{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}};
 const records=new Map();globalThis.caches={default:{async match(k){return records.get(k.url)?.clone();},async put(k,r){records.set(k.url,r.clone());}}};
 const row=(name,m,b)=>`<div class="tb-sodd"><div>${name}</div><div>100</div><div>${m}%</div><div>${b}%</div></div>`;
@@ -13,3 +13,27 @@ await onRequestGet(ctx);assert.equal(upstream.filter(u=>u.includes('draftkings')
 now=Date.parse('2026-10-04T17:01Z');await onRequestGet(ctx);assert.equal(upstream.filter(u=>u.includes('draftkings')).length,2,'no collection while games run');
 globalThis.fetch=originalFetch;globalThis.Date=RealDate;
 console.log('PASS: before-window suppression, two-page bounded collection, ticket/money parsing, same-slot cache, kickoff cutoff');
+
+const oldGame={away:'IND',home:'WSH',start_at:'2026-10-04T13:30Z',observed_at:'2026-10-04T05:44Z',moneyline:[{side:'IND',bets:68,money:52},{side:'WSH',bets:32,money:48}]};
+const restored=preservePublished(data,{games:[oldGame]});
+assert.deepEqual(restored.games.find(g=>g.away==='IND'),oldGame,'started game retains published values and original observation time');
+const updated={...oldGame,observed_at:'2026-10-04T12:00Z',moneyline:[{side:'IND',bets:69,money:53},{side:'WSH',bets:31,money:47}]};
+assert.deepEqual(preservePublished({games:[updated]},{games:[oldGame]}).games[0].moneyline,updated.moneyline);
+assert.equal(preservePublished({games:[]},{games:[oldGame,{...oldGame,start_at:'2026-10-11T13:30Z'}]}).games.length,2,'different weeks do not collide');
+// A populated live cache that has already lost IND must still be repaired from the bundled snapshot.
+ctx.env.ASSETS.fetch=async()=>new Response(JSON.stringify({schema_version:1,games:[oldGame]}));
+const healed=await (await onRequestGet(ctx)).json();
+assert.deepEqual(healed.games.find(g=>g.away==='IND'),oldGame);
+console.log('PASS: missing started games restored even with existing cache, timestamps preserved, newer snapshots win, separate event dates');
+const complete={...oldGame,spread:[{side:'IND',bets:45,money:68},{side:'WSH',bets:55,money:32}],total:[{side:'Over',bets:55,money:60},{side:'Under',bets:45,money:40}]};
+const partial={...updated,spread:[],total:[{side:'Over',bets:null,money:60},{side:'Under',bets:45,money:40}]};
+const retained=preservePublished({games:[partial]},{games:[complete]}).games[0];
+assert.deepEqual(retained.spread,complete.spread);
+assert.deepEqual(retained.total,complete.total);
+assert.deepEqual(retained.moneyline,updated.moneyline);
+assert.equal(retained.market_observed_at.spread,oldGame.observed_at);
+assert.equal(retained.market_observed_at.moneyline,updated.observed_at);
+const persisted=JSON.parse(JSON.stringify({games:[retained]}));
+assert.deepEqual(preservePublished({games:[]},persisted).games[0],retained,'a browser reload/empty server reply retains every saved market');
+assert.equal(preservePublished({games:[]},{games:{invalid:true}}).games.length,0);
+console.log('PASS: partial or invalid markets cannot erase published pairs; each market retains its own timestamp; persisted history survives empty refreshes');

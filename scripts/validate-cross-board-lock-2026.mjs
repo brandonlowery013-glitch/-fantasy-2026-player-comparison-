@@ -14,18 +14,20 @@ const marketBuilder = fs.readFileSync('scripts/build-market-value-board-2026.mjs
 const edgeRows = edge.players;
 const marketRows = market.board;
 
-assert(sot.active_player_model === 166, 'source of truth must declare 166 players');
+const active=Array.from({length:sot.runtime_player_shards},(_,i)=>read(`players${i}.json`)).flat();
+assert(active.length===sot.active_player_model&&uniq(active.map(p=>p.n)).size===sot.active_player_model,'active roster must match source of truth');
 assert(sot.runtime_player_shards === 14, 'source of truth must declare 14 runtime shards');
 assert(/^single 166-player active board(?:\b|\s|—|-)/.test(String(core.model || '')), 'canonical overlay is not the 166-player active board');
 const coreNames = Object.keys(core.players || {});
 assert(coreNames.length === 166 && uniq(coreNames).size === 166, 'canonical board must contain 166 unique players');
 
 for (const [label, doc, rows] of [['edge',edge,edgeRows],['market',market,marketRows]]) {
-  assert(doc.universe === 166, `${label} layer must declare universe 166`);
-  assert(Array.isArray(rows) && rows.length === 166, `${label} layer must contain 166 rows`);
+  const expected=label==='edge'?166:sot.active_player_model;
+  assert(doc.universe===expected, `${label} layer universe mismatch`);
+  assert(Array.isArray(rows) && rows.length === expected, `${label} layer must contain 166 rows`);
   const names = rows.map(x=>x.player);
-  assert(uniq(names).size === 166, `${label} layer contains duplicate player names`);
-  assert(names.every(n=>core.players[n]), `${label} layer contains a player outside canonical universe`);
+  assert(uniq(names).size === expected, `${label} layer contains duplicate player names`);
+  assert(names.every(n=>label==='edge'?core.players[n]:active.some(p=>p.n===n)), `${label} layer contains a player outside its canonical universe`);
   assert(coreNames.every(n=>names.includes(n)), `${label} layer is missing a canonical player`);
 }
 
@@ -67,7 +69,9 @@ for (const [rankField, prefixField] of [['pr','o'],['tp','tr']]) {
   }
 }
 
-const pending = edgeRows.filter(x=>x.market_adp == null).map(x=>x.player).sort();
+const added=marketRows.filter(r=>!core.players[r.player]);
+for(const r of added)assert(r.action==='PRICE PENDING'&&r.confidence==='PENDING'&&r.true_value_rank===(active.find(p=>p.n===r.player)?.tr??null)&&['market_adp','market_ecr','price_edge','projection_edge','ceiling_edge','role_edge','positional_edge','bust_downside','opportunity_score'].every(k=>r[k]==null),'new active player must not inherit invented historical ranks or market values');
+const pending = edgeRows.filter(x=>x.market_adp == null).map(x=>x.player).concat(added.map(x=>x.player)).sort();
 const declaredPending = [...(market.price_pending || [])].sort();
 assert(JSON.stringify(pending) === JSON.stringify(declaredPending), 'PRICE PENDING must exactly equal players without direct ADP');
 assert(marketRows.filter(x=>x.action==='PRICE PENDING').length === pending.length, 'PRICE PENDING action count mismatch');
@@ -91,7 +95,7 @@ assert(market.source === 'data/market/draft-edge-opportunity-screen-166.json', '
 
 const summary = {
   status:'STEP_4_CROSS_BOARD_VERIFICATION_LOCK_PASS',
-  universe:166,
+  universe:sot.active_player_model,
   canonical_players:coreNames.length,
   edge_players:edgeRows.length,
   market_players:marketRows.length,
