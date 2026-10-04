@@ -245,6 +245,7 @@ border-radius:6px;overflow:hidden}
 </div>
 
 <script src="runtime-central-time-2026.js"></script>
+<script src="reading-state.js"></script>
 <script>
 const PLAYERS=[];
 
@@ -358,7 +359,8 @@ function list(v){
   return String(v);
 }
 
-function renderSelectedGame(){
+function renderSelectedGame(){return window.CTD_READING.preserve(document.getElementById('gamesPage'),renderSelectedGameData);}
+function renderSelectedGameData(){
   const games=BET_FEED.games||[];
   const g=games[selectedGameIndex];
   if(!g){
