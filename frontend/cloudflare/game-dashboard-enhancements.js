@@ -54,14 +54,17 @@
   }
 
   function gameHero(){
-    const g=BET_FEED?.games?.[selectedGameIndex??0]||BET_FEED?.games?.[0];
-    const page=document.getElementById('gamesPage');if(!g||!page)return;
+    const g=BET_FEED?.games?.[selectedGameIndex??0];
+    const page=document.getElementById('gamesPage');if(!g||!page){document.getElementById('ctdMatchupHero')?.remove();return;}
     let hero=document.getElementById('ctdMatchupHero');
     if(!hero){hero=document.createElement('div');hero.id='ctdMatchupHero';hero.className='ctdMatchupHero';const title=document.getElementById('gameTitle');(title?.parentElement||page).insertBefore(hero,title?title.nextSibling:(title?.parentElement||page).firstChild)}
     const status=esc(g.status||'');
-    const scoreKnown=Number.isFinite(Number(g.away_score))&&Number.isFinite(Number(g.home_score));
+    const scoreKnown=g.state!=='pre'&&!(Date.parse(g.event_start)>Date.now())&&[g.away_score,g.home_score].every(score=>score!==null&&score!==undefined&&score!==''&&Number.isFinite(Number(score)));
     hero.innerHTML=`<div class="ctdMatchupSide"><img src="${logo(g.away_team)}" alt="${esc(teamName(g.away_team))} logo" loading="eager" referrerpolicy="no-referrer"><strong>${esc(teamName(g.away_team))}</strong><small>${esc(g.away_team)}</small></div><div class="ctdMatchupCenter"><b>${status}</b><span>${scoreKnown?`${esc(g.away_score)} — ${esc(g.home_score)}`:'VS'}</span></div><div class="ctdMatchupSide"><img src="${logo(g.home_team)}" alt="${esc(teamName(g.home_team))} logo" loading="eager" referrerpolicy="no-referrer"><strong>${esc(teamName(g.home_team))}</strong><small>${esc(g.home_team)}</small></div>`;
   }
+
+  const renderGameBeforeHero=renderSelectedGame;
+  renderSelectedGame=function(...args){const result=renderGameBeforeHero(...args);gameHero();return result;};
 
   function removeNarrative(){
     const summary=document.getElementById('gameSummary');if(summary)summary.style.display='none';

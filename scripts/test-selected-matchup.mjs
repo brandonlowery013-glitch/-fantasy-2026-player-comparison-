@@ -15,3 +15,12 @@ for(const g of [{away_team:'PIT',home_team:'CLE'},{away_team:'IND',home_team:'WS
 assert.match(code,/clearMarketDetail\(g\);if\(!g\|\|!feed/);
 assert.equal((code.match(/version!==requestVersion/g)||[]).length,2);
 console.log('PASS: team aliases, selected-team labels, stale market clearing and outdated response guards');
+
+const heroSource=fs.readFileSync('frontend/cloudflare/game-dashboard-enhancements.js','utf8');
+const hero={innerHTML:'',remove(){this.removed=true;}};
+const heroScope=vm.createContext({BET_FEED:{games:[{away_team:'IND',home_team:'WSH',away_score:6,home_score:6},{away_team:'ARI',home_team:'NYG',state:'pre',away_score:0,home_score:0}]},selectedGameIndex:0,document:{getElementById:id=>id==='ctdMatchupHero'?hero:{}},esc:String,logo:String,teamName:String,renderSelectedGame(){},Date});
+vm.runInContext(heroSource.slice(heroSource.indexOf('  function gameHero(){'),heroSource.indexOf('  function removeNarrative(){')),heroScope);
+heroScope.renderSelectedGame();assert.match(hero.innerHTML,/IND/);assert.match(hero.innerHTML,/6 — 6/);
+heroScope.selectedGameIndex=1;heroScope.renderSelectedGame();assert.match(hero.innerHTML,/ARI/);assert.doesNotMatch(hero.innerHTML,/IND|WSH|6 — 6/);assert.match(hero.innerHTML,/>VS</);
+heroScope.selectedGameIndex=99;heroScope.renderSelectedGame();assert(hero.removed);
+console.log('PASS: header logos and scores switch synchronously; scheduled games show VS and missing selections clear the header');
