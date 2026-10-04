@@ -302,7 +302,15 @@ function tickerCard(g,i){
   </button>`;
 }
 
+function orderGameFeed(){
+ const games=BET_FEED.games;if(!Array.isArray(games))return;
+ const selected=games[selectedGameIndex];
+ const time=g=>{const n=Date.parse(g.kickoff||g.event_start||g.start_at);return Number.isFinite(n)?n:Infinity;};
+ games.sort((a,b)=>time(a)-time(b)||String(a.away_team+'@'+a.home_team).localeCompare(String(b.away_team+'@'+b.home_team)));
+ if(selected)selectedGameIndex=games.indexOf(selected);
+}
 function renderTicker(){
+  orderGameFeed();
   const lane=document.getElementById('ctdGameTicker');
   const games=Array.isArray(BET_FEED.games)?BET_FEED.games:[];
   if(!games.length){

@@ -22,7 +22,7 @@
   function pregame(raw){return (raw?.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(raw.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at))}
   function snapshot(raw){const rows=pregame(raw);return rows.find(x=>x.book==='draftkings')||rows[0]}
   function pickWhy(kind,e,s,raw,g){
-    const rec=e?.recommendation;if(rec?.decision!=='PICK')return '';
+    const rec=e?.recommendation;if(!rec)return '';if(rec.decision!=='PICK'){if(kind!=='spread')return '';const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);return `<div class="ctdWhyPick"><b>SPREAD · No bet</b>${window.CTD_FORMATTED_WORK?.(work)||''}</div>`;}
     let side=null,marketLabel='';
     if(kind==='spread'){
       const home=String(rec.selection||'').startsWith(norm(g.home_team)+' ');side=home?e.side_a:e.side_b;
@@ -60,11 +60,10 @@
       const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent=r?.decision==='PICK'&&typeof r.probability_edge==='number'?`${(r.probability_edge*100).toFixed(1)} percentage points`:'';
     }
     const edge=document.getElementById('mlEdge');if(edge)edge.textContent=s.markets?.moneyline?.recommendation?.decision==='PICK'?pct(s.markets.moneyline.recommendation.probability_edge):'—';
-    let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('p');note.id='ctdPickContext';note.className='ctdPickContext';document.getElementById('spreadPick')?.closest('.panel')?.appendChild(note)}
+    let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('section');note.id='ctdPickContext';note.className='ctdPickContext panel';document.getElementById('spreadPick')?.closest('.grid3')?.insertAdjacentElement('afterend',note)}
     const why=['spread','total','moneyline'].map(kind=>pickWhy(kind,s.markets?.[kind],s,raw,g)).filter(Boolean).join('');
-    note.innerHTML=`<b>WHY WE LIKE THE PICK</b><br><span>Pregame forecast · ${esc(s.book)} · ${esc(date(s.captured_at))}. ${Date.parse(raw.kickoff)<=Date.now()?'This game has started. These are the picks saved before kickoff. ':''}“No bet” means we did not find enough value at the available price.</span>${why||'<div class="ctdWhyPick"><p>We did not recommend a bet at these prices.</p></div>'}`;
-    let ext=document.getElementById('ctdExternalContext');if(!ext){ext=document.createElement('div');ext.id='ctdExternalContext';ext.className='ctdExternalContext';note.insertAdjacentElement('afterend',ext)}
-    ext.innerHTML='<b>OTHER SOURCES</b><p>We have not attached a current outside betting report for this game. Our picks above come from our own forecast.</p>';
+    note.innerHTML=`<h3>OUR MATCHUP ASSESSMENT</h3><span>Pregame forecast · ${esc(s.book)} · ${esc(date(s.captured_at))}. ${Date.parse(raw.kickoff)<=Date.now()?'This game has started. These are the picks saved before kickoff. ':''}“No bet” means we did not find enough value at the available price.</span>${why||'<div class="ctdWhyPick"><p>We did not recommend a bet at these prices.</p></div>'}`;
+    document.getElementById('ctdExternalContext')?.remove();
   }
   function playerRows(d,team,categories){return (d?.player_stats||[]).filter(p=>norm(p.team)===norm(team)&&categories.includes(p.category))}
   function leaders(d,team,defense=false){
