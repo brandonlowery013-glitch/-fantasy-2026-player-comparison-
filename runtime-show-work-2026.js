@@ -102,7 +102,21 @@
     }
     return `<section class="showWork ctdFormattedWork"><h4>The forecast</h4><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${a?.sections?.length?(r.kind==='spread'?a.sections:[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join(''):`<h4>The matchup</h4><ul>${facts.slice(0,r.kind?facts.length:2).map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`}<h4>What this means for the pick</h4><p>${escape(a?.risk||r.reconciliation)}</p><p class="workVerdict"><b>${a?.risk?'Saved forecast: ':''}${escape(r.verdict)}</b></p><details><summary>Numbers and sources</summary><h4>The numbers</h4><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul>${a?`<p>${escape(r.reconciliation)}</p>${(a.comparisons||[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join('')}<h4>Recent form</h4><ul>${facts.map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`:''}<h4>Sources</h4><ul class="workSources">${sourceHtml}</ul></details></section>`;
   }
+  function gameMarketView(game,snapshot,now=Date.now()){
+    if(!snapshot||!Number.isFinite(Date.parse(game.kickoff||game.event_start))||Date.parse(game.kickoff||game.event_start)<=now)return snapshot;
+    const canon=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t),teams=[game.home_team,game.away_team].map(canon);
+    const unavailable=(game.context_evidence?.players||[]).filter(p=>{
+      if(p.position!=='QB')return false;
+      const role=p.signals?.find(s=>['role','qb_context'].includes(s.kind)&&contextCurrent(s,s.kind,now)&&s.evidence?.depth_rank===1&&teams.includes(canon(s.team||s.evidence?.team)));
+      const injury=p.signals?.find(s=>s.kind==='injury'&&contextCurrent(s,'injury',now)&&canon(s.team||s.evidence?.team)===canon(role?.team||role?.evidence?.team));
+      return role&&injury&&['out','inactive','injured reserve','ir','suspended','pup'].includes(String(injury.evidence?.status||'').toLowerCase().trim());
+    });
+    if(!unavailable.length)return snapshot;
+    const reason=`${unavailable.map(p=>p.player).join(' and ')} is listed out. Hold this game's bets until the starting-quarterback change has been reviewed.`;
+    return {...snapshot,markets:Object.fromEntries(Object.entries(snapshot.markets||{}).map(([kind,e])=>[kind,{...e,baseline_recommendation:e.baseline_recommendation||e.recommendation,recommendation:{decision:'WAIT',selection:null,confidence:null,reason},context_validation:{status:'HOLD',reason,checked_at:new Date(now).toISOString(),numeric_adjustment:0}}]))};
+  }
   function gameWork(game,snapshot,kind,now=Date.now()){
+    snapshot=gameMarketView(game,snapshot,now);
     const p=game.football_projection||{},m=snapshot?.market||{},e=snapshot?.markets?.[kind]||{},r=e.recommendation||{decision:'WAIT'};
     const a=e.side_a||{},b=e.side_b||{},chosen=String(r.selection||'').split(' ')[0],labelA=kind==='total'?'OVER':game.home_team,labelB=kind==='total'?'UNDER':game.away_team,isA=chosen===labelA?true:chosen===labelB?false:num(a.expected_value)!=null&&(num(b.expected_value)==null||a.expected_value>=b.expected_value),s=isA?a:b;
     const total=num(m.total),spread=num(m.home_spread),home=num(p.home_score_mean),away=num(p.away_score_mean);
@@ -133,6 +147,7 @@
     work.reader.reconciliation=baseline!=null&&adjusted!=null?`${kind==='total'?`The scoring matchup and rest move the total from ${fmt(baseline)} to ${fmt(adjusted)} points.`:`The scoring matchup and rest change the forecast from ${baseline>=0?game.home_team:game.away_team} winning by ${fmt(Math.abs(baseline))} to ${adjusted>=0?game.home_team:game.away_team} winning by ${fmt(Math.abs(adjusted))}.`} ${kind==='total'?`That leaves the projection ${fmt(Math.abs(edge||0))} points ${edge>=0?'above':'below'} the line.`:kind==='moneyline'?'The score distribution gives each team’s chance of winning.':'The final score forecast is what we compare with the spread.'} These effects are already included in the projection.`:'The pick uses the score forecast above. There is not enough verified evidence to assign an additional matchup adjustment.';
     work.reader.verdict=verdictText(r.decision,pick,s.conditional_win_probability,r.confidence,context.status==='COMPLETE');
     work.reader.limit=context.status==='COMPLETE'?null:'Current injury, workload or matchup reports are incomplete. No extra probability boost has been applied.';
+    if(e.context_validation?.status==='HOLD'){work.reader.reconciliation=e.context_validation.reason;work.reader.verdict=e.context_validation.reason;}
     return work;
   }
   function propStatKey(stat){return ({passing_yards:'pass_yards',passing_tds:'pass_tds',rushing_yards:'rush_yards'})[stat]||stat;}
@@ -195,5 +210,5 @@
     const median=key=>{const values=books.map(s=>num(s.market?.[key])).filter(x=>x!=null).sort((a,b)=>a-b);const n=values.length;return {count:n,value:n<2?null:n%2?values[(n-1)/2]:(values[n/2-1]+values[n/2])/2};};
     return {home_spread:median('home_spread'),total:median('total'),books:books.map(s=>({book:s.book,captured_at:s.captured_at,home_spread:num(s.market?.home_spread),total:num(s.market?.total)}))};
   }
-  root.CTD_SHOW_WORK={propStatKey,propStat,renderWork,humanTime,propAvailability,contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
+  root.CTD_SHOW_WORK={gameMarketView,propStatKey,propStat,renderWork,humanTime,propAvailability,contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
 })(globalThis);
