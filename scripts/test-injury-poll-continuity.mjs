@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {retainUnresolvedInjuries as merge} from '../lib/injury-poll-continuity.mjs';
+const old={player:'Starter',team:'TB',position:'QB',designation:'O',source:'injuries'};
+const prev={captured_at:'2026-10-01T12:00:00Z',players:[old]},now='2026-10-02T12:00:00Z';
+const missing=merge(prev,[],now);
+assert.equal(missing[0].designation,'O');assert.equal(missing[0].carried_forward,true);assert.equal(missing[0].last_seen_at,prev.captured_at);
+const cleared=merge(prev,[{...old,designation:'CLEARED'}],now);
+assert.equal(cleared.length,1);assert.equal(cleared[0].designation,'CLEARED');assert.equal(cleared[0].carried_forward,false);
+const suspension={...old,source:'roster',designation:'SSPD'};
+assert.equal(merge({...prev,players:[suspension]},[{...old,designation:'CLEARED'}],now).length,2,'Injury clearance must not clear a roster suspension');
+assert.equal(merge({players:[{...old,designation:'CLEARED'}]},[],now).length,0);
+assert.deepEqual(prev.players,[old]);
+const dated={...old,source_updated_at:prev.captured_at};
+assert.equal(merge({...prev,players:[dated]},[{...dated,designation:'CLEARED',source_updated_at:'2026-09-30T12:00:00Z'}],now)[0].designation,'O','Older clearance cannot supersede newer absence');
+console.log('PASS: missing injury rows retain adverse evidence; explicit same-source clearance replaces it; other-source restrictions persist; original state unchanged.');
