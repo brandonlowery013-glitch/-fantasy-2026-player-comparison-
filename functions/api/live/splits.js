@@ -1,17 +1,10 @@
 import {parseSplits,SOURCE} from '../../../frontend/cloudflare/lib/public-splits.mjs';
 import '../../../frontend/cloudflare/runtime-league-refresh-2026.js';
+import {preservePublished} from '../../../frontend/cloudflare/lib/splits-history.mjs';
+export {preservePublished};
 const headers={'content-type':'application/json; charset=utf-8','cache-control':'public, max-age=300','access-control-allow-origin':'*'};
 // Keep published game snapshots when the provider removes a game after kickoff.
 // The game's original observed_at remains unchanged.
-export function preservePublished(next,...previous){
- const key=g=>`${g.away === 'WAS' ? 'WSH' : g.away}@${g.home === 'WAS' ? 'WSH' : g.home}:${Date.parse(g.start_at)}`;
- const games=new Map();
- for(const feed of [...previous].reverse().concat(next))for(const g of feed?.games||[]){
-  if(!g.away||!g.home||!Number.isFinite(Date.parse(g.start_at))||!Number.isFinite(Date.parse(g.observed_at)))continue;
-  const prior=games.get(key(g));if(!prior||Date.parse(g.observed_at)>=Date.parse(prior.observed_at))games.set(key(g),g);
- }
- return {...next,schema_version:1,games:[...games.values()]};
-}
 const response=data=>new Response(JSON.stringify(data),{headers});
 async function read(url){const r=await fetch(url,{signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('Source unavailable');const text=await r.text();if(text.length>1500000)throw Error('Source too large');return text;}
 export async function onRequestGet({request,env,waitUntil}){

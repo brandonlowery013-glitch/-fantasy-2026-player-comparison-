@@ -2,6 +2,7 @@
  const base=new URL('.',document.currentScript.src),canon=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t);
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  let data=null,busy=false,lastFetch=0,market='moneyline';
+ const savedKey='ctd-published-splits-v1',historyModule=import(new URL('lib/splits-history.mjs',base));
  const markets={moneyline:'Moneyline',spread:'Spread',total:'Total'};
  function controls(){
   const ticker=document.getElementById('ctdGameTicker');if(!ticker)return;
@@ -29,11 +30,11 @@
    for(const [key,label] of [['bets','Consensus'],['money','Smart Money']]){
     block.innerHTML+=`<div class="ctdSplitMetric"><div class="ctdSplitValues"><b>${pair[0][key]}<small>%</small></b><span>${label}</span><b>${pair[1][key]}<small>%</small></b></div><div class="ctdSplitBar" role="img" aria-label="${esc(label+': '+labels[0]+' '+pair[0][key]+'%, '+labels[1]+' '+pair[1][key]+'%')}"><span class="ctdSideA" style="width:${pair[0][key]}%"></span><span class="ctdSideB" style="width:${pair[1][key]}%"></span></div></div>`;
    }
-   block.innerHTML+=`<div class="ctdSplitChecked">Checked ${esc(new Date(m.observed_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</div>`;
+   block.innerHTML+=`<div class="ctdSplitChecked">Checked ${esc(new Date(m.market_observed_at?.[market]||m.observed_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</div>`;
    card.append(block);
   });
  }
- async function load(){if(busy||document.hidden||Date.now()-lastFetch<300000)return;busy=true;lastFetch=Date.now();try{const local=['localhost','127.0.0.1'].includes(location.hostname),api=location.hostname.endsWith('.pages.dev')?'/api/live/splits':'https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev/api/live/splits';let r;try{r=await fetch(local?new URL('market-percentages.json',base):api,{cache:'no-store',signal:AbortSignal.timeout(15000)});}catch{}if(!r?.ok)r=await fetch(new URL('market-percentages.json',base),{cache:'no-store'});if(!r.ok)throw Error();const next=await r.json();if(next.schema_version===1&&Array.isArray(next.games))data=next;}catch{}finally{busy=false;render();}}
+ async function load(){if(busy||document.hidden||Date.now()-lastFetch<300000)return;busy=true;lastFetch=Date.now();try{const local=['localhost','127.0.0.1'].includes(location.hostname),api=location.hostname.endsWith('.pages.dev')?'/api/live/splits':'https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev/api/live/splits';let r;try{r=await fetch(local?new URL('market-percentages.json',base):api,{cache:'no-store',signal:AbortSignal.timeout(15000)});}catch{}if(!r?.ok)r=await fetch(new URL('market-percentages.json',base),{cache:'no-store'});if(!r.ok)throw Error();const next=await r.json();if(next.schema_version===1&&Array.isArray(next.games)){const {preservePublished}=await historyModule;let saved=null;try{saved=JSON.parse(localStorage.getItem(savedKey));}catch{}data=preservePublished(next,data,saved);try{localStorage.setItem(savedKey,JSON.stringify(data));}catch{}}}catch{}finally{busy=false;render();}}
  const originalTicker=renderTicker;renderTicker=function(){originalTicker();render();};
  const originalSelection=renderSelectedGame;renderSelectedGame=function(){originalSelection();render();};
  const style=document.createElement('style');style.textContent=`
