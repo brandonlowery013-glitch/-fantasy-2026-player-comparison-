@@ -16,6 +16,7 @@ on:
     paths:
       - 'admissions/**'
       - 'scripts/process-admissions.mjs'
+      - 'scripts/build-admission-package.mjs'
       - 'scripts/stage-admission-requests.mjs'
       - 'scripts/validate-admission-state.mjs'
       - 'scripts/test-admission-engine.mjs'
@@ -70,7 +71,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add admissions players*.json MODEL_SOURCE_OF_TRUTH.json guardrails/universe-change-manifest.json guardrails/admission-state-report.json guardrails/guardrail-report.json
+          git add admissions players*.json MODEL_SOURCE_OF_TRUTH.json guardrails/guardrails-config.json guardrails/universe-change-manifest.json guardrails/admission-state-report.json guardrails/guardrail-report.json
           git diff --cached --quiet && exit 0
           git commit -m "Complete canonical admission ${{ inputs.candidate_id }}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
