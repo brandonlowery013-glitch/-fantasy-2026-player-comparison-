@@ -47,7 +47,8 @@
     if(Number.isFinite(modelP)&&Number.isFinite(Number(fairP)))pieces.push(`We estimate a ${pct(modelP)} chance. The sportsbook price suggests ${pct(Number(fairP))} after removing its built-in margin.`);
     if(Number.isFinite(edge))pieces.push(`Our estimate is ${Math.abs(edge*100).toFixed(1)} percentage points ${edge>=0?'higher':'lower'}.`);
     if(Number.isFinite(ev))pieces.push(`At this price, the estimated average result is ${ev>=0?'+':'−'}$${Math.abs(ev*100).toFixed(2)} per $100 bet over many similar bets. This is not a guaranteed return.`);
-    return `<div class="ctdWhyPick"><b>${esc(kind.toUpperCase())} · ${esc(marketLabel)}</b><p>${esc(projection)} ${esc(pieces.join(' · '))}</p><small>${esc(rec.confidence||'')} confidence · ${esc(s.book)} · snapshot ${esc(date(s.captured_at))}</small></div>`;
+    const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);
+    return `<div class="ctdWhyPick"><b>${esc(kind.toUpperCase())} · ${esc(marketLabel)}</b>${window.CTD_FORMATTED_WORK?.(work)||`<p>${esc(projection)} ${esc(pieces.join(' · '))}</p>`}<small>${esc(s.book)} · ${esc(date(s.captured_at))}</small></div>`;
   }
   function modelPicks(g){
     const raw=marketGame(g),s=snapshot(raw);if(!s){const note=document.getElementById('ctdPickContext');if(note)note.textContent='No matching pregame snapshot has been published for this week and matchup.';for(const id of ['spreadPick','totalPick','mlPick']){const el=document.getElementById(id);if(el){el.textContent='Not published';el.title='Waiting for a matching pregame model snapshot';}}return;}
