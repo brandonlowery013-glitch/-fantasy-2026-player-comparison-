@@ -25,6 +25,15 @@ if(exists('data/sources/weekly-game-projection-engine-2026.json')&&read('data/so
 try{execFileSync(process.execPath,['scripts/test-injury-evidence.mjs'],{cwd:root,stdio:'pipe'});pass('personnel_availability_evidence','Stable identities, source-age expiry and injury precedence passed');}
 catch(e){block('personnel_availability_evidence',String(e.stderr||e.message));}
 
+try{execFileSync(process.execPath,['scripts/test-weekly-schedule-selection.mjs'],{cwd:root,stdio:'pipe'});pass('weekly_schedule_selection','Unfinished current-week retention and deployed schedule regression passed');}
+catch(e){block('weekly_schedule_selection',String(e.stderr||e.message));}
+
+try{execFileSync(process.execPath,['scripts/test-github-api-retry.mjs'],{cwd:root,stdio:'pipe'});pass('github_check_publication_retry','Transient failures retried; permanent errors and exhausted retries remain failures');}
+catch(e){block('github_check_publication_retry',String(e.stderr||e.message));}
+
+try{execFileSync(process.execPath,['scripts/test-guardrail-failure-publication.mjs'],{cwd:root,stdio:'pipe'});pass('guardrail_failure_candidate_identity','Only failed runs for the current open PR head can block its synthetic merge');}
+catch(e){block('guardrail_failure_candidate_identity',String(e.stderr||e.message));}
+
 pass('source_of_truth_count',String(authoritativePlayerCount));
 pass('source_of_truth_shards',String(authoritativePlayerShards));
 if(cfg.authoritative_player_count!=null&&Number(cfg.authoritative_player_count)!==authoritativePlayerCount) review('legacy_config_count',`non-authoritative guardrail config=${cfg.authoritative_player_count}, canonical=${authoritativePlayerCount}`);
