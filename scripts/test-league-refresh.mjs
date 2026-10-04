@@ -15,3 +15,5 @@ const winter=[{date:'2026-11-09T02:20:00Z',status:{type:{completed:false}}}];
 assert.equal(plan(winter,Date.parse('2026-11-08T16:30:00Z')).keys.length,1,'10:30 Central after DST');
 assert.deepEqual(plan([{date:'2026-10-05T00:20:00Z',status:{type:{completed:true}}}],Date.parse('2026-10-05T05:15:00Z')).keys,['20261004:final:night']);
 console.log('PASS: Central time, kickoff cutoff, final-only batches, overtime, off days and DST');
+
+assert.equal(plan([{date:'2026-10-04T13:30:00Z',status:{type:{completed:false}}},...games],Date.parse('2026-10-04T15:30:00Z')).keys.length,1,'London game must not suppress the 10:30 Central pregame window');

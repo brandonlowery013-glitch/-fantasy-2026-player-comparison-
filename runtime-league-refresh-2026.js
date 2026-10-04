@@ -9,7 +9,8 @@
   const priorKeys=prior.length&&prior.every(g=>g.status?.type?.completed===true)?[`${gameDay(prior[0])}:final:night`]:[];
   const priorRunning=prior.some(g=>g.status?.type?.completed!==true);
   if(!games.length)return {day,keys:priorKeys,checkScores:priorRunning};
-  const first=Math.min(...games.map(g=>Date.parse(g.date)));
+  const regular=games.filter(g=>{const c=central(g.date);return Number(c.hour)*60+Number(c.minute)>=630;});
+  const first=Math.min(...(regular.length?regular:games).map(g=>Date.parse(g.date)));
   if(now<first)return {day,keys:minute>=630?[`${day}:pregame:${Math.floor(minute/5)}`]:[],checkScores:false};
   const groups=new Map();for(const g of games){const h=Number(central(g.date).hour),slot=h<14?'noon':h<18?'afternoon':'night';if(!groups.has(slot))groups.set(slot,[]);groups.get(slot).push(g);}
   const keys=[...groups].filter(([,gs])=>gs.every(g=>g.status?.type?.completed===true)).map(([slot])=>`${day}:final:${slot}`);
