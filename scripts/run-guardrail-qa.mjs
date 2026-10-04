@@ -27,6 +27,14 @@ catch(e){block('personnel_availability_evidence',String(e.stderr||e.message));}
 
 try{execFileSync(process.execPath,['scripts/validate-admission-state.mjs'],{cwd:root,stdio:'pipe'});pass('canonical_admission_state','Every accepted admission is complete and immutable package hashes match');}
 catch(e){block('canonical_admission_state',String(e.stdout||e.stderr||e.message));}
+try{execFileSync(process.execPath,['scripts/test-weekly-schedule-selection.mjs'],{cwd:root,stdio:'pipe'});pass('weekly_schedule_selection','Unfinished current-week retention and deployed schedule regression passed');}
+catch(e){block('weekly_schedule_selection',String(e.stderr||e.message));}
+
+try{execFileSync(process.execPath,['scripts/test-github-api-retry.mjs'],{cwd:root,stdio:'pipe'});pass('github_check_publication_retry','Transient failures retried; permanent errors and exhausted retries remain failures');}
+catch(e){block('github_check_publication_retry',String(e.stderr||e.message));}
+
+try{execFileSync(process.execPath,['scripts/test-guardrail-failure-publication.mjs'],{cwd:root,stdio:'pipe'});pass('guardrail_failure_candidate_identity','Only failed runs for the current open PR head can block its synthetic merge');}
+catch(e){block('guardrail_failure_candidate_identity',String(e.stderr||e.message));}
 
 pass('source_of_truth_count',String(authoritativePlayerCount));
 pass('source_of_truth_shards',String(authoritativePlayerShards));
