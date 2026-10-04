@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const context={Intl,Date};vm.runInNewContext(fs.readFileSync('runtime-central-time-2026.js','utf8'),context);
+const {kickoff,status}=context.CTD_TIME;
+assert.match(kickoff('2026-10-04T13:30:00Z'),/8:30 AM CT$/);
+assert.match(kickoff('2026-10-04T17:00:00Z'),/12:00 PM CT$/);
+assert.match(kickoff('2026-12-06T19:00:00Z'),/1:00 PM CT$/);
+assert.match(kickoff('2026-03-08T07:30:00Z'),/1:30 AM CT$/);
+assert.match(kickoff('2026-03-08T08:30:00Z'),/3:30 AM CT$/);
+assert.match(status({date:'2026-10-04T17:00:00Z',status:{type:{state:'pre',shortDetail:'10/4 - 1:00 PM EDT'}}}),/12:00 PM CT$/);
+assert.equal(status({state:'in',event_start:'2026-10-04T17:00:00Z',status:'3rd 5:12'}),'3rd 5:12');
+assert.equal(status({state:'post',status:'Final'}),'Final');assert.equal(status({state:'pre',status:'Postponed',date:'2026-10-04T17:00:00Z'}),'Postponed');
+assert.equal(kickoff('2026-10-04T17:00:00'),'Start time unavailable');assert.equal(kickoff(null),'Start time unavailable');
+console.log('PASS: CT kickoff, winter/summer, DST, provider Eastern text, live/final preservation and ambiguous dates');

@@ -259,6 +259,7 @@ border-radius:6px;overflow:hidden}
 </div>
 
 <!-- BEGIN SHARED SHOW WORK -->
+<script src="runtime-central-time-2026.js"></script>
 <script>
 /* Shared by the visible interface and Node builders. No collection or model fitting. */
 (function(root){
@@ -536,7 +537,7 @@ function score(g,side){
 function spread(g){return first(g,['spread','current_spread','market_spread','line'])}
 function total(g){return first(g,['total','current_total','market_total','over_under','ou'])}
 function edge(g){return first(g,['model_edge','edge','edge_pct'])}
-function status(g){return first(g,['status','game_status','state','clock','kickoff','start_time'])||'Scheduled'}
+function status(g){return CTD_TIME.status(g)}
 
 function tickerCard(g,i){
   const a=team(g,'away'),h=team(g,'home'),as=score(g,'away'),hs=score(g,'home');
@@ -879,7 +880,7 @@ async function loadFeed(){
         consensus:CTD_SHOW_WORK.marketConsensus(snaps),
         show_work:Object.fromEntries(['spread','total','moneyline'].map(kind=>[kind,CTD_SHOW_WORK.gameWork(g,dk,kind)])),
         event_id:gameId, away_team:away, home_team:home, event_start:g.kickoff,
-        status:new Date(g.kickoff).toLocaleString([], {weekday:'short',hour:'numeric',minute:'2-digit'}),
+        status:CTD_TIME.kickoff(g.kickoff),
         spread:Number.isFinite(hs)?`${home} ${hs>0?'+':''}${hs}`:null,
         total:m.total??null,
         moneyline:(m.home_moneyline!=null||m.away_moneyline!=null)?`${home} ${m.home_moneyline??'—'} / ${away} ${m.away_moneyline??'—'}`:null,
