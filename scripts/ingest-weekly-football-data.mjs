@@ -1,5 +1,6 @@
 import {resolveAvailability} from '../lib/injury-evidence.mjs';
 import {completeWeekSchedule} from '../lib/complete-week-schedule.mjs';
+import {chooseWeek, providerGameFinal} from '../lib/weekly-schedule-selection.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -46,7 +47,7 @@ function espnEventsToGames(payload,forcedWeek=null){
     const type=Number(e.season?.type??payload.season?.type??2);
     const start=e.date||comp.date||null;
     if(season!==2026||type!==2||!Number.isInteger(week)||!teams.away||!teams.home||parseTime(start)==null)continue;
-    out.push({season,week,away_team:teams.away,home_team:teams.home,event_start:new Date(parseTime(start)).toISOString(),event_id:String(e.id||''),source:contract.schedule_source.automated_feed_name});
+    out.push({season,week,away_team:teams.away,home_team:teams.home,event_start:new Date(parseTime(start)).toISOString(),event_id:String(e.id||''),completed:providerGameFinal(e.status?.type||comp.status?.type),source:contract.schedule_source.automated_feed_name});
   }
   return out;
 }
@@ -86,15 +87,21 @@ async function fetchScheduleCandidates(now,forcedWeek){
 }
 
 async function fetchSchedule(now,forcedWeek){
-  return completeWeekSchedule({forcedWeek,discover:()=>fetchScheduleCandidates(now,null),chooseWeek:games=>chooseWeek(games,now,null),fetchWeek:week=>fetchScheduleCandidates(now,week)});
-}
-
-function chooseWeek(games,now,forced){
-  if(forced!=null){const w=Number(forced);if(Number.isInteger(w)&&w>=1&&w<=18)return w;throw new Error(`Invalid NFL_WEEK ${forced}`);}
-  const future=games.filter(g=>parseTime(g.event_start)>=now).sort((a,b)=>parseTime(a.event_start)-parseTime(b.event_start));
-  if(future.length)return Number(future[0].week);
-  const past=games.filter(g=>parseTime(g.event_start)<now).sort((a,b)=>parseTime(b.event_start)-parseTime(a.event_start));
-  return past.length?Number(past[0].week):null;
+  // Recheck the complete deployed week before discovery. A capped season feed
+  // must not hide its last unfinished game and advance the deployed page.
+  const currentPath='data/calibration/weekly-event-schedule-2026.json';
+  const current=fs.existsSync(path.join(root,currentPath))?read(currentPath):null;
+  const currentWeek=current?.season===2026?Number(current.week):null;
+  const validCurrent=Number.isInteger(currentWeek)&&currentWeek>=1&&currentWeek<=18;
+  const discover=async()=>{
+    if(validCurrent){
+      const currentGames=await fetchScheduleCandidates(now,currentWeek);
+      if(!currentGames.length)throw new Error(`Unable to verify current week ${currentWeek}`);
+      if(currentGames.some(g=>g.completed!==true))return currentGames;
+    }
+    return fetchScheduleCandidates(now,null);
+  };
+  return completeWeekSchedule({forcedWeek,discover,chooseWeek:games=>chooseWeek(games,now,null,validCurrent?currentWeek:null),fetchWeek:week=>fetchScheduleCandidates(now,week)});
 }
 
 function buildContext(players,week,nowIso){
@@ -135,7 +142,7 @@ async function main(){
   for(const g of weekGames){
     const start=parseTime(g.event_start);if(start==null)continue;
     const id=`2026-W${week}-${g.away_team}-${g.home_team}`;
-    gameOut[id]={week,away_team:g.away_team,home_team:g.home_team,event_start:new Date(start).toISOString(),verified:true,source:g.source||contract.schedule_source.automated_feed_name,authoritative_cross_check:contract.schedule_source.authoritative_cross_check,event_id:g.event_id||null,players:players.filter(p=>p.team===g.away_team||p.team===g.home_team).map(p=>p.name)};
+    gameOut[id]={week,away_team:g.away_team,home_team:g.home_team,event_start:new Date(start).toISOString(),verified:true,source:g.source||contract.schedule_source.automated_feed_name,authoritative_cross_check:contract.schedule_source.authoritative_cross_check,event_id:g.event_id||null,completed:g.completed===true,players:players.filter(p=>p.team===g.away_team||p.team===g.home_team).map(p=>p.name)};
   }
   const schedule={schema_version:'1.3.0',season:2026,week,status:Object.keys(gameOut).length?'LIVE_SCHEDULE_INGESTED':'AWAITING_VERIFIED_EVENTS',generated_at:nowIso,sportsbook_inputs_used:false,games:gameOut};
   const context=buildContext(players,week,nowIso),blocked=[...context.blocked];

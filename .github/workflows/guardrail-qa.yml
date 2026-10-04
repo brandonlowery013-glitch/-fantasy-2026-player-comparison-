@@ -158,9 +158,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          source scripts/github-api-retry.sh
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           for CHECK_SHA in "$TARGET_SHA" "$PR_HEAD_SHA"; do
-            gh api --method POST "repos/${GITHUB_REPOSITORY}/check-runs" \
+            github_api_retry --method POST "repos/${GITHUB_REPOSITORY}/check-runs" \
               -f name='guardrail-qa' \
               -f head_sha="$CHECK_SHA" \
               -f status='completed' \
@@ -168,7 +169,7 @@ jobs:
               -f details_url="$RUN_URL" \
               -f output[title]='Guardrail QA passed' \
               -f output[summary]="Full Guardrail QA passed against protected synthetic merge ${TARGET_SHA}; required check published for ${CHECK_SHA}." >/dev/null
-            gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${CHECK_SHA}" \
+            github_api_retry --method POST "repos/${GITHUB_REPOSITORY}/statuses/${CHECK_SHA}" \
               -f state='success' \
               -f context='guardrail-qa' \
               -f target_url="$RUN_URL" \
