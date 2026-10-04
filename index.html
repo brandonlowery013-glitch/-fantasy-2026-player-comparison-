@@ -219,14 +219,14 @@ border-radius:6px;overflow:hidden}
 <section class="page" id="playerPage">
   <div class="categoryWrap">
     <h2>PLAYER BOARD</h2>
-    <div class="categoryIntro">Season-long rankings and target buckets. These labels organize the current board; they do not change the underlying ranks.</div>
+    <div class="categoryIntro" id="playerSourceState">Loading the authoritative player board…</div>
     <div class="categoryTabs" id="seasonTabs">
       <button class="active" data-season="board">FULL BOARD</button>
       <button data-season="sleepers">SLEEPERS</button>
       <button data-season="breakouts">BREAKOUTS</button>
-      <button data-season="values">VALUES</button>
+      <button data-season="values">ESTABLISHED ROLE</button>
       <button data-season="busts">BUSTS / FADES</button>
-      <button data-season="overpriced">OVERPRICED</button>
+      <button data-season="overpriced">ROLE UNCERTAINTY</button>
       <button data-season="upside">HIGH UPSIDE</button>
     </div>
     <div class="filterBar"><label>Find a player<input id="boardSearch" type="search" placeholder="Player or team"></label><label>Position<select id="boardPosition"><option value="">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select></label></div><p id="boardCount" class="dataNote" aria-live="polite"></p><div id="seasonCategoryMount"></div>
@@ -358,7 +358,8 @@ const read=p=>(p.opportunity&&p.opportunity.qaRead)||p.price||'FAIR';
 
 let BET_FEED={status:'WAITING_FOR_CURRENT_WEEK',games:[],props:[],parlays:[]};
 let selectedGameIndex=0;
-let WORK_INPUTS={},WORK_GAMES={};
+let WORK_INPUTS={},WORK_GAMES={};let PLAYER_SOURCE_READY=false;
+
 function workHtml(work){
  if(!work)return '<section class="showWork"><p>Matching model explanation unavailable.</p></section>';
  const math=work.math||[],paragraphs=work.paragraphs||[],context=work.context||{};
@@ -637,27 +638,27 @@ document.querySelectorAll('[data-bet-view]').forEach(btn=>btn.addEventListener('
 }));
 
 const marketRead=p=>(p.opportunity&&p.opportunity.qaRead)||p.price||'FAIR';
-const healthy=p=>!p.injuryStatus?.active;
+const healthy=p=>!p.injuryStatus?.active&&(p.availability??0)>=7;
 const adpEdge=p=>(typeof p.adp==='number'&&typeof p.overall==='number')?p.adp-p.overall:0;
 function seasonGroups(){
   return {
     board:[...PLAYERS].sort((a,b)=>a.overall-b.overall),
-    sleepers:PLAYERS.filter(p=>healthy(p)&&adpEdge(p)>=12&&(p.ceiling||0)>=7.8).sort((a,b)=>adpEdge(b)-adpEdge(a)),
+    sleepers:PLAYERS.filter(p=>healthy(p)&&(p.role||0)>=7&&(p.ceiling||0)>=7.8).sort((a,b)=>a.overall-b.overall),
     breakouts:PLAYERS.filter(p=>healthy(p)&&(p.ceiling||0)>=8.5&&(p.role||0)>=8&&(p.overall||999)>18).sort((a,b)=>(b.ceiling+b.role)-(a.ceiling+a.role)),
-    values:PLAYERS.filter(p=>marketRead(p)==='BUY'||adpEdge(p)>=10).sort((a,b)=>adpEdge(b)-adpEdge(a)),
-    busts:PLAYERS.filter(p=>marketRead(p)==='FADE'||((p.adp||999)<(p.overall||0)-10)||((p.availability||10)<6.5)).sort((a,b)=>(a.adp??999)-(b.adp??999)),
-    overpriced:PLAYERS.filter(p=>['REACH','FADE'].includes(marketRead(p))).sort((a,b)=>((a.adp??999)-a.overall)-((b.adp??999)-b.overall)),
+    values:PLAYERS.filter(p=>healthy(p)&&(p.role||0)>=8).sort((a,b)=>a.overall-b.overall),
+    busts:PLAYERS.filter(p=>(p.availability??10)<6.5).sort((a,b)=>a.overall-b.overall),
+    overpriced:PLAYERS.filter(p=>p.role==null||p.role<7).sort((a,b)=>a.overall-b.overall),
     upside:PLAYERS.filter(p=>(p.ceiling||0)>=8.7).sort((a,b)=>(b.ceiling||0)-(a.ceiling||0))
   };
 }
 function renderPlayerRows(rows,limit=30){
- return `<div class="categoryGrid">${rows.slice(0,limit).map(p=>`<div class="categoryCard"><h3>#${p.overall} · ${esc(p.pos)} · ${esc(p.team)}</h3><div class="catPlayer"><b>${esc(p.name)}</b><span>${esc(marketRead(p))}</span></div><div class="catPlayer"><span>True Value</span><b>#${p.trueRank}</b></div><div class="catPlayer"><span>ADP</span><b>${p.adp??'—'}</b></div><div class="catPlayer"><span>Ceiling / Role</span><b>${p.ceiling??'—'} / ${p.role??'—'}</b></div><details><summary>Consensus, news and model impact</summary>${playerDetails(p)}</details></div>`).join('')}</div>`;
+ return `<div class="categoryGrid">${rows.slice(0,limit).map(p=>`<div class="categoryCard"><h3>#${p.overall} · ${esc(p.pos)} · ${esc(p.team)}</h3><div class="catPlayer"><b>${esc(p.name)}</b><span>${esc(marketRead(p))}</span></div><div class="catPlayer"><span>True Value</span><b>#${p.trueRank}</b></div><div class="catPlayer"><span>Ceiling / Role</span><b>${p.ceiling??'—'} / ${p.role??'—'}</b></div><details><summary>Consensus, news and model impact</summary>${playerDetails(p)}</details></div>`).join('')}</div>`;
 }
 function statusText(x){return ({SHADOW_ONLY:'Preview — not approved',REVIEW_REQUIRED:'Needs review',CURRENT:'Current',PROJECTION_ONLY:'Projection only'})[x]||String(x||'Needs review').replaceAll('_',' ').toLowerCase();}
 function numberText(x){return typeof x==='number'&&Number.isFinite(x)?x.toFixed(1):'Unavailable';}
 function playerDetails(p){
  const c=p.consensus||{},news=p.newsFeed||[],injury=currentInput('context')?.players?.[p.name]?.signals?.injury;
- return `<p><b>Season consensus (PPR)</b>: ${numberText(c.normalizedPPR)} points · Our season median: ${numberText(c.ourMedianPPR)}</p><p class="dataNote">${esc(c.source||'Consensus source unavailable')} · Captured ${esc(c.captured||'date unavailable')}. This is a season snapshot, not a live weekly consensus.</p><h4>News and availability</h4>${injury?`<p><b>Latest attached injury evidence:</b> ${esc(injury.evidence?.status||injury.evidence?.game_status||'Not confirmed')} · ${esc(statusText(injury.status))}</p><p class="dataNote">${esc(injury.source)} · Captured ${esc(injury.captured_at||'date unavailable')}. Report updated ${esc(injury.evidence?.source_updated_at||'date unavailable')}. A captured report does not confirm game availability.</p>`:''}${news.length?news.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,3).map(n=>`<p><b>${esc(n.headline)}</b><br>${esc(n.summary)}<br><span class="dataNote">${esc(n.source)} · ${esc(n.date)}</span></p>`).join(''):'<p>No player-specific news attached. This does not confirm a healthy or unchanged status.</p>'}<p>Model impact: ${esc(p.newsMaterialityReview?.rationale||p.currentModelImpact?.projectionStatus||'Review unavailable')}</p>`;
+ return `<p><b>Season consensus (PPR)</b>: ${numberText(c.normalizedPPR)} points · Our season median: ${numberText(c.ourMedianPPR)}</p><p class="dataNote">${esc(c.source||'Consensus source unavailable')} · Captured ${esc(c.captured||'date unavailable')}. This is a season snapshot, not a live weekly consensus.</p><h4>News and availability</h4>${injury?`<p><b>Latest attached injury evidence:</b> ${esc(injury.evidence?.status||injury.evidence?.game_status||'Not confirmed')} · ${esc(statusText(injury.status))}</p><p class="dataNote">${esc(injury.source)} · Captured ${esc(injury.captured_at||'date unavailable')}. Report updated ${esc(injury.evidence?.source_updated_at||'date unavailable')}. A captured report does not confirm game availability.</p>`:''}${news.length?news.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,3).map(n=>`<p><b>${esc(n.headline)}</b><br>${esc(n.summary)}<br><span class="dataNote">${esc(n.source)} · ${esc(n.date)}</span></p>`).join(''):'<p>No player-specific news attached. This does not confirm a healthy or unchanged status.</p>'}<p>Model impact: ${esc(p.currentModelImpact?.decision?.reason||p.currentModelImpact?.reason||p.newsMaterialityReview?.rationale||p.currentModelImpact?.projectionStatus||'Review unavailable')}</p>`;
 }
 function projectionTable(p){
  const pp=currentInput('projections')?.players?.[p.name];
@@ -665,11 +666,12 @@ function projectionTable(p){
  return `<p class="dataNote">Week ${esc(BET_FEED.week)} · ${esc(statusText(pp.status))} · Season rank #${esc(p.overall)}</p><div class="tableScroll"><table class="statTable"><thead><tr><th>Stat</th><th>Projection</th><th>Status</th></tr></thead><tbody>${Object.entries(pp.projections||{}).map(([stat,v])=>`<tr><td>${esc(stat.replaceAll('_',' '))}</td><td>${numberText(v.mean)}</td><td>${esc(statusText(v.status))}</td></tr>`).join('')}</tbody></table></div>`;
 }
 function renderCompare(){
+ if(!PLAYER_SOURCE_READY){document.getElementById('compareRead').innerHTML='<p>Current player source is loading or unavailable.</p>';document.getElementById('compareMount').innerHTML='';return;}
  const [a,b]=['compareOne','compareTwo'].map(id=>PLAYERS.find(p=>p.name===document.getElementById(id).value));
  const inputs=currentInput('projections')?.players||{},ap=inputs[a?.name]?.projections||{},bp=inputs[b?.name]?.projections||{};
  const common=Object.keys(ap).filter(k=>typeof ap[k].mean==='number'&&typeof bp[k]?.mean==='number');
  document.getElementById('compareRead').innerHTML=a?.name===b?.name?'<p>Select two different players to compare.</p>':`<h3>WEEKLY COMPARISON</h3>${common.length?`<p>${common.map(k=>{const delta=ap[k].mean-bp[k].mean;return `${esc(k.replaceAll('_',' '))}: ${esc(delta>=0?a.name:b.name)} projects ${Math.abs(delta).toFixed(1)} more`;}).join(' · ')}.</p><p class="dataNote">These are individual stat differences, not a fantasy-points total or win probability. Missing scoring categories are not treated as zero. Review shadow status, availability and context before a start/sit choice.</p>`:'<p>No matching-week comparable stat projections are available for these players.</p>'}`;
- document.getElementById('compareMount').innerHTML=['compareOne','compareTwo'].map(id=>PLAYERS.find(p=>p.name===document.getElementById(id).value)).filter(Boolean).map(p=>`<article class="panel"><h3>${esc(p.name)}</h3><p>${esc(p.pos)} · ${esc(p.team)}</p><p>Season rank #${esc(p.overall)} · True value #${esc(p.trueRank)} · ADP ${esc(p.adp??'Unavailable')}</p>${projectionTable(p)}${playerDetails(p)}</article>`).join('');
+ document.getElementById('compareMount').innerHTML=['compareOne','compareTwo'].map(id=>PLAYERS.find(p=>p.name===document.getElementById(id).value)).filter(Boolean).map(p=>`<article class="panel"><h3>${esc(p.name)}</h3><p>${esc(p.pos)} · ${esc(p.team)}</p><p>Season rank #${esc(p.overall)} · True value #${esc(p.trueRank)}</p>${projectionTable(p)}${playerDetails(p)}</article>`).join('');
 }
 for(const [i,id]of ['compareOne','compareTwo'].entries()){const el=document.getElementById(id);el.innerHTML=PLAYERS.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${esc(p.name)}">${esc(p.name)} · ${esc(p.pos)}</option>`).join('');el.value=PLAYERS[i].name;el.addEventListener('change',renderCompare);}
 for(const id of ['weeklySearch','weeklyPosition'])document.getElementById(id).addEventListener('input',()=>renderWeekly());
@@ -677,7 +679,7 @@ for(const id of ['boardSearch','boardPosition'])document.getElementById(id).addE
 let seasonMode='board';
 function renderSeason(){
   const groups=seasonGroups(), rows=groups[seasonMode]||groups.board;
-  const q=document.getElementById('boardSearch').value.toLowerCase(),pos=document.getElementById('boardPosition').value;const filtered=rows.filter(p=>(!pos||p.pos===pos)&&(`${p.name} ${p.team}`).toLowerCase().includes(q));document.getElementById('boardCount').textContent=`${filtered.length} players · Season-long rankings`;document.getElementById('seasonCategoryMount').innerHTML=renderPlayerRows(filtered,filtered.length);
+  const q=document.getElementById('boardSearch').value.toLowerCase(),pos=document.getElementById('boardPosition').value;const filtered=rows.filter(p=>(!pos||p.pos===pos)&&(`${p.name} ${p.team}`).toLowerCase().includes(q));document.getElementById('boardCount').textContent=PLAYER_SOURCE_READY?`${filtered.length} players · Season-long rankings`:'Current player source unavailable';document.getElementById('seasonCategoryMount').innerHTML=PLAYER_SOURCE_READY?renderPlayerRows(filtered,filtered.length):'<p>Current player board unavailable. Historical embedded rankings are not being shown as current.</p>';
 }
 document.getElementById('seasonTabs')?.addEventListener('click',e=>{
  const b=e.target.closest('[data-season]');if(!b)return;seasonMode=b.dataset.season;
@@ -687,15 +689,16 @@ document.getElementById('seasonTabs')?.addEventListener('click',e=>{
 function weeklyGroups(){
   const current=PLAYERS.filter(p=>p.team&&p.pos&&['QB','RB','WR','TE'].includes(p.pos));
   const starts=current.filter(p=>healthy(p)&&(p.overall||999)<=48&&(p.role||0)>=7.5).sort((a,b)=>a.overall-b.overall);
-  const fades=current.filter(p=>p.injuryStatus?.active||marketRead(p)==='FADE'||((p.availability||10)<6.5)).sort((a,b)=>(a.overall||999)-(b.overall||999));
-  const sleepers=current.filter(p=>healthy(p)&&adpEdge(p)>=12&&(p.ceiling||0)>=7.8&&(p.overall||999)>35).sort((a,b)=>adpEdge(b)-adpEdge(a));
-  const busts=current.filter(p=>marketRead(p)==='REACH'||marketRead(p)==='FADE'||((p.adp||999)<(p.overall||999)-12)).sort((a,b)=>(a.adp??999)-(b.adp??999));
+  const fades=current.filter(p=>p.injuryStatus?.active||((p.availability||10)<6.5)).sort((a,b)=>(a.overall||999)-(b.overall||999));
+  const sleepers=current.filter(p=>healthy(p)&&(p.role||0)>=7&&(p.ceiling||0)>=7.8&&(p.overall||999)>35).sort((a,b)=>a.overall-b.overall);
+  const busts=current.filter(p=>(p.availability??10)<7||(p.role??10)<6).sort((a,b)=>a.overall-b.overall);
   const waivers=current.filter(p=>healthy(p)&&(p.overall||999)>=75&&(p.overall||999)<=145&&(p.role||0)>=7.2&&(p.ceiling||0)>=7.3).sort((a,b)=>(b.role+b.ceiling)-(a.role+a.ceiling));
   const matchups=current.filter(p=>healthy(p)&&(p.environment||0)>=8.8&&(p.role||0)>=8.2).sort((a,b)=>(b.environment+b.role)-(a.environment+a.role));
   return {starts,fades,sleepers,busts,waivers,matchups};
 }
 let weeklyMode='projections';
 function renderWeekly(){
+ if(!PLAYER_SOURCE_READY){document.getElementById('weeklyCategoryMount').innerHTML='<p>Current player source is loading or unavailable.</p>';return;}
   const candidates=weeklyMode==='projections'?PLAYERS.slice().sort((a,b)=>a.overall-b.overall):weeklyGroups()[weeklyMode]||[];const q=document.getElementById('weeklySearch').value.toLowerCase(),pos=document.getElementById('weeklyPosition').value;const rows=candidates.filter(p=>(!pos||p.pos===pos)&&(`${p.name} ${p.team}`).toLowerCase().includes(q));document.getElementById('weeklyCount').textContent=`${rows.length} players · Ordered by season rank, with matching-week projections below`;
   const note=weeklyMode==='matchups'?'<div class="categoryIntro">These are high-environment weekly targets from the current football model. A sportsbook/game-line disagreement is shown separately under Games and is not treated as a fantasy matchup edge by itself.</div>':'';
   const projections=currentInput('projections');
@@ -706,6 +709,21 @@ document.getElementById('weeklyTabs')?.addEventListener('click',e=>{
  document.querySelectorAll('[data-weekly]').forEach(x=>x.classList.toggle('active',x===b));renderWeekly();
 });
 renderSeason();renderWeekly();renderCompare();
+async function loadPlayers(){
+ try{
+ const get=async path=>{const r=await fetch(`${RAW}${path}?ts=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw Error('Player source unavailable');return r.json();};
+ const truth=await get('MODEL_SOURCE_OF_TRUTH.json');
+ if(truth.season!==2026||typeof truth.current_update_layer!=='string'||!/^[a-zA-Z0-9._-]+\.json$/.test(truth.current_update_layer))throw Error('Unverified player source');
+ if(!Number.isInteger(truth.runtime_player_shards)||truth.runtime_player_shards<1||truth.runtime_player_shards>30)throw Error('Invalid player shard contract');const [patch,...shards]=await Promise.all([get(truth.current_update_layer),...Array.from({length:truth.runtime_player_shards},(_,i)=>get(`players${i}.json`))]);const canonical=new Map(shards.flat().map(x=>[x.n,x]));for(const [name,patchPlayer]of Object.entries(patch.players||{}))canonical.set(name,{...canonical.get(name),...patchPlayer});const entries=[...canonical];
+ if(entries.length!==truth.active_player_model||entries.some(([name,x])=>!name||!x.p||!x.t||typeof x.o!=='number'))throw Error('Incomplete authoritative player board');
+ const prior=new Map(PLAYERS.map(p=>[p.name,p]));
+ PLAYERS.splice(0,PLAYERS.length,...entries.map(([name,x])=>{const old=prior.get(name),headlines=x.newsFeedState?.latest_headlines||[];return {name,pos:x.p,team:x.t,overall:x.o,posRank:x.pr,trueRank:x.tr,truePosRank:x.tp,score:x.s,production:x.pd,ceiling:x.ce,role:x.r,environment:x.e,availability:x.a,reliability:x.rl,sustainability:x.su,price:'MODEL REVIEW',currentModelImpact:x.currentModelImpact,newsFeed:headlines.map(h=>({headline:typeof h==='string'?h:h.headline||h.title,summary:typeof h==='string'?'':h.summary,source:typeof h==='string'?(x.newsFeedState?.sources||[]).join(', '):h.source,date:typeof h==='string'?x.newsFeedState?.updated_at:h.date||h.published_at})),consensus:{normalizedPPR:x.cp,ourMedianPPR:x.mp,source:old?.consensus?.normalizedPPR===x.cp?old.consensus.source:'Published season consensus snapshot',captured:old?.consensus?.normalizedPPR===x.cp?old.consensus.captured:null},injuryStatus:{active:null}};}));
+ PLAYER_SOURCE_READY=true;document.getElementById('playerSourceState').textContent=`${entries.length} players · Authoritative model updated ${patch.updated||'date unavailable'} · Draft ADP is archival and excluded from weekly decisions.`;
+ for(const id of ['compareOne','compareTwo']){const el=document.getElementById(id),selected=el.value;el.innerHTML=PLAYERS.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${esc(p.name)}">${esc(p.name)} · ${esc(p.pos)}</option>`).join('');if(PLAYERS.some(p=>p.name===selected))el.value=selected;}
+ }catch(e){PLAYER_SOURCE_READY=false;document.getElementById('playerSourceState').textContent=e.message;}
+ renderSeason();renderWeekly();renderCompare();
+}
+loadPlayers();
 async function loadFeed(){
   try{
     const r=await fetch(`${RAW}${FEED_PATH}?ts=${Date.now()}`,{cache:'no-store'});
