@@ -146,7 +146,8 @@
     else if(activeGameTab==='BETTING HISTORY'||activeGameTab==='TRENDS')mount.innerHTML=historyHtml(g);
     else if(activeGameTab==='INJURIES')mount.innerHTML=injuriesHtml(g,d);
   }
-  function render(){
+  function render(){return window.CTD_READING.preserve(document.getElementById('gamesPage'),renderData);}
+function renderData(){
     const g=selected();if(!g)return;const record=games.get(key(g)),d=record?.data;
     modelPicks(g);pivotal(g,d);
     const match=document.querySelector('#gamesPage .midgrid .panel:nth-child(2)'),chart=document.querySelector('#gamesPage .midgrid .panel:nth-child(3)'),hist=document.querySelector('#gamesPage .panel.history');

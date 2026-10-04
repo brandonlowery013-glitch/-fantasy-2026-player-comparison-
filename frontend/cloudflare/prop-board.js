@@ -66,7 +66,8 @@
   return window.CTD_FORMATTED_WORK?.(work)||'';
  }
  function bookRow(s){const [state,reason]=verdict(s);return `<div class="ctdPropBook"><b>${esc(s.provider_book_title||s.book)}</b><span>Line ${esc(s.line)} · Over ${esc(price(s.over_price))} / Under ${esc(price(s.under_price))}</span><span>${esc(state)} · ${esc(reason)}</span><small>Quote ${esc(date(s.captured_at))}</small></div>`;}
- function render(){
+ function render(){return window.CTD_READING.preserve(document.getElementById('propsPage'),renderData);}
+function renderData(){
   const mount=document.querySelector('[data-bet-panel="props"]');if(!mount)return;
   const week=chosenWeek,rows=boardRows(snapshots,recs,week),games=[...new Set(rows.map(a=>a[0].game_id))].sort(),stats=[...new Set(rows.map(a=>a[0].stat))].sort();
   if(!games.includes(game))game='all';if(!stats.includes(market))market='all';

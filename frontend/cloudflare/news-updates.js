@@ -16,7 +16,8 @@
   let feed=null,expanded=false,busy=false,filter='all';
   const status=section.querySelector('.impact-status'),list=section.querySelector('.impact-grid'),more=section.querySelector('.impact-more');
   const date=value=>Number.isFinite(Date.parse(value))?new Date(value).toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Time unavailable';
-  function render(){
+  function render(){return window.CTD_READING.preserve(document.getElementById('ctdNewsUpdates'),renderData);}
+function renderData(){
     list.replaceChildren();const items=(feed.items||[]).filter(x=>filter==='all'||(filter==='availability'?['AVAILABILITY','INJURY WATCH','ROLE CHANGE'].includes(x.category):!['AVAILABILITY','INJURY WATCH','ROLE CHANGE'].includes(x.category)));
     status.textContent=(feed.status==='CURRENT'?'Feed checked ':'Older feed · Reviewed ')+date(feed.reviewed_at);
     if(!items.length){const p=document.createElement('p');p.className='impact-empty';p.textContent='No recent qualifying stories in this view. New verified updates will appear here.';list.append(p)}
