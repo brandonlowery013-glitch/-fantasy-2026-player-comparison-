@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const code=fs.readFileSync('frontend/cloudflare/prop-board.js','utf8');
+const label={textContent:null},scope=vm.createContext({currentSchedule:null,gameMarkets:null,projection:null,recs:null,page:{querySelector:()=>label}});
+vm.runInContext(code.slice(code.indexOf(' function currentPropWeek('),code.indexOf(' propsButton.addEventListener')),scope);
+vm.runInContext('syncWeek()',scope);assert.equal(label.textContent,'Loading current week…');
+scope.projection={week:4};vm.runInContext('syncWeek()',scope);assert.equal(label.textContent,'Week 4');
+scope.currentSchedule={week:5};vm.runInContext('syncWeek()',scope);assert.equal(label.textContent,'Week 5');
+for(const week of [0,19,NaN,2.5,'invalid'])assert.equal(scope.currentPropWeek({week}),null);
+assert(!code.includes('<select id="propsWeek">'));
+assert(!code.includes('BET_FEED?.week'),'historical Games selection cannot switch the Props week');
+assert.match(code,/weekly-event-schedule-2026.json/);
+assert.match(code,/ctd:games-ready',\(\)=>\{syncWeek\(\);render\(\);\}/);
+console.log('PASS: current-week-only Props, delayed feed, automatic rollover and independence from historical Games selection');

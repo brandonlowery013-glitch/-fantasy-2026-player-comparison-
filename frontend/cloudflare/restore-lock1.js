@@ -109,7 +109,15 @@
 /* Live scoreboard updates are owned by live-score-poller.js. */
 
 (()=>{
-  let feed=null;
+  let feed=null,requestVersion=0;
+  const teamKey=t=>({WAS:'WSH',LA:'LAR'}[String(t||'').toUpperCase()]||String(t||'').toUpperCase());
+  const sameMatchup=(a,b)=>teamKey(a.away_team)===teamKey(b.away_team)&&teamKey(a.home_team)===teamKey(b.home_team);
+  function clearMarketDetail(g){
+    document.getElementById('ctdScoreComparison')?.remove();document.getElementById('ctdMarketContext')?.remove();
+    for(const [id,team] of [['awayProb',g?.away_team],['homeProb',g?.home_team]]){const el=document.getElementById(id);if(el)el.textContent='—';const label=document.querySelector('#'+id+' + span');if(label)label.textContent=team||'—';}
+    const implied=document.querySelector('.implied');if(implied)implied.textContent='';
+    for(const [index,label] of [[1,'SPREAD'],[2,'TOTAL']]){const host=document.querySelector(`.lowgrid .panel:nth-child(${index})`);if(host)host.innerHTML=`<h3>${label} PROBABILITIES</h3><p class="copy">No saved market for this matchup.</p>`;}
+  }
   const e=x=>String(x??'Unavailable').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const pct=x=>x==null?'Unavailable':(Number(x)*100).toFixed(1)+'%';
   const pp=x=>x==null?'Unavailable':(Number(x)*100).toFixed(1)+' pp';
@@ -118,9 +126,8 @@
   function selected(game){const rows=latest(game);return rows.find(s=>s.book==='draftkings')||rows[0];}
   function explain(game,s){const p=game.football_projection,lines=Object.entries(s.markets||{}).filter(([,m])=>m.recommendation?.decision==='PICK').map(([kind,m])=>`${kind}: ${m.recommendation.selection}, ${pp(m.recommendation.probability_edge)} probability advantage, ${pct(m.recommendation.expected_value)} expected return per unit risked.`);return `Projected score: ${game.away_team} ${num(p.away_score_mean)}, ${game.home_team} ${num(p.home_score_mean)}. `+(lines.length?lines.join(' '):'No market clears the model thresholds.');}
   function detail(){
-    document.getElementById('ctdScoreComparison')?.remove();
-    const g=BET_FEED.games[selectedGameIndex];if(!g||!feed||Number(feed.week)!==Number(BET_FEED.week))return;
-    const raw=Object.values(feed.games||{}).find(x=>x.away_team===g.away_team&&x.home_team===g.home_team);if(!raw)return;
+    const g=BET_FEED.games[selectedGameIndex];clearMarketDetail(g);if(!g||!feed||Number(feed.week)!==Number(BET_FEED.week))return;
+    const raw=Object.values(feed.games||{}).find(x=>sameMatchup(x,g));if(!raw)return;
     const s=selected(raw);if(!s)return;
     const ended=g.completed===true||Date.parse(raw.kickoff)<=Date.now();
     const summary=explain(raw,s);g.model_summary=summary;
@@ -154,7 +161,7 @@
   function syncTicker(){
     if(!feed||Number(feed.week)!==Number(BET_FEED.week))return;
     for(const g of BET_FEED.games){
-      const raw=Object.values(feed.games||{}).find(x=>x.away_team===g.away_team&&x.home_team===g.home_team),s=raw&&selected(raw);if(!s)continue;
+      const raw=Object.values(feed.games||{}).find(x=>sameMatchup(x,g)),s=raw&&selected(raw);if(!s)continue;
       const picks=Object.values(s.markets).map(x=>x.recommendation).filter(x=>x?.decision==='PICK').sort((a,b)=>b.probability_edge-a.probability_edge);
       g.spread=raw.home_team+' '+(s.market.home_spread>0?'+':'')+s.market.home_spread;g.total=s.market.total;
       g.model_edge=picks.length?picks[0].selection+' · '+pp(picks[0].probability_edge):'No qualifying bet';
@@ -170,7 +177,7 @@
   for(const [label,direction] of [['Previous games',-1],['Next games',1]]){const b=document.createElement('button');b.className='btn';b.textContent=label;b.onclick=()=>lane.scrollBy({left:direction*lane.clientWidth*.75,behavior:'smooth'});controls.appendChild(b);}
   lane.before(controls);lane.style.cssText+=';overflow-x:auto;max-width:100%;min-width:0;scrollbar-width:auto';
   const css=document.createElement('style');css.textContent='#gamesPage{min-width:0;max-width:100%}#gamesPage .ticker{display:flex}#gamesPage .gamecard{flex:0 0 190px}#gamesPage .grid3,#gamesPage .lowgrid,#gamesPage .midgrid{min-width:0}#gamesPage .panel{min-width:0;overflow-wrap:anywhere}@media(max-width:1100px){#gamesPage .grid3,#gamesPage .lowgrid,#gamesPage .midgrid{grid-template-columns:1fr}}';document.head.appendChild(css);
-  async function load(){try{const r=await fetch(RAW+'data/market/weekly-game-market-recommendations-2026.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);feed=await r.json();syncTicker();detail();try{const pr=await fetch(RAW+'data/probability/generated/weekly-game-projections-2026.json?ts='+Date.now(),{cache:'no-store'});if(pr.ok){window.ctdScoreComparison?.setData(await pr.json());detail();}}catch(err){console.error('Score distributions unavailable',err);}}catch(err){console.error('Detailed game feed unavailable',err);}}
+  async function load(){const version=++requestVersion;try{const r=await fetch(RAW+'data/market/weekly-game-market-recommendations-2026.json?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);const incoming=await r.json();if(version!==requestVersion)return;feed=incoming;syncTicker();detail();try{const pr=await fetch(RAW+'data/probability/generated/weekly-game-projections-2026.json?ts='+Date.now(),{cache:'no-store'});if(pr.ok){const projections=await pr.json();if(version!==requestVersion)return;window.ctdScoreComparison?.setData(projections);detail();}}catch(err){console.error('Score distributions unavailable',err);}}catch(err){console.error('Detailed game feed unavailable',err);}}
   load();setInterval(load,60000);
 })();
 

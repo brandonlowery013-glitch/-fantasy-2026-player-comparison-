@@ -1,4 +1,3 @@
-const SOURCE='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/guardrails/current-football-review.json';
 const headers={'content-type':'application/json; charset=utf-8','cache-control':'no-store'};
 function clean(value){return String(value||'').replace(/&#(?:x([0-9a-f]+)|(\d+));/gi,(_,h,d)=>{const n=parseInt(h||d,h?16:10);return n>0&&n<=0x10ffff?String.fromCodePoint(n):''}).replace(/&(?:amp|quot|apos|lt|gt);/g,x=>({'&amp;':'&','&quot;':'"','&apos;':"'",'&lt;':'<','&gt;':'>'}[x])).replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim()}
 function classify(title){
@@ -13,31 +12,6 @@ function classify(title){
   if(/rush(?:es|ed|ing)?.{0,30}\d+|throws?.{0,30}\d+|touchdowns?|receiving yards|catches|game recap|week \d+.*takeaways/i.test(title))return {category:'GAME TAKEAWAY',priority:60,angle:'Review usage alongside the box score, then check the next opponent.'};
   return null;
 }
-function normalize(review){
-  if(!Array.isArray(review.players)||!review.players.length)throw Error('Published news review is unavailable');
-  const items=new Map(),titles=new Set(),now=Date.now();
-  for(const player of review.players){
-    for(const story of player.news_mentions||[]){
-      let url;try{url=new URL(story.url);if(url.protocol!=='https:')continue}catch{continue}
-      const title=clean(story.headline),label=classify(title);if(!title||!label)continue;
-      const normalized=value=>clean(value).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-      const subject=normalized(player.player);
-      if(label.category!=='UPSET'&&(!subject||!normalized(title+' '+clean(story.description)).includes(subject)))continue;
-      const published=Date.parse(story.published);
-      // Old or undated articles must not be presented as current actionable updates.
-      if(!Number.isFinite(published)||published>now+300000||now-published>7*86400000)continue;
-      const titleKey=title.toLowerCase().replace(/[^a-z0-9]/g,'');
-      if(items.has(url.href)||titles.has(titleKey))continue;
-      titles.add(titleKey);
-      const ageHours=Math.max(0,(now-published)/3600000);
-      if(/inactives|ruled out for (?:sunday|monday|thursday)/i.test(title)&&ageHours>24)continue;
-      items.set(url.href,{title:title.slice(0,300),url:url.href,source:clean(story.source||url.hostname).replaceAll('_',' ').slice(0,100),published_at:new Date(published).toISOString(),category:label.category,priority:label.priority-Math.floor(ageHours/12)*8,angle:label.angle,summary:clean(story.description).slice(0,240),team:typeof story.team==='string'?story.team:null});
-    }
-  }
-  const time=Date.parse(review.sweep_completed_at);
-  return {reviewed_at:Number.isFinite(time)?new Date(time).toISOString():null,items:[...items.values()].sort((a,b)=>b.priority-a.priority||Date.parse(b.published_at)-Date.parse(a.published_at)).slice(0,20)};
-}
-
 function liveItems(payload,now=Date.now()){
  if(!Array.isArray(payload.articles))throw Error('Live news response invalid');
  return payload.articles.flatMap(a=>{
@@ -50,24 +24,25 @@ function liveItems(payload,now=Date.now()){
  });
 }
 export async function onRequestGet(){
- const key=new Request('https://ctd.internal/live-news-v5');
+ const key=new Request('https://ctd.internal/live-news-v6');
+ let saved=null;
+ try{const cached=await caches.default.match(key);if(cached)saved=await cached.json();}catch{}
+ const age=Date.now()-Date.parse(saved?.checked_at);
+ if(saved?.status==='CURRENT'&&age>=0&&age<300000)return new Response(JSON.stringify(saved),{headers});
  try{
-  const [live,published]=await Promise.allSettled([
-   fetch('https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/data/live-news/data/live-news.json',{headers:{accept:'application/json','user-agent':'ChuckTheDuke/2026'},signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}}).then(async r=>{if(!r.ok)throw Error('Live news HTTP '+r.status);const data=await r.json();const fetched=Date.parse(data.fetched_at);if(!Number.isFinite(fetched)||Date.now()-fetched>7*3600000||fetched>Date.now()+300000)throw Error('Headline snapshot is stale');return {items:liveItems(data),fetched_at:data.fetched_at}}),
-   fetch(SOURCE,{signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}}).then(async r=>{if(!r.ok)throw Error('Published review unavailable');return normalize(await r.json())})
-  ]);
-  if(live.status==='rejected'&&published.status==='rejected')throw Error('All news sources unavailable');
+  // The existing headline collector already publishes a compact snapshot.
+  // Parsing the 14 MB player review on every request exceeded Worker CPU limits.
+  const r=await fetch('https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/data/live-news/data/live-news.json',{headers:{accept:'application/json','user-agent':'ChuckTheDuke/2026'},signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}});
+  if(!r.ok)throw Error('News snapshot unavailable');
+  const data=await r.json(),fetched=Date.parse(data.fetched_at),now=Date.now();
+  if(!Number.isFinite(fetched)||now-fetched>7*3600000||fetched>now+300000)throw Error('Headline snapshot is stale');
   const items=new Map(),titles=new Set();
-  for(const item of [...(live.status==='fulfilled'?live.value.items:[]),...(published.status==='fulfilled'?published.value.items:[])].sort((a,b)=>b.priority-a.priority||Date.parse(b.published_at)-Date.parse(a.published_at))){
-   const title=item.title.toLowerCase().replace(/[^a-z0-9]/g,'');if(items.has(item.url)||titles.has(title))continue;items.set(item.url,item);titles.add(title);
-  }
-  const checked=new Date().toISOString(),reviewed=published.status==='fulfilled'?published.value.reviewed_at:null;
-  const result={items:[...items.values()].slice(0,20),reviewed_at:live.status==='fulfilled'?live.value.fetched_at:reviewed,checked_at:checked,model_reviewed_at:reviewed,status:live.status==='fulfilled'?'CURRENT':'STALE',refresh_seconds:300,collection_interval_seconds:21600,source_branch:'main',live_source:live.status==='fulfilled'?'ESPN':null,live_error:live.status==='rejected'?String(live.reason?.message||'Provider unavailable'):null};
+  for(const item of liveItems(data,now).sort((a,b)=>b.priority-a.priority||Date.parse(b.published_at)-Date.parse(a.published_at))){const title=item.title.toLowerCase().replace(/[^a-z0-9]/g,'');if(items.has(item.url)||titles.has(title))continue;items.set(item.url,item);titles.add(title);}
+  const result={items:[...items.values()].slice(0,20),reviewed_at:data.fetched_at,checked_at:new Date(now).toISOString(),model_reviewed_at:null,status:'CURRENT',refresh_seconds:300,collection_interval_seconds:21600,source_branch:'data/live-news',live_source:'ESPN',live_error:null};
   try{await caches.default.put(key,new Response(JSON.stringify(result),{headers:{'cache-control':'public,max-age=86400'}}))}catch{}
   return new Response(JSON.stringify(result),{headers});
  }catch{
-  try{const saved=await caches.default.match(key);if(saved){const feed=await saved.json();return new Response(JSON.stringify({...feed,status:'STALE',message:'Refresh unavailable; showing the last saved news.'}),{headers})}}catch{}
+  if(saved){const items=(saved.items||[]).filter(item=>{const age=Date.now()-Date.parse(item.published_at);return Number.isFinite(age)&&age>=0&&age<=7*86400000&&(!/inactives|ruled out for (?:sunday|monday|thursday)/i.test(item.title)||age<=86400000);});return new Response(JSON.stringify({...saved,items,status:'STALE',message:'Showing the last saved news.'}),{headers});}
   return new Response(JSON.stringify({status:'UNAVAILABLE',reviewed_at:null,items:[],message:'News updates are temporarily unavailable.'}),{status:502,headers});
  }
 }
-
