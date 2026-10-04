@@ -6,6 +6,9 @@ const assert = (c,m) => { if (!c) fail(m); };
 const uniq = a => new Set(a);
 
 const sot = read('MODEL_SOURCE_OF_TRUTH.json');
+const expected=Number(sot.active_player_model),shards=Number(sot.runtime_player_shards);
+assert(Number.isInteger(expected)&&expected>0, 'canonical player count invalid');
+assert(Number.isInteger(shards)&&shards>0, 'canonical shard count invalid');
 const core = read(sot.current_update_layer);
 const edge = read('data/market/draft-edge-opportunity-screen-166.json');
 const market = read('data/market/market-value-board-2026.json');
@@ -14,17 +17,17 @@ const marketBuilder = fs.readFileSync('scripts/build-market-value-board-2026.mjs
 const edgeRows = edge.players;
 const marketRows = market.board;
 
-assert(sot.active_player_model === 166, 'source of truth must declare 166 players');
-assert(sot.runtime_player_shards === 14, 'source of truth must declare 14 runtime shards');
-assert(/^single 166-player active board(?:\b|\s|—|-)/.test(String(core.model || '')), 'canonical overlay is not the 166-player active board');
+
+
+
 const coreNames = Object.keys(core.players || {});
-assert(coreNames.length === 166 && uniq(coreNames).size === 166, 'canonical board must contain 166 unique players');
+assert(coreNames.length === expected && uniq(coreNames).size === expected, `canonical board must contain ${expected} unique players`);
 
 for (const [label, doc, rows] of [['edge',edge,edgeRows],['market',market,marketRows]]) {
-  assert(doc.universe === 166, `${label} layer must declare universe 166`);
-  assert(Array.isArray(rows) && rows.length === 166, `${label} layer must contain 166 rows`);
+  assert(doc.universe === expected, `${label} layer must declare universe ${expected}`);
+  assert(Array.isArray(rows) && rows.length === expected, `${label} layer must contain ${expected} rows`);
   const names = rows.map(x=>x.player);
-  assert(uniq(names).size === 166, `${label} layer contains duplicate player names`);
+  assert(uniq(names).size === expected, `${label} layer contains duplicate player names`);
   assert(names.every(n=>core.players[n]), `${label} layer contains a player outside canonical universe`);
   assert(coreNames.every(n=>names.includes(n)), `${label} layer is missing a canonical player`);
 }
@@ -46,8 +49,8 @@ for (const name of coreNames) {
 for (const rankKey of ['o','tr']) {
   const values = coreNames.map(n=>core.players[n][rankKey]);
   assert(values.every(Number.isInteger), `canonical ${rankKey} ranks must be integers`);
-  assert(uniq(values).size === 166, `canonical ${rankKey} ranks must be unique`);
-  assert(Math.min(...values) === 1 && Math.max(...values) === 166, `canonical ${rankKey} ranks must span 1..166`);
+  assert(uniq(values).size === expected, `canonical ${rankKey} ranks must be unique`);
+  assert(Math.min(...values) === 1 && Math.max(...values) === expected, `canonical ${rankKey} ranks must span 1..${expected}`);
 }
 
 for (const [rankField, prefixField] of [['pr','o'],['tp','tr']]) {
@@ -91,7 +94,7 @@ assert(market.source === 'data/market/draft-edge-opportunity-screen-166.json', '
 
 const summary = {
   status:'STEP_4_CROSS_BOARD_VERIFICATION_LOCK_PASS',
-  universe:166,
+  universe:expected,
   canonical_players:coreNames.length,
   edge_players:edgeRows.length,
   market_players:marketRows.length,

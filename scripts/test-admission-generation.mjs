@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {generateAdmission} from './generate-admission-package.mjs';
+import {processAdmission,validatePostState} from './process-admissions.mjs';
+const base=fs.mkdtempSync(path.join(os.tmpdir(),'fluid-admission-'));
+const write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(base,p)),{recursive:true});fs.writeFileSync(path.join(base,p),JSON.stringify(x));};
+const read=p=>JSON.parse(fs.readFileSync(path.join(base,p)));
+try{
+  const players=Array.from({length:168},(_,i)=>({n:`Existing ${i}`,p:'RB',t:'TEAM',o:i+1,tr:i+1,tp:`RB${i+1}`,pr:`RB${i+1}`,mp:200-i,pd:10-i/30,ce:8,r:8,e:8,a:8,rl:8,su:8,s:9-i/50}));
+  const truth={active_player_model:168,runtime_player_shards:14,current_update_layer:'patch.json'};
+  write('MODEL_SOURCE_OF_TRUTH.json',truth);for(let i=0;i<14;i++)write(`players${i}.json`,players.slice(i*12,(i+1)*12));
+  write('patch.json',{players:{}});write('canonicalBoards2026.json',{active_players:168,overall:players,trueValue:players,positions:{RB:players}});write('lockedRanks2026.json',{players:Object.fromEntries(players.map(p=>[p.n,{trueValueRank:p.tr,trueValuePos:p.tp}]))});
+  write('guardrails/guardrails-config.json',{required_player_numeric_fields:['o','tr','s','pd','ce','r','e','a','rl','su','mp'],numeric_bounds:{s:[0,10]}});write('guardrails/universe-change-manifest.json',{changes:[]});
+  const entry={candidate_id:'test-player',player_name:'Test Player',team:'OTHER',position:'RB',decision:'ADMIT',status:'NEW',reason:'Verified role',evidence:[{source:'fixture',summary:'verified role'}],package_path:'admissions/packages/test-player.json'};write('admissions/queue.json',{version:1,entries:[entry]});
+  const blocked=generateAdmission({base,entry});assert(blocked.blockers.includes('CALIBRATED_COMPONENT_CE'));assert.equal(read('MODEL_SOURCE_OF_TRUTH.json').active_player_model,168);assert(!fs.existsSync(path.join(base,entry.package_path)));
+  const input={player_name:entry.player_name,team:entry.team,position:entry.position,calibration:{reviewed:true,method:'fixture reviewed targets',source_run:'fixture'},roster_review:{status:'ACTIVE_FANTASY_ROLE',source:'fixture',as_of:'2026-10-03'},projection:{mp:100,method:'fixture',source:'fixture'},components:Object.fromEntries(['ce','r','e','a','rl','su'].map(k=>[k,{value:7,method:'fixture',source:'fixture'}])),overall_rank:100,overall_review:{method:'fixture',source:'fixture'},writeup:Object.fromEntries(['m','cl','en','nm','na','current_recommendation'].map(k=>[k,'fixture'])),connected_review:[],consumer_review:Object.fromEntries(['runtime','site','excel'].map(k=>[k,{status:'PASS',source:'fixture'}]))};
+  write('admissions/inputs/test-player.json',input);
+  for(const file of ['data/probability/weekly-football-context-inputs-2026.json','data/probability/weekly-projection-inputs-2026.json'])write(file,{season:2026,week:4,players:{}});
+  // No manually created package: process calls the generator itself.
+  const result=processAdmission({base,candidateId:entry.candidate_id});assert.equal(result.post_count,169);
+  const pkg=read(entry.package_path);assert.equal(pkg.integration.expected_after_shards,15);assert.equal(pkg.integration.canonical_files['players14.json'].length,1);
+  const row=pkg.integration.canonical_files['players14.json'][0];assert.equal(row.ad,null);assert.equal(row.px,'PRICE PENDING');assert.equal(row.pd,6.667);
+  const bad=structuredClone(pkg);bad.integration.canonical_files['players0.json'][0].mp=999;
+  assert(validatePostState({base,entry,pkg:bad,cfg:read('guardrails/guardrails-config.json'),truth}).some(x=>x.includes('unrelated model mutation')));
+  const badScore=structuredClone(pkg);badScore.integration.canonical_files['players14.json'][0].s=9.99;
+  assert(validatePostState({base,entry,pkg:badScore,cfg:read('guardrails/guardrails-config.json'),truth}).some(x=>x.includes('seven-component formula')));
+  const badOutput=structuredClone(pkg);badOutput.integration.canonical_files['.github/workflows/guardrail-qa.yml']={};
+  assert(validatePostState({base,entry,pkg:badOutput,cfg:read('guardrails/guardrails-config.json'),truth}).some(x=>x.includes('unapproved admission output')));
+  const before=read('players0.json');write('players0.json',before.map((p,i)=>i? p:{...p,mp:p.mp+1}));assert.throws(()=>processAdmission({base,candidateId:entry.candidate_id}),/stale admission baseline/);write('players0.json',before);
+  const complete=processAdmission({base,candidateId:entry.candidate_id,apply:true});assert.equal(complete.post_count,169);assert.equal(read('MODEL_SOURCE_OF_TRUTH.json').runtime_player_shards,15);assert.equal(read('canonicalBoards2026.json').overall.length,169);assert(processAdmission({base,candidateId:entry.candidate_id}).idempotent);assert(fs.existsSync(path.join(base,'exports/fantasy-2026-current.xlsx')));assert.equal(read('data/probability/weekly-projection-inputs-2026.json').players[entry.player_name].actionable,false);
+  const next={...entry,candidate_id:'second-player',player_name:'Second Player',package_path:'admissions/packages/second-player.json',status:'NEW'};write('admissions/queue.json',{version:1,entries:[next]});const nextInput={...input,player_name:next.player_name,connected_review:[{player:entry.player_name,decision:'HOLD',reason:'fixture',source:'fixture'}]};
+  const nextGenerated=generateAdmission({base,entry:next,input:nextInput});assert.equal(nextGenerated.expected_after_count,170);assert.equal(nextGenerated.package.integration.expected_before_count,169);
+  console.log(JSON.stringify({result:'PASS',verified:['missing-input fail-closed','automatic package creation','168→169→170 dynamic counts','14→15 shards','market pending','rank/board/patch/lock synchronization','unrelated mutation rejection','stale baseline rejection','idempotent apply']}));
+}finally{fs.rmSync(base,{recursive:true,force:true});}
