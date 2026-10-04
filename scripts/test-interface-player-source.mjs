@@ -1,0 +1,15 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const html=fs.readFileSync('index.html','utf8');
+const source=html.slice(html.indexOf('async function loadPlayers(){'),html.indexOf('\nloadPlayers();'));
+const elements=new Map();
+const ctx=vm.createContext({RAW:'fixture/',PLAYERS:[],PLAYER_SOURCE_READY:false,esc:String,Date,console,document:{getElementById:id=>{if(!elements.has(id))elements.set(id,{value:'',innerHTML:'',textContent:''});return elements.get(id);}},renderSeason(){},renderWeekly(){},renderCompare(){},fetch:async url=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(url.replace('fixture/','').split('?')[0],'utf8'))})});
+vm.runInContext(source,ctx);
+await ctx.loadPlayers();
+assert.equal(ctx.PLAYER_SOURCE_READY,true);assert.equal(ctx.PLAYERS.length,167);
+assert.ok(ctx.PLAYERS.some(p=>p.name==='Kaelon Black'&&p.pos&&p.team));
+assert.equal(ctx.PLAYERS.find(p=>p.name==='Bijan Robinson').score,9.645);
+assert.equal(ctx.PLAYERS.find(p=>p.name==='Bijan Robinson').adp,undefined);
+ctx.fetch=async()=>({ok:false});await ctx.loadPlayers();assert.equal(ctx.PLAYER_SOURCE_READY,false);
+console.log('PASS: authoritative shards plus patch include 167 players; failed source is not presented as current; archival ADP excluded');
