@@ -41,7 +41,7 @@ export function generateAdmission({base=process.cwd(),entry,input=null,now=new D
   for(const k of ['m','cl','en','nm','na','current_recommendation'])if(!input?.writeup?.[k])blockers.push(`COMPARISON_WRITEUP_${k.toUpperCase()}`);
   const teammates=effective.filter(p=>p.t===entry.team).map(p=>p.n);
   if(!Array.isArray(input?.connected_review)||teammates.some(n=>!input.connected_review.some(x=>x.player===n&&x.decision==='HOLD'&&x.reason&&x.source)))blockers.push('CONNECTED_TEAMMATE_HOLD_REVIEW');
-  const consumerReview={runtime:{source:'lib/canonical-player-source.mjs'},site:{source:'index.html'},excel:{source:'lib/canonical-excel-export.mjs'}};
+  const consumerReview={runtime:{source:'lib/canonical-player-source.mjs'},site:{source:'index.html'},excel:{source:'lib/canonical-excel-export.mjs'},word:{source:'lib/canonical-word-export.mjs'}};
   const dossier={version:1,candidate_id:entry.candidate_id,player_name:entry.player_name,team:entry.team,position:entry.position,decision:'ADMIT',generated_at:now,canonical_before:{players:before.length,shards:truth.runtime_player_shards},expected_after_count:before.length+1,input_path:inputPath,evidence:entry.evidence,components,score: blockers.some(x=>x.startsWith('CALIBRATED_COMPONENT'))?null:score(components),connected_teammates:teammates,blockers,status:blockers.length?'BLOCKED_MODEL_INPUTS':'READY_FOR_APPLY',market_status:'PRICE PENDING',adp_status:'ARCHIVAL_INACTIVE'};
   let pkg=null;
   if(!blockers.length){

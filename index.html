@@ -226,7 +226,7 @@ border-radius:6px;overflow:hidden}
 <section class="page" id="playerPage">
   <div class="categoryWrap">
     <h2>PLAYER BOARD</h2>
-    <button class="btn" id="exportExcel" disabled>Download Excel</button><div class="categoryIntro" id="playerSourceState">Loading the authoritative player board…</div>
+    <button class="btn" id="exportExcel" disabled>Download Excel</button><button class="btn" id="exportWord" disabled>Download Word</button><div class="categoryIntro" id="playerSourceState">Loading the authoritative player board…</div>
     <div class="categoryTabs" id="seasonTabs">
       <button class="active" data-season="board">OVERALL / ACTIONABLE</button><button data-season="trueValue">TRUE VALUE</button>
       <button data-season="sleepers">SLEEPERS</button>
@@ -855,7 +855,7 @@ document.getElementById('weeklyTabs')?.addEventListener('click',e=>{
 });
 renderSeason();renderWeekly();renderCompare();
 let CURRENT_CANONICAL=null;
-const CANONICAL_MODULES=Promise.all([import('./lib/canonical-player-source.mjs'),import('./lib/canonical-excel-export.mjs')]);
+const CANONICAL_MODULES=Promise.all([import('./lib/canonical-player-source.mjs'),import('./lib/canonical-excel-export.mjs'),import('./lib/canonical-word-export.mjs')]);
 async function loadPlayers(){
  try{
  const [{loadCanonicalPlayers}]=await CANONICAL_MODULES;
@@ -863,12 +863,13 @@ async function loadPlayers(){
  const result=await loadCanonicalPlayers(get);CURRENT_CANONICAL=result;const entries=result.players.map(x=>[x.n,x]);
  const prior=new Map(PLAYERS.map(p=>[p.name,p]));
  PLAYERS.splice(0,PLAYERS.length,...entries.map(([name,x])=>{const old=prior.get(name),headlines=x.newsFeedState?.latest_headlines||[];return {name,pos:x.p,team:x.t,overall:x.o,posRank:x.pr,trueRank:x.tr,truePosRank:x.tp,score:x.s,production:x.pd,ceiling:x.ce,role:x.r,environment:x.e,availability:x.a,reliability:x.rl,sustainability:x.su,overallWriteup:x.nm||x.en||'',recommendation:x.current_recommendation||x.na||'',price:x.px==='PRICE PENDING'?'PRICE PENDING':'MODEL REVIEW',currentModelImpact:x.currentModelImpact,newsFeed:headlines.map(h=>({headline:typeof h==='string'?h:h.headline||h.title,summary:typeof h==='string'?'':h.summary,source:typeof h==='string'?(x.newsFeedState?.sources||[]).join(', '):h.source,date:typeof h==='string'?x.newsFeedState?.updated_at:h.date||h.published_at})),consensus:{normalizedPPR:x.cp,ourMedianPPR:x.mp,source:old?.consensus?.normalizedPPR===x.cp?old.consensus.source:'Published season consensus snapshot',captured:old?.consensus?.normalizedPPR===x.cp?old.consensus.captured:null},injuryStatus:{active:null}};}));
- document.getElementById('exportExcel').disabled=false;PLAYER_SOURCE_READY=true;document.getElementById('playerSourceState').textContent=`${entries.length} players · Authoritative model updated ${result.truth.current_update_layer_effective_date||result.truth.effective_date||'date unavailable'} · Draft ADP is archival and excluded from weekly decisions.`;
+ document.getElementById('exportExcel').disabled=false;document.getElementById('exportWord').disabled=false;PLAYER_SOURCE_READY=true;document.getElementById('playerSourceState').textContent=`${entries.length} players · Authoritative model updated ${result.truth.current_update_layer_effective_date||result.truth.effective_date||'date unavailable'} · Draft ADP is archival and excluded from weekly decisions.`;
  for(const id of ['compareOne','compareTwo']){const el=document.getElementById(id),selected=el.value;el.innerHTML=PLAYERS.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${esc(p.name)}">${esc(p.name)} · ${esc(p.pos)}</option>`).join('');if(PLAYERS.some(p=>p.name===selected))el.value=selected;}
- }catch(e){PLAYER_SOURCE_READY=false;CURRENT_CANONICAL=null;PLAYERS.splice(0);document.getElementById('exportExcel').disabled=true;document.getElementById('playerSourceState').textContent=e.message;}
+ }catch(e){PLAYER_SOURCE_READY=false;CURRENT_CANONICAL=null;PLAYERS.splice(0);document.getElementById('exportExcel').disabled=true;document.getElementById('exportWord').disabled=true;document.getElementById('playerSourceState').textContent=e.message;}
  renderSeason();renderWeekly();renderCompare();
 }
 document.getElementById('exportExcel').addEventListener('click',async()=>{if(!PLAYER_SOURCE_READY||!CURRENT_CANONICAL)return;const [,{buildExcelExport}]=await CANONICAL_MODULES;const url=URL.createObjectURL(new Blob([buildExcelExport(CURRENT_CANONICAL.players,CURRENT_CANONICAL.truth)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));const a=document.createElement('a');a.href=url;a.download='fantasy-2026-current.xlsx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+document.getElementById('exportWord').addEventListener('click',async()=>{if(!PLAYER_SOURCE_READY||!CURRENT_CANONICAL)return;const [,,{buildWordExport}]=await CANONICAL_MODULES;const url=URL.createObjectURL(new Blob([buildWordExport(CURRENT_CANONICAL.players,CURRENT_CANONICAL.truth)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}));const a=document.createElement('a');a.href=url;a.download='fantasy-2026-current.docx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 loadPlayers();
 async function loadFeed(){
   try{

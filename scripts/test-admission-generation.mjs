@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import {buildWordExport} from '../lib/canonical-word-export.mjs';
 import {generateAdmission} from './generate-admission-package.mjs';
 import {processAdmission,validatePostState} from './process-admissions.mjs';
 const base=fs.mkdtempSync(path.join(os.tmpdir(),'fluid-admission-'));
@@ -30,7 +31,19 @@ try{
   assert(validatePostState({base,entry,pkg:badOutput,cfg:read('guardrails/guardrails-config.json'),truth}).some(x=>x.includes('unapproved admission output')));
   const before=read('players0.json');write('players0.json',before.map((p,i)=>i? p:{...p,mp:p.mp+1}));assert.throws(()=>processAdmission({base,candidateId:entry.candidate_id}),/stale admission baseline/);write('players0.json',before);
   const complete=processAdmission({base,candidateId:entry.candidate_id,apply:true});assert.equal(complete.post_count,169);assert.equal(read('MODEL_SOURCE_OF_TRUTH.json').runtime_player_shards,15);assert.equal(read('canonicalBoards2026.json').overall.length,169);assert(processAdmission({base,candidateId:entry.candidate_id}).idempotent);assert(fs.existsSync(path.join(base,'exports/fantasy-2026-current.xlsx')));assert.equal(read('data/probability/weekly-projection-inputs-2026.json').players[entry.player_name].actionable,false);
+  assert(fs.existsSync(path.join(base,'exports/fantasy-2026-current.docx')));
+  const done=read('admissions/completed/test-player.json');assert.equal(done.rank_changes.length,168);assert.equal(done.word_sha256.length,64);
+  const shifted=done.rank_changes.find(p=>p.player==='Existing 99');assert.equal(shifted.overall_before,100);assert.equal(shifted.overall_after,101);
+  const word=fs.readFileSync(path.join(base,'exports/fantasy-2026-current.docx'),'utf8');assert(word.includes('Test Player'));assert(word.includes('Weekly reliability'));
+  assert.throws(()=>buildWordExport([row],{active_player_model:2}),/count/);
+  assert.throws(()=>buildWordExport([row,row],{active_player_model:2}),/identity/);
+  const escaped=Buffer.from(buildWordExport([{...row,n:'Name & <tag>'}],{active_player_model:1})).toString();assert(escaped.includes('Name &amp; &lt;tag&gt;'));
+  const frozenPath='data/market/issued-pick-history-2026.json';write(frozenPath,{fixture:'original pregame decisions'});const frozen=fs.readFileSync(path.join(base,frozenPath));
   const next={...entry,candidate_id:'second-player',player_name:'Second Player',package_path:'admissions/packages/second-player.json',status:'NEW'};write('admissions/queue.json',{version:1,entries:[next]});const nextInput={...input,player_name:next.player_name,connected_review:[{player:entry.player_name,decision:'HOLD',reason:'fixture',source:'fixture'}]};
   const nextGenerated=generateAdmission({base,entry:next,input:nextInput});assert.equal(nextGenerated.expected_after_count,170);assert.equal(nextGenerated.package.integration.expected_before_count,169);
+  processAdmission({base,candidateId:next.candidate_id,apply:true});
+  assert.deepEqual(fs.readFileSync(path.join(base,frozenPath)),frozen);
+  assert(fs.readFileSync(path.join(base,'exports/fantasy-2026-current.docx'),'utf8').includes('Second Player'));
+  assert.equal(read('admissions/completed/second-player.json').rank_changes.length,169);
   console.log(JSON.stringify({result:'PASS',verified:['missing-input fail-closed','automatic package creation','168→169→170 dynamic counts','14→15 shards','market pending','rank/board/patch/lock synchronization','unrelated mutation rejection','stale baseline rejection','idempotent apply']}));
 }finally{fs.rmSync(base,{recursive:true,force:true});}

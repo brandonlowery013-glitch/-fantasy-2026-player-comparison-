@@ -13,3 +13,9 @@ New rows start with `PRICE PENDING` and inactive draft ADP. Weekly source and pr
 Missing supported inputs remain explicit blockers in `admissions/staged`, rather than fabricated scores or a downgraded ADMIT decision. Guardrail QA blocks incomplete admissions. No protected-main or Guardrail requirement is bypassed. Historical draft market boards remain archival; their stale count is reported rather than silently repriced into season-long rankings.
 
 The October 3 reconciliation preserves the earlier queue and review in `admissions/history` and records current evidence and decisions for all 30 named cases in `admissions/reconciliation-2026-10-03.json`.
+
+## Word profiles and rank changes
+
+Each accepted admission regenerates the Excel workbook and Word profiles from the same proposed canonical players. Both exports are committed in the admission transaction and recorded by SHA-256 in the completion manifest. A failed export prevents completion. The website also builds both downloads from its loaded canonical roster.
+
+Current Overall, True Value and positional ranks reflow when a player is inserted. Completion records preserve every existing player's before and after Overall and True Value ranks. Original pregame predictions and settled results are not rewritten. Any historical reranking must be a separate, dated retrospective using evidence available at the requested historical cutoff.
