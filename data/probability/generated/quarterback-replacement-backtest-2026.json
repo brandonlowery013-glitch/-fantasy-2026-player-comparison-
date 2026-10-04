@@ -1,0 +1,230 @@
+{
+  "status": "RESEARCH_ONLY",
+  "production_numeric_authority": 0,
+  "automatic_promotion": false,
+  "scenario": {
+    "game": "2026_04_GB_TB",
+    "cutoff": "Before Week 4; no Week 4 outcomes",
+    "status": "EXPERIMENTAL_NOT_A_BET",
+    "lambda": 100,
+    "GB": 23.29537426835219,
+    "TB": 19.677175721758402,
+    "home_margin": -3.618198546593791,
+    "baseline": 3.1442882343582284,
+    "mayfield_comparison": {
+      "GB": 22.62988151875019,
+      "TB": 25.241925073244623,
+      "home_margin": 2.6120435544944334
+    },
+    "replacement_margin_change": -6.2302421010882245,
+    "contributions": [
+      {
+        "name": "prior starts",
+        "home_margin_change": -0.5805040859116113
+      },
+      {
+        "name": "previous passing efficiency",
+        "home_margin_change": -0.757125398320149
+      },
+      {
+        "name": "observed dropbacks",
+        "home_margin_change": -3.7601945626364564
+      },
+      {
+        "name": "rookie status",
+        "home_margin_change": 1.2768563998283575
+      },
+      {
+        "name": "no observed dropbacks",
+        "home_margin_change": 0
+      },
+      {
+        "name": "same-team attempts",
+        "home_margin_change": -2.9435055473420633
+      },
+      {
+        "name": "team sack rate",
+        "home_margin_change": 0
+      },
+      {
+        "name": "team rush efficiency",
+        "home_margin_change": 0
+      },
+      {
+        "name": "opponent passing defense",
+        "home_margin_change": 0
+      },
+      {
+        "name": "experience with sack rate",
+        "home_margin_change": -0.00027386221377987687
+      },
+      {
+        "name": "experience with rushing support",
+        "home_margin_change": 0.0058709950738097556
+      },
+      {
+        "name": "experience with opponent passing defense",
+        "home_margin_change": 0.5286339604336687
+      }
+    ],
+    "interpretation": "Regression sensitivity with all team inputs held fixed, not a causal injury estimate. Three Daniels pass attempts do not establish his true NFL ability."
+  },
+  "limitation": "Conditional on known actual starter identity; not an archived pregame simulation. No 2026 outcomes used. Missing performance is explicitly flagged; unobserved EPA is not treated as a measured zero.",
+  "features": [
+    "prior starts",
+    "prior two-season passing EPA per dropback",
+    "prior two-season dropbacks",
+    "rookie",
+    "no observed dropbacks",
+    "prior two-season same-team attempts",
+    "team sack rate",
+    "team rush EPA/carry",
+    "opponent passing EPA allowed/dropback",
+    "starting-experience interactions with three support features"
+  ],
+  "scope": "QB-aware score model with team support. Starter-change cohort includes performance/rotation changes as well as injuries; it is not an injury-only cohort. Missing team coverage is not permitted in a production deployment.",
+  "folds": [
+    {
+      "season": 2024,
+      "lambda": 100,
+      "baseline": {
+        "games": 272,
+        "margin_mae": 10.36972050932408,
+        "margin_rmse": 13.448255226903795,
+        "total_mae": 10.046706634418902,
+        "total_rmse": 13.082513249935007,
+        "team_score_mae": 7.405383583541127
+      },
+      "candidate": {
+        "games": 272,
+        "margin_mae": 9.983686230591193,
+        "margin_rmse": 12.986838110350373,
+        "total_mae": 9.918750382986728,
+        "total_rmse": 12.943309665256574,
+        "team_score_mae": 7.2657176508707995
+      },
+      "starter_change": {
+        "baseline": {
+          "games": 47,
+          "margin_mae": 11.622404810004083,
+          "margin_rmse": 14.948434094164854,
+          "total_mae": 11.028479725760262,
+          "total_rmse": 14.519763623673548,
+          "team_score_mae": 8.213974427311266
+        },
+        "candidate": {
+          "games": 47,
+          "margin_mae": 11.05165499233818,
+          "margin_rmse": 13.912624092158723,
+          "total_mae": 11.022217768314803,
+          "total_rmse": 14.586086731336945,
+          "team_score_mae": 8.076657387281886
+        }
+      }
+    },
+    {
+      "season": 2025,
+      "lambda": 10,
+      "baseline": {
+        "games": 272,
+        "margin_mae": 10.249524191408417,
+        "margin_rmse": 12.966594924663498,
+        "total_mae": 10.731812330691188,
+        "total_rmse": 13.513033954087405,
+        "team_score_mae": 7.48771739754079
+      },
+      "candidate": {
+        "games": 272,
+        "margin_mae": 10.28997163786596,
+        "margin_rmse": 13.02632230308518,
+        "total_mae": 10.640633408007345,
+        "total_rmse": 13.461576646988284,
+        "team_score_mae": 7.5372627767134075
+      },
+      "starter_change": {
+        "baseline": {
+          "games": 51,
+          "margin_mae": 13.25416164631837,
+          "margin_rmse": 16.1490155096321,
+          "total_mae": 10.088955214237167,
+          "total_rmse": 12.33984787411222,
+          "team_score_mae": 7.965110759185584
+        },
+        "candidate": {
+          "games": 51,
+          "margin_mae": 12.861444396591628,
+          "margin_rmse": 15.992321201812157,
+          "total_mae": 9.964682156962402,
+          "total_rmse": 12.485103379686471,
+          "team_score_mae": 7.9563493404406636
+        }
+      }
+    }
+  ],
+  "sources": [
+    {
+      "file": "games.csv",
+      "sha256": "4f47b55b40930fd4865c904e2771639c335c5bb24fdc358cd6d30f3a3c3a19af"
+    },
+    {
+      "file": "players.csv",
+      "sha256": "a7c82b0f6f6ee4863e5a714a26d734841f2dc5ce3e685bf9fd53d52f128e18cc"
+    },
+    {
+      "file": "stats_player_week_2020.csv",
+      "sha256": "05b992676faccc8940efbf6242cb76358069372d31d7c2e02c1a4acdcd3cbe18"
+    },
+    {
+      "file": "stats_player_week_2021.csv",
+      "sha256": "41915fb49238902ad1f129ebf0405b11a1e710454ae0fe8f7b3e4f9145875f48"
+    },
+    {
+      "file": "stats_player_week_2022.csv",
+      "sha256": "ad426c3fe5bf1cc30c3f137fdfe96d054e19d400879ee4413129da49fa7b54be"
+    },
+    {
+      "file": "stats_player_week_2023.csv",
+      "sha256": "f19cb71a5de0dce7fd09376026237c9ee9d5a93fe13815a2ea3ec2d37204cb17"
+    },
+    {
+      "file": "stats_player_week_2024.csv",
+      "sha256": "3ddc45a84f759aa348ce465ae001752c530575455717657cdfe1f8abfcdb4759"
+    },
+    {
+      "file": "stats_player_week_2025.csv",
+      "sha256": "e5e0615b3d96a3eaebfaee91e55afb4a4e7fe0caf057454177bcd7d6ad4bcfc2"
+    },
+    {
+      "file": "stats_player_week_2026.csv",
+      "sha256": "479883490a09a9144679f36dac118cf10c88a7c5780a668a835379396b54c5a3"
+    },
+    {
+      "file": "stats_team_week_2020.csv",
+      "sha256": "a8f2cc2055404fc293105af25f14ff28593c32961912e752e2e50f4a6ba461ad"
+    },
+    {
+      "file": "stats_team_week_2021.csv",
+      "sha256": "a094523217f7f351a79f5e667dbe67267e0861a3b76a7a3b62a1cfe49f289673"
+    },
+    {
+      "file": "stats_team_week_2022.csv",
+      "sha256": "9803875bd0b74aa49230288d45359c75e45910f1cf1953ea0f07b9d3db35e4d1"
+    },
+    {
+      "file": "stats_team_week_2023.csv",
+      "sha256": "dc5a387daabe8663deaddac492ad7020d47fb1a66048690b355b406cd8e4c454"
+    },
+    {
+      "file": "stats_team_week_2024.csv",
+      "sha256": "b207a1430c2715d03bbf1844c4eae98695f364851ff6025f422febc2c13f5255"
+    },
+    {
+      "file": "stats_team_week_2025.csv",
+      "sha256": "91058a59d894855377b2f39f40c4e7bdbeef96d12144289dc68215209a1c93cb"
+    },
+    {
+      "file": "stats_team_week_2026.csv",
+      "sha256": "6cfdae5ca0503770eeea630f28d69a6671a8afc68b1ebb77a022b25e788ded3f"
+    }
+  ]
+}
