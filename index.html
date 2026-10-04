@@ -113,7 +113,9 @@ border-radius:6px;overflow:hidden}
 @media(max-width:650px){.compareGrid{grid-template-columns:1fr}.showWork{font-size:12px}.topbar{padding:0 8px}.brand{min-width:140px}.nav button{padding:0 8px}}
 .showWork li{margin:10px 0;max-width:75ch}.showWork ol{padding-left:20px}.evidenceRow{padding:10px 0;border-top:1px solid #1d314b}.showWork details{border-top:1px solid #1d314b}.showWork details[open]{padding-bottom:10px}
 </style>
-</head>
+<style>
+#leaguePage a,#newsPage a{color:#86c4ff;text-underline-offset:3px}#leaguePage #leagueSheetRefresh{background:#142c44;color:#eef6ff;border:1px solid #497398;border-radius:6px;padding:10px 14px;margin-right:12px;cursor:pointer}#leaguePage .tabs button{font-size:14px}#newsPage .evidenceRow{padding:18px 0;border-bottom:1px solid #294159}#newsPage input{background:#142c44;color:#eef6ff;border:1px solid #497398}
+</style></head>
 <body>
 <div class="app">
 <header class="topbar">
@@ -192,8 +194,8 @@ border-radius:6px;overflow:hidden}
     </div>
 
     <div class="lowgrid">
-      <div class="panel"><h3>SPREAD BREAKDOWN</h3><div class="breakrow"><span>Model Projection</span><b>—</b><b>—</b></div><div class="breakrow"><span>Spread</span><b>—</b><b>—</b></div><div class="breakrow"><span>Model Edge</span><b class="edge">—</b><b class="edge">—</b></div><div class="breakrow"><span>Implied Probability</span><b>—</b><b>—</b></div><div class="breakrow"><span>Our Win Probability</span><b>—</b><b>—</b></div><div class="breakrow"><span>Edge</span><b class="edge">—</b><b class="edge">—</b></div></div>
-      <div class="panel"><h3>TOTAL BREAKDOWN</h3><div class="breakrow"><span>Over / Under</span><b>—</b><b></b></div><div class="breakrow"><span>Our Projection</span><b>—</b><b></b></div><div class="breakrow"><span>Model Lean</span><b class="edge">—</b><b></b></div><div class="breakrow"><span>Edge</span><b class="edge">—</b><b></b></div><div class="breakrow"><span>Implied Probability O/U</span><b>—</b><b>—</b></div><div class="breakrow"><span>Our Probability O/U</span><b>—</b><b>—</b></div></div>
+      <div class="panel"><h3>SPREAD BREAKDOWN</h3><div class="breakrow"><span>Model Projection</span><b>—</b><b>—</b></div><div class="breakrow"><span>Spread</span><b>—</b><b>—</b></div><div class="breakrow"><span>Model Edge</span><b class="edge">—</b><b class="edge">—</b></div><div class="breakrow"><span>Implied Probability</span><b>—</b><b>—</b></div><div class="breakrow"><span>Chance of covering</span><b>—</b><b>—</b></div><div class="breakrow"><span>Edge</span><b class="edge">—</b><b class="edge">—</b></div></div>
+      <div class="panel"><h3>TOTAL BREAKDOWN</h3><div class="breakrow"><span>Over / Under</span><b>—</b><b></b></div><div class="breakrow"><span>Our Projection</span><b>—</b><b></b></div><div class="breakrow"><span>Model Lean</span><b class="edge">—</b><b></b></div><div class="breakrow"><span>Edge</span><b class="edge">—</b><b></b></div><div class="breakrow"><span>Sportsbook over / under chances</span><b>—</b><b>—</b></div><div class="breakrow"><span>Our over / under chances</span><b>—</b><b>—</b></div></div>
       <div class="panel"><h3>LATEST SCORES</h3><table class="scoretable"><thead><tr><th>TEAM</th><th>1</th><th>2</th><th>3</th><th>4</th><th>T</th></tr></thead><tbody><tr><td>AWAY</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>HOME</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table><div class="halftime">Live score feed</div></div>
     </div>
 
@@ -232,19 +234,19 @@ border-radius:6px;overflow:hidden}
     <div class="filterBar"><label>Find a player<input id="boardSearch" type="search" placeholder="Player or team"></label><label>Position<select id="boardPosition"><option value="">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select></label></div><p id="boardCount" class="dataNote" aria-live="polite"></p><div id="seasonCategoryMount"></div>
   </div>
 </section>
-<section class="page" id="comparePage"><div class="categoryWrap"><h2>COMPARE PLAYERS</h2><p class="dataNote">Compare season value and matching-week football projections. Unvalidated projections remain for review; no start/sit probability is inferred.</p><div class="filterBar"><label>Player one<select id="compareOne"></select></label><label>Player two<select id="compareTwo"></select></label></div><div id="compareRead" class="panel" aria-live="polite"></div><div id="compareMount" class="compareGrid"></div></div></section>
+<section class="page" id="comparePage"><div class="categoryWrap"><h2>COMPARE PLAYERS</h2><p class="dataNote">Choose two players to compare this week’s projected stats, injury reports and recent news.</p><div class="filterBar"><label>Player one<select id="compareOne"></select></label><label>Player two<select id="compareTwo"></select></label></div><div id="compareRead" class="panel" aria-live="polite"></div><div id="compareMount" class="compareGrid"></div></div></section>
 
 <section class="page" id="weeklyPage">
   <div class="categoryWrap">
     <h2 id="weeklyHeading">WEEKLY FANTASY</h2>
-    <div class="categoryIntro">Matching-week projections, opportunity and availability, with the same math and context review used in comparisons. Season-board shortlists remain separate from weekly recommendations.</div>
+    <div class="categoryIntro">See this week’s forecasts and check player availability before setting your lineup. The other tabs group players by season outlook; they are not automatic start/sit picks.</div>
     <div class="categoryTabs" id="weeklyTabs">
-      <button class="active" data-weekly="projections">PLAYER PROJECTIONS</button><button data-weekly="starts">START REVIEW</button>
-      <button data-weekly="fades">AVAILABILITY / FADE REVIEW</button>
+      <button class="active" data-weekly="projections">PLAYER PROJECTIONS</button><button data-weekly="starts">STARTER CANDIDATES</button>
+      <button data-weekly="fades">INJURY CONCERNS</button>
       <button data-weekly="sleepers">SLEEPERS</button>
       <button data-weekly="busts">BUSTS / AVOIDS</button>
       <button data-weekly="waivers">WAIVER / OPPORTUNITY</button>
-      <button data-weekly="matchups">ENVIRONMENT REVIEW</button>
+      <button data-weekly="matchups">TEAM SITUATION</button>
     </div>
     <div class="filterBar"><label>Find a weekly player<input id="weeklySearch" type="search" placeholder="Player or team"></label><label>Position<select id="weeklyPosition"><option value="">All positions</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option></select></label></div><p id="weeklyCount" class="dataNote" aria-live="polite"></p><div id="weeklyCategoryMount"></div>
   </div>
@@ -307,6 +309,25 @@ border-radius:6px;overflow:hidden}
     const ev=win!=null&&loss!=null&&profit!=null?win*profit-loss:null;
     return [`Price ${odds??'unavailable'} implies ${pct(implied)}; no-vig market ${pct(fair)}.`,`Model win ${pct(win)}, push ${pct(push)}, loss ${pct(loss)}; conditional win ${pct(s.model_conditional_win_probability??s.conditional_win_probability)}.`,`EV per unit = win × net payout − loss = ${fmt(win)} × ${fmt(profit)} − ${fmt(loss)} ≈ ${fmt(ev)}. Probability edge ${pct(s.probability_edge)}.`];
   }
+  function plainPrice(s){
+    const odds=num(s.offered_odds),win=num(s.model_win_probability??s.win_probability),loss=num(s.model_loss_probability??s.loss_probability);
+    if(odds==null||Math.abs(odds)<100||win==null||loss==null)return 'We do not have enough information to compare the chance of winning with the price.';
+    const payout=odds>0?odds/100:100/-odds,ev=win*payout-loss;
+    return `At ${odds>0?'+':''}${odds}, a $100 bet would profit $${(100*payout).toFixed(2)} if it wins. You need to win ${pct(1/(1+payout))} of bets without a refund to break even. Using our win, loss and refund chances, the estimated average result is ${ev>=0?'+':'−'}$${Math.abs(ev*100).toFixed(2)} per $100 bet over many similar bets—not a guaranteed return.`;
+  }
+  function propAvailability(e,signals=[],kickoff,now=Date.now()){
+    const start=Date.parse(kickoff);
+    if(Number.isFinite(start)&&start<=now)return {available:false,label:'Game started',reason:'This is a saved pregame forecast. It is no longer an available pregame play.'};
+    const injury=signals.find(s=>s.kind==='injury'),role=signals.find(s=>s.kind==='role');
+    const status=String(injury?.evidence?.status||'').toLowerCase();
+    if(['out','inactive','injured reserve','ir','pup','suspended'].includes(status))return {available:false,label:'Not available',reason:'The latest report lists this player as '+status+'. This prop is removed from current recommendations.'};
+    const active=injury?contextCurrent(injury,'injury',now)&&(status==='active'||/^(full participant|full participation|full practice)$/i.test(injury.evidence?.practice_status||''))&&!['questionable','doubtful','unknown'].includes(status)&&!/limited|did not|dnp/i.test(injury.evidence?.practice_status||''):contextCurrent(role,'role',now)&&role.evidence?.espn_active_flag===true;
+    if(!active)return {available:false,label:'Waiting for player status',reason:'We need a recent report confirming this player is available before recommending a prop.'};
+    if(!Number.isFinite(start))return {available:false,label:'Waiting for game time',reason:'We cannot confirm that this market is still open.'};
+    const quote=Date.parse(e.captured_at);
+    if(!Number.isFinite(quote)||quote>now||now-quote>6*3600000)return {available:false,label:'Waiting for updated odds',reason:'This saved price is too old to treat as an available play.'};
+    return {available:e.eligibility?.eligible_for_pick===true&&e.recommendation?.decision==='PICK',label:e.recommendation?.decision==='PICK'&&e.eligibility?.eligible_for_pick===true?'Model pick':'No bet',reason:e.recommendation?.decision==='PICK'?'Check the current price before placing a bet.':'The model does not recommend a bet at this price.'};
+  }
   function gameWork(game,snapshot,kind,now=Date.now()){
     const p=game.football_projection||{},m=snapshot?.market||{},e=snapshot?.markets?.[kind]||{},r=e.recommendation||{decision:'WAIT'};
     const a=e.side_a||{},b=e.side_b||{},isA=num(a.expected_value)!=null&&(num(b.expected_value)==null||a.expected_value>=b.expected_value),s=isA?a:b;
@@ -320,7 +341,11 @@ border-radius:6px;overflow:hidden}
     const threshold=kind==='total'?total:kind==='spread'&&spread!=null?-spread:0;
     const reconciliation=terms.length?reconcile(contribution.intercept,contribution.reconstructed,threshold,isA?'OVER':'UNDER'):'UNVALIDATED';
     const attribution=terms.length?`Existing formula: intercept ${fmt(contribution.intercept)} + ${terms.map(t=>`${t.name.replaceAll('_',' ')} ${fmt(t.contribution)} (${((isA?1:-1)*t.contribution)>0?'strengthens':'weakens'} the evaluated side)`).join(' + ')} = ${fmt(contribution.reconstructed)}. These contributions are already included; venue is not added twice.`:'Calibrated score-contribution detail unavailable.';
-    return finish([`Model score: ${game.away_team} ${fmt(away)}, ${game.home_team} ${fmt(home)}. Market ${kind}: ${kind==='spread'?spread??'unavailable':kind==='total'?total??'unavailable':`${m.home_moneyline??'unavailable'} / ${m.away_moneyline??'unavailable'}`}.`,kind==='moneyline'?'Moneyline uses the score-distribution win probability.':`${kind==='spread'?'Home cover edge = home score − away score + home spread':'Over edge = model total − market total'} = ${fmt(edge)} points.`,`Team implied totals: ${implied}. Market scoring expectations are context only.`,...priceMath(s,e.fair_market?.[isA?'side_a_probability':'side_b_probability'])],context,reconciliation,s.conditional_win_probability,r.confidence,r.decision,[attribution,`Evaluated side: ${kind==='total'?(isA?'OVER':'UNDER'):(isA?game.home_team:game.away_team)}. Selection: ${r.selection||'none'}; ${r.reason||'locked thresholds applied'}. Quote: ${snapshot?.book||'unavailable'}, ${snapshot?.captured_at||'unavailable'}. Additional score adjustment: 0; context has no validated game-score weight.`]);
+    const work=finish([`Model score: ${game.away_team} ${fmt(away)}, ${game.home_team} ${fmt(home)}. Market ${kind}: ${kind==='spread'?spread??'unavailable':kind==='total'?total??'unavailable':`${m.home_moneyline??'unavailable'} / ${m.away_moneyline??'unavailable'}`}.`,kind==='moneyline'?'Moneyline uses the score-distribution win probability.':`${kind==='spread'?'Home cover edge = home score − away score + home spread':'Over edge = model total − market total'} = ${fmt(edge)} points.`,`Team implied totals: ${implied}. Market scoring expectations are context only.`,...priceMath(s,e.fair_market?.[isA?'side_a_probability':'side_b_probability'])],context,reconciliation,s.conditional_win_probability,r.confidence,r.decision,[attribution,`Evaluated side: ${kind==='total'?(isA?'OVER':'UNDER'):(isA?game.home_team:game.away_team)}. Selection: ${r.selection||'none'}; ${r.reason||'locked thresholds applied'}. Quote: ${snapshot?.book||'unavailable'}, ${snapshot?.captured_at||'unavailable'}. Additional score adjustment: 0; context has no validated game-score weight.`]);
+    const pick=r.selection||'No bet',projectedTotal=home!=null&&away!=null?home+away:null;
+    const summary=kind==='total'?`We expect about ${fmt(projectedTotal)} combined points. The line is ${fmt(total)}, so our forecast is ${fmt(edge==null?null:Math.abs(edge))} points ${edge>=0?'above':'below'} it.`:kind==='spread'?`We expect ${game.away_team} to score ${fmt(away)} and ${game.home_team} ${fmt(home)}. With ${game.home_team} ${spread==null?'at an unknown spread':spread<0?'giving '+Math.abs(spread)+' points':'getting '+spread+' points'}, our forecast gives the home side ${fmt(edge)} points of room against the spread.`:`We give ${game.home_team} a ${pct(p.home_win_probability)} chance to win and ${game.away_team} ${pct(p.away_win_probability)}.`;
+    work.reader={summary,details:[`Our choice at this saved price: ${pick}.`, `Our estimated chance for the evaluated side: ${pct(s.conditional_win_probability)} when the bet does not end in a refund.`,plainPrice(s),`The spread and total imply ${game.home_team} ${total!=null&&spread!=null?fmt((total-spread)/2):'unknown'} points and ${game.away_team} ${total!=null&&spread!=null?fmt((total+spread)/2):'unknown'} points. These are the sportsbook’s scoring expectations.`, `Odds from ${snapshot?.book||'an unknown sportsbook'}, recorded ${snapshot?.captured_at||'at an unknown time'}.`]};
+    return work;
   }
   function propWork(e,spec,projection,signals=[],opportunities={},now=Date.now(),environment=null){
     const side=e.recommendation?.side||e.model_pick?.side;
@@ -328,11 +353,16 @@ border-radius:6px;overflow:hidden}
     const context=contextReview(signals,now),reconciliation=reconcile(base,num(projection?.mean),e.line,side);
     const applied=projection?.adjustments?.applied||[];
     const environmentText=environment?`Game total ${fmt(environment.total)}; ${environment.team} implied points ${fmt(environment.implied_total)} = (total − team spread) / 2. Quote: ${environment.book}, ${environment.captured_at}. This is market context, not a fantasy projection adjustment.`:'Game total / team implied total unavailable for the matching team and week.';
-    return finish([`Baseline ${fmt(base)} → context-adjusted projection ${fmt(mean)} ${e.stat}; ${spec?.family||'unavailable'} distribution, SD ${fmt(spec?.sd??spec?.parameters?.sigma)}.`,`Market ${side||'unavailable'} ${e.line}; projection − line = ${mean!=null&&num(e.line)!=null?fmt(mean-e.line):'unavailable'}.`,...priceMath(s,s.no_vig_market_probability)],context,reconciliation,s.model_conditional_win_probability,e.recommendation?.confidence,e.recommendation?.decision,[`Model direction: ${e.model_pick?.side||'unavailable'}. Betting selection: ${e.recommendation?.side||'none'}.`,environmentText,`Opportunities: ${Object.entries(opportunities).filter(([,v])=>num(v)!=null).map(([k,v])=>`${k} ${fmt(v)}`).join(', ')||'unavailable; no attempts or volume inferred from yardage'}.`,`Existing applied adjustments: ${applied.map(a=>`${a.signal}: mean ${pct(a.mean_pct)}, uncertainty ${pct(a.sd_pct)} (${a.source||'source unavailable'})`).join('; ')||'none'}.`,`Availability: ${e.eligibility?.availability_status||'unavailable'}. Quote: ${e.book||'unavailable'}, ${e.captured_at||'unavailable'}.`]);
+    const work=finish([`Baseline ${fmt(base)} → context-adjusted projection ${fmt(mean)} ${e.stat}; ${spec?.family||'unavailable'} distribution, SD ${fmt(spec?.sd??spec?.parameters?.sigma)}.`,`Market ${side||'unavailable'} ${e.line}; projection − line = ${mean!=null&&num(e.line)!=null?fmt(mean-e.line):'unavailable'}.`,...priceMath(s,s.no_vig_market_probability)],context,reconciliation,s.model_conditional_win_probability,e.recommendation?.confidence,e.recommendation?.decision,[`Model direction: ${e.model_pick?.side||'unavailable'}. Betting selection: ${e.recommendation?.side||'none'}.`,environmentText,`Opportunities: ${Object.entries(opportunities).filter(([,v])=>num(v)!=null).map(([k,v])=>`${k} ${fmt(v)}`).join(', ')||'unavailable; no attempts or volume inferred from yardage'}.`,`Existing applied adjustments: ${applied.map(a=>`${a.signal}: mean ${pct(a.mean_pct)}, uncertainty ${pct(a.sd_pct)} (${a.source||'source unavailable'})`).join('; ')||'none'}.`,`Availability: ${e.eligibility?.availability_status||'unavailable'}. Quote: ${e.book||'unavailable'}, ${e.captured_at||'unavailable'}.`]);
+    const stat=String(e.stat||'').replaceAll('_',' ');
+    work.reader={summary:`We project ${fmt(mean)} ${stat}, compared with a line of ${e.line??'unknown'}. ${side?`The model leans ${side.toLowerCase()}.`:'Neither side has a confirmed recommendation.'}`,details:[`The starting projection was ${fmt(base)}. After the supported matchup and usage adjustments, it is ${fmt(mean)}.`, `Estimated chance for ${side||'the selected side'}: ${pct(s.model_conditional_win_probability)} when the bet does not end in a refund.`,plainPrice(s),`Projected workload: ${Object.entries(opportunities).filter(([,v])=>num(v)!=null).map(([k,v])=>`${fmt(v)} ${k}`).join(', ')||'not available'}.`,environment?`The game total is ${fmt(environment.total)}. The spread and total imply ${fmt(environment.implied_total)} points for ${environment.team}.`:'We do not have matching game odds for this player.']};
+    return work;
   }
   function fantasyWork(projection,signals=[],now=Date.now()){
     const context=contextReview(signals,now),base=num(projection?.baseline?.mean),mean=num(projection?.mean);
-    return finish([`Historical baseline ${fmt(base)} × existing context multiplier ${fmt(projection?.adjustments?.mean_multiplier)} = ${fmt(mean)}.`,`Combined uncertainty ${fmt(projection?.combined_sd)}; performance ${fmt(projection?.performance_sd)}, projection error ${fmt(projection?.projection_error_sd)}.`],context,reconcile(base,mean),null,null,'PROJECTION_ONLY',['Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.']);
+    const work=finish([`Historical baseline ${fmt(base)} × existing context multiplier ${fmt(projection?.adjustments?.mean_multiplier)} = ${fmt(mean)}.`,`Combined uncertainty ${fmt(projection?.combined_sd)}; performance ${fmt(projection?.performance_sd)}, projection error ${fmt(projection?.projection_error_sd)}.`],context,reconcile(base,mean),null,null,'PROJECTION_ONLY',['Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.']);
+    work.reader={summary:`Our starting forecast is ${fmt(base)}. The supported matchup and workload adjustments bring it to ${fmt(mean)}.`,details:[`Expected variation around the forecast: ${fmt(projection?.combined_sd)}. A wider range means a less predictable result.`]};
+    return work;
   }
   function teamEnvironment(games,team,week){
     const g=Object.values(games||{}).find(g=>Number(g.week)===Number(week)&&[g.home_team,g.away_team].includes(team));
@@ -352,7 +382,7 @@ border-radius:6px;overflow:hidden}
     const median=key=>{const values=books.map(s=>num(s.market?.[key])).filter(x=>x!=null).sort((a,b)=>a-b);const n=values.length;return {count:n,value:n<2?null:n%2?values[(n-1)/2]:(values[n/2-1]+values[n/2])/2};};
     return {home_spread:median('home_spread'),total:median('total'),books:books.map(s=>({book:s.book,captured_at:s.captured_at,home_spread:num(s.market?.home_spread),total:num(s.market?.total)}))};
   }
-  root.CTD_SHOW_WORK={contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
+  root.CTD_SHOW_WORK={propAvailability,contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
 })(globalThis);
 </script>
 <!-- END SHARED SHOW WORK -->
@@ -370,12 +400,11 @@ let selectedGameIndex=0;
 let WORK_INPUTS={},WORK_GAMES={};let PLAYER_SOURCE_READY=false;
 
 function workHtml(work){
- if(!work)return '<section class="showWork"><p>Matching model explanation unavailable.</p></section>';
- const math=work.math||[],paragraphs=work.paragraphs||[],context=work.context||{};
- const effect={STRENGTHENS:'The existing adjustments strengthen the raw edge.',WEAKENS:'The existing adjustments reduce the raw edge.',CONTRADICTS:'The existing adjustments reverse the raw edge.',UNCHANGED:'The existing adjustments leave the projection unchanged.',UNVALIDATED:'An adjustment comparison is not available.',INCREASES_PROJECTION:'Existing adjustments raise the projection.',DECREASES_PROJECTION:'Existing adjustments lower the projection.'}[work.reconciliation]||'Context needs review.';
- const unique=[...new Map((context.rows||[]).map(x=>[x.text,x])).values()];
- const extras=paragraphs.slice(math.length).filter(x=>!['Context:','Missing or unverified:','Reconciliation:','Final:'].some(prefix=>x.startsWith(prefix)));
- return `<section class="showWork"><h4>Why this result</h4><p>${esc(math[0])} ${esc(math[1]||'')}</p><p>${esc(effect)} ${context.status==='COMPLETE'?'The attached context checks are complete.':'Some matchup evidence is missing or needs a fresh check; it has not been used to boost the probability.'}</p><p class="workVerdict">Baseline decision: ${esc(work.decision)} · Model probability ${work.final_probability==null?'unavailable':(work.final_probability*100).toFixed(1)+'%'} · Model confidence ${esc(work.final_confidence||'unavailable')}</p><details><summary>Show the calculation</summary><ol>${math.map(p=>`<li>${esc(p)}</li>`).join('')}</ol>${extras.map(p=>`<p>${esc(p)}</p>`).join('')}<p>These adjustments are already included in the model. No additional unvalidated weight has been applied.</p></details><details><summary>Matchup evidence and missing inputs</summary><p>${context.missing?.length?'Still needs verification: '+esc(context.missing.join(', '))+'.':'All listed context categories have evidence.'}</p>${unique.length?unique.map(x=>`<article class="evidenceRow"><b>${esc((x.kind||'context').replaceAll('_',' '))} · ${x.current?'Current':'Needs review'}</b><p>${esc(x.text)}</p></article>`).join(''):'<p>No sourced matchup evidence attached.</p>'}</details></section>`;
+ if(!work)return '<section class="showWork"><p>We do not have an explanation for this pick yet.</p></section>';
+ const reader=work.reader||{},context=work.context||{};
+
+ const details=reader.details||[];
+ return `<section class="showWork"><h4>Why we lean this way</h4><p>${esc(reader.summary||'A written explanation is not available for this saved forecast.')}</p>${context.status!=='COMPLETE'?'<p>This is the baseline forecast. Current matchup reports are incomplete, so we cannot confirm that injuries, workload and conditions still support the pick.</p>':''}<details><summary>See the numbers</summary>${details.map(x=>`<p>${esc(x)}</p>`).join('')}</details></section>`;
 }
 function currentInput(key){const x=WORK_INPUTS[key];return x?.season===2026&&Number(x.week)===Number(BET_FEED.week)?x:null;}
 function playerWork(name,stat){
@@ -392,11 +421,15 @@ function renderWorkProps(){
     for(const [stat,e]of Object.entries(p.weekly?.current_by_stat||{})){
       if(Number(e.week)!==Number(BET_FEED.week))continue;
       const pp=projection?.players?.[name],signals=ctx?.sportsbook_inputs_used===false?Object.entries(ctx.players?.[name]?.signals||{}).map(([kind,s])=>({kind,...s})):[];
+      const team=ctx?.players?.[name]?.signals?.role?.evidence?.team||p.team;
+      const game=Object.values(WORK_GAMES).find(g=>Number(g.week)===Number(BET_FEED.week)&&[g.home_team,g.away_team].includes(team));
+      const availability=CTD_SHOW_WORK.propAvailability(e,signals,game?.kickoff||game?.event_start);
+      if(!availability.available)continue;
       const work=CTD_SHOW_WORK.propWork(e,dist?.distributions?.[name]?.distributions?.[stat],pp?.projections?.[stat],signals,Object.fromEntries(['attempts','targets','carries','routes','snaps'].map(k=>[k,pp?.projections?.[k]?.mean])),Date.now(),CTD_SHOW_WORK.teamEnvironment(WORK_GAMES,ctx?.players?.[name]?.signals?.role?.evidence?.team||p.team,BET_FEED.week));
       rows.push(`<article class="panel"><h3>${esc(name)} · ${esc(stat)}</h3><b>${esc(e.model_pick?.side||'WAIT')} ${esc(e.line)}</b><p>${esc(e.book)} · Betting decision ${esc(e.recommendation?.decision||'WAIT')}</p>${workHtml(work)}</article>`);
     }
   }
-  panel.innerHTML=rows.length?rows.join(''):'<div class="panel">No matching current-week prop evaluation is available.</div>';
+  panel.innerHTML=rows.length?rows.join(''):'<div class="panel">No player props are ready to recommend right now. We only show current plays after checking player availability, game time and odds.</div>';
 }
 
 let activeGameTab='OVERVIEW';
@@ -510,7 +543,7 @@ function renderSelectedGame(){
   for(const [kind,id]of Object.entries({spread:'spreadPick',total:'totalPick',moneyline:'mlPick'})){const row=document.getElementById(id)?.closest('.pickrow');if(row){document.getElementById('work-'+kind)?.remove();row.insertAdjacentHTML('afterend',`<div id="work-${kind}">${workHtml(g.show_work?.[kind])}</div>`);}}
 
   const consensus=g.consensus;
-  document.getElementById('marketContext').innerHTML=`<h3>MARKET CONSENSUS</h3><p class="dataNote">Median of the latest eligible quote from each book in the published snapshot. These are captured prices, not a live betting-sentiment feed.</p><p>Home spread: ${consensus?.home_spread?.value==null?'Unavailable':esc(h)+' '+numberText(consensus.home_spread.value)} (${consensus?.home_spread?.count||0} books) · Total: ${numberText(consensus?.total?.value)} (${consensus?.total?.count||0} books)</p><details><summary>Books and capture times</summary>${(consensus?.books||[]).map(b=>`<p class="dataNote">${esc(b.book)} · Spread ${b.home_spread??'—'} · Total ${b.total??'—'} · ${esc(b.captured_at)}</p>`).join('')}</details><h3>SMART MONEY</h3><p class="dataNote">Unavailable: no verified ticket/handle splits source is connected. Line consensus and model edge do not identify sharp action.</p>`;
+  document.getElementById('marketContext').innerHTML=`<h3>SPORTSBOOK LINE COMPARISON</h3><p class="dataNote">The middle spread and total across the listed sportsbooks. This compares prices; it does not show how many people bet on each side.</p><p>Home spread: ${consensus?.home_spread?.value==null?'Unavailable':esc(h)+' '+numberText(consensus.home_spread.value)} (${consensus?.home_spread?.count||0} books) · Total: ${numberText(consensus?.total?.value)} (${consensus?.total?.count||0} books)</p><details><summary>Books and capture times</summary>${(consensus?.books||[]).map(b=>`<p class="dataNote">${esc(b.book)} · Spread ${b.home_spread??'—'} · Total ${b.total??'—'} · ${esc(b.captured_at)}</p>`).join('')}</details><h3>SMART MONEY</h3><p class="dataNote">We do not currently receive bet counts or the amount of money on each side, so we cannot show betting percentages or identify sharp action.</p>`;
   const offense = first(g,['pivotal_offense','key_offensive_players','offensive_players','offense_keys']);
   const defense = first(g,['pivotal_defense','key_defensive_players','defensive_players','defense_keys']);
   function renderPlayers(arr){
@@ -546,7 +579,7 @@ function renderSelectedGame(){
       <div class="breakrow"><span>Spread</span><b>${esc(sb.spread||'—')}</b><b></b></div>
       <div class="breakrow"><span>Model Edge</span><b class="edge">${esc(sb.model_edge_away||'—')}</b><b class="edge">${esc(sb.model_edge_home||'')}</b></div>
       <div class="breakrow"><span>Implied Probability</span><b>${esc(sb.implied_prob_away||'—')}</b><b>${esc(sb.implied_prob_home||'—')}</b></div>
-      <div class="breakrow"><span>Our Win Probability</span><b>${esc(sb.our_win_prob_away||'—')}</b><b>${esc(sb.our_win_prob_home||'—')}</b></div>
+      <div class="breakrow"><span>Chance of covering</span><b>${esc(sb.our_win_prob_away||'—')}</b><b>${esc(sb.our_win_prob_home||'—')}</b></div>
       <div class="breakrow"><span>Edge</span><b class="edge">${esc(sb.edge_away||'—')}</b><b class="edge">${esc(sb.edge_home||'—')}</b></div>`;
   }
 
@@ -558,8 +591,8 @@ function renderSelectedGame(){
       <div class="breakrow"><span>Our Projection</span><b>${esc(tb.our_projection||'—')}</b><b></b></div>
       <div class="breakrow"><span>Model Lean</span><b class="edge">${esc(tb.model_lean||'—')}</b><b></b></div>
       <div class="breakrow"><span>Edge</span><b class="edge">${esc(tb.edge||'—')}</b><b></b></div>
-      <div class="breakrow"><span>Implied Probability O/U</span><b>${esc(tb.implied_over||'—')}</b><b>${esc(tb.implied_under||'—')}</b></div>
-      <div class="breakrow"><span>Our Probability O/U</span><b>${esc(tb.our_over||'—')}</b><b>${esc(tb.our_under||'—')}</b></div>
+      <div class="breakrow"><span>Sportsbook over / under chances</span><b>${esc(tb.implied_over||'—')}</b><b>${esc(tb.implied_under||'—')}</b></div>
+      <div class="breakrow"><span>Our over / under chances</span><b>${esc(tb.our_over||'—')}</b><b>${esc(tb.our_under||'—')}</b></div>
       <div class="breakrow"><span>Edge O/U</span><b class="edge">${esc(tb.edge_over||'—')}</b><b class="edge">${esc(tb.edge_under||'—')}</b></div>`;
   }
 
@@ -627,11 +660,19 @@ function edgePct(x){
   if(!Number.isFinite(n))return '—';
   return `${(n*100).toFixed(1)}%`;
 }
+function currentPropLeg(x){
+ if(x.source_type!=='PLAYER_PROP'&&!x.player)return true;
+ const e=currentInput('props')?.players?.[x.player]?.weekly?.current_by_stat?.[x.stat];
+ if(!e||e.book!==x.sportsbook||e.line!==x.line)return false;
+ const signals=Object.entries(currentInput('context')?.players?.[x.player]?.signals||{}).map(([kind,s])=>({kind,...s}));
+ const game=WORK_GAMES[x.event_id];
+ return CTD_SHOW_WORK.propAvailability(e,signals,game?.kickoff||game?.event_start).available;
+}
 function renderOurPicks(feed){
   const mount=document.getElementById('ourPicksMount'); if(!mount)return;
   if(feed.status!=='READY'){mount.innerHTML=`<div class="copy">Current market feed: ${esc(feed.status||'WAITING')}.</div>`;return}
   if(!feed.picksAvailable){mount.innerHTML='<p class="copy">Approved-picks feed unavailable or does not match this week. Individual model directions are shown above; no approval is inferred.</p>';return;}
-  const legs=(feed.eligible_legs||[]).filter(x=>x.label==='PICK'&&x.standalone_approved===true)
+  const legs=(feed.eligible_legs||[]).filter(x=>x.label==='PICK'&&x.standalone_approved===true&&currentPropLeg(x))
     .sort((a,b)=>(Number(b.expected_value||0)+Number(b.probability_edge||0))-(Number(a.expected_value||0)+Number(a.probability_edge||0)));
   if(!legs.length){mount.innerHTML='<div class="copy"><b>PASS:</b> no current spread, total, moneyline or prop clears the model threshold.</div>';return}
   mount.innerHTML=`<div class="pickCards">${legs.slice(0,12).map(x=>`
@@ -663,15 +704,15 @@ function seasonGroups(){
 function renderPlayerRows(rows,limit=30){
  return `<div class="categoryGrid">${rows.slice(0,limit).map(p=>`<div class="categoryCard"><h3>#${p.overall} · ${esc(p.pos)} · ${esc(p.team)}</h3><div class="catPlayer"><b>${esc(p.name)}</b><span>${esc(marketRead(p))}</span></div><div class="catPlayer"><span>True Value</span><b>#${p.trueRank}</b></div><div class="catPlayer"><span>Ceiling / Role</span><b>${p.ceiling??'—'} / ${p.role??'—'}</b></div><details><summary>Consensus, news and model impact</summary>${playerDetails(p)}</details></div>`).join('')}</div>`;
 }
-function statusText(x){return ({SHADOW_ONLY:'Preview — not approved',REVIEW_REQUIRED:'Needs review',CURRENT:'Current',PROJECTION_ONLY:'Projection only'})[x]||String(x||'Needs review').replaceAll('_',' ').toLowerCase();}
+function statusText(x){return ({SHADOW_ONLY:'Preview — not approved',REVIEW_REQUIRED:'Needs review',CURRENT:'Current',STALE_REVIEW_REQUIRED:'Report needs an update',PROJECTION_ONLY:'Projection only'})[x]||String(x||'Needs review').replaceAll('_',' ').toLowerCase();}
 function numberText(x){return typeof x==='number'&&Number.isFinite(x)?x.toFixed(1):'Unavailable';}
 function playerDetails(p){
  const c=p.consensus||{},news=p.newsFeed||[],injury=currentInput('context')?.players?.[p.name]?.signals?.injury;
- return `<p><b>Season consensus (PPR)</b>: ${numberText(c.normalizedPPR)} points · Our season median: ${numberText(c.ourMedianPPR)}</p><p class="dataNote">${esc(c.source||'Consensus source unavailable')} · Captured ${esc(c.captured||'date unavailable')}. This is a season snapshot, not a live weekly consensus.</p><h4>News and availability</h4>${injury?`<p><b>Latest attached injury evidence:</b> ${esc(injury.evidence?.status||injury.evidence?.game_status||'Not confirmed')} · ${esc(statusText(injury.status))}</p><p class="dataNote">${esc(injury.source)} · Captured ${esc(injury.captured_at||'date unavailable')}. Report updated ${esc(injury.evidence?.source_updated_at||'date unavailable')}. A captured report does not confirm game availability.</p>`:''}${news.length?news.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,3).map(n=>`<p><b>${esc(n.headline)}</b><br>${esc(n.summary)}<br><span class="dataNote">${esc(n.source)} · ${esc(n.date)}</span></p>`).join(''):'<p>No player-specific news attached. This does not confirm a healthy or unchanged status.</p>'}<p>Model impact: ${esc(p.currentModelImpact?.decision?.reason||p.currentModelImpact?.reason||p.newsMaterialityReview?.rationale||p.currentModelImpact?.projectionStatus||'Review unavailable')}</p>`;
+ return `<p><b>Season consensus (PPR)</b>: ${numberText(c.normalizedPPR)} points · Our season median: ${numberText(c.ourMedianPPR)}</p><p class="dataNote">${esc(c.source||'Consensus source unavailable')} · Captured ${esc(c.captured||'date unavailable')}. This is a season snapshot, not a live weekly consensus.</p><h4>News and availability</h4>${injury?`<p><b>Latest injury report:</b> ${esc(injury.evidence?.status||injury.evidence?.game_status||'Not confirmed')} · ${esc(statusText(injury.status))}</p><p class="dataNote">${esc(injury.source)} · Captured ${esc(injury.captured_at||'date unavailable')}. Report updated ${esc(injury.evidence?.source_updated_at||'date unavailable')}. The report date matters: an old update may no longer describe the player’s status.</p>`:''}${news.length?news.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,3).map(n=>`<p><b>${esc(String(n.headline||'').split('|')[0].trim())}</b><br>${esc(n.summary||'')}<br><span class="dataNote">${esc(n.source)} · ${esc(n.date)}</span></p>`).join(''):'<p>No recent news is available for this player. Check the latest injury report before setting your lineup.</p>'}<details><summary>How this affects the forecast</summary><p>Check the projection breakdown for changes supported by current reports. A news headline alone does not change the forecast.</p></details>`;
 }
 function projectionTable(p){
  const pp=currentInput('projections')?.players?.[p.name];
- if(!pp)return '<p class="dataNote">Matching-week projection unavailable.</p>';
+ if(!pp)return '<p class="dataNote">We do not have a forecast for this player this week.</p>';
  return `<p class="dataNote">Week ${esc(BET_FEED.week)} · ${esc(statusText(pp.status))} · Season rank #${esc(p.overall)}</p><div class="tableScroll"><table class="statTable"><thead><tr><th>Stat</th><th>Projection</th><th>Status</th></tr></thead><tbody>${Object.entries(pp.projections||{}).map(([stat,v])=>`<tr><td>${esc(stat.replaceAll('_',' '))}</td><td>${numberText(v.mean)}</td><td>${esc(statusText(v.status))}</td></tr>`).join('')}</tbody></table></div>`;
 }
 function renderCompare(){
@@ -679,7 +720,8 @@ function renderCompare(){
  const [a,b]=['compareOne','compareTwo'].map(id=>PLAYERS.find(p=>p.name===document.getElementById(id).value));
  const inputs=currentInput('projections')?.players||{},ap=inputs[a?.name]?.projections||{},bp=inputs[b?.name]?.projections||{};
  const common=Object.keys(ap).filter(k=>typeof ap[k].mean==='number'&&typeof bp[k]?.mean==='number');
- document.getElementById('compareRead').innerHTML=a?.name===b?.name?'<p>Select two different players to compare.</p>':`<h3>WEEKLY COMPARISON</h3>${common.length?`<p>${common.map(k=>{const delta=ap[k].mean-bp[k].mean;return `${esc(k.replaceAll('_',' '))}: ${esc(delta>=0?a.name:b.name)} projects ${Math.abs(delta).toFixed(1)} more`;}).join(' · ')}.</p><p class="dataNote">These are individual stat differences, not a fantasy-points total or win probability. Missing scoring categories are not treated as zero. Review shadow status, availability and context before a start/sit choice.</p>`:'<p>No matching-week comparable stat projections are available for these players.</p>'}`;
+ const stats=[...new Set([...Object.keys(ap),...Object.keys(bp)])];
+ document.getElementById('compareRead').innerHTML=a?.name===b?.name?'<p>Select two different players to compare.</p>':`<h3>Week ${esc(BET_FEED.week)} · Side by side</h3>${stats.length?`<div class="tableScroll"><table class="statTable"><thead><tr><th>Projected stat</th><th>${esc(a?.name)}</th><th>${esc(b?.name)}</th><th>Difference</th></tr></thead><tbody>${stats.map(k=>{const x=ap[k]?.mean,y=bp[k]?.mean,ok=typeof x==='number'&&typeof y==='number';return `<tr><td>${esc(k.replaceAll('_',' '))}</td><td>${numberText(x)}</td><td>${numberText(y)}</td><td>${ok?(x===y?'Even':esc(x>y?a.name:b.name)+' +'+Math.abs(x-y).toFixed(1)):'Not enough data'}</td></tr>`;}).join('')}</tbody></table></div><p class="dataNote">These are stat forecasts, not fantasy points. Your league’s scoring and each player’s availability matter when choosing a starter.</p>`:'<p>We do not have this week’s forecasts for these players yet.</p>'}`;
  document.getElementById('compareMount').innerHTML=['compareOne','compareTwo'].map(id=>PLAYERS.find(p=>p.name===document.getElementById(id).value)).filter(Boolean).map(p=>`<article class="panel"><h3>${esc(p.name)}</h3><p>${esc(p.pos)} · ${esc(p.team)}</p><p>Season rank #${esc(p.overall)} · True value #${esc(p.trueRank)}</p>${projectionTable(p)}${playerDetails(p)}</article>`).join('');
 }
 for(const [i,id]of ['compareOne','compareTwo'].entries()){const el=document.getElementById(id);el.innerHTML=PLAYERS.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${esc(p.name)}">${esc(p.name)} · ${esc(p.pos)}</option>`).join('');el.value=PLAYERS[i].name;el.addEventListener('change',renderCompare);}
@@ -709,9 +751,9 @@ let weeklyMode='projections';
 function renderWeekly(){
  if(!PLAYER_SOURCE_READY){document.getElementById('weeklyCategoryMount').innerHTML='<p>Current player source is loading or unavailable.</p>';return;}
   const candidates=weeklyMode==='projections'?PLAYERS.slice().sort((a,b)=>a.overall-b.overall):weeklyGroups()[weeklyMode]||[];const q=document.getElementById('weeklySearch').value.toLowerCase(),pos=document.getElementById('weeklyPosition').value;const rows=candidates.filter(p=>(!pos||p.pos===pos)&&(`${p.name} ${p.team}`).toLowerCase().includes(q));document.getElementById('weeklyCount').textContent=`${rows.length} players · Ordered by season rank, with matching-week projections below`;
-  const note=weeklyMode==='matchups'?'<div class="categoryIntro">These are high-environment weekly targets from the current football model. A sportsbook/game-line disagreement is shown separately under Games and is not treated as a fantasy matchup edge by itself.</div>':'';
+  const note=weeklyMode==='matchups'?'<div class="categoryIntro">These players have favorable team situations in the model. Check their workload and availability before choosing a starter.</div>':'';
   const projections=currentInput('projections');
-  document.getElementById('weeklyCategoryMount').innerHTML=note+'<div class="categoryIntro">Season-board candidates below retain the existing ordering. Use the current-week projection and context review before a start/sit decision; these are not calibrated weekly win probabilities.</div>'+rows.map(p=>`<article class="panel"><h3>${esc(p.name)} · ${esc(p.pos)}</h3>${projectionTable(p)}<details><summary>Projection math and context</summary>${Object.keys(projections?.players?.[p.name]?.projections||{}).map(stat=>`<h4>${esc(stat)}</h4>${workHtml(playerWork(p.name,stat))}`).join('')||'<p>Current-week football projection unavailable. Start/sit requires review.</p>'}</details></article>`).join('');
+  document.getElementById('weeklyCategoryMount').innerHTML=note+'<div class="categoryIntro">Players are listed by season rank. Compare this week’s projected stats and check injury updates before choosing your starters.</div>'+rows.map(p=>`<article class="panel"><h3>${esc(p.name)} · ${esc(p.pos)}</h3>${projectionTable(p)}<details><summary>Projection math and context</summary>${Object.keys(projections?.players?.[p.name]?.projections||{}).map(stat=>`<h4>${esc(stat)}</h4>${workHtml(playerWork(p.name,stat))}`).join('')||'<p>Current-week football projection unavailable. Start/sit requires review.</p>'}</details></article>`).join('');
 }
 document.getElementById('weeklyTabs')?.addEventListener('click',e=>{
  const b=e.target.closest('[data-weekly]');if(!b)return;weeklyMode=b.dataset.weekly;
@@ -773,7 +815,7 @@ async function loadFeed(){
         total_pick:totalSel||'PASS',
         model_spread_pick:spreadSel||'PASS',
         moneyline_pick:mlSel||'PASS',
-        model_summary:picks.length?`Our model has ${picks.length} qualified market edge${picks.length===1?'':'s'} at the current ${dk.book||'sportsbook'} lines.`:'No current game market clears the locked betting threshold.',
+        model_summary:picks.length?`Our forecast found ${picks.length} possible play${picks.length===1?'':'s'} at the saved ${dk.book||'sportsbook'} prices. Check the game time and latest odds before using them.`:'We do not recommend a bet at these saved prices.',
         venue:`Week ${raw.week} market · ${dk.book||'sportsbook'} · Captured ${dk.captured_at||'unavailable'}`,
         spread_breakdown:{
           model_projection_away:fp.away_score_mean?.toFixed?.(1)??fp.away_score_mean,
@@ -781,17 +823,17 @@ async function loadFeed(){
           spread:Number.isFinite(hs)?`${home} ${hs>0?'+':''}${hs}`:'—',
           model_edge_away:'',
           model_edge_home:mk.spread?.recommendation?.probability_edge!=null?`${(Number(mk.spread.recommendation.probability_edge)*100).toFixed(1)}%`:'—',
-          implied_prob_away:'—',implied_prob_home:'—',
-          our_win_prob_away:fp.away_win_probability!=null?`${(Number(fp.away_win_probability)*100).toFixed(1)}%`:'—',
-          our_win_prob_home:fp.home_win_probability!=null?`${(Number(fp.home_win_probability)*100).toFixed(1)}%`:'—',
-          edge_away:'—',edge_home:'—'
+          implied_prob_away:edgePct(mk.spread?.fair_market?.side_b_probability),implied_prob_home:edgePct(mk.spread?.fair_market?.side_a_probability),
+          our_win_prob_away:edgePct(mk.spread?.side_b?.conditional_win_probability),
+          our_win_prob_home:edgePct(mk.spread?.side_a?.conditional_win_probability),
+          edge_away:edgePct(mk.spread?.side_b?.probability_edge),edge_home:edgePct(mk.spread?.side_a?.probability_edge)
         },
         total_breakdown:{
           line:m.total??'—',
           our_projection:fp.model_total?.toFixed?.(1)??fp.model_total??'—',
           model_lean:totalSel||'PASS',
           edge:mk.total?.recommendation?.probability_edge!=null?`${(Number(mk.total.recommendation.probability_edge)*100).toFixed(1)}%`:'—',
-          implied_over:'—',implied_under:'—',our_over:'—',our_under:'—',edge_over:'—',edge_under:'—'
+          implied_over:edgePct(mk.total?.fair_market?.side_a_probability),implied_under:edgePct(mk.total?.fair_market?.side_b_probability),our_over:edgePct(mk.total?.side_a?.conditional_win_probability),our_under:edgePct(mk.total?.side_b?.conditional_win_probability),edge_over:edgePct(mk.total?.side_a?.probability_edge),edge_under:edgePct(mk.total?.side_b?.probability_edge)
         }
       });
     }
@@ -833,5 +875,8 @@ window.CTD_INTERFACE_LOCK = {
 })();
 </script>
 
+<script src="runtime-league-refresh-2026.js"></script>
+<script src="runtime-league-hub-2026.js"></script>
+<script src="runtime-news-dashboard-2026.js"></script>
 </body>
 </html>
