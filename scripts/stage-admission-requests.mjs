@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {buildAdmissionPackage} from './build-admission-package.mjs';
 
 const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
@@ -12,6 +13,7 @@ const queue=read('admissions/queue.json');
 if(queue.version!==1||!Array.isArray(queue.entries)) throw new Error('admissions/queue.json invalid');
 const byId=new Map(queue.entries.map(x=>[x.candidate_id,x]));
 let staged=0;
+const calibrated=[];
 
 for(const u of ledger.materially_implicated_untracked||[]){
   if(u.decision!=='ADMIT') continue;
@@ -41,6 +43,10 @@ for(const u of ledger.materially_implicated_untracked||[]){
     entry.package_sha256=prior.package_sha256;
   }
   byId.set(id,{...prior,...entry});
+  if(u.calibration?.reviewed===true&&u.calibration?.player_record){
+    write(`admissions/calibrations/${id}.json`,{...u.calibration,player_name:u.player,source_run:u.calibration.source_run||ledger.sweep_completed_at||'full-development-sweep',source:u.calibration.source||entry.evidence.map(x=>x.source).filter(Boolean).join('; ')});
+    calibrated.push(id);
+  }
   u.admission_request_id=id;
   u.onboarding_manifest=`admissions/queue.json#${id}`;
   u.onboarding_complete=Boolean(byId.get(id).onboarding_complete);
@@ -51,4 +57,6 @@ queue.entries=[...byId.values()].sort((a,b)=>a.candidate_id.localeCompare(b.cand
 queue.updated_at=new Date().toISOString();
 write('admissions/queue.json',queue);
 write(ledgerPath,ledger);
-console.log(JSON.stringify({result:'PASS',staged,queue_entries:queue.entries.length},null,2));
+const packages=[];
+for(const id of calibrated) packages.push(buildAdmissionPackage({candidateId:id}));
+console.log(JSON.stringify({result:'PASS',staged,calibrated_packages:packages.length,packages,queue_entries:queue.entries.length},null,2));
