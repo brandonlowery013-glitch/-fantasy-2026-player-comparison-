@@ -7,6 +7,7 @@
  window.CTD_GAME_MODEL={select,load(kind='recommendations'){
   if(!paths[kind])return Promise.reject(Error('Unknown game model source'));
   const slot=Math.floor(Date.now()/300000),key=kind+slot;if(cache.has(key))return cache.get(key);
+  for(const old of cache.keys())if(old.startsWith(kind))cache.delete(old);
   const [normal,rerun]=paths[kind];const p=Promise.all([read(RAW+normal+'?refresh='+slot),read(rerun).catch(()=>null)]).then(([base,recalculated])=>select(base,recalculated));
   cache.set(key,p);p.catch(()=>cache.delete(key));return p;
  }};
