@@ -112,6 +112,11 @@ border-radius:6px;overflow:hidden}
 .panel,.categoryCard,.topgrid>*{min-width:0}.workVerdict{border-left:2px solid #238dff;padding-left:10px}.filterBar{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0}.filterBar label{display:grid;gap:5px;font-size:12px;color:#b9c9dc}.filterBar input,.filterBar select{max-width:100%;background:#0a1422;color:#f3f7fd;border:1px solid #2e5684;border-radius:6px;padding:9px}.compareGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.statTable{width:100%;font-size:12px;border-collapse:collapse}.statTable td,.statTable th{padding:9px;text-align:left;border-bottom:1px solid #1d314b}.tableScroll{overflow-x:auto}.dataNote{color:#8397ad;font-size:12px;line-height:1.6}.categoryCard details{margin-top:10px;font-size:12px;line-height:1.6}.categoryCard summary{cursor:pointer;color:#72b8ff}
 @media(max-width:650px){.compareGrid{grid-template-columns:1fr}.showWork{font-size:12px}.topbar{padding:0 8px}.brand{min-width:140px}.nav button{padding:0 8px}}
 .showWork li{margin:10px 0;max-width:75ch}.showWork ol{padding-left:20px}.evidenceRow{padding:10px 0;border-top:1px solid #1d314b}.showWork details{border-top:1px solid #1d314b}.showWork details[open]{padding-bottom:10px}
+#games .grid3{grid-template-columns:repeat(2,minmax(0,1fr))}
+#games .modelPicksPanel{grid-column:1/-1;order:3;padding:20px}
+#games .modelPicksPanel .showWork{max-width:85ch;margin:0 auto 20px;font-size:15px;line-height:1.7;padding:16px 0}
+#games .modelPicksPanel .pickrow{margin-top:12px;padding-bottom:12px;border-bottom:1px solid #1d314b}
+@media(max-width:650px){#games .grid3{grid-template-columns:1fr}#games .modelPicksPanel{padding:14px}#games .modelPicksPanel .showWork{font-size:14px}}
 </style>
 <style>
 #leaguePage a,#newsPage a{color:#86c4ff;text-underline-offset:3px}#leaguePage #leagueSheetRefresh{background:#142c44;color:#eef6ff;border:1px solid #497398;border-radius:6px;padding:10px 14px;margin-right:12px;cursor:pointer}#leaguePage .tabs button{font-size:14px}#newsPage .evidenceRow{padding:18px 0;border-bottom:1px solid #294159}#newsPage input{background:#142c44;color:#eef6ff;border:1px solid #497398}
@@ -167,7 +172,7 @@ border-radius:6px;overflow:hidden}
 
     <div class="grid3">
       <div class="panel"><h3>GAME SUMMARY</h3><div class="copy" id="gameSummary">Select a game from the live board to view the model summary.</div></div>
-      <div class="panel"><h3>MODEL PICKS</h3>
+      <div class="panel modelPicksPanel"><h3>MODEL PICKS</h3>
         <div class="pickrow"><span>Spread</span><b id="spreadPick">—</b><span class="badge">EDGE</span></div>
         <div class="pickrow"><span>Total</span><b id="totalPick">—</b><span class="badge">EDGE</span></div>
         <div class="pickrow"><span>Moneyline</span><b id="mlPick">—</b><span class="pickedge" id="mlEdge">—</span></div>
