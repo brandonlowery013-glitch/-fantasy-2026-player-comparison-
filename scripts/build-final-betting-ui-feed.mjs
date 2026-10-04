@@ -30,7 +30,7 @@ function build({schedule,gameRecs,propRecs,parlays}){
     for(const [stat,e] of Object.entries(p?.weekly?.current_by_stat||{})){
       if(Number(e.week)!==Number(week))continue;
       const modelPick=e.model_pick||modelPropPick({over:e.model?.over_probability,under:e.model?.under_probability,push:e.model?.push_probability});
-      propRows.push({player,position:p.position,team:p.team,stat,line:e.line,side:modelPick.side,model_pick:modelPick,recommendation:e.recommendation,eligibility:e.eligibility||null,book:e.book,odds:(e.sides||[]).find(x=>x.side===modelPick.side)?.offered_odds??null,confidence:e.recommendation.confidence,expected_value:e.recommendation.expected_value,probability_edge:e.recommendation.probability_edge,snapshot_id:e.snapshot_id,captured_at:e.captured_at,event_id:null});
+      propRows.push({show_work:e.show_work??null,player,position:p.position,team:p.team,stat,line:e.line,side:modelPick.side,model_pick:modelPick,recommendation:e.recommendation,eligibility:e.eligibility||null,book:e.book,odds:(e.sides||[]).find(x=>x.side===modelPick.side)?.offered_odds??null,confidence:e.recommendation.confidence,expected_value:e.recommendation.expected_value,probability_edge:e.recommendation.probability_edge,snapshot_id:e.snapshot_id,captured_at:e.captured_at,event_id:null});
     }
   }
   const eligibleLegs=(parlays?.eligible_legs||[]).filter(x=>Number(x.week)===Number(week)&&x?.standalone_approved===true&&x?.label==='PICK').map(x=>({...x}));
@@ -57,6 +57,7 @@ function build({schedule,gameRecs,propRecs,parlays}){
       spread:market.home_spread!=null?`${gr?.home_team||sg.home_team||sg.home} ${Number(market.home_spread)>0?'+':''}${market.home_spread}`:null,
       total:market.total??null,
       moneyline:market.home_moneyline!=null||market.away_moneyline!=null?`${gr?.away_team||sg.away_team||sg.away} ${market.away_moneyline??'—'} / ${gr?.home_team||sg.home_team||sg.home} ${market.home_moneyline??'—'}`:null,
+      show_work:Object.fromEntries(Object.entries(snap?.markets||{}).map(([kind,e])=>[kind,e.show_work??null])),
       model_edge:bestEdge,
       model_pick:picks.length?picks.map(x=>`${x.market.toUpperCase()}: ${x.selection} (${x.confidence})`):null,
       win_probability:gr?.football_projection?.home_win_probability??null,
