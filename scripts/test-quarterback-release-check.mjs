@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import {quarterbackReleaseCheck as check} from '../lib/quarterback-release-check.mjs';
 const policy={minimum_samples:{prospective_challenger_observations:50}},row={model_version:'qb',game_id:'g',forecast_hash:'saved',retrospective:false,saved_at:'2026-10-11T16:00:00Z',kickoff:'2026-10-11T17:00:00Z',settled_at:'2026-10-11T21:00:00Z',final_verified:true};
-const report=observations=>check({policy,modelVersion:'qb',observations});
+const report=observations=>check({policy,modelVersion:'qb',observations,now:'2026-10-12T00:00:00Z'});
 assert.equal(report([row,row,row]).prospective_games,1);
 assert.equal(report([{...row,retrospective:true}]).prospective_games,0);
 assert.equal(report([{...row,saved_at:row.settled_at}]).prospective_games,0);
 assert.equal(report([{...row,model_version:'other'}]).prospective_games,0);
+assert.equal(report([{...row,settled_at:'2026-10-13T00:00:00Z'}]).prospective_games,0);
 assert.equal(report(Array.from({length:50},(_,i)=>({...row,game_id:String(i)}))).status,'HOLD');
 console.log('PASS: retrospective/postgame/wrong-model exclusions, independent-game counting, no automatic promotion at sample floor.');
