@@ -1,3 +1,5 @@
+import './test-football-learning.mjs';
+import './test-central-time.mjs';
 import assert from 'node:assert/strict';
 import {gradePick,settlePicks,historyFeed,finalResult} from '../lib/pick-settlement.mjs';
 const result={event_id:'1',home_team:'NE',away_team:'PIT',home_score:24,away_score:21,players:{testplayer:{stats:{rush_yards:80}}}};
