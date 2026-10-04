@@ -18,8 +18,8 @@ assert.equal(window.scrollY,450);assert.equal(focusCalls,1);assert.deepEqual(sel
 assert.throws(()=>window.CTD_READING.preserve(root,()=>{window.scrollY=0;throw Error('refresh failed');}),/refresh failed/);
 assert.equal(window.scrollY,450);
 // User choice survives an intermediate render that temporarily removes a panel.
-root.id='gamesPage';const detail=details[0];detail.closest=selector=>selector==='.page'?root:null;
-const summary={parentElement:detail};detail.open=false;events.click[0]({type:'click',target:{closest:()=>summary}});detail.open=true;
+root.id='gamesPage';details=[disclosure(true)];const detail=details[0];detail.closest=selector=>selector==='.page'?root:null;
+detail.tagName='DETAILS';detail.isConnected=true;detail.open=true;events.toggle[0]({target:detail});
 window.CTD_READING.preserve(root,()=>{details=[];});
 window.CTD_READING.preserve(root,()=>{details=[disclosure(false)];});assert.equal(details[0].open,true);
 

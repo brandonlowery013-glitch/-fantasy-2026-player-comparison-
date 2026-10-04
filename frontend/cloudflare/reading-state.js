@@ -2,6 +2,7 @@
 (()=>{
   let depth=0;
   const choices=new Map();
+  const restoredToggles=new WeakSet();
   const key=el=>el.id||el.getAttribute('data-profile')||el.getAttribute('data-board-name')||'';
   function disclosures(root){
     const counts=new Map();
@@ -28,8 +29,8 @@
     try{return render();}
     finally{
       for(const {el,key} of disclosures(root)){
-        if(choices.has(prefix+key))el.open=choices.get(prefix+key);
-        else if(states.has(key))el.open=states.get(key);
+        const desired=choices.has(prefix+key)?choices.get(prefix+key):states.get(key);
+        if(desired!==undefined&&el.open!==desired){restoredToggles.add(el);el.open=desired;}
       }
       for(const state of scrollers){const el=state.el.isConnected?state.el:state.id?document.getElementById(state.id):null;if(el){el.scrollTop=state.top;el.scrollLeft=state.left;}}
       const next=focus?.isConnected?focus:focusId?document.getElementById(focusId):null;
@@ -39,14 +40,12 @@
     }
   }
   function remember(event){
-    const summary=event.target.closest?.('summary');if(!summary)return;
-    if(event.type==='keydown'&&!['Enter',' '].includes(event.key))return;
-    const detail=summary.parentElement;
+    const detail=event.target;if(detail.tagName!=='DETAILS'||!detail.isConnected)return;
+    if(restoredToggles.has(detail)){restoredToggles.delete(detail);return;}
     const root=detail.closest('.page')||detail.closest('#ctdNewsUpdates');if(!root)return;
-    const found=disclosures(root).find(x=>x.el===detail);if(found)choices.set(root.id+'|'+found.key,!detail.open);
+    const found=disclosures(root).find(x=>x.el===detail);if(found)choices.set(root.id+'|'+found.key,detail.open);
   }
-  document.addEventListener('click',remember,true);
-  document.addEventListener('keydown',remember,true);
+  document.addEventListener('toggle',remember,true);
   document.addEventListener('click',event=>{if(event.target.closest?.('[data-game-index]'))for(const key of choices.keys())if(key.startsWith('gamesPage|'))choices.delete(key);},true);
   window.CTD_READING={preserve};
 })();
