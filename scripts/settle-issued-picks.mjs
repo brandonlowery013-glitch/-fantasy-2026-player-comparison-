@@ -9,6 +9,13 @@ for(const p of history.records){const g=p.source_event_id?{event_id:p.source_eve
 // Preserve event IDs through weekly rollover, and fetch each relevant game once.
 const settledIds=new Set(ledger.settlements.map(s=>s.record_id));
 const due=new Set(history.records.filter(p=>p.decision==='PICK'&&Date.parse(p.kickoff)<Date.now()&&(!settledIds.has(p.record_id)||Date.now()-Date.parse(p.kickoff)<7*86400000)).map(p=>p.game_id));
+// Football learning also observes recent games with PASS/WAIT recommendations.
+// Use the existing frozen history only; no slate collector or forecast refresh.
+const observedGames=new Set((ledger.football_learning?.observations||[]).map(r=>String(r.event_id)));
+for(const p of history.records){
+ const start=Date.parse(p.kickoff),captured=Date.parse(p.captured_at);
+ if(Number.isFinite(start)&&Number.isFinite(captured)&&captured<start&&start<Date.now()&&Date.now()-start<7*86400000&&events[p.game_id]?.event_id&&!observedGames.has(String(events[p.game_id].event_id)))due.add(p.game_id);
+}
 for(const id of due){
  try{
   if(!events[id])throw Error('Missing event mapping');
