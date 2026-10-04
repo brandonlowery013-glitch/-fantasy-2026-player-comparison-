@@ -22,6 +22,9 @@ if(exists('data/sources/weekly-game-projection-engine-2026.json')&&read('data/so
   catch(e){block('calibrated_game_scoring',String(e.stderr||e.message));}
 }
 
+try{execFileSync(process.execPath,['scripts/test-matchup-assessments.mjs'],{cwd:root,stdio:'pipe'});pass('matchup_assessment_coverage','Dated full-slate assessments, exact prop direction, injury as-of isolation and chronological selection passed');}
+catch(e){block('matchup_assessment_coverage',String(e.stderr||e.message));}
+
 try{execFileSync(process.execPath,['scripts/test-injury-evidence.mjs'],{cwd:root,stdio:'pipe'});pass('personnel_availability_evidence','Stable identities, source-age expiry and injury precedence passed');}
 catch(e){block('personnel_availability_evidence',String(e.stderr||e.message));}
 
