@@ -4,11 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {simulateGameDistribution,outcomeProbabilities,moneylineProbabilities,evaluateTwoWay,recommendation} from '../lib/game-market-probability.mjs';
 
+const rerun=process.argv.includes('--all-game-rerun');
 const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true});fs.writeFileSync(path.join(root,p),JSON.stringify(x,null,2)+'\n');};
 const contract=read('data/sources/game-market-recommendation-layer-2026.json');
-const projections=read('data/probability/generated/weekly-game-projections-2026.json');
+const projections=read(rerun?'data/probability/generated/all-game-rerun-projections-2026.json':'data/probability/generated/weekly-game-projections-2026.json');
 const markets=read('data/market/weekly-matchup-market-snapshots-2026.json');
 const contextPath=path.join(root,'data/probability/weekly-football-context-inputs-2026.json');
 const footballContext=fs.existsSync(contextPath)?JSON.parse(fs.readFileSync(contextPath,'utf8')):null;
@@ -111,10 +112,11 @@ if(self){
   }
 }
 
+if(rerun)for(const game of Object.values(games)){game.snapshot_evaluations=game.snapshot_evaluations.filter(s=>s.snapshot_id===game.current_recommendations?.snapshot_id);}
 const now=new Date().toISOString();
 const out={schema_version:'1.0.0',season:2026,week:src.projections.week??null,status:blocked.length?'BLOCKED':Object.keys(games).length?'SHADOW_ONLY':'AWAITING_GAME_MARKET_SNAPSHOTS',mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,snapshot_history_source:'data/market/weekly-matchup-market-snapshots-2026.json',snapshot_retention:'FIRST_AND_LATEST_PER_BOOK_KIND_ELIGIBILITY_AND_MARKET',fair_market_method:contract.fair_market_method,recommendation_policy:contract.recommendation_policy,generated_at:now,games};
 const report={generated_at:now,other_week_market_games_excluded:historicalGames,result:blocked.length?'BLOCKED':'PASS',game_count:Object.keys(games).length,snapshot_evaluations:Object.values(games).reduce((n,g)=>n+g.snapshot_evaluations.length,0),mode:'SHADOW_ONLY',actionable:false,football_projection_mutation_allowed:false,blocked,safeguards:contract.locked_rules};
-write('guardrails/game-market-recommendation-report.json',report);
-if(!self)write('data/market/weekly-game-market-recommendations-2026.json',out);
+write(rerun?'guardrails/all-game-rerun-market-report.json':'guardrails/game-market-recommendation-report.json',report);
+if(!self)write(rerun?'data/market/all-game-model-rerun-2026.json':'data/market/weekly-game-market-recommendations-2026.json',rerun?{...out,rerun:true,source_generated_at:projections.source_generated_at,notice:projections.notice}:out);
 console.log(JSON.stringify(report,null,2));
 if(blocked.length)process.exit(1);
