@@ -60,7 +60,7 @@
       const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent=r?.decision==='PICK'&&typeof r.probability_edge==='number'?`${(r.probability_edge*100).toFixed(1)} percentage points`:'';
     }
     const edge=document.getElementById('mlEdge');if(edge)edge.textContent=s.markets?.moneyline?.recommendation?.decision==='PICK'?pct(s.markets.moneyline.recommendation.probability_edge):'—';
-    let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('section');note.id='ctdPickContext';note.className='ctdPickContext panel';document.getElementById('spreadPick')?.closest('.grid3')?.insertAdjacentElement('afterend',note)}
+    let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('section');note.id='ctdPickContext';note.className='ctdPickContext panel';note.style.maxWidth='none';document.getElementById('spreadPick')?.closest('.grid3')?.insertAdjacentElement('afterend',note)}
     const why=['spread','total','moneyline'].map(kind=>pickWhy(kind,s.markets?.[kind],s,raw,g)).filter(Boolean).join('');
     note.innerHTML=`<h3>OUR MATCHUP ASSESSMENT</h3><span>Pregame forecast · ${esc(s.book)} · ${esc(date(s.captured_at))}. ${Date.parse(raw.kickoff)<=Date.now()?'This game has started. These are the picks saved before kickoff. ':''}“No bet” means we did not find enough value at the available price.</span>${why||'<div class="ctdWhyPick"><p>We did not recommend a bet at these prices.</p></div>'}`;
     document.getElementById('ctdExternalContext')?.remove();
