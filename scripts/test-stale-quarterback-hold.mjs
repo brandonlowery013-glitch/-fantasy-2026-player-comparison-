@@ -14,3 +14,7 @@ assert(!quarterbackConcerns(fresh,now).some(p=>p.player==='Baker Mayfield'),'New
 const backup=structuredClone(g);backup.context_evidence={players:[]};backup.personnel_context.teams.TB.players.find(p=>p.name==='Baker Mayfield').depth_roles=[{position:'QB',rank:2}];assert.equal(quarterbackConcerns(backup,now).length,0);
 assert.equal(quarterbackConcerns(g,Date.parse('2026-09-01T00:00:00Z')).length,0);
 console.log('PASS: actual stale Mayfield report holds all three markets, including reruns after kickoff; original history and probabilities unchanged; backup/future/clearance cases pass');
+
+const after=structuredClone(g);after.personnel_context.teams.TB.players.find(p=>p.name==='Baker Mayfield').injury_reports.push({status:'Active',source_updated_at:'2026-10-04T20:00:00Z'});
+assert.equal(gameMarketView({...after,rerun:true},s,Date.parse('2026-10-04T22:00:00Z')).markets.spread.recommendation.decision,'WAIT','An after-kickoff report cannot clear the pregame injury in a retrospective rerun');
+console.log('PASS: retrospective gate excludes after-kickoff status changes');
