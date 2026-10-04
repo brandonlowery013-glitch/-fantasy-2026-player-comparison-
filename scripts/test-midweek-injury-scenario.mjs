@@ -33,4 +33,21 @@ const context=gameContextEvidence({season:2026,week:5,sportsbook_inputs_used:fal
 assert.equal(context.players[0].reported_expected_active,false);
 assert.equal(context.numeric_influence,false);
 console.log('PASS: Tuesday active prop becomes unavailable Thursday; questionable also blocks; revised decision appends without erasing Tuesday history.');
-console.log('LIMIT: game injury evidence has no numerical influence. This test does not prove automatic backup-QB scoring, game-pick replacement, or production ingestion timing.');
+const starterSignals=(status,at,rank=1)=>({...signals(status,at),role:{status:'CURRENT',source:'Scenario fixture: team depth chart',captured_at:at,freshness_limit_hours:48,evidence:{team:'BUF',depth_rank:rank}}});
+const gameAt=(status,at,rank=1)=>({home_team:'BUF',away_team:'NE',kickoff,context_evidence:gameContextEvidence({season:2026,week:5,sportsbook_inputs_used:false,players:{'Josh Allen':{position:'QB',signals:starterSignals(status,at,rank)}}},{home_team:'BUF',away_team:'NE'},5,Date.parse(at))});
+const snapshot={snapshot_id:'game-price',markets:Object.fromEntries(['spread','moneyline','total'].map(k=>[k,{side_a:{win_probability:.6},recommendation:{decision:'PICK',selection:k==='total'?'OVER 45.5':'BUF -3'}}]))};
+const view=globalThis.CTD_SHOW_WORK.gameMarketView;
+assert.equal(view(gameAt('Active',tuesday),snapshot,Date.parse(tuesday)),snapshot);
+const held=view(gameAt('Out',thursday),snapshot,Date.parse(thursday));
+for(const kind of ['spread','moneyline','total']){
+ assert.equal(held.markets[kind].recommendation.decision,'WAIT');
+ assert.equal(held.markets[kind].recommendation.selection,null);
+ assert.deepEqual(held.markets[kind].side_a,snapshot.markets[kind].side_a);
+ assert.deepEqual(held.markets[kind].baseline_recommendation,snapshot.markets[kind].recommendation);
+}
+assert.equal(snapshot.markets.spread.recommendation.decision,'PICK','Original forecast remains frozen');
+assert.equal(view(gameAt('Out',thursday,2),snapshot,Date.parse(thursday)),snapshot,'A backup injury must not be treated as QB1');
+assert.equal(view(gameAt('Out',thursday),snapshot,Date.parse(kickoff)),snapshot,'Started-game history is not rewritten');
+assert.equal(view(gameAt('Out',thursday),snapshot,Date.parse(tuesday)),snapshot,'Future injury reports cannot change Tuesday');
+console.log('PASS: verified Thursday QB1 absence puts all three game markets on hold without changing probabilities or erasing Tuesday picks; backups, future reports and started games are isolated.');
+console.log('LIMIT: source ingestion must publish the new injury report. No unvalidated backup-QB points adjustment or automatic model reweighting is claimed.');
