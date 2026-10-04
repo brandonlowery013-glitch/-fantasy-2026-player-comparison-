@@ -5,6 +5,7 @@
  const label=x=>String(x||'').replaceAll('_',' ').replace(/^pass /,'passing ').replace(/^rush /,'rushing ');
  const price=x=>typeof x==='number'&&Number.isFinite(x)?(x>0?'+':'')+x:'—';
  const date=x=>Number.isFinite(Date.parse(x))?new Date(x).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Time unavailable';
+ let projection=null,distribution=null,context=null,gameMarkets=null;
  let snapshots=null,recs=null,personnel=null,error='',market='all',game='all',busy=false;
  const key=n=>String(n||'').toLowerCase().normalize('NFKD').replace(/\b(jr|sr|ii|iii|iv)\b/g,'').replace(/[^a-z0-9]/g,'');
  window.CTD_PLAYER_PORTRAIT=(name,id,position)=>{const matches=Object.values(personnel?.teams||{}).flatMap(t=>t.players||[]).filter(p=>key(p.name||p.player)===key(name)&&(!position||p.position===position));id=id||(matches.length===1?matches[0].athlete_id:null);const initials=String(name).split(' ').map(w=>w[0]).slice(0,2).join('');return `<span class="ctdPortrait"><span>${esc(initials)}</span>${/^\d+$/.test(String(id||''))?`<img loading="lazy" src="https://a.espncdn.com/i/headshots/nfl/players/full/${id}.png" alt="${esc(name)}">`:''}</span>`;};
@@ -51,6 +52,17 @@
   if(r?.decision==='PICK')return [model,direction+`Betting: recommended ${r.side} at this quote · analysis only.`];
   return [model,direction+(r?.decision==='PASS'?'Betting: pass. We do not see enough value at this price.':'Betting recommendation unavailable.')];
  }
+ function explanation(s){
+  const e=s.evaluation;if(!e)return '';
+  const matches=d=>d?.season===2026&&Number(d.week)===Number(s.week);
+  if(!matches(projection)||!matches(distribution))return e.show_work?.reader?window.CTD_FORMATTED_WORK?.(e.show_work)||'':'';
+  const pp=projection.players?.[s.player],cp=matches(context)&&context.sportsbook_inputs_used===false?context.players?.[s.player]:null;
+  const signals=Object.entries(cp?.signals||{}).map(([kind,x])=>({kind,...x}));
+  const team=cp?.signals?.role?.evidence?.team;
+  const work=window.CTD_SHOW_WORK?.propWork(e,distribution.distributions?.[s.player]?.distributions?.[s.stat],pp?.projections?.[s.stat],signals,Object.fromEntries(['attempts','targets','carries','routes','snaps'].map(k=>[k,pp?.projections?.[k]?.mean])),Date.now(),matches(gameMarkets)?window.CTD_SHOW_WORK.teamEnvironment(gameMarkets.games,team,s.week):null);
+  if(work?.reader){const [state,reason]=verdict(s);if(!reason.includes('Betting: recommended'))work.reader.verdict=reason;}
+  return window.CTD_FORMATTED_WORK?.(work)||'';
+ }
  function bookRow(s){const [state,reason]=verdict(s);return `<div class="ctdPropBook"><b>${esc(s.provider_book_title||s.book)}</b><span>Line ${esc(s.line)} · Over ${esc(price(s.over_price))} / Under ${esc(price(s.under_price))}</span><span>${esc(state)} · ${esc(reason)}</span><small>Quote ${esc(date(s.captured_at))}</small></div>`;}
  function render(){
   const mount=document.querySelector('[data-bet-panel="props"]');if(!mount)return;
@@ -59,13 +71,14 @@
   const visible=rows.filter(a=>!(Date.parse(a[0].kickoff)>Date.now()&&window.CTD_WEEKLY_ELIGIBILITY?.(a[0].player,a[0].week)?.state==='UNAVAILABLE')).filter(a=>(game==='all'||a[0].game_id===game)&&(market==='all'||a[0].stat===market));
   mount.innerHTML=`<div class="panel"><p class="ctdPropUpdate">${rows.length?`Latest quote update ${esc(date(new Date(Math.max(...rows.flatMap(books=>books.map(s=>Date.parse(s.captured_at))))).toISOString()))}`:"Waiting for published quotes"}</p>${error?`<p class="copy">${esc(error)}</p>`:''}<div class="ctdPropFilters"><label>Matchup <select data-prop-game><option value="all">All games</option>${games.map(g=>`<option value="${esc(g)}" ${g===game?'selected':''}>${esc(g.replace(/^\d+-W\d+-/,''))}</option>`).join('')}</select></label><label>Stat <select data-prop-stat><option value="all">All stats</option>${stats.map(s=>`<option value="${esc(s)}" ${s===market?'selected':''}>${esc(label(s))}</option>`).join('')}</select></label></div><p class="copy">${visible.length} player markets</p><div class="ctdPropGrid">${visible.map(books=>{
    const s=books[0],[state,reason]=verdict(s);
-   return `<article class="ctdPropCard"><div class="ctdPropTitle"><button class="ctdPropIdentity" data-profile="${esc(s.player)}">${window.CTD_PLAYER_PORTRAIT(s.player,null,s.position)}<span>${esc(s.player)}</span></button><strong>${esc(state)}</strong></div><p>${esc(s.game_id.replace(/^\d+-W\d+-/,''))} · ${esc(label(s.stat))}</p><div class="ctdPropLine">${esc(s.line)} <span>${esc(label(s.stat))}</span></div><div class="ctdPropPrices"><span>OVER <b>${esc(price(s.over_price))}</b></span><span>UNDER <b>${esc(price(s.under_price))}</b></span></div>${reason?`<p>${esc(reason)}</p>`:""}<small>${esc(s.provider_book_title||s.book)} · Quote ${esc(date(s.captured_at))}</small>${books.length>1?`<details><summary>Compare ${books.length} sportsbooks</summary>${books.map(bookRow).join('')}</details>`:''}</article>`;
+   return `<article class="ctdPropCard"><div class="ctdPropTitle"><button class="ctdPropIdentity" data-profile="${esc(s.player)}">${window.CTD_PLAYER_PORTRAIT(s.player,null,s.position)}<span>${esc(s.player)}</span></button><strong>${esc(state)}</strong></div><p>${esc(s.game_id.replace(/^\d+-W\d+-/,''))} · ${esc(label(s.stat))}</p><div class="ctdPropLine">${esc(s.line)} <span>${esc(label(s.stat))}</span></div><div class="ctdPropPrices"><span>OVER <b>${esc(price(s.over_price))}</b></span><span>UNDER <b>${esc(price(s.under_price))}</b></span></div>${reason?`<p>${esc(reason)}</p>`:""}${explanation(s)}<small>${esc(s.provider_book_title||s.book)} · Quote ${esc(date(s.captured_at))}</small>${books.length>1?`<details><summary>Compare ${books.length} sportsbooks</summary>${books.map(bookRow).join('')}</details>`:''}</article>`;
   }).join('')}</div>${!visible.length?`<p class="copy">${snapshots?'No sportsbook prop lines are available for this week and filter.':'Loading sportsbook prop lines…'}</p>`:''}</div>`;
  }
  async function refresh(){if(busy)return;busy=true;try{
-  const results=await Promise.allSettled(['data/market/player-prop-market-snapshots-2026.json','data/market/player-prop-recommendations-2026.json','data/ingestion/team-personnel-2026.json'].map(async path=>{const r=await fetch(RAW+path+'?refresh='+Math.floor(Date.now()/300000),{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}));
+  const results=await Promise.allSettled(['data/market/player-prop-market-snapshots-2026.json','data/market/player-prop-recommendations-2026.json','data/ingestion/team-personnel-2026.json','data/probability/weekly-projection-inputs-2026.json','data/probability/generated/weekly-probability-distributions-2026.json','data/probability/weekly-football-context-inputs-2026.json','data/market/weekly-game-market-recommendations-2026.json'].map(async path=>{const r=await fetch(RAW+path+'?refresh='+Math.floor(Date.now()/300000),{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('HTTP '+r.status);return r.json();}));
   if(results[0].status==='fulfilled')snapshots=results[0].value;if(results[1].status==='fulfilled')recs=results[1].value;
   if(results[2].status==='fulfilled')personnel=results[2].value;
+  if(results[3].status==='fulfilled')projection=results[3].value;if(results[4].status==='fulfilled')distribution=results[4].value;if(results[5].status==='fulfilled')context=results[5].value;if(results[6].status==='fulfilled')gameMarkets=results[6].value;
   error=results.slice(0,2).some(r=>r.status==='rejected')?'A feed could not refresh. Any displayed quotes retain their original timestamps.':'';
  }finally{busy=false;render();}}
  document.addEventListener('change',e=>{if(e.target.matches('[data-prop-game]'))game=e.target.value;else if(e.target.matches('[data-prop-stat]'))market=e.target.value;else return;render();});

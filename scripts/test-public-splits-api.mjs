@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {onRequestGet} from '../functions/api/live/splits.js';
+const originalFetch=globalThis.fetch,RealDate=Date;let now=Date.parse('2026-10-04T13:00Z');globalThis.Date=class extends RealDate{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}};
+const records=new Map();globalThis.caches={default:{async match(k){return records.get(k.url)?.clone();},async put(k,r){records.set(k.url,r.clone());}}};
+const row=(name,m,b)=>`<div class="tb-sodd"><div>${name}</div><div>100</div><div>${m}%</div><div>${b}%</div></div>`;
+const html=`<div class="tb-se"><div class="tb-se-title"><img src="https://x/teams/nfl/NE.png"><img src="https://x/teams/nfl/BUF.png">10/4, 01:00PM</div><div class="tb-market-wrap"><div><div class="tb-se-head"><div>Moneyline</div><div>Odds</div><div>% Handle</div><div>% Bets</div></div>${row('NE Patriots',30,20)}${row('BUF Bills',70,80)}</div></div></div>`;
+const events=[{id:'game',date:'2026-10-04T17:00Z',status:{type:{completed:false}},competitions:[{competitors:[{homeAway:'home',team:{abbreviation:'BUF'}},{homeAway:'away',team:{abbreviation:'NE'}}]}]}];let upstream=[];
+globalThis.fetch=async url=>{upstream.push(url);return new Response(url.includes('espn.com')?JSON.stringify({events}):html);};
+const jobs=[],ctx={request:new Request('https://site.test/api/live/splits'),env:{ASSETS:{fetch:async()=>new Response(JSON.stringify({schema_version:1,games:[],observed_at:'2026-10-04T05:00Z'}))}},waitUntil:p=>jobs.push(p)};
+let r=await onRequestGet(ctx);assert.equal((await r.json()).games.length,0);assert.equal(upstream.filter(u=>u.includes('draftkings')).length,0,'no collection before 10:30 Central');await Promise.all(jobs);
+now=Date.parse('2026-10-04T16:00Z');r=await onRequestGet(ctx);const data=await r.json();assert.equal(data.games.length,1);assert.equal(data.games[0].moneyline[0].money,30);assert.equal(upstream.filter(u=>u.includes('draftkings')).length,2);await Promise.all(jobs);
+await onRequestGet(ctx);assert.equal(upstream.filter(u=>u.includes('draftkings')).length,2,'same slot uses cache');
+now=Date.parse('2026-10-04T17:01Z');await onRequestGet(ctx);assert.equal(upstream.filter(u=>u.includes('draftkings')).length,2,'no collection while games run');
+globalThis.fetch=originalFetch;globalThis.Date=RealDate;
+console.log('PASS: before-window suppression, two-page bounded collection, ticket/money parsing, same-slot cache, kickoff cutoff');
