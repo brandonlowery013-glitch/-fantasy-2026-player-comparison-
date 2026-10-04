@@ -1,6 +1,6 @@
 {
   "schema_version": "1.5.0",
-  "generated_at": "2026-10-04T12:25:09.117Z",
+  "generated_at": "2026-10-04T21:21:52.204Z",
   "authoritative": false,
   "mutation_policy": "PROPOSAL_ONLY_NO_CANONICAL_WRITES",
   "universe": {
@@ -10,10 +10,10 @@
   "counts": {
     "UP": 0,
     "DOWN": 0,
-    "MATERIAL_HOLD": 62,
+    "MATERIAL_HOLD": 57,
     "POSITIVE_HOLD": 0,
     "NEGATIVE_HOLD": 0,
-    "NO_MATERIAL_UPDATE": 105
+    "NO_MATERIAL_UPDATE": 110
   },
   "validation": {
     "exact_universe": true,
@@ -143,22 +143,8 @@
           "headline": "Sources: Rams don't intend to limit Puka Nacua's workload",
           "matched_context": "sources rams don t intend to limit puka nacua s workload the rams do not intend to limit puka nacua s workload sunday against the eagles sources told espn",
           "description": "The Rams do not intend to limit Puka Nacua's workload Sunday against the Eagles, sources told ESPN.",
-          "published": "2026-10-04T12:05:25Z",
+          "published": "2026-10-04T15:49:36Z",
           "url": "https://www.espn.com/nfl/story/_/id/50098838/sources-rams-intend-limit-puka-nacua-workload",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "LA",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Aaron Donald out, Puka Nacua to play in Rams' game vs. Eagles",
-          "matched_context": "aaron donald out puka nacua to play in rams game vs eagles rams defensive tackle aaron donald will not play against the eagles as he deals with back soreness while wide receiver puka nacua will return from a hip injury after missing the past two games",
-          "description": "Rams defensive tackle Aaron Donald will not play against the Eagles as he deals with back soreness, while wide receiver Puka Nacua will return from a hip injury after missing the past two games.",
-          "published": "2026-10-03T00:08:18Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50085994/aaron-donald-puka-nacua-play-rams-game-vs-eagles",
           "match_evidence": "FULL_NAME_HEADER",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
@@ -224,10 +210,25 @@
       "player": "Ja'Marr Chase",
       "pos": "WR",
       "team": "Cincinnati Bengals",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_LEAGUE",
+          "headline": "Bengals WR Ja'Marr Chase suffers concussion in loss to Jaguars",
+          "matched_context": "bengals wr ja marr chase suffers concussion in loss to jaguars bengals wide receiver ja marr chase has been ruled out against the jaguars with a concussion",
+          "description": "Bengals wide receiver Ja'Marr Chase has been ruled out against the Jaguars with a concussion.",
+          "published": "2026-10-04T20:51:53Z",
+          "url": "https://www.espn.com/nfl/story/_/id/50101891/bengals-star-wr-jamarr-chase-suffers-concussion-vs-jaguars",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "CIN",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.675,
@@ -243,30 +244,51 @@
           "sustainability": 9.4
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "bengals wr ja marr chase suffers concussion in loss to jaguars bengals wide receiver ja marr chase has been ruled out against the jaguars with a concussion",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.675,
       "proposed_true_value_rank": 4,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Cincinnati Bengals"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Jaxon Smith-Njigba",
       "pos": "WR",
       "team": "Seattle Seahawks",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "NFL.com",
+          "headline": "Can Bijan Robinson do it again? And more questions for the Falcons heading into &#x27;MNF&#x27;",
+          "matched_context": "out in an average of 2 72 seconds the eighth quickest number in the league so far can atlanta stop chris olave the saints 39 top receiver is averaging 125 receiving yards per game second in the league and is tied with seattle 39 s jaxon smith njigba for the league lead in targets 36 olave has accounted for 47 7 percent of new orleans 39 receiving yards the fourth highest share in the league 34 for one he 39 s a very good player on top of that they are really feeding",
+          "description": null,
+          "published": "2026-10-04T10:46:04Z",
+          "url": "https://www.nfl.com/news/can-bijan-robinson-do-it-again-and-more-questions-for-the-falcons-heading-into-mnf",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "SEA",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.305,
@@ -282,21 +304,29 @@
           "sustainability": 8.7
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "out in an average of 2 72 seconds the eighth quickest number in the league so far can atlanta stop chris olave the saints 39 top receiver is averaging 125 receiving yards per game second in the league and is tied with seattle 39 s jaxon smith njigba for the league lead in targets 36 olave has accounted for 47 7 percent of new orleans 39 receiving yards the fourth highest share in the league 34 for one he 39 s a very good player on top of that they are really feeding",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.305,
       "proposed_true_value_rank": 5,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Seattle Seahawks"
       },
       "market_impact": {
         "current_label": "FADE",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Amon-Ra St. Brown",
@@ -686,20 +716,6 @@
           "team": "MIN",
           "source_team": null,
           "context_lanes": null
-        },
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Vikings' Justin Jefferson out vs. Dolphins with ankle injury",
-          "matched_context": "vikings justin jefferson out vs dolphins with ankle injury vikings wr justin jefferson won t play against the dolphins because of a sprained left ankle but coach kevin o connell is hopeful he can return in week 5 vs the saints",
-          "description": "Vikings WR Justin Jefferson won't play against the Dolphins because of a sprained left ankle, but coach Kevin O'Connell is hopeful he can return in Week 5 vs. the Saints.",
-          "published": "2026-10-02T21:05:11Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50086081/vikings-justin-jefferson-vs-dolphins-ankle-injury",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "MIN",
-          "source_team": null,
-          "context_lanes": null
         }
       ],
       "prior_assumption": {
@@ -922,10 +938,25 @@
       "player": "Saquon Barkley",
       "pos": "RB",
       "team": "Philadelphia Eagles",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_LEAGUE",
+          "headline": "Eagles RB Saquon Barkley leaves loss with hamstring injury",
+          "matched_context": "eagles rb saquon barkley leaves loss with hamstring injury eagles running back saquon barkley has been ruled out of sunday s game against the rams with a hamstring injury",
+          "description": "Eagles running back Saquon Barkley has been ruled out of Sunday's game against the Rams with a hamstring injury.",
+          "published": "2026-10-04T20:50:42Z",
+          "url": "https://www.espn.com/nfl/story/_/id/50101243/eagles-rb-saquon-barkley-leaves-game-hamstring-injury",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "PHI",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.006,
@@ -941,45 +972,36 @@
           "sustainability": 8.4
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "eagles rb saquon barkley leaves loss with hamstring injury eagles running back saquon barkley has been ruled out of sunday s game against the rams with a hamstring injury",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.006,
       "proposed_true_value_rank": 19,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Philadelphia Eagles"
       },
       "market_impact": {
         "current_label": "REACH",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Nico Collins",
       "pos": "WR",
       "team": "Houston Texans",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Texans get WR Nico Collins (hamstring) back vs. Cowboys",
-          "matched_context": "texans get wr nico collins hamstring back vs cowboys the winless texans got good news friday as star wide receiver nico collins is set to return sunday from a hamstring injury that forced him to miss houston s last two games",
-          "description": "The winless Texans got good news Friday as star wide receiver Nico Collins is set to return Sunday from a hamstring injury that forced him to miss Houston's last two games.",
-          "published": "2026-10-03T11:05:37Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50086264/texans-get-wr-nico-collins-hamstring-back-vs-cowboys",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "HOU",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.26325,
@@ -995,51 +1017,30 @@
           "sustainability": 9.1
         }
       },
-      "changed_fact": "texans get wr nico collins hamstring back vs cowboys the winless texans got good news friday as star wide receiver nico collins is set to return sunday from a hamstring injury that forced him to miss houston s last two games",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.26325,
       "proposed_true_value_rank": 18,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Houston Texans"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Brock Bowers",
       "pos": "TE",
       "team": "Las Vegas Raiders",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "NFL Week 2 injuries to monitor for Sunday&#x27;s games",
-          "matched_context": "rapoport reported sunday hendrickson is officially active injuries rb rj harvey hamstring questionable is unlikely to play sunday against jacksonville espn s adam schefter reported injuries dt chris jones calf questionable should play sunday night against indianapolis nfl network insider ian rapoport reported injuries wr brock bowers knee doubtful won t play sunday against the chargers nfl network insider ian rapoport reported bowers could return to game action in week 3 injuries wr ladd mcconkey rib questionable is pushing to play against the raiders and there is optimism that he can go",
-          "description": "NFL.com keeps you up to date with all of the latest injury updates ahead of Week 2&#x27;s Sunday games.",
-          "published": "2026-09-20T13:11:07.539Z",
-          "url": "https://www.nfl.com/news/week-2-injuries-sunday-pregame-2026-nfl-season",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "LV",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.26,
@@ -1055,27 +1056,21 @@
           "sustainability": 9.2
         }
       },
-      "changed_fact": "rapoport reported sunday hendrickson is officially active injuries rb rj harvey hamstring questionable is unlikely to play sunday against jacksonville espn s adam schefter reported injuries dt chris jones calf questionable should play sunday night against indianapolis nfl network insider ian rapoport reported injuries wr brock bowers knee doubtful won t play sunday against the chargers nfl network insider ian rapoport reported bowers could return to game action in week 3 injuries wr ladd mcconkey rib questionable is pushing to play against the raiders and there is optimism that he can go",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.26,
       "proposed_true_value_rank": 24,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Las Vegas Raiders"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Kenneth Walker III",
@@ -1159,25 +1154,10 @@
       "player": "DeVonta Smith",
       "pos": "WR",
       "team": "Philadelphia Eagles",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Eagles' DeVonta Smith out vs. Rams with hamstring injury",
-          "matched_context": "eagles devonta smith out vs rams with hamstring injury eagles wr devonta smith will miss sunday s game due to a lingering hamstring injury and will be joined on the sideline by linebacker zack baun concussion",
-          "description": "Eagles WR DeVonta Smith will miss Sunday's game due to a lingering hamstring injury and will be joined on the sideline by linebacker Zack Baun (concussion).",
-          "published": "2026-10-02T20:19:49Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50086150/eagles-devonta-smith-vs-rams-hamstring-injury",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "PHI",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "HAMSTRING — FULL PRACTICE RETURN",
         "score": 8.864,
@@ -1193,27 +1173,21 @@
           "sustainability": 9.2
         }
       },
-      "changed_fact": "eagles devonta smith out vs rams with hamstring injury eagles wr devonta smith will miss sunday s game due to a lingering hamstring injury and will be joined on the sideline by linebacker zack baun concussion",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.864,
       "proposed_true_value_rank": 23,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Philadelphia Eagles"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Breece Hall",
@@ -1403,11 +1377,11 @@
       "evidence_summary": [
         {
           "source": "NFL.com",
-          "headline": "NFL Week 2 injuries to monitor for Sunday&#x27;s games",
-          "matched_context": "insider ian rapoport reported bowers could return to game action in week 3 injuries wr ladd mcconkey rib questionable is pushing to play against the raiders and there is optimism that he can go barring a setback nfl network insider ian rapoport reported injuries wr chris olave hamstring questionable is expected to play against the ravens espn s adam schefter reported sunday olave is officially active de chase young calf questionable is expected to play vs baltimore nfl network insider ian rapoport reported young is officially active injuries rb kaelon black groin",
-          "description": "NFL.com keeps you up to date with all of the latest injury updates ahead of Week 2&#x27;s Sunday games.",
-          "published": "2026-09-20T13:11:07.539Z",
-          "url": "https://www.nfl.com/news/week-2-injuries-sunday-pregame-2026-nfl-season",
+          "headline": "Can Bijan Robinson do it again? And more questions for the Falcons heading into &#x27;MNF&#x27;",
+          "matched_context": "can this pass rush continue the falcons lead the league in pressure percentage 44 2 but new orleans quarterback tyler shough has gotten the ball out in an average of 2 72 seconds the eighth quickest number in the league so far can atlanta stop chris olave the saints 39 top receiver is averaging 125 receiving yards per game second in the league and is tied with seattle 39 s jaxon smith njigba for the league lead in targets 36 olave has accounted for 47 7 percent of new orleans 39 receiving",
+          "description": null,
+          "published": "2026-10-04T10:46:04Z",
+          "url": "https://www.nfl.com/news/can-bijan-robinson-do-it-again-and-more-questions-for-the-falcons-heading-into-mnf",
           "match_evidence": "FULL_NAME_BODY_WINDOW",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
@@ -1445,12 +1419,14 @@
           "sustainability": 8.9
         }
       },
-      "changed_fact": "insider ian rapoport reported bowers could return to game action in week 3 injuries wr ladd mcconkey rib questionable is pushing to play against the raiders and there is optimism that he can go barring a setback nfl network insider ian rapoport reported injuries wr chris olave hamstring questionable is expected to play against the ravens espn s adam schefter reported sunday olave is officially active de chase young calf questionable is expected to play vs baltimore nfl network insider ian rapoport reported young is officially active injuries rb kaelon black groin",
+      "changed_fact": "can this pass rush continue the falcons lead the league in pressure percentage 44 2 but new orleans quarterback tyler shough has gotten the ball out in an average of 2 72 seconds the eighth quickest number in the league so far can atlanta stop chris olave the saints 39 top receiver is averaging 125 receiving yards per game second in the league and is tied with seattle 39 s jaxon smith njigba for the league lead in targets 36 olave has accounted for 47 7 percent of new orleans 39 receiving",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
-        "ceiling"
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
       ],
       "component_delta": null,
       "score_delta": 0,
@@ -1773,22 +1749,8 @@
       "team": "Los Angeles Chargers",
       "taxonomy": "MATERIAL_HOLD",
       "meaningful_evidence": true,
-      "team_context_only": false,
+      "team_context_only": true,
       "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "NFL Week 2 injuries to monitor for Sunday&#x27;s games",
-          "matched_context": "jones calf questionable should play sunday night against indianapolis nfl network insider ian rapoport reported injuries wr brock bowers knee doubtful won t play sunday against the chargers nfl network insider ian rapoport reported bowers could return to game action in week 3 injuries wr ladd mcconkey rib questionable is pushing to play against the raiders and there is optimism that he can go barring a setback nfl network insider ian rapoport reported injuries wr chris olave hamstring questionable is expected to play against the ravens espn s adam schefter reported sunday",
-          "description": "NFL.com keeps you up to date with all of the latest injury updates ahead of Week 2&#x27;s Sunday games.",
-          "published": "2026-09-20T13:11:07.539Z",
-          "url": "https://www.nfl.com/news/week-2-injuries-sunday-pregame-2026-nfl-season",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "LAC",
-          "source_team": null,
-          "context_lanes": null
-        },
         {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27;",
@@ -1819,12 +1781,13 @@
           "sustainability": 8.7
         }
       },
-      "changed_fact": "jones calf questionable should play sunday night against indianapolis nfl network insider ian rapoport reported injuries wr brock bowers knee doubtful won t play sunday against the chargers nfl network insider ian rapoport reported bowers could return to game action in week 3 injuries wr ladd mcconkey rib questionable is pushing to play against the raiders and there is optimism that he can go barring a setback nfl network insider ian rapoport reported injuries wr chris olave hamstring questionable is expected to play against the ravens espn s adam schefter reported sunday",
+      "changed_fact": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27; Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
-        "ceiling"
+        "ceiling",
+        "offensive_environment"
       ],
       "component_delta": null,
       "score_delta": 0,
@@ -1839,7 +1802,7 @@
         "current_label": "BUY",
         "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "DJ Moore",
@@ -1989,6 +1952,20 @@
       "evidence_summary": [
         {
           "source": "NFL.com",
+          "headline": "Ravens quarterback Lamar Jackson exits win over Titans early due to ankle injury",
+          "matched_context": "ravens quarterback lamar jackson exits win over titans early due to ankle injury baltimore ravens quarterback lamar jackson suffered an ankle injury in the first half of sunday x27 s 24 18 win over the tennessee titans and did not return",
+          "description": "Baltimore Ravens quarterback Lamar Jackson suffered an ankle injury in the first half of Sunday&#x27;s 24-18 win over the Tennessee Titans and did not return.",
+          "published": "2026-10-04T18:56:08.068Z",
+          "url": "https://www.nfl.com/news/ravens-lamar-jackson-ankle-injury-titans",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "BAL",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "NFL.com",
           "headline": "NFL news roundup: Lamar Jackson (back) limited at practice; Falcons extend DT Gervon Dexter",
           "matched_context": "nfl news roundup lamar jackson back limited at practice falcons extend dt gervon dexter nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
           "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
@@ -2017,12 +1994,13 @@
           "sustainability": 9
         }
       },
-      "changed_fact": "nfl news roundup lamar jackson back limited at practice falcons extend dt gervon dexter nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
+      "changed_fact": "ravens quarterback lamar jackson exits win over titans early due to ankle injury baltimore ravens quarterback lamar jackson suffered an ankle injury in the first half of sunday x27 s 24 18 win over the tennessee titans and did not return",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
         "ceiling",
+        "role_volume",
         "offensive_environment"
       ],
       "component_delta": null,
@@ -2461,11 +2439,11 @@
       "team_context_only": false,
       "evidence_summary": [
         {
-          "source": "ESPN_NOW",
+          "source": "ESPN_LEAGUE",
           "headline": "Commanders WR Terry McLaurin inactive after Friday injury",
           "matched_context": "commanders wr terry mclaurin inactive after friday injury commanders wide receiver terry mclaurin will not play against the colts because of a hamstring injury suffered in practice friday",
           "description": "Commanders wide receiver Terry McLaurin will not play against the Colts because of a hamstring injury suffered in practice Friday.",
-          "published": "2026-10-04T12:17:19Z",
+          "published": "2026-10-04T14:39:19Z",
           "url": "https://www.espn.com/nfl/story/_/id/50099334/commanders-wr-terry-mclaurin-inactive-friday-injury",
           "match_evidence": "FULL_NAME_HEADER",
           "evidence_lane": "material_news_signals",
@@ -2495,9 +2473,7 @@
         "availability",
         "weekly_reliability",
         "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
+        "ceiling"
       ],
       "component_delta": null,
       "score_delta": 0,
@@ -3055,10 +3031,10 @@
       "evidence_summary": [
         {
           "source": "ESPN_LEAGUE",
-          "headline": "Sources: Sam LaPorta, Lions break off contract talks",
-          "matched_context": "sources sam laporta lions break off contract talks the lions and star tight end sam laporta have broken off contract talks sources told nfl network after attempting to work out a long term deal for the first few weeks of the season",
+          "headline": "Sources: TE Sam LaPorta, Lions break off contract talks",
+          "matched_context": "sources te sam laporta lions break off contract talks the lions and star tight end sam laporta have broken off contract talks sources told nfl network after attempting to work out a long term deal for the first few weeks of the season",
           "description": "The Lions and star tight end Sam LaPorta have broken off contract talks, sources told NFL Network, after attempting to work out a long-term deal for the first few weeks of the season.",
-          "published": "2026-10-04T12:07:24Z",
+          "published": "2026-10-04T13:52:53Z",
           "url": "https://www.espn.com/nfl/story/_/id/50094193/sources-sam-laporta-lions-break-contract-talks",
           "match_evidence": "FULL_NAME_HEADER",
           "evidence_lane": "material_news_signals",
@@ -3097,7 +3073,7 @@
           "sustainability": 8.6
         }
       },
-      "changed_fact": "sources sam laporta lions break off contract talks the lions and star tight end sam laporta have broken off contract talks sources told nfl network after attempting to work out a long term deal for the first few weeks of the season",
+      "changed_fact": "sources te sam laporta lions break off contract talks the lions and star tight end sam laporta have broken off contract talks sources told nfl network after attempting to work out a long term deal for the first few weeks of the season",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -3224,25 +3200,10 @@
       "player": "Mike Evans",
       "pos": "WR",
       "team": "San Francisco 49ers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "49ers WR Mike Evans a game-time decision with rib injury",
-          "matched_context": "49ers wr mike evans a game time decision with rib injury niners wide receiver mike evans is questionable for sunday but he said he will give my best to play against the broncos as he deals with a rib injury",
-          "description": "Niners wide receiver Mike Evans is questionable for Sunday, but he said he will give \"my best\" to play against the Broncos as he deals with a rib injury.",
-          "published": "2026-10-03T11:12:45Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50086883/49ers-wr-mike-evans-game-decision-rib-injury",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "SF",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 8.188,
@@ -3258,27 +3219,21 @@
           "sustainability": 8
         }
       },
-      "changed_fact": "49ers wr mike evans a game time decision with rib injury niners wide receiver mike evans is questionable for sunday but he said he will give my best to play against the broncos as he deals with a rib injury",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.188,
       "proposed_true_value_rank": 65,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "San Francisco 49ers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Justin Herbert",
@@ -3414,12 +3369,12 @@
       "evidence_summary": [
         {
           "source": "NFL.com",
-          "headline": "Colts vs. Commanders: Three must-know storylines for NFL Week 4 London game",
-          "matched_context": "colts vs commanders three must know storylines for nfl week 4 london game can indianapolis star jonathan taylor break out of his early season slump will marcus mariota lead washington to a second straight win in relief of jayden daniels jeremy bergman provides three must know storylines for sunday x27 s colts commanders game in london",
-          "description": "Can Indianapolis star Jonathan Taylor break out of his early-season slump? Will Marcus Mariota lead Washington to a second straight win in relief of Jayden Daniels? Jeremy Bergman provides three must-know storylines for Sunday&#x27;s Colts-Commanders game in London.",
-          "published": "2026-10-02T19:57:27.052Z",
-          "url": "https://www.nfl.com/news/colts-commanders-preview-week-4-london-game",
-          "match_evidence": "FULL_NAME_HEADER",
+          "headline": "Commanders QB Marcus Mariota suffers knee injury in loss to Colts",
+          "matched_context": "not return to sunday s 30 13 loss to the colts in london after suffering a right knee injury in the first quarter mariota was replaced by seventh round rookie athan kaliakmanis and ruled out at halftime mariota was playing in place of washington starter jayden daniels who has been sidelined the last two weeks after dislocating his left elbow on sept 20 commanders coach dan quinn said after the loss that mariota is feared to have aggravated an mcl injury that sidelined him in 2022 the vet qb will undergo testing",
+          "description": "Marcus Mariota was ruled out of Sunday&#x27;s game against the Colts after suffering a right knee injury in the first quarter. Mariota was replaced by seventh-round rookie Athan Kaliakmanis.",
+          "published": "2026-10-04T15:10:52.959Z",
+          "url": "https://www.nfl.com/news/commanders-qb-marcus-mariota-knee-injury-colts-athan-kaliakmanis",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
           "team": "WAS",
@@ -3434,6 +3389,20 @@
           "published": "2026-10-03T19:00:03.957Z",
           "url": "https://www.nfl.com/news/colts-cam-bynum-ahead-of-his-fourth-international-appearance-these-are-always-my-favorite-games",
           "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "WAS",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "NFL.com",
+          "headline": "Colts vs. Commanders: Three must-know storylines for NFL Week 4 London game",
+          "matched_context": "colts vs commanders three must know storylines for nfl week 4 london game can indianapolis star jonathan taylor break out of his early season slump will marcus mariota lead washington to a second straight win in relief of jayden daniels jeremy bergman provides three must know storylines for sunday x27 s colts commanders game in london",
+          "description": "Can Indianapolis star Jonathan Taylor break out of his early-season slump? Will Marcus Mariota lead Washington to a second straight win in relief of Jayden Daniels? Jeremy Bergman provides three must-know storylines for Sunday&#x27;s Colts-Commanders game in London.",
+          "published": "2026-10-02T19:57:27.052Z",
+          "url": "https://www.nfl.com/news/colts-commanders-preview-week-4-london-game",
+          "match_evidence": "FULL_NAME_HEADER",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
           "team": "WAS",
@@ -3467,20 +3436,6 @@
           "team": "WAS",
           "source_team": null,
           "context_lanes": null
-        },
-        {
-          "source": "ESPN_NOW",
-          "headline": "Commanders WR Terry McLaurin inactive after Friday injury",
-          "matched_context": "report there was optimism friday that he would be able to play according to a team source but by saturday afternoon that optimism had dissipated p p he was one of seven inactives including quarterback a href https www espn com nfl player id 4426348 jayden daniels jayden daniels a who was ruled out friday because of his dislocated left elbow there is optimism about daniels return for the week 6 matchup against the a href https www espn com nfl team name nyg new york giants new york giants a p",
-          "description": "Commanders wide receiver Terry McLaurin will not play against the Colts because of a hamstring injury suffered in practice Friday.",
-          "published": "2026-10-04T12:17:19Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50099334/commanders-wr-terry-mclaurin-inactive-friday-injury",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "WAS",
-          "source_team": null,
-          "context_lanes": null
         }
       ],
       "prior_assumption": {
@@ -3498,7 +3453,7 @@
           "sustainability": 8.6
         }
       },
-      "changed_fact": "colts vs commanders three must know storylines for nfl week 4 london game can indianapolis star jonathan taylor break out of his early season slump will marcus mariota lead washington to a second straight win in relief of jayden daniels jeremy bergman provides three must know storylines for sunday x27 s colts commanders game in london",
+      "changed_fact": "not return to sunday s 30 13 loss to the colts in london after suffering a right knee injury in the first quarter mariota was replaced by seventh round rookie athan kaliakmanis and ruled out at halftime mariota was playing in place of washington starter jayden daniels who has been sidelined the last two weeks after dislocating his left elbow on sept 20 commanders coach dan quinn said after the loss that mariota is feared to have aggravated an mcl injury that sidelined him in 2022 the vet qb will undergo testing",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -3999,20 +3954,6 @@
       "team_context_only": false,
       "evidence_summary": [
         {
-          "source": "NFL.com",
-          "headline": "Patrick Mahomes eager to face Maxx Crosby after odd offseason: Chiefs-Raiders is &#x27;pure football&#x27;",
-          "matched_context": "patrick mahomes eager to face maxx crosby after odd offseason chiefs raiders is x27 pure football x27 patrick mahomes is back from his season ending acl injury and playing excellently and edge rusher maxx crosby is out to ruin mahomes x27 day and add a little trash talk on top",
-          "description": "Patrick Mahomes is back from his season-ending ACL injury and playing excellently, and edge rusher Maxx Crosby is out to ruin Mahomes&#x27; day -- and add a little trash talk on top.",
-          "published": "2026-10-01T13:34:33.204Z",
-          "url": "https://www.nfl.com/news/chiefs-patrick-mahomes-maxx-crosby-raiders-week-4-2026",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "KC",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "2026 NFL training camp: Early takeaways for all 32 teams",
           "matched_context": "2026 NFL training camp: Early takeaways for all 32 teams Is Matthew Golden poised to break out in Year 2? How does Patrick Mahomes look in his return from knee surgery? Are DJ Moore and Josh Allen jelling? With training camps in full swing across the NFL, Kevin Patra spotlights the most interesting developments for all 32 teams. is matthew golden poised to break out in year 2 how does patrick mahomes look in his return from knee surgery are dj moore and josh allen jelling with training camps in full swing across the nfl kevin patra spotlights the most interesting developments for all 32 teams",
@@ -4042,13 +3983,12 @@
           "sustainability": 9.6
         }
       },
-      "changed_fact": "patrick mahomes eager to face maxx crosby after odd offseason chiefs raiders is x27 pure football x27 patrick mahomes is back from his season ending acl injury and playing excellently and edge rusher maxx crosby is out to ruin mahomes x27 day and add a little trash talk on top",
+      "changed_fact": "2026 NFL training camp: Early takeaways for all 32 teams Is Matthew Golden poised to break out in Year 2? How does Patrick Mahomes look in his return from knee surgery? Are DJ Moore and Josh Allen jelling? With training camps in full swing across the NFL, Kevin Patra spotlights the most interesting developments for all 32 teams. is matthew golden poised to break out in year 2 how does patrick mahomes look in his return from knee surgery are dj moore and josh allen jelling with training camps in full swing across the nfl kevin patra spotlights the most interesting developments for all 32 teams",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
-        "ceiling",
-        "offensive_environment"
+        "ceiling"
       ],
       "component_delta": null,
       "score_delta": 0,
@@ -4656,34 +4596,6 @@
           "description": "Running back Jadarian Price&#x27;s slow start to his rookie season just hit another snag. The Seahawks are placing Price on injured reserve due to a chest injury, ESPN&#x27;s Adam Schefter reported Saturday.",
           "published": "2026-10-03T20:10:08.183Z",
           "url": "https://www.nfl.com/news/seahawks-placing-rb-jadarian-price-chest-on-injured-reserve",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "SEA",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Seahawks place RB Jadarian Price (chest) on IR",
-          "matched_context": "seahawks place rb jadarian price chest on ir the seattle seahawks are placing starting running back jadarian price on injured reserve the team announced saturday",
-          "description": "The Seattle Seahawks are placing starting running back Jadarian Price on injured reserve, the team announced Saturday.",
-          "published": "2026-10-03T21:00:28Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50093007/seahawks-place-rb-jadarian-price-chest-ir",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "SEA",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "RB Jadarian Price ruled out by Seattle Seahawks for Week 4",
-          "matched_context": "rb jadarian price ruled out by seattle seahawks for week 4 the seattle seahawks on friday ruled out running back jadarian price for their game sunday against the los angeles chargers as the rookie deals with a chest injury suffered in week 2 and aggravated in practice wednesday according to mike macdonald",
-          "description": "The Seattle Seahawks on Friday ruled out running back Jadarian Price for their game Sunday against the Los Angeles Chargers, as the rookie deals with a chest injury suffered in Week 2 and aggravated in practice Wednesday, according to Mike Macdonald.",
-          "published": "2026-10-02T22:43:56Z",
-          "url": "https://www.espn.com/nhl/story/_/id/50086884/rb-jadarian-price-ruled-seattle-seahawks-week-4",
           "match_evidence": "FULL_NAME_HEADER",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
@@ -5524,25 +5436,10 @@
       "player": "Romeo Doubs",
       "pos": "WR",
       "team": "New England Patriots",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Patriots preach patience when it comes to receiver WR Romeo Doubs' modest start",
-          "matched_context": "patriots preach patience when it comes to receiver wr romeo doubs modest start after the patriots signed him to a four year deal in march doubs is searching for his footing in the offense entering week 4",
-          "description": "After the Patriots signed him to a four-year deal in March, Doubs is searching for his footing in the offense entering Week 4.",
-          "published": "2026-10-03T22:00:02Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50087681/patriots-romeo-doubs-bills-game",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "NE",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PROJECTION / ROLE WATCH",
         "score": 7.52865,
@@ -5558,28 +5455,21 @@
           "sustainability": 8.2
         }
       },
-      "changed_fact": "patriots preach patience when it comes to receiver wr romeo doubs modest start after the patriots signed him to a four year deal in march doubs is searching for his footing in the offense entering week 4",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.52865,
       "proposed_true_value_rank": 106,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "New England Patriots"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Blake Corum",
@@ -5663,25 +5553,10 @@
       "player": "Jalen Coker",
       "pos": "WR",
       "team": "Carolina Panthers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Panthers put Legette on IR; Coker also likely out vs. Lions",
-          "matched_context": "panthers put legette on ir coker also likely out vs lions the panthers have placed 2024 first round pick xavier legette on injured reserve ahead of sunday s prime time matchup against the lions wide receiver jalen coker is also unlikely to play against the lions sources told espn",
-          "description": "The Panthers have placed 2024 first-round pick Xavier Legette on injured reserve ahead of Sunday's prime-time matchup against the Lions. Wide receiver Jalen Coker is also unlikely to play against the Lions, sources told ESPN.",
-          "published": "2026-10-04T11:21:11Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50093238/panthers-place-wr-xavier-legette-ir-knee-injury",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "CAR",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 7.791,
@@ -5697,51 +5572,30 @@
           "sustainability": 8.4
         }
       },
-      "changed_fact": "panthers put legette on ir coker also likely out vs lions the panthers have placed 2024 first round pick xavier legette on injured reserve ahead of sunday s prime time matchup against the lions wide receiver jalen coker is also unlikely to play against the lions sources told espn",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.791,
       "proposed_true_value_rank": 112,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Carolina Panthers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Chig Okonkwo",
       "pos": "TE",
       "team": "Washington Commanders",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_NOW",
-          "headline": "Commanders WR Terry McLaurin inactive after Friday injury",
-          "matched_context": "who has started at the flanker position opposite mclaurin diggs leads washington with 13 receptions and three touchdown catches while mclaurin has a team best 141 receiving yards p p washington does return tight end a href https www espn com nfl player id 4360635 chig okonkwo chig okonkwo a who missed the past two games with a hamstring injury p",
-          "description": "Commanders wide receiver Terry McLaurin will not play against the Colts because of a hamstring injury suffered in practice Friday.",
-          "published": "2026-10-04T12:17:19Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50099334/commanders-wr-terry-mclaurin-inactive-friday-injury",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "WAS",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "TARGET-SHARE WATCH",
         "score": 7.711,
@@ -5757,29 +5611,21 @@
           "sustainability": 8.3
         }
       },
-      "changed_fact": "who has started at the flanker position opposite mclaurin diggs leads washington with 13 receptions and three touchdown catches while mclaurin has a team best 141 receiving yards p p washington does return tight end a href https www espn com nfl player id 4360635 chig okonkwo chig okonkwo a who missed the past two games with a hamstring injury p",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.711,
       "proposed_true_value_rank": 134,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Washington Commanders"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Michael Pittman Jr.",
@@ -6001,25 +5847,10 @@
       "player": "Stefon Diggs",
       "pos": "WR",
       "team": "Washington Commanders",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_NOW",
-          "headline": "Commanders WR Terry McLaurin inactive after Friday injury",
-          "matched_context": "com nfl player id 4361577 dyami brown dyami brown a and a href https www espn com nfl player id 4567156 treylon burks trey burks a can fill mclaurin s x receiver role as can a href https www espn com nfl player id 2976212 stefon diggs stefon diggs a who has started at the flanker position opposite mclaurin diggs leads washington with 13 receptions and three touchdown catches while mclaurin has a team best 141 receiving yards p p washington does return tight end a href https www espn com nfl",
-          "description": "Commanders wide receiver Terry McLaurin will not play against the Colts because of a hamstring injury suffered in practice Friday.",
-          "published": "2026-10-04T12:17:19Z",
-          "url": "https://www.espn.com/nfl/story/_/id/50099334/commanders-wr-terry-mclaurin-inactive-friday-injury",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "WAS",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS / NEW-TEAM ROLE WATCH",
         "score": 7.209,
@@ -6035,29 +5866,21 @@
           "sustainability": 6.8
         }
       },
-      "changed_fact": "com nfl player id 4361577 dyami brown dyami brown a and a href https www espn com nfl player id 4567156 treylon burks trey burks a can fill mclaurin s x receiver role as can a href https www espn com nfl player id 2976212 stefon diggs stefon diggs a who has started at the flanker position opposite mclaurin diggs leads washington with 13 receptions and three touchdown catches while mclaurin has a team best 141 receiving yards p p washington does return tight end a href https www espn com nfl",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.209,
       "proposed_true_value_rank": 94,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Washington Commanders"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Chris Godwin Jr.",
@@ -6354,25 +6177,10 @@
       "player": "RJ Harvey",
       "pos": "RB",
       "team": "Denver Broncos",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "NFL Week 2 injuries to monitor for Sunday&#x27;s games",
-          "matched_context": "j terrell shoulder questionable is expected to play per rapoport terrell is officially active injuries de trey hendrickson broken finger questionable will play against new orleans with a cast on his hand nfl network insider ian rapoport reported sunday hendrickson is officially active injuries rb rj harvey hamstring questionable is unlikely to play sunday against jacksonville espn s adam schefter reported injuries dt chris jones calf questionable should play sunday night against indianapolis nfl network insider ian rapoport reported injuries wr brock bowers knee doubtful won t play sunday against the chargers",
-          "description": "NFL.com keeps you up to date with all of the latest injury updates ahead of Week 2&#x27;s Sunday games.",
-          "published": "2026-09-20T13:11:07.539Z",
-          "url": "https://www.nfl.com/news/week-2-injuries-sunday-pregame-2026-nfl-season",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "DEN",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 7.893,
@@ -6388,27 +6196,21 @@
           "sustainability": 8.2
         }
       },
-      "changed_fact": "j terrell shoulder questionable is expected to play per rapoport terrell is officially active injuries de trey hendrickson broken finger questionable will play against new orleans with a cast on his hand nfl network insider ian rapoport reported sunday hendrickson is officially active injuries rb rj harvey hamstring questionable is unlikely to play sunday against jacksonville espn s adam schefter reported injuries dt chris jones calf questionable should play sunday night against indianapolis nfl network insider ian rapoport reported injuries wr brock bowers knee doubtful won t play sunday against the chargers",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.893,
       "proposed_true_value_rank": 124,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Denver Broncos"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "FADE",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Chuba Hubbard",
@@ -6492,10 +6294,25 @@
       "player": "Malik Washington",
       "pos": "WR",
       "team": "Miami Dolphins",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_NOW",
+          "headline": "Maryland visits No. 5 Ohio State in Big Ten matchup",
+          "matched_context": "yards on 66 carries 2 tds receiving a href http www espn com college football player id 5079720 jeremiah smith target new jeremiah smith a 823 yards on 44 catches 9 tds maryland passing a href http www espn com college football player id 4058260 malik washington target new malik washington a 1 288 yards 7 tds 6 ints 62 9 completion percentage rushing a href http www espn com college football player id 5141522 iverson howard target new iverson howard a 211 yards on 52 carries 4 tds receiving a href",
+          "description": "Maryland (2-3) at No. 5 Ohio State (4-1), Oct. 10 at 4:15 p.m. EDT.",
+          "published": "2026-10-04T19:47:02Z",
+          "url": "http://www.espn.com/ncf/preview?gameId=401858483",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "MIA",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "ROLE / OFFENSIVE-TRANSITION WATCH",
         "score": 7.08,
@@ -6511,21 +6328,29 @@
           "sustainability": 6.6
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "yards on 66 carries 2 tds receiving a href http www espn com college football player id 5079720 jeremiah smith target new jeremiah smith a 823 yards on 44 catches 9 tds maryland passing a href http www espn com college football player id 4058260 malik washington target new malik washington a 1 288 yards 7 tds 6 ints 62 9 completion percentage rushing a href http www espn com college football player id 5141522 iverson howard target new iverson howard a 211 yards on 52 carries 4 tds receiving a href",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.08,
       "proposed_true_value_rank": 151,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Miami Dolphins"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Wan'Dale Robinson",
@@ -7691,11 +7516,11 @@
           "context_lanes": null
         },
         {
-          "source": "ESPN_NOW",
+          "source": "ESPN_LEAGUE",
           "headline": "Sources: Baker Mayfield return hinges on when QB can grip football",
-          "matched_context": "sources baker mayfield return hinges on when qb can grip football baker mayfield is expected to miss anywhere from three to six weeks sources told espn depending on how quickly the bucs qb can grip the football",
-          "description": "Baker Mayfield is expected to miss anywhere from three to six weeks, sources told ESPN, depending on how quickly the Bucs QB can grip the football.",
-          "published": "2026-10-04T12:21:10Z",
+          "matched_context": "sources baker mayfield return hinges on when qb can grip football baker mayfield is expected to miss anywhere from three to six weeks sources told espn depending on how quickly the buccaneers quarterback can grip the football",
+          "description": "Baker Mayfield is expected to miss anywhere from three to six weeks, sources told ESPN, depending on how quickly the Buccaneers quarterback can grip the football.",
+          "published": "2026-10-04T14:32:34Z",
           "url": "https://www.espn.com/nfl/story/_/id/50090537/sources-baker-mayfield-return-hinges-qb-grip-football",
           "match_evidence": "FULL_NAME_HEADER",
           "evidence_lane": "material_news_signals",
@@ -7916,10 +7741,25 @@
       "player": "Tyler Shough",
       "pos": "QB",
       "team": "New Orleans Saints",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "NFL.com",
+          "headline": "Can Bijan Robinson do it again? And more questions for the Falcons heading into &#x27;MNF&#x27;",
+          "matched_context": "39 s what i look at as my job right now if the roles were flipped i would want it to be done the same 34 can this pass rush continue the falcons lead the league in pressure percentage 44 2 but new orleans quarterback tyler shough has gotten the ball out in an average of 2 72 seconds the eighth quickest number in the league so far can atlanta stop chris olave the saints 39 top receiver is averaging 125 receiving yards per game second in the league and is tied",
+          "description": null,
+          "published": "2026-10-04T10:46:04Z",
+          "url": "https://www.nfl.com/news/can-bijan-robinson-do-it-again-and-more-questions-for-the-falcons-heading-into-mnf",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "NO",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 8.62625,
@@ -7935,21 +7775,29 @@
           "sustainability": 7.8
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "39 s what i look at as my job right now if the roles were flipped i would want it to be done the same 34 can this pass rush continue the falcons lead the league in pressure percentage 44 2 but new orleans quarterback tyler shough has gotten the ball out in an average of 2 72 seconds the eighth quickest number in the league so far can atlanta stop chris olave the saints 39 top receiver is averaging 125 receiving yards per game second in the league and is tied",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.62625,
       "proposed_true_value_rank": 147,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "New Orleans Saints"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Sam Darnold",
@@ -8250,25 +8098,10 @@
       "player": "Kaelon Black",
       "pos": "RB",
       "team": "San Francisco 49ers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "NFL Week 2 injuries to monitor for Sunday&#x27;s games",
-          "matched_context": "wr chris olave hamstring questionable is expected to play against the ravens espn s adam schefter reported sunday olave is officially active de chase young calf questionable is expected to play vs baltimore nfl network insider ian rapoport reported young is officially active injuries rb kaelon black groin is expected to play sunday against miami nfl network insider ian rapoport reported",
-          "description": "NFL.com keeps you up to date with all of the latest injury updates ahead of Week 2&#x27;s Sunday games.",
-          "published": "2026-09-20T13:11:07.539Z",
-          "url": "https://www.nfl.com/news/week-2-injuries-sunday-pregame-2026-nfl-season",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "SF",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "WEEK 1 COMMITTEE ROLE CONFIRMED",
         "score": 7.27,
@@ -8284,27 +8117,21 @@
           "sustainability": 7.5
         }
       },
-      "changed_fact": "wr chris olave hamstring questionable is expected to play against the ravens espn s adam schefter reported sunday olave is officially active de chase young calf questionable is expected to play vs baltimore nfl network insider ian rapoport reported young is officially active injuries rb kaelon black groin is expected to play sunday against miami nfl network insider ian rapoport reported",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.27,
       "proposed_true_value_rank": 167,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "San Francisco 49ers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "IN_SEASON",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     }
   ]
 }
