@@ -1,0 +1,19 @@
+import assert from 'node:assert/strict';
+import '../runtime-league-refresh-2026.js';
+const {plan}=globalThis.CTD_LEAGUE_REFRESH;
+const games=[['early','2026-10-04T17:00:00Z'],['late','2026-10-04T20:25:00Z'],['night','2026-10-05T00:20:00Z']].map(([id,date])=>({id,date,status:{type:{completed:false}}}));
+assert.equal(plan(games,Date.parse('2026-10-04T15:29:00Z')).keys.length,0);
+assert.equal(plan(games,Date.parse('2026-10-04T15:30:00Z')).keys.length,1);
+assert.equal(plan(games,Date.parse('2026-10-04T17:00:00Z')).keys.length,0);
+assert.equal(plan(games,Date.parse('2026-10-04T20:30:00Z')).keys.length,0,'Overtime must wait for final');
+games[0].status.type.completed=true;
+assert.deepEqual(plan(games,Date.parse('2026-10-04T20:40:00Z')).keys,['20261004:final:noon']);
+games[1].status.type.completed=true;games[2].status.type.completed=true;
+assert.equal(plan(games,Date.parse('2026-10-05T04:00:00Z')).keys.length,3);
+assert.equal(plan(games,Date.parse('2026-10-06T16:00:00Z')).keys.length,0);
+const winter=[{date:'2026-11-09T02:20:00Z',status:{type:{completed:false}}}];
+assert.equal(plan(winter,Date.parse('2026-11-08T16:30:00Z')).keys.length,1,'10:30 Central after DST');
+assert.deepEqual(plan([{date:'2026-10-05T00:20:00Z',status:{type:{completed:true}}}],Date.parse('2026-10-05T05:15:00Z')).keys,['20261004:final:night']);
+console.log('PASS: Central time, kickoff cutoff, final-only batches, overtime, off days and DST');
+
+assert.equal(plan([{date:'2026-10-04T13:30:00Z',status:{type:{completed:false}}},...games],Date.parse('2026-10-04T15:30:00Z')).keys.length,1,'London game must not suppress the 10:30 Central pregame window');
