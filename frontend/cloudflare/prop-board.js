@@ -41,20 +41,22 @@
   }
   const model=pick?.side?`MODEL ${pick.side}`:pick?.status==='EVEN'?'MODEL EVEN':'MODEL UNAVAILABLE';
   const direction=pick?.side?`${pick.side} ${s.line}. `:pick?.status==='EVEN'?'The model gives both sides equal probability. ':'A matching projection is unavailable. ';
-  if(Number.isFinite(Date.parse(s.kickoff))&&Date.parse(s.kickoff)<=Date.now())return [model,direction+'Betting: closed. Stored model analysis; not a new pregame pick.'];
+  if(!Number.isFinite(Date.parse(s.kickoff)))return ['Waiting','We cannot confirm the game time yet.'];
+  if(Date.parse(s.kickoff)<=Date.now())return [model,direction+'Betting: closed. This is the forecast saved before kickoff.'];
   const age=Date.now()-Date.parse(s.captured_at);
-  if(age>6*3600000)return [model,direction+'Betting: wait for a fresh quote.'];
-  const conditional=pick?.conditional_on_availability||['UNAVAILABLE','CONDITIONAL'].includes(window.CTD_WEEKLY_ELIGIBILITY?.(s.player,s.week)?.state);
-  if(conditional||r?.decision==='WAIT')return [model,direction+'Betting: wait. Projection depends on player availability.'];
+  if(!Number.isFinite(age)||age<0||age>6*3600000)return [model,direction+'Betting: wait for a fresh quote.'];
+  const state=window.CTD_WEEKLY_ELIGIBILITY?.(s.player,s.week)?.state;
+  const conditional=pick?.conditional_on_availability||e?.eligibility?.eligible_for_pick!==true||state!=='ELIGIBLE';
+  if(conditional||r?.decision==='WAIT')return ['Waiting for player status','No current recommendation. We need to confirm that the player is available.'];
   if(r?.decision==='PICK')return [model,direction+`Betting: recommended ${r.side} at this quote · analysis only.`];
-  return [model,direction+(r?.decision==='PASS'?'Betting: pass. The price does not meet recommendation thresholds.':'Betting recommendation unavailable.')];
+  return [model,direction+(r?.decision==='PASS'?'Betting: pass. We do not see enough value at this price.':'Betting recommendation unavailable.')];
  }
  function bookRow(s){const [state,reason]=verdict(s);return `<div class="ctdPropBook"><b>${esc(s.provider_book_title||s.book)}</b><span>Line ${esc(s.line)} · Over ${esc(price(s.over_price))} / Under ${esc(price(s.under_price))}</span><span>${esc(state)} · ${esc(reason)}</span><small>Quote ${esc(date(s.captured_at))}</small></div>`;}
  function render(){
   const mount=document.querySelector('[data-bet-panel="props"]');if(!mount)return;
   const week=chosenWeek,rows=boardRows(snapshots,recs,week),games=[...new Set(rows.map(a=>a[0].game_id))].sort(),stats=[...new Set(rows.map(a=>a[0].stat))].sort();
   if(!games.includes(game))game='all';if(!stats.includes(market))market='all';
-  const visible=rows.filter(a=>(game==='all'||a[0].game_id===game)&&(market==='all'||a[0].stat===market));
+  const visible=rows.filter(a=>!(Date.parse(a[0].kickoff)>Date.now()&&window.CTD_WEEKLY_ELIGIBILITY?.(a[0].player,a[0].week)?.state==='UNAVAILABLE')).filter(a=>(game==='all'||a[0].game_id===game)&&(market==='all'||a[0].stat===market));
   mount.innerHTML=`<div class="panel"><p class="ctdPropUpdate">${rows.length?`Latest quote update ${esc(date(new Date(Math.max(...rows.flatMap(books=>books.map(s=>Date.parse(s.captured_at))))).toISOString()))}`:"Waiting for published quotes"}</p>${error?`<p class="copy">${esc(error)}</p>`:''}<div class="ctdPropFilters"><label>Matchup <select data-prop-game><option value="all">All games</option>${games.map(g=>`<option value="${esc(g)}" ${g===game?'selected':''}>${esc(g.replace(/^\d+-W\d+-/,''))}</option>`).join('')}</select></label><label>Stat <select data-prop-stat><option value="all">All stats</option>${stats.map(s=>`<option value="${esc(s)}" ${s===market?'selected':''}>${esc(label(s))}</option>`).join('')}</select></label></div><p class="copy">${visible.length} player markets</p><div class="ctdPropGrid">${visible.map(books=>{
    const s=books[0],[state,reason]=verdict(s);
    return `<article class="ctdPropCard"><div class="ctdPropTitle"><button class="ctdPropIdentity" data-profile="${esc(s.player)}">${window.CTD_PLAYER_PORTRAIT(s.player,null,s.position)}<span>${esc(s.player)}</span></button><strong>${esc(state)}</strong></div><p>${esc(s.game_id.replace(/^\d+-W\d+-/,''))} · ${esc(label(s.stat))}</p><div class="ctdPropLine">${esc(s.line)} <span>${esc(label(s.stat))}</span></div><div class="ctdPropPrices"><span>OVER <b>${esc(price(s.over_price))}</b></span><span>UNDER <b>${esc(price(s.under_price))}</b></span></div>${reason?`<p>${esc(reason)}</p>`:""}<small>${esc(s.provider_book_title||s.book)} · Quote ${esc(date(s.captured_at))}</small>${books.length>1?`<details><summary>Compare ${books.length} sportsbooks</summary>${books.map(bookRow).join('')}</details>`:''}</article>`;

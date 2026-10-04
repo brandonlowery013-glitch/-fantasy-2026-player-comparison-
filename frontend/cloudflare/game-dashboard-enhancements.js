@@ -73,7 +73,7 @@
   function plainEnglishBetting(){
     const root=document.getElementById('gamesPage')||document;
     const replacements=new Map([
-      ['Model probability','Chance this bet hits'],['Expected value','Value vs listed odds'],['Probability advantage','Model edge'],['Expected return / unit risked','Estimated profit on a $100 bet'],['Market chance (margin removed)','Sportsbook implied chance'],['LONGSHOT · POSITIVE_EV','Long-shot parlay'],['LONGSHOT · POSITIVE EV','Long-shot parlay']
+      ['Model probability','Chance this bet hits'],['Expected value','Value vs listed odds'],['Probability advantage','Model edge'],['Expected return / unit risked','Estimated long-run return'],['Market chance (margin removed)','Sportsbook implied chance'],['LONGSHOT · POSITIVE_EV','Long-shot parlay'],['LONGSHOT · POSITIVE EV','Long-shot parlay']
     ]);
     for(const el of root.querySelectorAll('span,p,div,td,th,h2,h3')){
       if(el.children.length)continue;
