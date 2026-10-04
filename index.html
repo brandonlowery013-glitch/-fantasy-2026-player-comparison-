@@ -718,7 +718,8 @@ function renderCompare(){
  const [a,b]=['compareOne','compareTwo'].map(id=>PLAYERS.find(p=>p.name===document.getElementById(id).value));
  const inputs=currentInput('projections')?.players||{},ap=inputs[a?.name]?.projections||{},bp=inputs[b?.name]?.projections||{};
  const common=Object.keys(ap).filter(k=>typeof ap[k].mean==='number'&&typeof bp[k]?.mean==='number');
- document.getElementById('compareRead').innerHTML=a?.name===b?.name?'<p>Select two different players to compare.</p>':`<h3>WEEKLY COMPARISON</h3>${common.length?`<p>${common.map(k=>{const delta=ap[k].mean-bp[k].mean;return `${esc(k.replaceAll('_',' '))}: ${esc(delta>=0?a.name:b.name)} projects ${Math.abs(delta).toFixed(1)} more`;}).join(' · ')}.</p><p class="dataNote">These are individual stat differences, not a fantasy-points total or win probability. Missing scoring categories are not treated as zero. These forecasts are still being tested. Check the player’s availability and your league’s scoring before choosing a starter.</p>`:'<p>No matching-week comparable stat projections are available for these players.</p>'}`;
+ const stats=[...new Set([...Object.keys(ap),...Object.keys(bp)])];
+ document.getElementById('compareRead').innerHTML=a?.name===b?.name?'<p>Select two different players to compare.</p>':`<h3>Week ${esc(BET_FEED.week)} · Side by side</h3>${stats.length?`<div class="tableScroll"><table class="statTable"><thead><tr><th>Projected stat</th><th>${esc(a?.name)}</th><th>${esc(b?.name)}</th><th>Difference</th></tr></thead><tbody>${stats.map(k=>{const x=ap[k]?.mean,y=bp[k]?.mean,ok=typeof x==='number'&&typeof y==='number';return `<tr><td>${esc(k.replaceAll('_',' '))}</td><td>${numberText(x)}</td><td>${numberText(y)}</td><td>${ok?(x===y?'Even':esc(x>y?a.name:b.name)+' +'+Math.abs(x-y).toFixed(1)):'Not enough data'}</td></tr>`;}).join('')}</tbody></table></div><p class="dataNote">These are stat forecasts, not fantasy points. Your league’s scoring and each player’s availability matter when choosing a starter.</p>`:'<p>We do not have this week’s forecasts for these players yet.</p>'}`;
  document.getElementById('compareMount').innerHTML=['compareOne','compareTwo'].map(id=>PLAYERS.find(p=>p.name===document.getElementById(id).value)).filter(Boolean).map(p=>`<article class="panel"><h3>${esc(p.name)}</h3><p>${esc(p.pos)} · ${esc(p.team)}</p><p>Season rank #${esc(p.overall)} · True value #${esc(p.trueRank)}</p>${projectionTable(p)}${playerDetails(p)}</article>`).join('');
 }
 for(const [i,id]of ['compareOne','compareTwo'].entries()){const el=document.getElementById(id);el.innerHTML=PLAYERS.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${esc(p.name)}">${esc(p.name)} · ${esc(p.pos)}</option>`).join('');el.value=PLAYERS[i].name;el.addEventListener('change',renderCompare);}
@@ -873,5 +874,6 @@ window.CTD_INTERFACE_LOCK = {
 </script>
 
 <script src="runtime-league-hub-2026.js"></script>
+<script src="runtime-news-dashboard-2026.js"></script>
 </body>
 </html>
