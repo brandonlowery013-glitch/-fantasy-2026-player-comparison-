@@ -75,3 +75,28 @@ console.log('PASS: concrete matchup facts, effect on the pick, final decision an
 
 const awaySelected=structuredClone(snap);awaySelected.markets.spread.recommendation.selection="ATL +3";awaySelected.markets.spread.side_b.conditional_win_probability=.4;
 assert.equal(gameWork(game,awaySelected,"spread",now).final_probability,.4,"explanation must describe the selected side even when the other side has higher EV");
+
+// Available context must survive the short card and remain readable in details.
+const detailSignals=[{...signal,kind:'opponent',evidence:{qb_fantasy_points_allowed:18,pass_rate:.6,rush_rate:.4,proe:.03,pressure_rate:.2,sack_rate:.05,coverage_grade:72,plays_per_game:64}},
+  {...activeSignal,player:'Fixture QB',evidence:{...activeSignal.evidence,status:'Out'}}];
+const detailInput=JSON.stringify([e,p,detailSignals]);
+const detailed=propWork(e,{mean:80,sd:10,family:'normal'},p,detailSignals,{attempts:30},now);
+const rendered=globalThis.CTD_SHOW_WORK.renderWork(detailed);
+assert.match(rendered.split('<details>')[0],/Fixture QB: Injury report: Out/,'late injury evidence must not be truncated or hidden by workload');
+assert.match(rendered,/Fantasy points allowed to quarterbacks: 18/);
+assert.match(rendered,/Pressure rate: 20.0%/);
+assert.match(rendered,/Expected workload: 30.00 attempts/);
+assert.match(rendered,/work against this side/,'prop reconciliation must reach the visible details');
+assert.equal(JSON.stringify([e,p,detailSignals]),detailInput,'explanations must not mutate saved projections or decisions');
+const fantasyDetailed=fantasyWork(p,detailSignals,now);
+const fantasyRendered=globalThis.CTD_SHOW_WORK.renderWork(fantasyDetailed);
+assert.match(fantasyRendered,/Fixture QB: Injury report: Out/);
+assert.match(fantasyRendered,/lowers the forecast by 20.0%/);
+assert.match(fantasyRendered,/lower the starting forecast by 20.00/);
+assert.equal(fantasyDetailed.final_probability,null);
+assert.doesNotMatch(fantasyRendered,/No bet|undefined|<b><\/b>/);
+const staleFantasy=globalThis.CTD_SHOW_WORK.renderWork(fantasyWork(p,[{...detailSignals[0],captured_at:'2026-09-01T00:00:00Z'}],now));
+assert.doesNotMatch(staleFantasy,/Pressure rate/);
+const unsafe=globalThis.CTD_SHOW_WORK.renderWork(fantasyWork(p,[{...detailSignals[1],player:'<img src=x onerror=alert(1)>'}],now));
+assert.ok(!unsafe.includes('<img'),'source text must remain escaped');
+console.log('PASS: complete prop/fantasy context, visible reconciliation, injury priority, stale exclusion and immutable forecasts');
