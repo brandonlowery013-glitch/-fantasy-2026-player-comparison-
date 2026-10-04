@@ -5,7 +5,7 @@ import {teamProfile,currentReport,assessment} from '../lib/matchup-assessment.mj
 import {notes} from '../lib/weekly-matchup-notes.mjs';
 import {canon,mergeInjuryReport} from '../lib/matchup-facts.mjs';
 import {lineProbabilities} from './lib/distribution-tail-math.mjs';
-import {gameWork,propWork} from '../lib/show-work.mjs';
+import {propStat,gameWork,propWork} from '../lib/show-work.mjs';
 const game={away_team:'IND',home_team:'WAS',kickoff:'2026-10-04T13:30:00Z'};
 const injury={date:'2026-10-02T12:00Z',status:'Out',athlete:{displayName:'Example QB',position:{abbreviation:'QB'}}};
 const summary={header:{id:'1',competitions:[{date:game.kickoff,neutralSite:true,competitors:[{team:{abbreviation:'WSH'}},{team:{abbreviation:'IND'}}],status:{type:{completed:false}}}]},injuries:[{team:{abbreviation:'WSH'},injuries:[injury,{...injury,date:'2026-10-05'}]}],gameInfo:{venue:{fullName:'London'}}};
@@ -33,7 +33,7 @@ for(const [player,p] of Object.entries(recs.players||{}))for(const e of p.weekly
  if(e.week!==market.week||!e.model_pick?.side)continue;
  const over=e.model?.over_probability,under=e.model?.under_probability;
  if(Number.isFinite(over)&&Number.isFinite(under)&&Math.abs(over-under)>1e-5)assert.equal(e.model_pick.side,over>under?'OVER':'UNDER',`${player} ${e.stat} direction`);
- const spec=dist.distributions?.[player]?.distributions?.[e.stat];if(!spec)continue;audited++;const probabilities=lineProbabilities(spec,e.line);for(const side of ['over','under','push'])assert(Math.abs(probabilities[side]-e.model[side+'_probability'])<2e-6,`${player} ${e.stat}: saved probability disagrees with displayed distribution at line ${e.line}`);
+ const spec=propStat(dist.distributions?.[player]?.distributions,e.stat);if(!spec)continue;audited++;const probabilities=lineProbabilities(spec,e.line);for(const side of ['over','under','push'])assert(Math.abs(probabilities[side]-e.model[side+'_probability'])<2e-6,`${player} ${e.stat}: saved probability disagrees with displayed distribution at line ${e.line}`);
  const work=propWork(e,spec,{baseline:{mean:spec.mean},mean:spec.mean});
  if((e.model_pick.side==='UNDER'&&spec.mean>e.line)||(e.model_pick.side==='OVER'&&spec.mean<e.line)){assert(work.reader.distributionExplanation,`${player}: mean/direction explanation missing`);conflicts++;}
  if(player==='Cam Skattebo'&&e.stat==='receiving_yards'&&e.line===17.5)skattebo=work;

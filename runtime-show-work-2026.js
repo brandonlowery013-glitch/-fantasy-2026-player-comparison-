@@ -135,6 +135,8 @@
     work.reader.limit=context.status==='COMPLETE'?null:'Current injury, workload or matchup reports are incomplete. No extra probability boost has been applied.';
     return work;
   }
+  function propStatKey(stat){return ({passing_yards:'pass_yards',passing_tds:'pass_tds',rushing_yards:'rush_yards'})[stat]||stat;}
+  function propStat(values,stat){return values?.[stat]??values?.[propStatKey(stat)];}
   function propWork(e,spec,projection,signals=[],opportunities={},now=Date.now(),environment=null){
     const side=e.recommendation?.side||e.model_pick?.side;
     const s=(e.sides||[]).find(x=>x.side===side)||{},mean=num(spec?.mean??spec?.parameters?.mu),base=num(projection?.baseline?.mean);
@@ -193,5 +195,5 @@
     const median=key=>{const values=books.map(s=>num(s.market?.[key])).filter(x=>x!=null).sort((a,b)=>a-b);const n=values.length;return {count:n,value:n<2?null:n%2?values[(n-1)/2]:(values[n/2-1]+values[n/2])/2};};
     return {home_spread:median('home_spread'),total:median('total'),books:books.map(s=>({book:s.book,captured_at:s.captured_at,home_spread:num(s.market?.home_spread),total:num(s.market?.total)}))};
   }
-  root.CTD_SHOW_WORK={renderWork,humanTime,propAvailability,contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
+  root.CTD_SHOW_WORK={propStatKey,propStat,renderWork,humanTime,propAvailability,contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
 })(globalThis);
