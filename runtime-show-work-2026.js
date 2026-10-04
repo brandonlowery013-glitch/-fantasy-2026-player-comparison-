@@ -100,20 +100,39 @@
       const lead=availability||facts[0];
       return `<section class="showWork ctdFormattedWork"><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${lead?`<p>${escape(lead.text)}</p>`:''}${r.hideVerdict||!r.verdict?'':`<p><b>${escape(r.verdict)}</b></p>`}<details><summary>Numbers and sources</summary><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul>${r.reconciliation?`<p>${escape(r.reconciliation)}</p>`:''}${facts.length?`<h4>Matchup and workload</h4><ul>${facts.map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`:''}${sourceHtml?`<h4>Sources</h4><ul class="workSources">${sourceHtml}</ul>`:''}</details></section>`;
     }
-    return `<section class="showWork ctdFormattedWork"><h4>The forecast</h4><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${a?.sections?.length?(r.kind==='spread'?a.sections:[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join(''):`<h4>The matchup</h4><ul>${facts.slice(0,r.kind?facts.length:2).map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`}<h4>What this means for the pick</h4><p>${escape(a?.risk||r.reconciliation)}</p><p class="workVerdict"><b>${a?.risk?'Saved forecast: ':''}${escape(r.verdict)}</b></p><details><summary>Numbers and sources</summary><h4>The numbers</h4><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul>${a?`<p>${escape(r.reconciliation)}</p>${(a.comparisons||[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join('')}<h4>Recent form</h4><ul>${facts.map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`:''}<h4>Sources</h4><ul class="workSources">${sourceHtml}</ul></details></section>`;
+    return `<section class="showWork ctdFormattedWork">${r.hold?`<h4>No recommended bet · quarterback change</h4><p>${escape(r.hold)}</p>`:''}<h4>${r.hold?'Score before the quarterback review':'The forecast'}</h4><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${a?.sections?.length?(r.kind==='spread'?a.sections:[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join(''):`<h4>The matchup</h4><ul>${facts.slice(0,r.kind?facts.length:2).map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`}<h4>What this means for the pick</h4><p>${escape(a?.risk||r.reconciliation)}</p><p class="workVerdict"><b>${a?.risk?'Saved forecast: ':''}${escape(r.verdict)}</b></p><details><summary>Numbers and sources</summary><h4>The numbers</h4><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul>${a?`<p>${escape(r.reconciliation)}</p>${(a.comparisons||[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join('')}<h4>Recent form</h4><ul>${facts.map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`:''}<h4>Sources</h4><ul class="workSources">${sourceHtml}</ul></details></section>`;
+  }
+  function quarterbackConcerns(game,now=Date.now()){
+    const canon=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t),teams=[game.home_team,game.away_team].map(canon),concerns=new Map(),latestPersonnel=new Map();
+    const risky=x=>/^(out|inactive|doubtful|questionable|injured reserve|ir|suspended|pup)$/i.test(String(x||'').trim());
+    // An aging adverse report is unresolved evidence, not clearance to play.
+    for(const [team,record] of Object.entries(game.personnel_context?.teams||{})){
+      if(!teams.includes(canon(team)))continue;
+      for(const p of record.players||[]){
+        if(p.position!=='QB'||!p.depth_roles?.some(r=>r.position==='QB'&&Number(r.rank)===1))continue;
+        const reports=(p.injury_reports||[]).filter(r=>Number.isFinite(Date.parse(r.source_updated_at))&&Date.parse(r.source_updated_at)<=now).sort((a,b)=>Date.parse(a.source_updated_at)-Date.parse(b.source_updated_at));
+        const latest=reports.at(-1);if(latest)latestPersonnel.set(canon(team),Date.parse(latest.source_updated_at));if(!latest||!risky(latest.status))continue;
+        const cleared=p.availability?.expected_active===true&&p.availability?.designation_confirmed_for_game===true&&Date.parse(p.availability.source_updated_at)>=Date.parse(latest.source_updated_at)&&Date.parse(p.availability.source_updated_at)<=now;
+        if(!cleared)concerns.set(canon(team),{player:p.name,team:canon(team),status:latest.status,reported_at:latest.source_updated_at});
+      }
+    }
+    for(const p of game.context_evidence?.players||[]){
+      if(p.position!=='QB')continue;
+      const role=p.signals?.find(s=>['role','qb_context'].includes(s.kind)&&Number(s.evidence?.depth_rank)===1&&teams.includes(canon(s.team||s.evidence?.team))&&Date.parse(s.captured_at)<=now);
+      if(!role)continue;
+      const team=canon(role.team||role.evidence?.team),injury=p.signals?.find(s=>s.kind==='injury'&&canon(s.team||s.evidence?.team)===team&&Date.parse(s.evidence?.source_updated_at||s.captured_at)<=now);
+      const at=injury?.evidence?.source_updated_at||injury?.captured_at;
+      if(injury&&contextCurrent(injury,'injury',now)&&/^(active|healthy|available)$/i.test(String(injury.evidence?.status||''))&&Date.parse(at)>Date.parse(concerns.get(team)?.reported_at||0))concerns.delete(team);
+      if(injury&&!(latestPersonnel.get(team)>Date.parse(at))&&risky(injury.evidence?.status)&&(!concerns.has(team)||Date.parse(at)>Date.parse(concerns.get(team).reported_at)))concerns.set(team,{player:p.player,team,status:injury.evidence.status,reported_at:at});
+    }
+    return [...concerns.values()];
   }
   function gameMarketView(game,snapshot,now=Date.now()){
-    if(!snapshot||!Number.isFinite(Date.parse(game.kickoff||game.event_start))||Date.parse(game.kickoff||game.event_start)<=now)return snapshot;
-    const canon=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t),teams=[game.home_team,game.away_team].map(canon);
-    const unavailable=(game.context_evidence?.players||[]).filter(p=>{
-      if(p.position!=='QB')return false;
-      const role=p.signals?.find(s=>['role','qb_context'].includes(s.kind)&&contextCurrent(s,s.kind,now)&&s.evidence?.depth_rank===1&&teams.includes(canon(s.team||s.evidence?.team)));
-      const injury=p.signals?.find(s=>s.kind==='injury'&&contextCurrent(s,'injury',now)&&canon(s.team||s.evidence?.team)===canon(role?.team||role?.evidence?.team));
-      return role&&injury&&['out','inactive','injured reserve','ir','suspended','pup'].includes(String(injury.evidence?.status||'').toLowerCase().trim());
-    });
-    if(!unavailable.length)return snapshot;
-    const reason=`${unavailable.map(p=>p.player).join(' and ')} is listed out. Hold this game's bets until the starting-quarterback change has been reviewed.`;
-    return {...snapshot,markets:Object.fromEntries(Object.entries(snapshot.markets||{}).map(([kind,e])=>[kind,{...e,baseline_recommendation:e.baseline_recommendation||e.recommendation,recommendation:{decision:'WAIT',selection:null,confidence:null,reason},context_validation:{status:'HOLD',reason,checked_at:new Date(now).toISOString(),numeric_adjustment:0}}]))};
+    if(!snapshot||!Number.isFinite(Date.parse(game.kickoff||game.event_start)))return snapshot;
+    if(Date.parse(game.kickoff||game.event_start)<=now&&game.rerun!==true)return snapshot;
+    const concerns=quarterbackConcerns(game,Math.min(now,Date.parse(game.kickoff||game.event_start)));if(!concerns.length)return snapshot;
+    const reason=concerns.map(p=>`${p.player}: last reported ${String(p.status).toLowerCase()}`).join('; ')+'. This forecast has not accounted for the starting-quarterback uncertainty. No recommended bet until availability and the replacement are evaluated.';
+    return {...snapshot,markets:Object.fromEntries(Object.entries(snapshot.markets||{}).map(([kind,e])=>[kind,{...e,baseline_recommendation:e.baseline_recommendation||e.recommendation,recommendation:{decision:'WAIT',selection:null,confidence:null,reason},context_validation:{status:'HOLD',reason,quarterbacks:concerns,checked_at:new Date(now).toISOString(),numeric_adjustment:0}}]))};
   }
   function gameWork(game,snapshot,kind,now=Date.now()){
     snapshot=gameMarketView(game,snapshot,now);
@@ -149,7 +168,7 @@
     work.reader.reconciliation=baseline!=null&&adjusted!=null?`${kind==='total'?`${adjustment} ${restApplied?'move':'moves'} the total from ${fmt(baseline)} to ${fmt(adjusted)} points.`:`${adjustment} ${restApplied?'change':'changes'} the forecast from ${baseline>=0?game.home_team:game.away_team} winning by ${fmt(Math.abs(baseline))} to ${adjusted>=0?game.home_team:game.away_team} winning by ${fmt(Math.abs(adjusted))}.`} ${kind==='total'?`That leaves the projection ${fmt(Math.abs(edge||0))} points ${edge>=0?'above':'below'} the line.`:kind==='moneyline'?'The score distribution gives each team’s chance of winning.':'The final score forecast is what we compare with the spread.'} These effects are already included in the projection.${restApplied?'':' Rest is excluded from this forecast.'}`:'The pick uses the score forecast above. There is not enough verified evidence to assign an additional matchup adjustment.';
     work.reader.verdict=verdictText(r.decision,pick,s.conditional_win_probability,r.confidence,context.status==='COMPLETE');
     work.reader.limit=context.status==='COMPLETE'?null:'Current injury, workload or matchup reports are incomplete. No extra probability boost has been applied.';
-    if(e.context_validation?.status==='HOLD'){work.reader.reconciliation=e.context_validation.reason;work.reader.verdict=e.context_validation.reason;}
+    if(e.context_validation?.status==='HOLD'){work.reader.hold=e.context_validation.reason;work.reader.reconciliation=e.context_validation.reason;work.reader.verdict=e.context_validation.reason;}
     return work;
   }
   function propStatKey(stat){return ({passing_yards:'pass_yards',passing_tds:'pass_tds',rushing_yards:'rush_yards'})[stat]||stat;}
@@ -212,5 +231,5 @@
     const median=key=>{const values=books.map(s=>num(s.market?.[key])).filter(x=>x!=null).sort((a,b)=>a-b);const n=values.length;return {count:n,value:n<2?null:n%2?values[(n-1)/2]:(values[n/2-1]+values[n/2])/2};};
     return {home_spread:median('home_spread'),total:median('total'),books:books.map(s=>({book:s.book,captured_at:s.captured_at,home_spread:num(s.market?.home_spread),total:num(s.market?.total)}))};
   }
-  root.CTD_SHOW_WORK={gameMarketView,propStatKey,propStat,renderWork,humanTime,propAvailability,contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
+  root.CTD_SHOW_WORK={quarterbackConcerns,gameMarketView,propStatKey,propStat,renderWork,humanTime,propAvailability,contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
 })(globalThis);
