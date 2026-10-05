@@ -28,6 +28,8 @@ catch(e){block('matchup_assessment_coverage',String(e.stderr||e.message));}
 try{execFileSync(process.execPath,['scripts/test-injury-evidence.mjs'],{cwd:root,stdio:'pipe'});pass('personnel_availability_evidence','Stable identities, source-age expiry and injury precedence passed');}
 catch(e){block('personnel_availability_evidence',String(e.stderr||e.message));}
 
+try{execFileSync(process.execPath,['scripts/validate-admission-state.mjs'],{cwd:root,stdio:'pipe'});pass('canonical_admission_state','Every accepted admission is complete and immutable package hashes match');}
+catch(e){block('canonical_admission_state',String(e.stdout||e.stderr||e.message));}
 try{execFileSync(process.execPath,['scripts/test-weekly-schedule-selection.mjs'],{cwd:root,stdio:'pipe'});pass('weekly_schedule_selection','Unfinished current-week retention and deployed schedule regression passed');}
 catch(e){block('weekly_schedule_selection',String(e.stderr||e.message));}
 

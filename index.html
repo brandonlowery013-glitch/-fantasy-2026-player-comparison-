@@ -226,9 +226,9 @@ border-radius:6px;overflow:hidden}
 <section class="page" id="playerPage">
   <div class="categoryWrap">
     <h2>PLAYER BOARD</h2>
-    <div class="categoryIntro" id="playerSourceState">Loading the authoritative player board…</div>
+    <button class="btn" id="exportExcel" disabled>Download Excel</button><div class="categoryIntro" id="playerSourceState">Loading the authoritative player board…</div>
     <div class="categoryTabs" id="seasonTabs">
-      <button class="active" data-season="board">FULL BOARD</button>
+      <button class="active" data-season="board">OVERALL / ACTIONABLE</button><button data-season="trueValue">TRUE VALUE</button>
       <button data-season="sleepers">SLEEPERS</button>
       <button data-season="breakouts">BREAKOUTS</button>
       <button data-season="values">ESTABLISHED ROLE</button>
@@ -363,20 +363,39 @@ border-radius:6px;overflow:hidden}
       const lead=availability||facts[0];
       return `<section class="showWork ctdFormattedWork"><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${lead?`<p>${escape(lead.text)}</p>`:''}${r.hideVerdict||!r.verdict?'':`<p><b>${escape(r.verdict)}</b></p>`}<details><summary>Numbers and sources</summary><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul>${r.reconciliation?`<p>${escape(r.reconciliation)}</p>`:''}${facts.length?`<h4>Matchup and workload</h4><ul>${facts.map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`:''}${sourceHtml?`<h4>Sources</h4><ul class="workSources">${sourceHtml}</ul>`:''}</details></section>`;
     }
-    return `<section class="showWork ctdFormattedWork"><h4>The forecast</h4><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${a?.sections?.length?(r.kind==='spread'?a.sections:[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join(''):`<h4>The matchup</h4><ul>${facts.slice(0,r.kind?facts.length:2).map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`}<h4>What this means for the pick</h4><p>${escape(a?.risk||r.reconciliation)}</p><p class="workVerdict"><b>${a?.risk?'Saved forecast: ':''}${escape(r.verdict)}</b></p><details><summary>Numbers and sources</summary><h4>The numbers</h4><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul>${a?`<p>${escape(r.reconciliation)}</p>${(a.comparisons||[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join('')}<h4>Recent form</h4><ul>${facts.map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`:''}<h4>Sources</h4><ul class="workSources">${sourceHtml}</ul></details></section>`;
+    return `<section class="showWork ctdFormattedWork">${r.hold?`<h4>No recommended bet · quarterback change</h4><p>${escape(r.hold)}</p>`:''}<h4>${r.hold?'Score before the quarterback review':'The forecast'}</h4><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${a?.sections?.length?(r.kind==='spread'?a.sections:[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join(''):`<h4>The matchup</h4><ul>${facts.slice(0,r.kind?facts.length:2).map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`}<h4>What this means for the pick</h4><p>${escape(a?.risk||r.reconciliation)}</p><p class="workVerdict"><b>${a?.risk?'Saved forecast: ':''}${escape(r.verdict)}</b></p><details><summary>Numbers and sources</summary><h4>The numbers</h4><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul>${a?`<p>${escape(r.reconciliation)}</p>${(a.comparisons||[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join('')}<h4>Recent form</h4><ul>${facts.map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`:''}<h4>Sources</h4><ul class="workSources">${sourceHtml}</ul></details></section>`;
+  }
+  function quarterbackConcerns(game,now=Date.now()){
+    const canon=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t),teams=[game.home_team,game.away_team].map(canon),concerns=new Map(),latestPersonnel=new Map();
+    const risky=x=>/^(out|inactive|doubtful|questionable|injured reserve|ir|suspended|pup)$/i.test(String(x||'').trim());
+    // An aging adverse report is unresolved evidence, not clearance to play.
+    for(const [team,record] of Object.entries(game.personnel_context?.teams||{})){
+      if(!teams.includes(canon(team)))continue;
+      for(const p of record.players||[]){
+        if(p.position!=='QB'||!p.depth_roles?.some(r=>r.position==='QB'&&Number(r.rank)===1))continue;
+        const reports=(p.injury_reports||[]).filter(r=>Number.isFinite(Date.parse(r.source_updated_at))&&Date.parse(r.source_updated_at)<=now).sort((a,b)=>Date.parse(a.source_updated_at)-Date.parse(b.source_updated_at));
+        const latest=reports.at(-1);if(latest)latestPersonnel.set(canon(team),Date.parse(latest.source_updated_at));if(!latest||!risky(latest.status))continue;
+        const cleared=p.availability?.expected_active===true&&p.availability?.designation_confirmed_for_game===true&&Date.parse(p.availability.source_updated_at)>=Date.parse(latest.source_updated_at)&&Date.parse(p.availability.source_updated_at)<=now;
+        if(!cleared)concerns.set(canon(team),{player:p.name,team:canon(team),status:latest.status,reported_at:latest.source_updated_at});
+      }
+    }
+    for(const p of game.context_evidence?.players||[]){
+      if(p.position!=='QB')continue;
+      const role=p.signals?.find(s=>['role','qb_context'].includes(s.kind)&&Number(s.evidence?.depth_rank)===1&&teams.includes(canon(s.team||s.evidence?.team))&&Date.parse(s.captured_at)<=now);
+      if(!role)continue;
+      const team=canon(role.team||role.evidence?.team),injury=p.signals?.find(s=>s.kind==='injury'&&canon(s.team||s.evidence?.team)===team&&Date.parse(s.evidence?.source_updated_at||s.captured_at)<=now);
+      const at=injury?.evidence?.source_updated_at||injury?.captured_at;
+      if(injury&&contextCurrent(injury,'injury',now)&&/^(active|healthy|available)$/i.test(String(injury.evidence?.status||''))&&Date.parse(at)>Date.parse(concerns.get(team)?.reported_at||0))concerns.delete(team);
+      if(injury&&!(latestPersonnel.get(team)>Date.parse(at))&&risky(injury.evidence?.status)&&(!concerns.has(team)||Date.parse(at)>Date.parse(concerns.get(team).reported_at)))concerns.set(team,{player:p.player,team,status:injury.evidence.status,reported_at:at});
+    }
+    return [...concerns.values()];
   }
   function gameMarketView(game,snapshot,now=Date.now()){
-    if(!snapshot||!Number.isFinite(Date.parse(game.kickoff||game.event_start))||Date.parse(game.kickoff||game.event_start)<=now)return snapshot;
-    const canon=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t),teams=[game.home_team,game.away_team].map(canon);
-    const unavailable=(game.context_evidence?.players||[]).filter(p=>{
-      if(p.position!=='QB')return false;
-      const role=p.signals?.find(s=>['role','qb_context'].includes(s.kind)&&contextCurrent(s,s.kind,now)&&s.evidence?.depth_rank===1&&teams.includes(canon(s.team||s.evidence?.team)));
-      const injury=p.signals?.find(s=>s.kind==='injury'&&contextCurrent(s,'injury',now)&&canon(s.team||s.evidence?.team)===canon(role?.team||role?.evidence?.team));
-      return role&&injury&&['out','inactive','injured reserve','ir','suspended','pup'].includes(String(injury.evidence?.status||'').toLowerCase().trim());
-    });
-    if(!unavailable.length)return snapshot;
-    const reason=`${unavailable.map(p=>p.player).join(' and ')} is listed out. Hold this game's bets until the starting-quarterback change has been reviewed.`;
-    return {...snapshot,markets:Object.fromEntries(Object.entries(snapshot.markets||{}).map(([kind,e])=>[kind,{...e,baseline_recommendation:e.baseline_recommendation||e.recommendation,recommendation:{decision:'WAIT',selection:null,confidence:null,reason},context_validation:{status:'HOLD',reason,checked_at:new Date(now).toISOString(),numeric_adjustment:0}}]))};
+    if(!snapshot||!Number.isFinite(Date.parse(game.kickoff||game.event_start)))return snapshot;
+    if(Date.parse(game.kickoff||game.event_start)<=now&&game.rerun!==true)return snapshot;
+    const concerns=quarterbackConcerns(game,Math.min(now,Date.parse(game.kickoff||game.event_start)));if(!concerns.length)return snapshot;
+    const reason=concerns.map(p=>`${p.player}: last reported ${String(p.status).toLowerCase()}`).join('; ')+'. This forecast has not accounted for the starting-quarterback uncertainty. No recommended bet until availability and the replacement are evaluated.';
+    return {...snapshot,markets:Object.fromEntries(Object.entries(snapshot.markets||{}).map(([kind,e])=>[kind,{...e,baseline_recommendation:e.baseline_recommendation||e.recommendation,recommendation:{decision:'WAIT',selection:null,confidence:null,reason},context_validation:{status:'HOLD',reason,quarterbacks:concerns,checked_at:new Date(now).toISOString(),numeric_adjustment:0}}]))};
   }
   function gameWork(game,snapshot,kind,now=Date.now()){
     snapshot=gameMarketView(game,snapshot,now);
@@ -412,7 +431,7 @@ border-radius:6px;overflow:hidden}
     work.reader.reconciliation=baseline!=null&&adjusted!=null?`${kind==='total'?`${adjustment} ${restApplied?'move':'moves'} the total from ${fmt(baseline)} to ${fmt(adjusted)} points.`:`${adjustment} ${restApplied?'change':'changes'} the forecast from ${baseline>=0?game.home_team:game.away_team} winning by ${fmt(Math.abs(baseline))} to ${adjusted>=0?game.home_team:game.away_team} winning by ${fmt(Math.abs(adjusted))}.`} ${kind==='total'?`That leaves the projection ${fmt(Math.abs(edge||0))} points ${edge>=0?'above':'below'} the line.`:kind==='moneyline'?'The score distribution gives each team’s chance of winning.':'The final score forecast is what we compare with the spread.'} These effects are already included in the projection.${restApplied?'':' Rest is excluded from this forecast.'}`:'The pick uses the score forecast above. There is not enough verified evidence to assign an additional matchup adjustment.';
     work.reader.verdict=verdictText(r.decision,pick,s.conditional_win_probability,r.confidence,context.status==='COMPLETE');
     work.reader.limit=context.status==='COMPLETE'?null:'Current injury, workload or matchup reports are incomplete. No extra probability boost has been applied.';
-    if(e.context_validation?.status==='HOLD'){work.reader.reconciliation=e.context_validation.reason;work.reader.verdict=e.context_validation.reason;}
+    if(e.context_validation?.status==='HOLD'){work.reader.hold=e.context_validation.reason;work.reader.reconciliation=e.context_validation.reason;work.reader.verdict=e.context_validation.reason;}
     return work;
   }
   function propStatKey(stat){return ({passing_yards:'pass_yards',passing_tds:'pass_tds',rushing_yards:'rush_yards'})[stat]||stat;}
@@ -475,7 +494,7 @@ border-radius:6px;overflow:hidden}
     const median=key=>{const values=books.map(s=>num(s.market?.[key])).filter(x=>x!=null).sort((a,b)=>a-b);const n=values.length;return {count:n,value:n<2?null:n%2?values[(n-1)/2]:(values[n/2-1]+values[n/2])/2};};
     return {home_spread:median('home_spread'),total:median('total'),books:books.map(s=>({book:s.book,captured_at:s.captured_at,home_spread:num(s.market?.home_spread),total:num(s.market?.total)}))};
   }
-  root.CTD_SHOW_WORK={gameMarketView,propStatKey,propStat,renderWork,humanTime,propAvailability,contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
+  root.CTD_SHOW_WORK={quarterbackConcerns,gameMarketView,propStatKey,propStat,renderWork,humanTime,propAvailability,contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
 })(globalThis);
 </script>
 <!-- END SHARED SHOW WORK -->
@@ -788,6 +807,7 @@ const adpEdge=p=>(typeof p.adp==='number'&&typeof p.overall==='number')?p.adp-p.
 function seasonGroups(){
   return {
     board:[...PLAYERS].sort((a,b)=>a.overall-b.overall),
+    trueValue:[...PLAYERS].sort((a,b)=>a.trueRank-b.trueRank),
     sleepers:PLAYERS.filter(p=>healthy(p)&&(p.role||0)>=7&&(p.ceiling||0)>=7.8).sort((a,b)=>a.overall-b.overall),
     breakouts:PLAYERS.filter(p=>healthy(p)&&(p.ceiling||0)>=8.5&&(p.role||0)>=8&&(p.overall||999)>18).sort((a,b)=>(b.ceiling+b.role)-(a.ceiling+a.role)),
     values:PLAYERS.filter(p=>healthy(p)&&(p.role||0)>=8).sort((a,b)=>a.overall-b.overall),
@@ -797,13 +817,13 @@ function seasonGroups(){
   };
 }
 function renderPlayerRows(rows,limit=30){
- return `<div class="categoryGrid">${rows.slice(0,limit).map(p=>`<div class="categoryCard"><h3>#${p.overall} · ${esc(p.pos)} · ${esc(p.team)}</h3><div class="catPlayer"><b>${esc(p.name)}</b><span>${esc(marketRead(p))}</span></div><div class="catPlayer"><span>True Value</span><b>#${p.trueRank}</b></div><div class="catPlayer"><span>Ceiling / Role</span><b>${p.ceiling??'—'} / ${p.role??'—'}</b></div><details><summary>Consensus, news and model impact</summary>${playerDetails(p)}</details></div>`).join('')}</div>`;
+ return `<div class="categoryGrid">${rows.slice(0,limit).map(p=>`<div class="categoryCard"><h3>#${p.overall} · ${esc(p.pos)} · ${esc(p.team)}</h3><div class="catPlayer"><b>${esc(p.name)}</b><span>${esc(marketRead(p))}</span></div><div class="catPlayer"><span>True Value</span><b>#${p.trueRank}</b></div><div class="catPlayer"><span>Model score</span><b>${p.score??'—'}</b></div><div class="catPlayer"><span>Ceiling / Role</span><b>${p.ceiling??'—'} / ${p.role??'—'}</b></div><details><summary>Consensus, news and model impact</summary>${playerDetails(p)}</details></div>`).join('')}</div>`;
 }
 function statusText(x){return ({SHADOW_ONLY:'Preview — not approved',REVIEW_REQUIRED:'Needs review',CURRENT:'Current',STALE_REVIEW_REQUIRED:'Report needs an update',PROJECTION_ONLY:'Projection only'})[x]||String(x||'Needs review').replaceAll('_',' ').toLowerCase();}
 function numberText(x){return typeof x==='number'&&Number.isFinite(x)?x.toFixed(1):'Unavailable';}
 function playerDetails(p){
  const c=p.consensus||{},news=p.newsFeed||[],injury=currentInput('context')?.players?.[p.name]?.signals?.injury;
- return `<p><b>Season consensus (PPR)</b>: ${numberText(c.normalizedPPR)} points · Our season median: ${numberText(c.ourMedianPPR)}</p><p class="dataNote">${esc(c.source||'Consensus source unavailable')} · Captured ${esc(c.captured||'date unavailable')}. This is a season snapshot, not a live weekly consensus.</p><h4>News and availability</h4>${injury?`<p><b>Latest injury report:</b> ${esc(injury.evidence?.status||injury.evidence?.game_status||'Not confirmed')} · ${esc(statusText(injury.status))}</p><p class="dataNote">${esc(injury.source)} · Captured ${esc(injury.captured_at||'date unavailable')}. Report updated ${esc(injury.evidence?.source_updated_at||'date unavailable')}. The report date matters: an old update may no longer describe the player’s status.</p>`:''}${news.length?news.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,3).map(n=>`<p><b>${esc(String(n.headline||'').split('|')[0].trim())}</b><br>${esc(n.summary||'')}<br><span class="dataNote">${esc(n.source)} · ${esc(n.date)}</span></p>`).join(''):'<p>No recent news is available for this player. Check the latest injury report before setting your lineup.</p>'}<details><summary>How this affects the forecast</summary><p>Check the projection breakdown for changes supported by current reports. A news headline alone does not change the forecast.</p></details>`;
+ return `<p>${esc(p.overallWriteup||'')}</p><p>${esc(p.recommendation||'')}</p><p>Production ${p.production} · Ceiling ${p.ceiling} · Role ${p.role} · Environment ${p.environment} · Availability ${p.availability} · Reliability ${p.reliability} · Sustainability ${p.sustainability}</p><p><b>Season consensus (PPR)</b>: ${numberText(c.normalizedPPR)} points · Our season median: ${numberText(c.ourMedianPPR)}</p><p class="dataNote">${esc(c.source||'Consensus source unavailable')} · Captured ${esc(c.captured||'date unavailable')}. This is a season snapshot, not a live weekly consensus.</p><h4>News and availability</h4>${injury?`<p><b>Latest injury report:</b> ${esc(injury.evidence?.status||injury.evidence?.game_status||'Not confirmed')} · ${esc(statusText(injury.status))}</p><p class="dataNote">${esc(injury.source)} · Captured ${esc(injury.captured_at||'date unavailable')}. Report updated ${esc(injury.evidence?.source_updated_at||'date unavailable')}. The report date matters: an old update may no longer describe the player’s status.</p>`:''}${news.length?news.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,3).map(n=>`<p><b>${esc(String(n.headline||'').split('|')[0].trim())}</b><br>${esc(n.summary||'')}<br><span class="dataNote">${esc(n.source)} · ${esc(n.date)}</span></p>`).join(''):'<p>No recent news is available for this player. Check the latest injury report before setting your lineup.</p>'}<details><summary>How this affects the forecast</summary><p>Check the projection breakdown for changes supported by current reports. A news headline alone does not change the forecast.</p></details>`;
 }
 function projectionTable(p){
  const pp=currentInput('projections')?.players?.[p.name];
@@ -855,20 +875,21 @@ document.getElementById('weeklyTabs')?.addEventListener('click',e=>{
  document.querySelectorAll('[data-weekly]').forEach(x=>x.classList.toggle('active',x===b));renderWeekly();
 });
 renderSeason();renderWeekly();renderCompare();
+let CURRENT_CANONICAL=null;
+const CANONICAL_MODULES=Promise.all([import('./lib/canonical-player-source.mjs'),import('./lib/canonical-excel-export.mjs')]);
 async function loadPlayers(){
  try{
- const get=async path=>{const r=await fetch(`${RAW}${path}?ts=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw Error('Player source unavailable');return r.json();};
- const truth=await get('MODEL_SOURCE_OF_TRUTH.json');
- if(truth.season!==2026||typeof truth.current_update_layer!=='string'||!/^[a-zA-Z0-9._-]+\.json$/.test(truth.current_update_layer))throw Error('Unverified player source');
- if(!Number.isInteger(truth.runtime_player_shards)||truth.runtime_player_shards<1||truth.runtime_player_shards>30)throw Error('Invalid player shard contract');const [patch,...shards]=await Promise.all([get(truth.current_update_layer),...Array.from({length:truth.runtime_player_shards},(_,i)=>get(`players${i}.json`))]);const canonical=new Map(shards.flat().map(x=>[x.n,x]));for(const [name,patchPlayer]of Object.entries(patch.players||{}))canonical.set(name,{...canonical.get(name),...patchPlayer});const entries=[...canonical];
- if(entries.length!==truth.active_player_model||entries.some(([name,x])=>!name||!x.p||!x.t||typeof x.o!=='number'))throw Error('Incomplete authoritative player board');
+ const [{loadCanonicalPlayers}]=await CANONICAL_MODULES;
+ const get=async path=>{const r=await fetch(`${new URL('./',location.href)}${path}?ts=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw Error('Player source unavailable');return r.json();};
+ const result=await loadCanonicalPlayers(get);CURRENT_CANONICAL=result;const entries=result.players.map(x=>[x.n,x]);
  const prior=new Map(PLAYERS.map(p=>[p.name,p]));
- PLAYERS.splice(0,PLAYERS.length,...entries.map(([name,x])=>{const old=prior.get(name),headlines=x.newsFeedState?.latest_headlines||[];return {name,pos:x.p,team:x.t,overall:x.o,posRank:x.pr,trueRank:x.tr,truePosRank:x.tp,score:x.s,production:x.pd,ceiling:x.ce,role:x.r,environment:x.e,availability:x.a,reliability:x.rl,sustainability:x.su,price:'MODEL REVIEW',currentModelImpact:x.currentModelImpact,newsFeed:headlines.map(h=>({headline:typeof h==='string'?h:h.headline||h.title,summary:typeof h==='string'?'':h.summary,source:typeof h==='string'?(x.newsFeedState?.sources||[]).join(', '):h.source,date:typeof h==='string'?x.newsFeedState?.updated_at:h.date||h.published_at})),consensus:{normalizedPPR:x.cp,ourMedianPPR:x.mp,source:old?.consensus?.normalizedPPR===x.cp?old.consensus.source:'Published season consensus snapshot',captured:old?.consensus?.normalizedPPR===x.cp?old.consensus.captured:null},injuryStatus:{active:null}};}));
- PLAYER_SOURCE_READY=true;document.getElementById('playerSourceState').textContent=`${entries.length} players · Authoritative model updated ${patch.updated||'date unavailable'} · Draft ADP is archival and excluded from weekly decisions.`;
+ PLAYERS.splice(0,PLAYERS.length,...entries.map(([name,x])=>{const old=prior.get(name),headlines=x.newsFeedState?.latest_headlines||[];return {name,pos:x.p,team:x.t,overall:x.o,posRank:x.pr,trueRank:x.tr,truePosRank:x.tp,score:x.s,production:x.pd,ceiling:x.ce,role:x.r,environment:x.e,availability:x.a,reliability:x.rl,sustainability:x.su,overallWriteup:x.nm||x.en||'',recommendation:x.current_recommendation||x.na||'',price:x.px==='PRICE PENDING'?'PRICE PENDING':'MODEL REVIEW',currentModelImpact:x.currentModelImpact,newsFeed:headlines.map(h=>({headline:typeof h==='string'?h:h.headline||h.title,summary:typeof h==='string'?'':h.summary,source:typeof h==='string'?(x.newsFeedState?.sources||[]).join(', '):h.source,date:typeof h==='string'?x.newsFeedState?.updated_at:h.date||h.published_at})),consensus:{normalizedPPR:x.cp,ourMedianPPR:x.mp,source:old?.consensus?.normalizedPPR===x.cp?old.consensus.source:'Published season consensus snapshot',captured:old?.consensus?.normalizedPPR===x.cp?old.consensus.captured:null},injuryStatus:{active:null}};}));
+ document.getElementById('exportExcel').disabled=false;PLAYER_SOURCE_READY=true;document.getElementById('playerSourceState').textContent=`${entries.length} players · Authoritative model updated ${result.truth.current_update_layer_effective_date||result.truth.effective_date||'date unavailable'} · Draft ADP is archival and excluded from weekly decisions.`;
  for(const id of ['compareOne','compareTwo']){const el=document.getElementById(id),selected=el.value;el.innerHTML=PLAYERS.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${esc(p.name)}">${esc(p.name)} · ${esc(p.pos)}</option>`).join('');if(PLAYERS.some(p=>p.name===selected))el.value=selected;}
- }catch(e){PLAYER_SOURCE_READY=false;document.getElementById('playerSourceState').textContent=e.message;}
+ }catch(e){PLAYER_SOURCE_READY=false;CURRENT_CANONICAL=null;PLAYERS.splice(0);document.getElementById('exportExcel').disabled=true;document.getElementById('playerSourceState').textContent=e.message;}
  renderSeason();renderWeekly();renderCompare();
 }
+document.getElementById('exportExcel').addEventListener('click',async()=>{if(!PLAYER_SOURCE_READY||!CURRENT_CANONICAL)return;const [,{buildExcelExport}]=await CANONICAL_MODULES;const url=URL.createObjectURL(new Blob([buildExcelExport(CURRENT_CANONICAL.players,CURRENT_CANONICAL.truth)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));const a=document.createElement('a');a.href=url;a.download='fantasy-2026-current.xlsx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 loadPlayers();
 async function loadFeed(){
   try{
