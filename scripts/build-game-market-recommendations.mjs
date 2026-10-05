@@ -1,5 +1,6 @@
 import {gameWork,gameMarketView} from '../lib/show-work.mjs';
 import {gameContextEvidence} from '../lib/game-context-evidence.mjs';
+import {quarterbackShadowForecast} from '../lib/quarterback-shadow-forecast.mjs';
 import {applyQuarterbackUpdates} from '../lib/game-quarterback-updates.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -15,6 +16,9 @@ const markets=read('data/market/weekly-matchup-market-snapshots-2026.json');
 const contextPath=path.join(root,'data/probability/weekly-football-context-inputs-2026.json');
 const footballContext=fs.existsSync(contextPath)?JSON.parse(fs.readFileSync(contextPath,'utf8')):null;
 const decisionNow=new Date().toISOString();
+const optional=p=>fs.existsSync(path.join(root,p))?read(p):null;
+const quarterbackInputs=optional('data/context/quarterback-starter-scenarios-2026.json');
+const quarterbackModel=optional('data/probability/generated/quarterback-score-model-2026.json');
 const previousPath=path.join(root,'data/market/weekly-game-market-recommendations-2026.json');
 const previousRecommendations=!rerun&&!process.argv.includes('--self-test')&&fs.existsSync(previousPath)?JSON.parse(fs.readFileSync(previousPath,'utf8')):null;
 const roundObj=x=>JSON.parse(JSON.stringify(x,(k,v)=>typeof v==='number'?Number(v.toFixed(6)):v));
@@ -95,6 +99,20 @@ for(const [gameId,mg] of Object.entries(marketGames)){
   if(rerun&&validated&&latest)latest.markets=validated.markets;
   if(validated&&games[gameId].current_recommendations)for(const kind of ['spread','total','moneyline'])if(validated.markets[kind])games[gameId].current_recommendations[kind]=validated.markets[kind].recommendation;
   if(!self&&!rerun)games[gameId]=applyQuarterbackUpdates(gameId,games[gameId],previousRecommendations?.games?.[gameId],decisionNow);
+  if(!self&&!rerun){
+    const forecast=quarterbackShadowForecast({gameId,kickoff:mg.kickoff||game.event_start,now:decisionNow,previous:previousRecommendations?.games?.[gameId]?.quarterback_forecast,input:quarterbackInputs?.games?.[gameId],model:quarterbackModel});
+    if(forecast){
+      games[gameId].quarterback_forecast=forecast;
+      if(Date.parse(decisionNow)<kickoff){
+        for(const kind of ['spread','moneyline','total']){
+          const held={decision:'WAIT',selection:null,confidence:null,reason:forecast.reason};
+          if(games[gameId].current_recommendations)games[gameId].current_recommendations[kind]=held;
+          const current=games[gameId].snapshot_evaluations.find(s=>s.snapshot_id===games[gameId].current_recommendations?.snapshot_id);
+          if(current?.markets[kind]){current.markets[kind].recommendation=held;current.markets[kind].context_validation={status:'HOLD',reason:forecast.reason,numeric_adjustment:0};}
+        }
+      }
+    }
+  }
   for(const snapshot of games[gameId].snapshot_evaluations)for(const [kind,evaluation]of Object.entries(snapshot.markets)){evaluation.show_work=gameWork(games[gameId],snapshot,kind);}
 }
 
