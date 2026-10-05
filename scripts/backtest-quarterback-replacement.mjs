@@ -75,6 +75,13 @@ if(target){
  const [margin,total]=predict(models,targetRow),actualFeatures=features.get(tg.game_id);
  const mayfieldFeatures=feature({...tg,home_qb_id:'00-0034855'});
  features.set(tg.game_id,mayfieldFeatures);const [withMayfieldMargin,withMayfieldTotal]=predict(models,targetRow);features.set(tg.game_id,actualFeatures);
+ // Export fitted score parameters for score-only shadow inference. No probability authority.
+ if(process.argv.includes('--export-shadow-model')){
+  const version='qb-score-shadow-2026-v1';
+  const trainedThrough=history.filter(g=>+g.season<2026).map(g=>g.gameday).filter(Boolean).sort().at(-1)+'T23:59:59Z';
+  fs.writeFileSync('data/probability/generated/quarterback-score-model-2026.json',JSON.stringify({version,status:'RESEARCH_ONLY',trained_through:trainedThrough,margin:models[0],total:models[1],probability_authority:false},null,2)+'\n');
+  fs.writeFileSync('data/probability/generated/quarterback-score-scenario-features-2026.json',JSON.stringify({game_id:tg.game_id,model_version:version,cutoff:'Before 2026 Week 4',scenarios:[{player_id:'00-0041251',player_name:'Jalon Daniels',margin_features:[targetRow.xm[0],...actualFeatures.m],total_features:[targetRow.xt[0],...actualFeatures.t]},{player_id:'00-0034855',player_name:'Baker Mayfield',margin_features:[targetRow.xm[0],...mayfieldFeatures.m],total_features:[targetRow.xt[0],...mayfieldFeatures.t]}]},null,2)+'\n');
+ }
  const labels=['prior starts','previous passing efficiency','observed dropbacks','rookie status','no observed dropbacks','same-team attempts','team sack rate','team rush efficiency','opponent passing defense','experience with sack rate','experience with rushing support','experience with opponent passing defense'];
  const differences=labels.map((name,i)=>({name,home_margin_change:(actualFeatures.m[i]-mayfieldFeatures.m[i])/models[0].sd[i+1]*models[0].beta[i+1]}));
  if(Math.abs(differences.reduce((s,d)=>s+d.home_margin_change,0)-(margin-withMayfieldMargin))>1e-8)throw new Error('QB contribution reconciliation failed');

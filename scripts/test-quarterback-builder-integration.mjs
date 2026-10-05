@@ -28,9 +28,25 @@ try{
  const cleared=run();assert.equal(cleared.current_recommendations.spread.decision,'WAIT');
  assert.equal(cleared.quarterback_updates.TB.spread.history.length,2);
  assert.deepEqual(cleared.quarterback_updates.TB.spread.history[0],held.quarterback_updates.TB.spread.history[0]);
+ // Real fitted model, synthetic dated reports: exercise the actual builder without changing production files.
+ const scoreModel=read('data/probability/generated/quarterback-score-model-2026.json');
+ const featureSet=read('data/probability/generated/quarterback-score-scenario-features-2026.json');
+ write('data/probability/generated/quarterback-score-model-2026.json',scoreModel);
+ const report={id:'fixture-report',game_id:id,team:'TB',source_url:'https://example.test/test-only',verified:true,reported_at:new Date(now-30000).toISOString(),received_at:new Date(now-20000).toISOString(),status:'QUESTIONABLE',starter_id:'00-0034855',backup_id:'00-0041251'};
+ const scenarios=()=>featureSet.scenarios.map(s=>({...s,game_id:id,model_version:scoreModel.version,report_id:report.id,reported_at:report.reported_at,inputs_as_of:'2026-10-01T00:00:00Z',source_ids:['cached-pregame-fixture'],coverage_complete:true}));
+ const update=()=>{write('data/context/quarterback-starter-scenarios-2026.json',{games:{[id]:{reports:[report],scenarios:scenarios()}}});return run();};
+ const questionable=update();assert.equal(questionable.quarterback_forecast.scenarios.length,2);
+ report.status='REPLACEMENT_CONFIRMED';report.confirmed_starter_id='00-0041251';report.reported_at=new Date(now-15000).toISOString();report.received_at=new Date(now-10000).toISOString();
+ const replacement=update();assert.equal(replacement.quarterback_forecast.status,'UPDATED_SHADOW_FORECAST');
+ const candidate=replacement.quarterback_forecast.scenarios[0];
+ assert.ok(Math.abs(candidate.away_score-23.29537426835219)<1e-8);assert.ok(Math.abs(candidate.home_score-19.677175721758402)<1e-8);
+ assert.equal(replacement.current_recommendations.spread.decision,'WAIT');assert.equal(replacement.quarterback_forecast.probability,null);
+ assert.deepEqual(replacement.quarterback_forecast.history[0],questionable.quarterback_forecast.history[0]);
+ report.status='LATE_SETBACK';report.reported_at=new Date(now-5000).toISOString();report.received_at=new Date(now-4000).toISOString();
+ const setback=update();assert.equal(setback.quarterback_forecast.scenarios.length,0);
  game.event_start=new Date(now-1000).toISOString();market.kickoff=game.event_start;
  write('data/market/weekly-matchup-market-snapshots-2026.json',markets);
- const locked=run();assert.deepEqual(locked.current_recommendations,cleared.current_recommendations);
+ const locked=run();assert.deepEqual(locked.current_recommendations,setback.current_recommendations);assert.equal(locked.quarterback_forecast.locked_at,game.event_start);
  assert.equal(locked.quarterback_updates.TB.spread.locked_at,game.event_start);
  console.log('PASS: actual builder writes consistent held cards, explanations and revision history; clearance does not reuse old pick; kickoff preserves issued record. Production files untouched.');
 }finally{fs.rmSync(temp,{recursive:true,force:true});}
