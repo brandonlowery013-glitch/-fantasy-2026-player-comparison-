@@ -15,3 +15,5 @@ assert.throws(()=>features({...common,homeQb:'00-0041251',teamStats:[]}));
 const poisoned=common.schedule.map(g=>g.game_id===expected.game_id?{...g,home_score:'99',away_score:'0'}:g);
 assert.deepEqual(features({...common,homeQb:'00-0041251',schedule:poisoned}),features({...common,homeQb:'00-0041251'}));
 console.log('PASS: live-generated features reproduce both fitted QB scenarios; missing coverage and target-game leakage rejected.');
+
+assert.throws(()=>features({...common,homeQb:'00-0034855',stats:[]}));
