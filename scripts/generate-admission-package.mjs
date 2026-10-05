@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {weights,numeric,fitProduction,score} from '../lib/admission-model.mjs';
+import {deriveAdmissionInput} from '../lib/admission-auto-calibration.mjs';
 const hash=x=>crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex');
 const read=(base,p)=>JSON.parse(fs.readFileSync(path.join(base,p),'utf8'));
 const write=(base,p,x)=>{const f=path.join(base,p);fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,JSON.stringify(x,null,2)+'\n');};
@@ -22,6 +23,7 @@ export function generateAdmission({base=process.cwd(),entry,input=null,now=new D
       components:Object.fromEntries(Object.keys(weights).map(k=>[k,{value:p[k],method:cal.component_methods?.[k],source:cal.component_sources?.[k]}])),
       overall_rank:p.o,overall_review:cal.overall_review,writeup:p,connected_review:cal.connected_review,consumer_review:cal.consumer_review};
   }
+  input=deriveAdmissionInput({effective,entry,input,now});
   const blockers=[];
   if(!input?.calibration?.method||!input?.calibration?.source_run)blockers.push('REVIEWED_CALIBRATION_METHOD_AND_SOURCE_RUN');
   if(input?.calibration?.reviewed!==true)blockers.push('CALIBRATION_REVIEW');
