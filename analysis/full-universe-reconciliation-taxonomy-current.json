@@ -1,6 +1,6 @@
 {
   "schema_version": "1.5.0",
-  "generated_at": "2026-10-05T14:31:37.764Z",
+  "generated_at": "2026-10-06T00:02:29.419Z",
   "authoritative": false,
   "mutation_policy": "PROPOSAL_ONLY_NO_CANONICAL_WRITES",
   "universe": {
@@ -10,10 +10,10 @@
   "counts": {
     "UP": 0,
     "DOWN": 0,
-    "MATERIAL_HOLD": 55,
+    "MATERIAL_HOLD": 54,
     "POSITIVE_HOLD": 0,
     "NEGATIVE_HOLD": 0,
-    "NO_MATERIAL_UPDATE": 112
+    "NO_MATERIAL_UPDATE": 113
   },
   "validation": {
     "exact_universe": true,
@@ -234,10 +234,39 @@
       "player": "Jaxon Smith-Njigba",
       "pos": "WR",
       "team": "Seattle Seahawks",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
-      "team_context_only": false,
-      "evidence_summary": [],
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
+      "team_context_only": true,
+      "evidence_summary": [
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "Seahawks place RB Jadarian Price (chest) on injured reserve",
+          "matched_context": "Seahawks place RB Jadarian Price (chest) on injured reserve Running back Jadarian Price&#x27;s slow start to his rookie season just hit another snag. The Seahawks are placing Price on injured reserve due to a chest injury, ESPN&#x27;s Adam Schefter reported Saturday.",
+          "description": "Running back Jadarian Price&#x27;s slow start to his rookie season just hit another snag. The Seahawks are placing Price on injured reserve due to a chest injury, ESPN&#x27;s Adam Schefter reported Saturday.",
+          "published": "2026-10-03T20:10:08.183Z",
+          "url": "https://www.nfl.com/news/seahawks-placing-rb-jadarian-price-chest-on-injured-reserve",
+          "match_evidence": null,
+          "evidence_lane": "material_team_context_signals",
+          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
+          "team": "SEA",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "2026 NFL fantasy football waiver wire, Week 5: RB Zach Charbonnet, WR Keon Coleman among targets",
+          "matched_context": "2026 NFL fantasy football waiver wire, Week 5: RB Zach Charbonnet, WR Keon Coleman among targets Which players should you scoop up to give your fantasy team a boost heading into Week 5? Matt Okada spotlights the top waiver-wire targets at each position, including WR Keon Coleman and a potential RB1 for a productive, efficient offense.",
+          "description": "Which players should you scoop up to give your fantasy team a boost heading into Week 5? Matt Okada spotlights the top waiver-wire targets at each position, including WR Keon Coleman and a potential RB1 for a productive, efficient offense.",
+          "published": "2026-10-05T16:07:49.123Z",
+          "url": "https://www.nfl.com/news/2026-nfl-fantasy-football-waiver-wire-week-5-rb-zach-charbonnet-wr-keon-coleman-among-targets",
+          "match_evidence": null,
+          "evidence_lane": "material_team_context_signals",
+          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
+          "team": "SEA",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.305,
@@ -253,19 +282,27 @@
           "sustainability": 8.7
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "Seahawks place RB Jadarian Price (chest) on injured reserve Running back Jadarian Price&#x27;s slow start to his rookie season just hit another snag. The Seahawks are placing Price on injured reserve due to a chest injury, ESPN&#x27;s Adam Schefter reported Saturday.",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.305,
       "proposed_true_value_rank": 5,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Seattle Seahawks"
       },
       "market_impact": {
         "current_label": "FADE",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
       "reconciliation_status": null
     },
@@ -416,6 +453,20 @@
       "team_context_only": false,
       "evidence_summary": [
         {
+          "source": "ESPN_NOW",
+          "headline": "How the sportsbooks adjust after high volume of early-season NFL injuries",
+          "matched_context": "a a data player guid 79fe15c5 5f05 f939 c4f5 c55466521a50 href https www espn com nfl player id 4241478 devonta smith devonta smith a and a data player guid ce7195db c46d 3963 a973 2fadf206a70b href https www espn com nfl player id 4429160 devon achane de von achane a who is also a href https www espn com nfl story id 50052064 sources dolphins rb devon achane suffered torn acl vs chiefs out for the season a there have been several big names to go down on the defensive side of the ball",
+          "description": "With several players out for an extended time (some for the entire season), sportsbooks have reacted quickly.",
+          "published": "2026-10-05T21:15:51Z",
+          "url": "https://www.espn.com/espn/betting/story/_/id/50111576/nfl-injuries-betting-impact-sportsbooks-odds",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "MIA",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
           "source": "ESPN_TRANSACTIONS",
           "headline": "Transaction: Placed RB De'Von Achane on injured reserve. Waived DL Keith Cooper Jr. Released EDGE Clelin Ferrell and DL Jordan Miller from the practice squad.",
           "matched_context": "transaction placed rb de von achane on injured reserve waived dl keith cooper released edge clelin ferrell and dl jordan miller from the practice squad placed rb de von achane on injured reserve waived dl keith cooper released edge clelin ferrell and dl jordan miller from the practice squad",
@@ -459,12 +510,13 @@
           "sustainability": 8.8
         }
       },
-      "changed_fact": "transaction placed rb de von achane on injured reserve waived dl keith cooper released edge clelin ferrell and dl jordan miller from the practice squad placed rb de von achane on injured reserve waived dl keith cooper released edge clelin ferrell and dl jordan miller from the practice squad",
+      "changed_fact": "a a data player guid 79fe15c5 5f05 f939 c4f5 c55466521a50 href https www espn com nfl player id 4241478 devonta smith devonta smith a and a data player guid ce7195db c46d 3963 a973 2fadf206a70b href https www espn com nfl player id 4429160 devon achane de von achane a who is also a href https www espn com nfl story id 50052064 sources dolphins rb devon achane suffered torn acl vs chiefs out for the season a there have been several big names to go down on the defensive side of the ball",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
         "ceiling",
+        "role_volume",
         "offensive_environment"
       ],
       "component_delta": null,
@@ -741,25 +793,10 @@
       "player": "Omarion Hampton",
       "pos": "RB",
       "team": "Los Angeles Chargers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
-      "team_context_only": true,
-      "evidence_summary": [
-        {
-          "source": "TRANSITION_INTELLIGENCE",
-          "headline": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27;",
-          "matched_context": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27; Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "description": "Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "published": "2026-10-02T12:40:09.323Z",
-          "url": "https://www.nfl.com/news/mike-mcdaniel-responsibility-chargers-poor-offense-0-3-start",
-          "match_evidence": null,
-          "evidence_lane": "material_team_context_signals",
-          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
-          "team": "LAC",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
+      "team_context_only": false,
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 8.949,
@@ -775,27 +812,21 @@
           "sustainability": 8.2
         }
       },
-      "changed_fact": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27; Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.949,
       "proposed_true_value_rank": 14,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Los Angeles Chargers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Drake London",
@@ -879,10 +910,25 @@
       "player": "Saquon Barkley",
       "pos": "RB",
       "team": "Philadelphia Eagles",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_NOW",
+          "headline": "How the sportsbooks adjust after high volume of early-season NFL injuries",
+          "matched_context": "nfl player id 4689114 jaxson dart jaxson dart a who is out for the season p p a sampling of names from other offensive skill positions include a data player guid 94486c18 dd3e 6081 a3fe 4a26b71ddcdc href https www espn com nfl player id 3929630 saquon barkley saquon barkley a a data player guid 199fffca dda8 1e70 55f5 bbbfa0823e33 href https www espn com nfl player id 4239996 travis etienne travis etienne a a data player guid 53cf1afe 22f9 ea1f 7d9b a992d25c8ac5 href https www espn com nfl player id 4047646 aj",
+          "description": "With several players out for an extended time (some for the entire season), sportsbooks have reacted quickly.",
+          "published": "2026-10-05T21:15:51Z",
+          "url": "https://www.espn.com/espn/betting/story/_/id/50111576/nfl-injuries-betting-impact-sportsbooks-odds",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "PHI",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.006,
@@ -898,21 +944,29 @@
           "sustainability": 8.4
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "nfl player id 4689114 jaxson dart jaxson dart a who is out for the season p p a sampling of names from other offensive skill positions include a data player guid 94486c18 dd3e 6081 a3fe 4a26b71ddcdc href https www espn com nfl player id 3929630 saquon barkley saquon barkley a a data player guid 199fffca dda8 1e70 55f5 bbbfa0823e33 href https www espn com nfl player id 4239996 travis etienne travis etienne a a data player guid 53cf1afe 22f9 ea1f 7d9b a992d25c8ac5 href https www espn com nfl player id 4047646 aj",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.006,
       "proposed_true_value_rank": 19,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Philadelphia Eagles"
       },
       "market_impact": {
         "current_label": "REACH",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Nico Collins",
@@ -1275,25 +1329,10 @@
       "player": "Tetairoa McMillan",
       "pos": "WR",
       "team": "Carolina Panthers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "ESPN_LEAGUE",
-          "headline": "Young, McMillan connect for 2 TDs to lead Panthers past Lions 32-26",
-          "matched_context": "young mcmillan connect for 2 tds to lead panthers past lions 32 26 carolina panthers coach dave canales was a little worried after bryce young and tetairoa mcmillan had some issues connecting on passes in practice",
-          "description": "— Carolina Panthers coach Dave Canales was a little worried after Bryce Young and Tetairoa McMillan had some issues connecting on passes in practice.",
-          "published": "2026-10-05T04:56:29Z",
-          "url": "http://www.espn.com/nfl/recap?gameId=401872978",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "CAR",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 8.991,
@@ -1309,28 +1348,21 @@
           "sustainability": 9.1
         }
       },
-      "changed_fact": "young mcmillan connect for 2 tds to lead panthers past lions 32 26 carolina panthers coach dave canales was a little worried after bryce young and tetairoa mcmillan had some issues connecting on passes in practice",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.991,
       "proposed_true_value_rank": 29,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Carolina Panthers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Chris Olave",
@@ -1402,20 +1434,6 @@
       "evidence_summary": [
         {
           "source": "NFL.com",
-          "headline": "CeeDee Lamb continues hot start as career day carries Cowboys to win over hometown Texans",
-          "matched_context": "39 s talented defense got the best of dallas 39 loaded offense things shifted in the second half a cowboys offense that managed only two field goals in the first two quarters scored touchdowns on four of its five second half possessions houston limited receiver george pickens to no catches on only one target in the first half nbsp in the second half pickens had two catches for 75 yards but also drew two defensive holding calls that kept a key third quarter drive alive as was the case through the previous",
-          "description": null,
-          "published": "2026-10-05T01:16:05Z",
-          "url": "https://www.nfl.com/news/ceedee-lamb-continues-hot-start-as-career-day-carries-cowboys-to-win-over-hometown-texans",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "DAL",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "NFL.com",
           "headline": "NFL trade grades: Evaluating every deal made ahead of the 2026 deadline",
           "matched_context": "have to give up a premier pick until 2028 also improved its grade assuming that porter plays the cowboys get a top shelf cb for a relatively cheap up front cost jones seems to be hoping he can copy the success he had with the george pickens trade pushing off the long term talks until down the road it s a needle threading but one that could work if porter plays well dallas could extend him in the offseason use the franchise tag on the cb or let him walk and recoup",
           "description": "NFL.com&#x27;s Kevin Patra grades every trade made since the start of the 2026 regular season until Nov. 10&#x27;s trade deadline.",
@@ -1444,7 +1462,7 @@
           "sustainability": 9
         }
       },
-      "changed_fact": "39 s talented defense got the best of dallas 39 loaded offense things shifted in the second half a cowboys offense that managed only two field goals in the first two quarters scored touchdowns on four of its five second half possessions houston limited receiver george pickens to no catches on only one target in the first half nbsp in the second half pickens had two catches for 75 yards but also drew two defensive holding calls that kept a key third quarter drive alive as was the case through the previous",
+      "changed_fact": "have to give up a premier pick until 2028 also improved its grade assuming that porter plays the cowboys get a top shelf cb for a relatively cheap up front cost jones seems to be hoping he can copy the success he had with the george pickens trade pushing off the long term talks until down the road it s a needle threading but one that could work if porter plays well dallas could extend him in the offseason use the franchise tag on the cb or let him walk and recoup",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -1738,20 +1756,6 @@
           "match_evidence": "FULL_NAME_BODY_WINDOW",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
-          "team": "LAC",
-          "source_team": null,
-          "context_lanes": null
-        },
-        {
-          "source": "TRANSITION_INTELLIGENCE",
-          "headline": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27;",
-          "matched_context": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27; Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "description": "Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "published": "2026-10-02T12:40:09.323Z",
-          "url": "https://www.nfl.com/news/mike-mcdaniel-responsibility-chargers-poor-offense-0-3-start",
-          "match_evidence": null,
-          "evidence_lane": "material_team_context_signals",
-          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
           "team": "LAC",
           "source_team": null,
           "context_lanes": null
@@ -2090,10 +2094,25 @@
       "player": "Tee Higgins",
       "pos": "WR",
       "team": "Cincinnati Bengals",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_NOW",
+          "headline": "NFL Week 4: CeeDee Lamb, Joe Burrow and more fuel best quotes",
+          "matched_context": "subsequent juke against a data clubhouse guid 75b8623b 8926 b411 0476 3d3602b78523 href https www espn com nfl team name cin cincinnati bengals cincinnati bengals a wideout a data player guid f6207352 946a a75a aff5 28f316536d4d href https www espn com nfl player id 4239993 tee higgins tee higgins a on sunday after snagging the pass hunter jabbed left before selling a head feint dropping higgins onto the turf prior to a 30 yard return to cincinnati s 36 yard line p p although a penalty on defensive lineman a data player",
+          "description": "From family reunions to postgame trash talk, here are some of the sharpest sound bites and one-liners from around the league in Week 4.",
+          "published": "2026-10-05T23:50:50Z",
+          "url": "https://www.espn.com/nfl/story/_/id/50112467/nfl-week-4-top-quotes-ceedee-lamb-joe-burrow-cj-gardner-johnson-mike-vrabel",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "CIN",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 8.607,
@@ -2109,21 +2128,29 @@
           "sustainability": 8.5
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "subsequent juke against a data clubhouse guid 75b8623b 8926 b411 0476 3d3602b78523 href https www espn com nfl team name cin cincinnati bengals cincinnati bengals a wideout a data player guid f6207352 946a a75a aff5 28f316536d4d href https www espn com nfl player id 4239993 tee higgins tee higgins a on sunday after snagging the pass hunter jabbed left before selling a head feint dropping higgins onto the turf prior to a 30 yard return to cincinnati s 36 yard line p p although a penalty on defensive lineman a data player",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.607,
       "proposed_true_value_rank": 42,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Cincinnati Bengals"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Luther Burden III",
@@ -2424,10 +2451,25 @@
       "player": "Terry McLaurin",
       "pos": "WR",
       "team": "Washington Commanders",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_NOW",
+          "headline": "MCL sprain sidelines Mariota while Daniels preps to practice",
+          "matched_context": "www espn com nfl player id 4697815 rachaad white rachaad white a shoulder also might return p p quinn said they re not yet sure what receiver a data player guid 04454e17 9294 6271 f951 c0339528e97e href https www espn com nfl player id 3121422 terry mclaurin terry mclaurin a will do in practice this week he missed sunday s 30 13 loss to the colts after injuring his hamstring in practice friday p",
+          "description": "In his team's loss to the Indianapolis Colts on Sunday, Washington Commanders quarterback Marcus Mariota suffered a sprained MCL of his right knee, and the timetable for his return remains uncertain coach Dan Quinn said on Monday.",
+          "published": "2026-10-05T23:59:30Z",
+          "url": "https://www.espn.com/nfl/story/_/id/50112842/mcl-sprain-sidelines-mariota-daniels-preps-practice",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "WAS",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 8.28,
@@ -2443,21 +2485,29 @@
           "sustainability": 8.5
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "www espn com nfl player id 4697815 rachaad white rachaad white a shoulder also might return p p quinn said they re not yet sure what receiver a data player guid 04454e17 9294 6271 f951 c0339528e97e href https www espn com nfl player id 3121422 terry mclaurin terry mclaurin a will do in practice this week he missed sunday s 30 13 loss to the colts after injuring his hamstring in practice friday p",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.28,
       "proposed_true_value_rank": 50,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Washington Commanders"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Carnell Tate",
@@ -3194,25 +3244,10 @@
       "player": "Justin Herbert",
       "pos": "QB",
       "team": "Los Angeles Chargers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27;",
-          "matched_context": "mike mcdaniel takes responsibility for chargers x27 poor offense in 0 3 start x27 i x27 m not living in hope x27 los angeles has suffered three straight losses with fewer than 45 total points scored for the first time with justin herbert as starting quarterback",
-          "description": "Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "published": "2026-10-02T12:40:09.323Z",
-          "url": "https://www.nfl.com/news/mike-mcdaniel-responsibility-chargers-poor-offense-0-3-start",
-          "match_evidence": "FULL_NAME_HEADER",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "LAC",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 9.185,
@@ -3228,29 +3263,21 @@
           "sustainability": 9.2
         }
       },
-      "changed_fact": "mike mcdaniel takes responsibility for chargers x27 poor offense in 0 3 start x27 i x27 m not living in hope x27 los angeles has suffered three straight losses with fewer than 45 total points scored for the first time with justin herbert as starting quarterback",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 9.185,
       "proposed_true_value_rank": 70,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Los Angeles Chargers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Caleb Williams",
@@ -3267,6 +3294,20 @@
           "description": "Tyson Bagent is likely to start for the Bears against the New York Jets on Sunday at Solider Field, NFL Network Insider Ian Rapoport reported.",
           "published": "2026-10-03T00:15:34.172Z",
           "url": "https://www.nfl.com/news/nfl-network-qb-tyson-bagent-likely-to-start-for-bears-on-sunday-vs-jets",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "CHI",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "ESPN_NOW",
+          "headline": "How the sportsbooks adjust after high volume of early-season NFL injuries",
+          "matched_context": "jackson lamar jackson a a data player guid 5bb4376a d089 e3e4 e49a 44f1d709a012 href https www espn com nfl player id 3052587 baker mayfield baker mayfield a a data player guid dd15176c 3004 333f beaa 149216c42968 href https www espn com nfl player id 4431611 caleb williams caleb williams a and a data player guid 13e97d3e 2171 371b 9a7a 2c44670b5a62 href https www espn com nfl player id 4689114 jaxson dart jaxson dart a who is out for the season p p a sampling of names from other offensive skill positions include",
+          "description": "With several players out for an extended time (some for the entire season), sportsbooks have reacted quickly.",
+          "published": "2026-10-05T21:15:51Z",
+          "url": "https://www.espn.com/espn/betting/story/_/id/50111576/nfl-injuries-betting-impact-sportsbooks-odds",
           "match_evidence": "FULL_NAME_BODY_WINDOW",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
@@ -3366,11 +3407,11 @@
         },
         {
           "source": "NFL.com",
-          "headline": "Commanders&#x27; Jayden Daniels (elbow) ruled out for London game; QB Marcus Mariota to start vs. Colts",
-          "matched_context": "commanders x27 jayden daniels elbow ruled out for london game qb marcus mariota to start vs colts jayden daniels will be a bystander in london on sunday washington commanders coach dan quinn ruled out daniels for week 4 s tilt against the indianapolis colts",
-          "description": "Jayden Daniels will be a bystander in London on Sunday. Washington Commanders coach Dan Quinn ruled out Daniels for Week 4’s tilt against the Indianapolis Colts.",
-          "published": "2026-10-02T13:58:45.058Z",
-          "url": "https://www.nfl.com/news/jayden-daniels-left-elbow-out-london-game-qb-marcus-mariota-start-colts",
+          "headline": "NFL news roundup: Jayden Daniels provides update on elbow; Saints place Travis Etienne on IR",
+          "matched_context": "nfl news roundup jayden daniels provides update on elbow saints place travis etienne on ir nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
+          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
+          "published": "2026-10-01T15:17:10.06Z",
+          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-thursday-oct-1",
           "match_evidence": "FULL_NAME_HEADER",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
@@ -3379,13 +3420,13 @@
           "context_lanes": null
         },
         {
-          "source": "NFL.com",
-          "headline": "NFL news roundup: Jayden Daniels provides update on elbow; Saints place Travis Etienne on IR",
-          "matched_context": "nfl news roundup jayden daniels provides update on elbow saints place travis etienne on ir nfl com keeps you up to date with all of the latest league news from around the nfl visit nfl com x27 s transaction hub for a daily breakdown",
-          "description": "NFL.com keeps you up to date with all of the latest league news from around the NFL. Visit NFL.com&#x27;s transaction hub for a daily breakdown.",
-          "published": "2026-10-01T15:17:10.06Z",
-          "url": "https://www.nfl.com/news/nfl-news-roundup-latest-league-updates-from-thursday-oct-1",
-          "match_evidence": "FULL_NAME_HEADER",
+          "source": "ESPN_NOW",
+          "headline": "MCL sprain sidelines Mariota while Daniels preps to practice",
+          "matched_context": "mcl of his right knee but the timetable for his return remains uncertain coach dan quinn said monday p p but quinn also reiterated that starting quarterback a data player guid f03f3238 b035 6f0e 5844 1529ca021c3a href https www espn com nfl player id 4426348 jayden daniels jayden daniels a will practice in full this week with the hope of starting against the a data clubhouse guid 378600ea 2397 8364 8399 b7c1606a49a7 href https www espn com nfl team name nyg new york giants new york giants a sunday p p mariota",
+          "description": "In his team's loss to the Indianapolis Colts on Sunday, Washington Commanders quarterback Marcus Mariota suffered a sprained MCL of his right knee, and the timetable for his return remains uncertain coach Dan Quinn said on Monday.",
+          "published": "2026-10-05T23:59:30Z",
+          "url": "https://www.espn.com/nfl/story/_/id/50112842/mcl-sprain-sidelines-mariota-daniels-preps-practice",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
           "team": "WAS",
@@ -4546,6 +4587,20 @@
       "evidence_summary": [
         {
           "source": "NFL.com",
+          "headline": "Seahawks &#x27;going through process&#x27; of signing RB Joe Mixon to practice squad",
+          "matched_context": "him in march when he was last healthy mixon made the pro bowl during one and only year with the texans recording his fifth 1 000 yard rushing campaign after putting together four with the bengals mixon s signing comes two days after seattle placed jadarian price its first round rookie running back on injured reserve due to a chest injury mixon joins a running back room currently led by emanuel wilson who rushed for 81 yards and a score in a 30 23 win over the chargers on sunday and pass",
+          "description": "The Seahawks are signing running back Joe Mixon, NFL Network Insider Mike Garafolo reported Monday.  ESPN&#x27;s Adam Schefter reported that Mixon will start out on Seattle&#x27;s practice squad once he completes his medical exam.",
+          "published": "2026-10-05T22:50:27.229Z",
+          "url": "https://www.nfl.com/news/seahawks-going-through-process-of-signing-rb-joe-mixon-to-practice-squad",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "SEA",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "NFL.com",
           "headline": "Seahawks place RB Jadarian Price (chest) on injured reserve",
           "matched_context": "seahawks place rb jadarian price chest on injured reserve running back jadarian price x27 s slow start to his rookie season just hit another snag the seahawks are placing price on injured reserve due to a chest injury espn x27 s adam schefter reported saturday",
           "description": "Running back Jadarian Price&#x27;s slow start to his rookie season just hit another snag. The Seahawks are placing Price on injured reserve due to a chest injury, ESPN&#x27;s Adam Schefter reported Saturday.",
@@ -4554,6 +4609,20 @@
           "match_evidence": "FULL_NAME_HEADER",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
+          "team": "SEA",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "2026 NFL fantasy football waiver wire, Week 5: RB Zach Charbonnet, WR Keon Coleman among targets",
+          "matched_context": "2026 NFL fantasy football waiver wire, Week 5: RB Zach Charbonnet, WR Keon Coleman among targets Which players should you scoop up to give your fantasy team a boost heading into Week 5? Matt Okada spotlights the top waiver-wire targets at each position, including WR Keon Coleman and a potential RB1 for a productive, efficient offense.",
+          "description": "Which players should you scoop up to give your fantasy team a boost heading into Week 5? Matt Okada spotlights the top waiver-wire targets at each position, including WR Keon Coleman and a potential RB1 for a productive, efficient offense.",
+          "published": "2026-10-05T16:07:49.123Z",
+          "url": "https://www.nfl.com/news/2026-nfl-fantasy-football-waiver-wire-week-5-rb-zach-charbonnet-wr-keon-coleman-among-targets",
+          "match_evidence": null,
+          "evidence_lane": "material_team_context_signals",
+          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
           "team": "SEA",
           "source_team": null,
           "context_lanes": null
@@ -4574,7 +4643,7 @@
           "sustainability": 8
         }
       },
-      "changed_fact": "seahawks place rb jadarian price chest on injured reserve running back jadarian price x27 s slow start to his rookie season just hit another snag the seahawks are placing price on injured reserve due to a chest injury espn x27 s adam schefter reported saturday",
+      "changed_fact": "him in march when he was last healthy mixon made the pro bowl during one and only year with the texans recording his fifth 1 000 yard rushing campaign after putting together four with the bengals mixon s signing comes two days after seattle placed jadarian price its first round rookie running back on injured reserve due to a chest injury mixon joins a running back room currently led by emanuel wilson who rushed for 81 yards and a score in a 30 23 win over the chargers on sunday and pass",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -4819,25 +4888,10 @@
       "player": "Oronde Gadsden II",
       "pos": "TE",
       "team": "Los Angeles Chargers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
-      "team_context_only": true,
-      "evidence_summary": [
-        {
-          "source": "TRANSITION_INTELLIGENCE",
-          "headline": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27;",
-          "matched_context": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27; Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "description": "Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "published": "2026-10-02T12:40:09.323Z",
-          "url": "https://www.nfl.com/news/mike-mcdaniel-responsibility-chargers-poor-offense-0-3-start",
-          "match_evidence": null,
-          "evidence_lane": "material_team_context_signals",
-          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
-          "team": "LAC",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
+      "team_context_only": false,
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "TE-ROTATION WATCH",
         "score": 7.707,
@@ -4853,26 +4907,19 @@
           "sustainability": 8.4
         }
       },
-      "changed_fact": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27; Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.707,
       "proposed_true_value_rank": 128,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Los Angeles Chargers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
       "reconciliation_status": null
     },
@@ -5096,10 +5143,25 @@
       "player": "Rachaad White",
       "pos": "RB",
       "team": "Washington Commanders",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_NOW",
+          "headline": "MCL sprain sidelines Mariota while Daniels preps to practice",
+          "matched_context": "guard a data player guid 5ed1f0d9 1930 0aa5 4c0f 81f78ff4dedb href https www espn com nfl player id 4262199 sam cosmi sam cosmi a concussion running back a data player guid bcbc6499 ee45 3e7d 854a 52d76796786c href https www espn com nfl player id 4697815 rachaad white rachaad white a shoulder also might return p p quinn said they re not yet sure what receiver a data player guid 04454e17 9294 6271 f951 c0339528e97e href https www espn com nfl player id 3121422 terry mclaurin terry mclaurin a will do in practice",
+          "description": "In his team's loss to the Indianapolis Colts on Sunday, Washington Commanders quarterback Marcus Mariota suffered a sprained MCL of his right knee, and the timetable for his return remains uncertain coach Dan Quinn said on Monday.",
+          "published": "2026-10-05T23:59:30Z",
+          "url": "https://www.espn.com/nfl/story/_/id/50112842/mcl-sprain-sidelines-mariota-daniels-preps-practice",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "WAS",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "ROLE SPLIT WATCH",
         "score": 7.634,
@@ -5115,45 +5177,38 @@
           "sustainability": 8
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "guard a data player guid 5ed1f0d9 1930 0aa5 4c0f 81f78ff4dedb href https www espn com nfl player id 4262199 sam cosmi sam cosmi a concussion running back a data player guid bcbc6499 ee45 3e7d 854a 52d76796786c href https www espn com nfl player id 4697815 rachaad white rachaad white a shoulder also might return p p quinn said they re not yet sure what receiver a data player guid 04454e17 9294 6271 f951 c0339528e97e href https www espn com nfl player id 3121422 terry mclaurin terry mclaurin a will do in practice",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.634,
       "proposed_true_value_rank": 121,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Washington Commanders"
       },
       "market_impact": {
         "current_label": "FADE",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Quentin Johnston",
       "pos": "WR",
       "team": "Los Angeles Chargers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
-      "team_context_only": true,
-      "evidence_summary": [
-        {
-          "source": "TRANSITION_INTELLIGENCE",
-          "headline": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27;",
-          "matched_context": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27; Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "description": "Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "published": "2026-10-02T12:40:09.323Z",
-          "url": "https://www.nfl.com/news/mike-mcdaniel-responsibility-chargers-poor-offense-0-3-start",
-          "match_evidence": null,
-          "evidence_lane": "material_team_context_signals",
-          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
-          "team": "LAC",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
+      "team_context_only": false,
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 7.873,
@@ -5169,26 +5224,19 @@
           "sustainability": 8.2
         }
       },
-      "changed_fact": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27; Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.873,
       "proposed_true_value_rank": 107,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Los Angeles Chargers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
       "reconciliation_status": null
     },
@@ -5702,6 +5750,34 @@
           "team": "SEA",
           "source_team": null,
           "context_lanes": null
+        },
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "Seahawks place RB Jadarian Price (chest) on injured reserve",
+          "matched_context": "Seahawks place RB Jadarian Price (chest) on injured reserve Running back Jadarian Price&#x27;s slow start to his rookie season just hit another snag. The Seahawks are placing Price on injured reserve due to a chest injury, ESPN&#x27;s Adam Schefter reported Saturday.",
+          "description": "Running back Jadarian Price&#x27;s slow start to his rookie season just hit another snag. The Seahawks are placing Price on injured reserve due to a chest injury, ESPN&#x27;s Adam Schefter reported Saturday.",
+          "published": "2026-10-03T20:10:08.183Z",
+          "url": "https://www.nfl.com/news/seahawks-placing-rb-jadarian-price-chest-on-injured-reserve",
+          "match_evidence": null,
+          "evidence_lane": "material_team_context_signals",
+          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
+          "team": "SEA",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "2026 NFL fantasy football waiver wire, Week 5: RB Zach Charbonnet, WR Keon Coleman among targets",
+          "matched_context": "2026 NFL fantasy football waiver wire, Week 5: RB Zach Charbonnet, WR Keon Coleman among targets Which players should you scoop up to give your fantasy team a boost heading into Week 5? Matt Okada spotlights the top waiver-wire targets at each position, including WR Keon Coleman and a potential RB1 for a productive, efficient offense.",
+          "description": "Which players should you scoop up to give your fantasy team a boost heading into Week 5? Matt Okada spotlights the top waiver-wire targets at each position, including WR Keon Coleman and a potential RB1 for a productive, efficient offense.",
+          "published": "2026-10-05T16:07:49.123Z",
+          "url": "https://www.nfl.com/news/2026-nfl-fantasy-football-waiver-wire-week-5-rb-zach-charbonnet-wr-keon-coleman-among-targets",
+          "match_evidence": null,
+          "evidence_lane": "material_team_context_signals",
+          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
+          "team": "SEA",
+          "source_team": null,
+          "context_lanes": null
         }
       ],
       "prior_assumption": {
@@ -5772,6 +5848,20 @@
           "description": "NFL.com&#x27;s Kevin Patra grades every trade made since the start of the 2026 regular season until Nov. 10&#x27;s trade deadline.",
           "published": "2026-10-02T16:00:03.066Z",
           "url": "https://www.nfl.com/news/nfl-trade-grades-evaluating-every-deal-made-ahead-of-the-2026-deadline",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "NYG",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "ESPN_NOW",
+          "headline": "How the sportsbooks adjust after high volume of early-season NFL injuries",
+          "matched_context": "baker mayfield a a data player guid dd15176c 3004 333f beaa 149216c42968 href https www espn com nfl player id 4431611 caleb williams caleb williams a and a data player guid 13e97d3e 2171 371b 9a7a 2c44670b5a62 href https www espn com nfl player id 4689114 jaxson dart jaxson dart a who is out for the season p p a sampling of names from other offensive skill positions include a data player guid 94486c18 dd3e 6081 a3fe 4a26b71ddcdc href https www espn com nfl player id 3929630 saquon barkley saquon barkley a a",
+          "description": "With several players out for an extended time (some for the entire season), sportsbooks have reacted quickly.",
+          "published": "2026-10-05T21:15:51Z",
+          "url": "https://www.espn.com/espn/betting/story/_/id/50111576/nfl-injuries-betting-impact-sportsbooks-odds",
           "match_evidence": "FULL_NAME_BODY_WINDOW",
           "evidence_lane": "material_news_signals",
           "evidence_scope": null,
@@ -6367,6 +6457,20 @@
       "team_context_only": false,
       "evidence_summary": [
         {
+          "source": "NFL.com",
+          "headline": "49ers&#x27; Dre Greenlaw dials it up a notch in emotional win vs. Broncos, his ex-team",
+          "matched_context": "about ourselves and the way we can grind out a game 34 greenlaw who didn 39 t practice all week due to a quadriceps injury set the tone with a couple of impressive open field tackles in the first half and then chased down quarterback bo nix on a third down scramble that forced a punt early in the third quarter 34 i didn 39 t want to hurt the team but you know sometimes you just have to play with all the emotion 34 greenlaw said 34 it was just time",
+          "description": null,
+          "published": "2026-10-05T04:01:04Z",
+          "url": "https://www.nfl.com/news/49ers-dre-greenlaw-dials-it-up-a-notch-in-emotional-win-vs-broncos-his-ex-team",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "DEN",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
           "source": "TRANSITION_INTELLIGENCE",
           "headline": "AFC West training camp 2026 preview: Top storylines for Broncos, Chargers, Chiefs, Raiders",
           "matched_context": "AFC West training camp 2026 preview: Top storylines for Broncos, Chargers, Chiefs, Raiders As we hurtle toward the 2026 NFL season, Bobby Kownack breaks down the top AFC West training camp storylines to monitor for the Denver Broncos, Kansas City Chiefs, Las Vegas Raiders and Los Angeles Chargers. as raiders and los angeles chargers catch up on each afc west team s offseason developments and 2026 outlook below denver broncos kansas city chiefs las vegas raiders los angeles chargers three key storylines 1 nix s health receiving corps bo nix should be full go for training camp after suffering a broken ankle in last season s divisional round win but every step in the process bears watching when someone this important to a franchise is returning from injury once nix is out there",
@@ -6396,12 +6500,14 @@
           "sustainability": 8.8
         }
       },
-      "changed_fact": "AFC West training camp 2026 preview: Top storylines for Broncos, Chargers, Chiefs, Raiders As we hurtle toward the 2026 NFL season, Bobby Kownack breaks down the top AFC West training camp storylines to monitor for the Denver Broncos, Kansas City Chiefs, Las Vegas Raiders and Los Angeles Chargers. as raiders and los angeles chargers catch up on each afc west team s offseason developments and 2026 outlook below denver broncos kansas city chiefs las vegas raiders los angeles chargers three key storylines 1 nix s health receiving corps bo nix should be full go for training camp after suffering a broken ankle in last season s divisional round win but every step in the process bears watching when someone this important to a franchise is returning from injury once nix is out there",
+      "changed_fact": "about ourselves and the way we can grind out a game 34 greenlaw who didn 39 t practice all week due to a quadriceps injury set the tone with a couple of impressive open field tackles in the first half and then chased down quarterback bo nix on a third down scramble that forced a punt early in the third quarter 34 i didn 39 t want to hurt the team but you know sometimes you just have to play with all the emotion 34 greenlaw said 34 it was just time",
       "implicated_components": [
         "availability",
         "weekly_reliability",
         "production",
-        "ceiling"
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
       ],
       "component_delta": null,
       "score_delta": 0,
@@ -6739,25 +6845,10 @@
       "player": "Keaton Mitchell",
       "pos": "RB",
       "team": "Los Angeles Chargers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
-      "team_context_only": true,
-      "evidence_summary": [
-        {
-          "source": "TRANSITION_INTELLIGENCE",
-          "headline": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27;",
-          "matched_context": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27; Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "description": "Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "published": "2026-10-02T12:40:09.323Z",
-          "url": "https://www.nfl.com/news/mike-mcdaniel-responsibility-chargers-poor-offense-0-3-start",
-          "match_evidence": null,
-          "evidence_lane": "material_team_context_signals",
-          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
-          "team": "LAC",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
+      "team_context_only": false,
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "RB2 BATTLE WATCH",
         "score": 6.99,
@@ -6773,26 +6864,19 @@
           "sustainability": 8
         }
       },
-      "changed_fact": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27; Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 6.99,
       "proposed_true_value_rank": 149,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Los Angeles Chargers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
       "reconciliation_status": null
     },
@@ -6839,25 +6923,10 @@
       "player": "Tre' Harris",
       "pos": "WR",
       "team": "Los Angeles Chargers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
-      "team_context_only": true,
-      "evidence_summary": [
-        {
-          "source": "TRANSITION_INTELLIGENCE",
-          "headline": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27;",
-          "matched_context": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27; Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "description": "Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-          "published": "2026-10-02T12:40:09.323Z",
-          "url": "https://www.nfl.com/news/mike-mcdaniel-responsibility-chargers-poor-offense-0-3-start",
-          "match_evidence": null,
-          "evidence_lane": "material_team_context_signals",
-          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
-          "team": "LAC",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
+      "team_context_only": false,
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "X-ROLE / TARGET-SHARE WATCH",
         "score": 7.315,
@@ -6873,26 +6942,19 @@
           "sustainability": 7.7
         }
       },
-      "changed_fact": "Mike McDaniel takes responsibility for Chargers&#x27; poor offense in 0-3 start: &#x27;I&#x27;m not living in hope&#x27; Los Angeles has suffered three straight losses with fewer than 45 total points scored for the first time with Justin Herbert as starting quarterback.",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 7.315,
       "proposed_true_value_rank": 138,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Los Angeles Chargers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
       "reconciliation_status": null
     },
@@ -7235,10 +7297,25 @@
       "player": "Tank Bigsby",
       "pos": "RB",
       "team": "Philadelphia Eagles",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
       "team_context_only": false,
-      "evidence_summary": [],
+      "evidence_summary": [
+        {
+          "source": "ESPN_LEAGUE",
+          "headline": "Sources: Eagles RB Tank Bigsby to have surgery, headed to IR",
+          "matched_context": "sources eagles rb tank bigsby to have surgery headed to ir eagles running back tank bigsby sustained a core muscle injury sunday that requires surgery sources told nfl network s ian rapoport",
+          "description": "Eagles running back Tank Bigsby sustained a core muscle injury Sunday that requires surgery, sources told NFL Network's Ian Rapoport.",
+          "published": "2026-10-05T22:47:02Z",
+          "url": "https://www.espn.com/nfl/story/_/id/50111928/sources-eagles-rb-tank-bigsby-surgery-headed-ir",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "PHI",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "BACKUP ROLE WATCH",
         "score": 6.595,
@@ -7254,21 +7331,27 @@
           "sustainability": 7.8
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "sources eagles rb tank bigsby to have surgery headed to ir eagles running back tank bigsby sustained a core muscle injury sunday that requires surgery sources told nfl network s ian rapoport",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 6.595,
       "proposed_true_value_rank": 162,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Philadelphia Eagles"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
-      "reconciliation_status": null
+      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
     },
     {
       "player": "Kyler Murray",
@@ -7499,25 +7582,10 @@
       "player": "Baker Mayfield",
       "pos": "QB",
       "team": "Tampa Bay Buccaneers",
-      "taxonomy": "MATERIAL_HOLD",
-      "meaningful_evidence": true,
+      "taxonomy": "NO_MATERIAL_UPDATE",
+      "meaningful_evidence": false,
       "team_context_only": false,
-      "evidence_summary": [
-        {
-          "source": "NFL.com",
-          "headline": "Jared Verse: &#x27;This ain&#x27;t the old Browns&#x27; ",
-          "matched_context": "3 1979 en route to a third place finish in mvp voting the cleveland football team has had few peaks in the past two plus decades since the browns return in 1999 they ve made just three playoff appearances there have been memorable campaigns with baker mayfield helping break the postseason drought in 2020 and joe flacco helping run the browns to a playoff bid in 2023 however with the young playmakers highlighted by verse and a stingy defense along with receivers denzel boston and kc concepcion and a rejuvenated running back",
-          "description": "The Cleveland Browns took over first place in the AFC North with a 27-24 win over the Pittsburgh Steelers. ",
-          "published": "2026-10-02T11:41:42.587Z",
-          "url": "https://www.nfl.com/news/jared-verse-this-ain-t-the-old-browns",
-          "match_evidence": "FULL_NAME_BODY_WINDOW",
-          "evidence_lane": "material_news_signals",
-          "evidence_scope": null,
-          "team": "TB",
-          "source_team": null,
-          "context_lanes": null
-        }
-      ],
+      "evidence_summary": [],
       "prior_assumption": {
         "status": "PASS",
         "score": 8.926,
@@ -7533,29 +7601,21 @@
           "sustainability": 8.5
         }
       },
-      "changed_fact": "3 1979 en route to a third place finish in mvp voting the cleveland football team has had few peaks in the past two plus decades since the browns return in 1999 they ve made just three playoff appearances there have been memorable campaigns with baker mayfield helping break the postseason drought in 2020 and joe flacco helping run the browns to a playoff bid in 2023 however with the young playmakers highlighted by verse and a stingy defense along with receivers denzel boston and kc concepcion and a rejuvenated running back",
-      "implicated_components": [
-        "availability",
-        "weekly_reliability",
-        "production",
-        "ceiling",
-        "role_volume",
-        "offensive_environment"
-      ],
+      "changed_fact": null,
+      "implicated_components": [],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.926,
       "proposed_true_value_rank": 136,
-      "overall_impact": "REVIEW_REQUIRED",
+      "overall_impact": "UNCHANGED",
       "connected_player_effects": {
-        "status": "REQUIRES_CONNECTED_RESOLVER",
-        "team": "Tampa Bay Buccaneers"
+        "status": "NONE_REQUIRED"
       },
       "market_impact": {
         "current_label": "BUY",
-        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
+        "status": "UNCHANGED"
       },
-      "reconciliation_status": "BLOCKED_MISSING_QUANTITATIVE_EVIDENCE"
+      "reconciliation_status": null
     },
     {
       "player": "Jordan Love",
@@ -7645,6 +7705,34 @@
       "evidence_summary": [
         {
           "source": "NFL.com",
+          "headline": "Seahawks &#x27;going through process&#x27; of signing RB Joe Mixon to practice squad",
+          "matched_context": "to a chest injury mixon joins a running back room currently led by emanuel wilson who rushed for 81 yards and a score in a 30 23 win over the chargers on sunday and pass catching back george holani seattle rushing leader from last year zach charbonnet is currently practicing amid his 21 day window to return from the physically unable to perform list beyond adding more running back depth mixon is also the latest notable free agent signing for the seahawks following that of cornerbacks terrion arnold and trevon diggs arnold",
+          "description": "The Seahawks are signing running back Joe Mixon, NFL Network Insider Mike Garafolo reported Monday.  ESPN&#x27;s Adam Schefter reported that Mixon will start out on Seattle&#x27;s practice squad once he completes his medical exam.",
+          "published": "2026-10-05T22:50:27.229Z",
+          "url": "https://www.nfl.com/news/seahawks-going-through-process-of-signing-rb-joe-mixon-to-practice-squad",
+          "match_evidence": "FULL_NAME_BODY_WINDOW",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "SEA",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "NFL.com",
+          "headline": "2026 NFL fantasy football waiver wire, Week 5: RB Zach Charbonnet, WR Keon Coleman among targets",
+          "matched_context": "2026 nfl fantasy football waiver wire week 5 rb zach charbonnet wr keon coleman among targets which players should you scoop up to give your fantasy team a boost heading into week 5 matt okada spotlights the top waiver wire targets at each position including wr keon coleman and a potential rb1 for a productive efficient offense",
+          "description": "Which players should you scoop up to give your fantasy team a boost heading into Week 5? Matt Okada spotlights the top waiver-wire targets at each position, including WR Keon Coleman and a potential RB1 for a productive, efficient offense.",
+          "published": "2026-10-05T16:07:49.123Z",
+          "url": "https://www.nfl.com/news/2026-nfl-fantasy-football-waiver-wire-week-5-rb-zach-charbonnet-wr-keon-coleman-among-targets",
+          "match_evidence": "FULL_NAME_HEADER",
+          "evidence_lane": "material_news_signals",
+          "evidence_scope": null,
+          "team": "SEA",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "NFL.com",
           "headline": "Seahawks place RB Jadarian Price (chest) on injured reserve",
           "matched_context": "miss at least the next four games seattle will count on wilson and holani to step up in the immediate future as the two will helm the rushing attack on sunday against the chargers there could be more help on the way soon though as zach charbonnet who rushed for 730 yards and 12 touchdowns last year had his 21 day practice window opened up earlier this week as he continues to work his way back from a torn acl charbonnet is currently on the physically unable to perform list and practiced",
           "description": "Running back Jadarian Price&#x27;s slow start to his rookie season just hit another snag. The Seahawks are placing Price on injured reserve due to a chest injury, ESPN&#x27;s Adam Schefter reported Saturday.",
@@ -7701,7 +7789,7 @@
           "sustainability": 7.2
         }
       },
-      "changed_fact": "miss at least the next four games seattle will count on wilson and holani to step up in the immediate future as the two will helm the rushing attack on sunday against the chargers there could be more help on the way soon though as zach charbonnet who rushed for 730 yards and 12 touchdowns last year had his 21 day practice window opened up earlier this week as he continues to work his way back from a torn acl charbonnet is currently on the physically unable to perform list and practiced",
+      "changed_fact": "to a chest injury mixon joins a running back room currently led by emanuel wilson who rushed for 81 yards and a score in a 30 23 win over the chargers on sunday and pass catching back george holani seattle rushing leader from last year zach charbonnet is currently practicing amid his 21 day window to return from the physically unable to perform list beyond adding more running back depth mixon is also the latest notable free agent signing for the seahawks following that of cornerbacks terrion arnold and trevon diggs arnold",
       "implicated_components": [
         "availability",
         "weekly_reliability",
@@ -7768,10 +7856,39 @@
       "player": "Sam Darnold",
       "pos": "QB",
       "team": "Seattle Seahawks",
-      "taxonomy": "NO_MATERIAL_UPDATE",
-      "meaningful_evidence": false,
-      "team_context_only": false,
-      "evidence_summary": [],
+      "taxonomy": "MATERIAL_HOLD",
+      "meaningful_evidence": true,
+      "team_context_only": true,
+      "evidence_summary": [
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "Seahawks place RB Jadarian Price (chest) on injured reserve",
+          "matched_context": "Seahawks place RB Jadarian Price (chest) on injured reserve Running back Jadarian Price&#x27;s slow start to his rookie season just hit another snag. The Seahawks are placing Price on injured reserve due to a chest injury, ESPN&#x27;s Adam Schefter reported Saturday.",
+          "description": "Running back Jadarian Price&#x27;s slow start to his rookie season just hit another snag. The Seahawks are placing Price on injured reserve due to a chest injury, ESPN&#x27;s Adam Schefter reported Saturday.",
+          "published": "2026-10-03T20:10:08.183Z",
+          "url": "https://www.nfl.com/news/seahawks-placing-rb-jadarian-price-chest-on-injured-reserve",
+          "match_evidence": null,
+          "evidence_lane": "material_team_context_signals",
+          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
+          "team": "SEA",
+          "source_team": null,
+          "context_lanes": null
+        },
+        {
+          "source": "TRANSITION_INTELLIGENCE",
+          "headline": "2026 NFL fantasy football waiver wire, Week 5: RB Zach Charbonnet, WR Keon Coleman among targets",
+          "matched_context": "2026 NFL fantasy football waiver wire, Week 5: RB Zach Charbonnet, WR Keon Coleman among targets Which players should you scoop up to give your fantasy team a boost heading into Week 5? Matt Okada spotlights the top waiver-wire targets at each position, including WR Keon Coleman and a potential RB1 for a productive, efficient offense.",
+          "description": "Which players should you scoop up to give your fantasy team a boost heading into Week 5? Matt Okada spotlights the top waiver-wire targets at each position, including WR Keon Coleman and a potential RB1 for a productive, efficient offense.",
+          "published": "2026-10-05T16:07:49.123Z",
+          "url": "https://www.nfl.com/news/2026-nfl-fantasy-football-waiver-wire-week-5-rb-zach-charbonnet-wr-keon-coleman-among-targets",
+          "match_evidence": null,
+          "evidence_lane": "material_team_context_signals",
+          "evidence_scope": "SAME_TEAM_TRANSITION_CONTEXT",
+          "team": "SEA",
+          "source_team": null,
+          "context_lanes": null
+        }
+      ],
       "prior_assumption": {
         "status": "PASS",
         "score": 8.448,
@@ -7787,19 +7904,27 @@
           "sustainability": 8.5
         }
       },
-      "changed_fact": null,
-      "implicated_components": [],
+      "changed_fact": "Seahawks place RB Jadarian Price (chest) on injured reserve Running back Jadarian Price&#x27;s slow start to his rookie season just hit another snag. The Seahawks are placing Price on injured reserve due to a chest injury, ESPN&#x27;s Adam Schefter reported Saturday.",
+      "implicated_components": [
+        "availability",
+        "weekly_reliability",
+        "production",
+        "ceiling",
+        "role_volume",
+        "offensive_environment"
+      ],
       "component_delta": null,
       "score_delta": 0,
       "proposed_score": 8.448,
       "proposed_true_value_rank": 152,
-      "overall_impact": "UNCHANGED",
+      "overall_impact": "REVIEW_REQUIRED",
       "connected_player_effects": {
-        "status": "NONE_REQUIRED"
+        "status": "REQUIRES_CONNECTED_RESOLVER",
+        "team": "Seattle Seahawks"
       },
       "market_impact": {
         "current_label": "FAIR",
-        "status": "UNCHANGED"
+        "status": "RECHECK_CURRENT_COST_AFTER_APPROVAL"
       },
       "reconciliation_status": null
     },
