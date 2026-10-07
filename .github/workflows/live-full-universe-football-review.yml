@@ -18,6 +18,8 @@ on:
       - 'scripts/integrate-transition-intelligence.mjs'
       - 'scripts/triage-untracked-candidates.mjs'
       - 'scripts/stage-admission-requests.mjs'
+      - 'scripts/generate-admission-package.mjs'
+      - 'lib/admission-model.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
       - 'admissions/queue.json'
       - 'scripts/collect-substantive-football-context.mjs'
@@ -42,6 +44,8 @@ on:
       - 'scripts/integrate-transition-intelligence.mjs'
       - 'scripts/triage-untracked-candidates.mjs'
       - 'scripts/stage-admission-requests.mjs'
+      - 'scripts/generate-admission-package.mjs'
+      - 'lib/admission-model.mjs'
       - 'scripts/validate-full-universe-news-review.mjs'
       - 'admissions/queue.json'
       - 'scripts/collect-substantive-football-context.mjs'
@@ -178,6 +182,10 @@ jobs:
             guardrails/substantive-football-context-inputs-report.json
             guardrails/transition-intelligence-integration-report.json
             admissions/queue.json
+            admissions/staged/
+            admissions/packages/
+            admissions/inputs/
+            admissions/calibrations/
             data/probability/substantive-football-context-inputs-2026.json
             analysis/transition-intelligence-current.json
             analysis/transition-intelligence-current.md
@@ -191,7 +199,7 @@ jobs:
           if-no-files-found: error
 
       - name: Persist latest validated evidence to rolling branch
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
         shell: bash
         run: |
           EVIDENCE_FILES=(
@@ -213,12 +221,18 @@ jobs:
             analysis/full-universe-reconciliation-taxonomy-current.json
             analysis/full-universe-reconciliation-taxonomy-current.md
           )
-          for f in "${EVIDENCE_FILES[@]}"; do test -f "$f"; done
+          # Preserve queue and staged packages before fail-closed validation can terminate the cycle.
+          EVIDENCE_FILES+=(admissions)
+          EXISTING_FILES=()
+          for f in "${EVIDENCE_FILES[@]}"; do
+            if [ -e "$f" ]; then EXISTING_FILES+=("$f"); fi
+          done
+          if [ "${#EXISTING_FILES[@]}" -eq 0 ]; then exit 1; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           BRANCH="production/live-full-universe-review-latest"
           git switch -C "$BRANCH"
-          git add -- "${EVIDENCE_FILES[@]}"
+          git add -- "${EXISTING_FILES[@]}"
           if git diff --cached --quiet; then exit 0; fi
           COUNT=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').active_player_model")
           git commit -m "Persist latest six-daily ${COUNT}-player reconciliation"

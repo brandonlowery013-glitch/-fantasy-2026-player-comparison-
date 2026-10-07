@@ -16,6 +16,14 @@ on:
     paths:
       - 'admissions/**'
       - 'scripts/process-admissions.mjs'
+      - 'scripts/generate-admission-package.mjs'
+      - 'scripts/build-admission-package.mjs'
+      - 'scripts/test-admission-generation.mjs'
+      - 'lib/admission-model.mjs'
+      - 'lib/canonical-*.mjs'
+      - 'exports/**'
+      - 'scripts/validate-canonical-consumers.mjs'
+      - 'index.html'
       - 'scripts/stage-admission-requests.mjs'
       - 'scripts/validate-admission-state.mjs'
       - 'scripts/test-admission-engine.mjs'
@@ -29,6 +37,14 @@ on:
     paths:
       - 'admissions/**'
       - 'scripts/process-admissions.mjs'
+      - 'scripts/generate-admission-package.mjs'
+      - 'scripts/build-admission-package.mjs'
+      - 'scripts/test-admission-generation.mjs'
+      - 'lib/admission-model.mjs'
+      - 'lib/canonical-*.mjs'
+      - 'exports/**'
+      - 'scripts/validate-canonical-consumers.mjs'
+      - 'index.html'
       - 'scripts/stage-admission-requests.mjs'
       - 'scripts/validate-admission-state.mjs'
       - 'scripts/test-admission-engine.mjs'
@@ -50,15 +66,37 @@ jobs:
         with:
           node-version: '20'
       - name: Test admission engine contracts
-        run: node scripts/test-admission-engine.mjs
+        run: |
+          node scripts/test-admission-engine.mjs
+          node scripts/test-admission-generation.mjs
+          node scripts/test-interface-player-source.mjs
+          node scripts/test-interface-picks.mjs
+          node scripts/test-show-work.mjs
+          node scripts/validate-canonical-consumers.mjs
       - name: Validate queue schema
         run: node scripts/process-admissions.mjs --validate-queue
+      - name: Require protected PR branch for admission writes
+        if: github.event_name == 'workflow_dispatch' && inputs.apply == true
+        run: |
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            echo 'Admissions must be applied on a candidate branch and reviewed through protected PR flow.'
+            exit 1
+          fi
+      - name: Generate or stage requested calibrated admission
+        if: github.event_name == 'workflow_dispatch' && inputs.candidate_id != ''
+        env:
+          CANDIDATE_ID: ${{ inputs.candidate_id }}
+        run: node scripts/generate-admission-package.mjs "$CANDIDATE_ID"
       - name: Dry-run requested calibrated admission
         if: github.event_name == 'workflow_dispatch' && inputs.candidate_id != ''
-        run: node scripts/process-admissions.mjs "${{ inputs.candidate_id }}"
+        env:
+          CANDIDATE_ID: ${{ inputs.candidate_id }}
+        run: node scripts/process-admissions.mjs "$CANDIDATE_ID"
       - name: Apply requested calibrated admission
         if: github.event_name == 'workflow_dispatch' && inputs.apply == true && inputs.candidate_id != ''
-        run: node scripts/process-admissions.mjs --apply "${{ inputs.candidate_id }}"
+        env:
+          CANDIDATE_ID: ${{ inputs.candidate_id }}
+        run: node scripts/process-admissions.mjs --apply "$CANDIDATE_ID"
       - name: Validate admission state
         if: github.event_name != 'workflow_dispatch' || inputs.apply == true || inputs.candidate_id == ''
         run: node scripts/validate-admission-state.mjs
@@ -66,13 +104,17 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.apply == true && inputs.candidate_id != ''
         run: node scripts/run-guardrail-qa.mjs
       - name: Commit validated applied admission
+        env:
+          CANDIDATE_ID: ${{ inputs.candidate_id }}
         if: github.event_name == 'workflow_dispatch' && inputs.apply == true && inputs.candidate_id != ''
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add admissions players*.json MODEL_SOURCE_OF_TRUTH.json guardrails/universe-change-manifest.json guardrails/admission-state-report.json guardrails/guardrail-report.json
+          git add admissions exports data/probability/weekly-football-context-inputs-2026.json data/probability/weekly-projection-inputs-2026.json players*.json MODEL_SOURCE_OF_TRUTH.json canonicalBoards2026.json lockedRanks2026.json guardrails/guardrails-config.json guardrails/universe-change-manifest.json guardrails/admission-state-report.json guardrails/guardrail-report.json
+          PATCH_FILE=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').current_update_layer")
+          git add -- "$PATCH_FILE"
           git diff --cached --quiet && exit 0
-          git commit -m "Complete canonical admission ${{ inputs.candidate_id }}"
+          git commit -m "Complete canonical admission $CANDIDATE_ID"
           git push origin "HEAD:${GITHUB_REF_NAME}"
       - name: Upload admission validation report
         if: always()
@@ -81,6 +123,8 @@ jobs:
           name: canonical-admission-report
           path: |
             admissions/queue.json
+            admissions/staged/
+            admissions/packages/
             admissions/completed/*.json
             guardrails/admission-state-report.json
             guardrails/guardrail-report.json
