@@ -17,7 +17,7 @@ const val=(r,...ks)=>{for(const k of ks){if(r[k]!==undefined&&r[k]!==null&&r[k]!
 function parseCsv(text){const rs=[];let row=[],f='',q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c==='"'&&text[i+1]==='"'){f+='"';i++;}else if(c==='"')q=false;else f+=c;}else{if(c==='"')q=true;else if(c===','){row.push(f);f='';}else if(c==='\n'){row.push(f.replace(/\r$/,''));rs.push(row);row=[];f='';}else f+=c;}}if(f.length||row.length){row.push(f);rs.push(row)}const h=rs.shift()||[];return rs.filter(r=>r.length>1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]??''])))}
 async function csv(url){const res=await fetch(url,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});if(!res.ok)throw new Error(`${res.status} ${url}`);return {data:parseCsv(await res.text()),url};}
 
-const schedRes=await csv('https://github.com/nflverse/nflverse-data/releases/download/schedules/games.csv');
+const schedRes=await csv('https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv');
 const schedules=schedRes.data.filter(g=>seasons.includes(Number(g.season))&&String(val(g,'game_type','season_type')||'REG').toUpperCase()==='REG');
 const gameByTeamWeek=new Map();
 for(const g of schedules){const season=Number(g.season),week=Number(g.week);const home=val(g,'home_team'),away=val(g,'away_team');if(!home||!away)continue;for(const team of [home,away]) gameByTeamWeek.set(`${season}|${week}|${team}`,g);}
