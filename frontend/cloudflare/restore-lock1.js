@@ -7,7 +7,7 @@
  window.ctdScoreComparison={setData(d){published=d},render(raw,s,week){
   const anchor=document.getElementById('awayProb');const box=anchor?.closest('.panel');if(!box)return;
   let host=document.getElementById('ctdScoreComparison');if(!host){host=document.createElement('section');host.id='ctdScoreComparison';box.prepend(host);}
-  const p=raw.football_projection||{},total=s.market?.total,spread=s.market?.home_spread;
+  const p=raw.football_projection||{},total=s?.market?.total,spread=s?.market?.home_spread;
   const known=number(total)&&number(spread),home=known?(Number(total)-Number(spread))/2:null,away=known?(Number(total)+Number(spread))/2:null;
   const g=Number(published?.week)===Number(week)?Object.values(published.games||{}).find(g=>g.home_team===raw.home_team&&g.away_team===raw.away_team&&g.event_start===raw.kickoff&&Math.abs(g.model?.home_score_mean-p.home_score_mean)<.001&&Math.abs(g.model?.away_score_mean-p.away_score_mean)<.001):null;
   const d=g?.distribution;let graph='';
@@ -17,7 +17,7 @@
    const ticks=Array.from({length:5},(_,i)=>{const v=i*max/4;return `<text x="${x(v)}" y="175" text-anchor="middle" fill="#aabed0" font-size="12">${v.toFixed(0)}</text>`}).join('');
    graph=`<h3>PROJECTED SCORE RANGE</h3><svg class="ctdScoreGraph" viewBox="0 0 680 195" role="img" aria-label="Projected score bell curves for ${esc(raw.away_team)} and ${esc(raw.home_team)}; dashed lines mark sportsbook implied scores"><path d="M36 150H644" stroke="#536c83"/>${known?`<path d="M${x(away)} 20V150" stroke="#70b5ff" stroke-dasharray="5 5"/><path d="M${x(home)} 20V150" stroke="#ffc665" stroke-dasharray="5 5"/>`:''}<path d="${curve(am)}" fill="none" stroke="#70b5ff" stroke-width="3"/><path d="${curve(hm)}" fill="none" stroke="#ffc665" stroke-width="3"/>${ticks}<text x="340" y="192" text-anchor="middle" fill="#aabed0" font-size="12">Team points</text></svg><div class="ctdScoreLegend"><span style="color:#70b5ff">● ${esc(raw.away_team)}</span><span style="color:#ffc665">● ${esc(raw.home_team)}</span><span>Dashed: sportsbook-implied score</span></div><p class="ctdScoreNote">${d.simulations.toLocaleString()} simulated outcomes · Curves show the score distributions used before rounding and the zero-point floor.</p>`;
   }
-  host.innerHTML=`<h3>PROJECTED SCORE</h3><div class="ctdScoreGrid"><div class="ctdScoreTile">Our model<strong>${esc(raw.away_team)} ${fmt(p.away_score_mean)} · ${esc(raw.home_team)} ${fmt(p.home_score_mean)}</strong><small>Total ${fmt(Number(p.home_score_mean)+Number(p.away_score_mean))}</small></div><div class="ctdScoreTile">Sportsbook-implied<strong>${esc(raw.away_team)} ${fmt(away)} · ${esc(raw.home_team)} ${fmt(home)}</strong><small>${esc(s.book)} · Derived from spread and total<br>${esc(new Date(s.captured_at).toLocaleString())}</small></div></div>${graph}<h3>CHANCE TO WIN OUTRIGHT</h3>`;
+  host.innerHTML=`<h3>PROJECTED SCORE</h3><div class="ctdScoreGrid"><div class="ctdScoreTile">Our model<strong>${esc(raw.away_team)} ${fmt(p.away_score_mean)} · ${esc(raw.home_team)} ${fmt(p.home_score_mean)}</strong><small>Total ${fmt(Number(p.home_score_mean)+Number(p.away_score_mean))}</small></div><div class="ctdScoreTile">Sportsbook-implied<strong>${esc(raw.away_team)} ${fmt(away)} · ${esc(raw.home_team)} ${fmt(home)}</strong><small>${s?`${esc(s.book)} · Derived from spread and total<br>${esc(new Date(s.captured_at).toLocaleString())}`:'Matching sportsbook quote not published'}</small></div></div>${graph}<h3>CHANCE TO WIN OUTRIGHT</h3>`;
   const title=[...box.children].find(el=>el.tagName==='H3'&&/MODEL WIN PROBABILITY/i.test(el.textContent));if(title)title.hidden=true;
  }};
 })();
@@ -130,8 +130,16 @@ function renderOutlookData(){
   function detail(){return window.CTD_READING.preserve(document.getElementById('gamesPage'),detailData);}
 function detailData(){
     const g=BET_FEED.games[selectedGameIndex];clearMarketDetail(g);if(!g||!feed||Number(feed.week)!==Number(BET_FEED.week))return;
-    const raw=Object.values(feed.games||{}).find(x=>sameMatchup(x,g));if(!raw)return;
-    const s=selected(raw);if(!s)return;
+    const raw=Object.values(feed.games||{}).find(x=>sameMatchup(x,g)&&Date.parse(x.kickoff)===Date.parse(g.event_start));if(!raw)return;
+    const s=selected(raw);if(!s){
+      const p=raw.football_projection,denom=Number(p?.home_win_probability)+Number(p?.away_win_probability);
+      if(!p||!Number.isFinite(denom)||denom<=0)return;
+      window.ctdScoreComparison?.render(raw,null,feed.week);
+      document.getElementById('awayProb').textContent=pct(p.away_win_probability/denom);document.getElementById('homeProb').textContent=pct(p.home_win_probability/denom);
+      document.querySelector('.implied').textContent='Model win chances, conditional on a win/loss settlement. Matching sportsbook prices have not been published; no priced recommendation is available.';
+      document.querySelector('.donut').style.display='none';
+      return;
+    }
     const ended=g.completed===true||Date.parse(raw.kickoff)<=Date.now();
     const summary=explain(raw,s);g.model_summary=summary;
     if(activeGameTab==='OVERVIEW')document.getElementById('gameSummary').textContent=(feed.rerun?(ended?'Updated model calculation after kickoff. ':'Updated model calculation. '):(ended?'Pregame analysis (archived). ':''))+summary;

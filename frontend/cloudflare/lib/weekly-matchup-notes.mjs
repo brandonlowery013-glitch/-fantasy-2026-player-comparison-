@@ -62,3 +62,234 @@ export const notes = {
   'The Rams’ longer-term offense is considerably stronger than those first three games suggest, so a rebound is the biggest threat to taking Philadelphia. Conversely, an Over needs at least one offense to improve because the recent scoring alone does not make the case. Current receiver and line availability matters to that rebound; older offensive production should not be credited to a lineup that cannot field the same options.'
  ]
 };
+
+// Week 5: original pregame assessment, collected October 10; no priced selection inferred.
+Object.assign(notes, {
+  "PHI@JAX:2026-10-11": [
+    "Jacksonville's case is defensive control in London: it has allowed 13.25 points per game through four games, while Philadelphia has scored 18.75. The inference is that Jacksonville can keep Philadelphia from turning this into a possession-for-possession scoring contest. Tottenham is a neutral venue, so the home label must not add ordinary home-field points. ESPN's October 9–10 reports list DeVonta Smith and Hollywood Brown out, which makes sustaining Philadelphia's passing drives a material concern rather than an automatic numeric penalty.",
+    "Philadelphia can still keep the game close if its defense disrupts Jacksonville before the Jaguars establish long drives. Jacksonville has scored 26 points a game, but four opponents are a small and unadjusted sample; those averages are not a guarantee against a different defense. The current report also lists Philadelphia center Drew Kendall out and Jacksonville safety Eric Murray doubtful. These are descriptive risks, not validated changes to the scoring coefficients. No spread, total or moneyline bet is justified until a matching two-sided price is saved."
+  ],
+  "CHI@GB:2026-10-11": [
+    "Chicago's recent balance gives it a plausible route to controlling this matchup: 28 points scored and 16.25 allowed per game through Week 4, versus Green Bay's 18.25 scored and 26.25 allowed. The inference is that Chicago can create a lead without needing every possession to score. That case is conditional: ESPN's October 9 report still lists Caleb Williams questionable, and the October 10 report lists Packers center Jacob Monk and guard Aaron Banks doubtful. Quarterback confirmation and protection matter more than assuming these four-game averages continue unchanged.",
+    "Green Bay's countercase is that Lambeau and a less productive Chicago quarterback performance can narrow the scoring gap. Chicago corner Kyler Gordon is listed out on October 10, so the Bears' defensive average does not establish that the same pass defense will appear Sunday. A questionable quarterback is not permission to assign a generic backup penalty; the model has no validated injury coefficient here. These raw scoring averages also reflect different opponents. Publish the baseline probability as analysis only and keep any price-dependent recommendation unavailable without its saved quote."
+  ],
+  "HOU@TEN:2026-10-11": [
+    "Houston's route to a road win is forcing Tennessee to sustain more offense than its 13.75-point average through four games. Houston has scored 21 per game, giving it the stronger recent scoring case without requiring a shootout. The October 9 report lists Tennessee safety Amani Hooker out, which is a plausible passing-game opening, but it does not identify a coverage grade or add points to the model. Houston's own 27.25 points allowed means the Titans still have a route to contribute if they avoid wasting possessions.",
+    "The strongest challenge to Houston is protection and finishing drives. ESPN lists tackle Braden Smith on injured reserve and Aireontae Ersery questionable in October 8–9 updates; Tennessee receiver Carnell Tate is also questionable. Those reports create uncertainty about how each side turns opportunity into actual points. Tennessee's defense has allowed 20.75 per game, so an easy Houston separation is not established by the offensive averages alone. Four games and unequal opponent mix warrant caution, and no Over, spread or moneyline selection exists without a matching price."
+  ],
+  "CIN@MIA:2026-10-11": [
+    "Cincinnati has the clearer recent offensive route: 24.25 points scored per game compared with Miami's 11.5 through four games. Keeping Miami in repeated catch-up situations is a plausible game script, especially against a defense allowing 25.25. It is an inference from scoring results, not a forecast of pass attempts or possessions. The major qualification is ESPN's October 9 report listing both Ja'Marr Chase and Tee Higgins questionable; the Bengals' prior production cannot confirm their availability for this game.",
+    "Miami's countercase is that Cincinnati loses enough receiving or secondary availability to leave the game competitive. The October 10 report lists Bengals safety Kyle Dugger out and Bryan Cook questionable, while Miami has its own defensive-line and skill-position questions. Cincinnati allowing 21.25 per game is useful context, but not opponent-adjusted proof that Miami remains at its recent scoring floor. No injury points are silently deducted, and a Cincinnati win lean is separate from whether any spread or total is good value at a saved two-sided price."
+  ],
+  "LV@NE:2026-10-11": [
+    "Las Vegas has scored 28.75 points per game through Week 4, substantially above New England's 16.25, so the Raiders' plausible route is to turn this into a game where the Patriots must answer successful drives. New England's 19.25 points allowed provides the resistance to that case. ESPN's October 10 report lists Patriots corners Karon Prunty and Channing Canada out, with Charles Woods questionable. That is a specific concern for the pass defense, not evidence that ticket or handle shares changed the scoring model.",
+    "The Raiders' scoring average can overstate how easy those drives will be if their own personnel are limited. ESPN's October 9–10 updates list Ashton Jeanty questionable, Jalen Nailor out and center Trey Zuhn III out. New England's longer-term offensive prior is stronger than its four-game start, so the existing model does not simply rank the teams by this season's points. Opponent mix and a small sample leave room for a Patriots rebound. With no matched pregame quote saved, the proper state is a football forecast with no priced bet recommendation."
+  ],
+  "MIN@NO:2026-10-11": [
+    "Minnesota's defensive start is the strongest reason it can slow a New Orleans offense averaging 26.25 points: the Vikings have allowed 12.75 through four games. New Orleans has conceded 32 per game, giving Minnesota a route to score without needing a large increase from its own 21.5-point average. The inference is a more controlled Minnesota game, not an assurance that either four-game average transfers intact. The October 10 report lists Saints guard Jeremiah Wright out, which adds a specific protection concern to the offensive countercase.",
+    "Minnesota's own offensive line makes a comfortable road win less certain. ESPN's October 10 reports list Christian Darrisaw out and Brian O'Neill questionable, with center Michael Jurgens also questionable. If protection breaks down, New Orleans can force stalled drives despite its poor scoring-defense average. The Saints also have several defensive-front questions rather than one fully known injury effect. These facts do not receive new coefficients or automatic backup penalties. A projected advantage is analysis only until an exact spread, total or moneyline price can be evaluated."
+  ],
+  "CLE@NYJ:2026-10-11": [
+    "This matchup offers neither offense an established high-scoring starting point: Cleveland has averaged 20.25 and the Jets 19 points through four games. Cleveland's route is to sustain enough drives against a Jets defense allowing 21 rather than depend on explosive scoring. The Jets have a similar opening against Cleveland's 23.75 allowed. ESPN's October 10 report lists Cleveland guard Teven Jenkins and Jets guard Dylan Parham out. The inference is that protection and drive consistency could decide a close game; those absences are not a calibrated total reduction.",
+    "The Jets' countercase is that Cleveland's longer-term offensive baseline remains modest, while home field and a few successful drives can be enough without a shootout. Conversely, the Jets' longer-term defensive prior is weaker than their four-game average, so that apparent improvement should not be treated as certain. Cleveland quarterback Dillon Gabriel is listed on injured reserve, which by itself does not establish a change in the confirmed starter. Keep missing starter and workload evidence explicit. Without saved two-sided prices, neither a low scoring impression nor a home lean creates a published bet."
+  ],
+  "IND@PIT:2026-10-11": [
+    "Indianapolis has the stronger recent offense at 25.5 points per game, while Pittsburgh has scored 19.25 through four games. Pittsburgh's defense has allowed 21.75, so the Colts' route is to turn their offensive advantage into sustained drives rather than assume an uncontested score. ESPN's October 9–10 reports list Steelers corner Jamel Dean out, safety DeShon Elliott on injured reserve and Jalen Ramsey questionable. That gives a specific reason to monitor the passing matchup, but does not establish an additional numeric injury adjustment.",
+    "Pittsburgh can answer against an Indianapolis defense allowing 26 points a game, which prevents the scoring averages from supporting a simple one-sided script. The Steelers' own personnel are a limitation: Michael Pittman Jr. is on injured reserve and Rico Dowdle is questionable in the October 9–10 reports. Indianapolis has defensive availability concerns too, including Arden Key on injured reserve and Charvarius Ward questionable. Four games reflect different opponents and do not resolve those lineup questions. The forecast must remain distinct from a spread or total bet that needs an exact offered price."
+  ],
+  "NYG@WSH:2026-10-11": [
+    "The Giants' plausible route is to make Washington earn its points while attacking a defense that has allowed 30.5 per game through Week 4. New York has scored 20.5 and allowed 19.75; Washington has scored 22. That is a case for competitiveness rather than automatic Giants dominance. ESPN's October 10 report lists Washington safeties Tyler Owens, Percy Butler and Nick Cross out, with corner Trey Amos on injured reserve. Secondary availability is a concrete risk to Washington's resistance, although it has no new validated coefficient in this forecast.",
+    "Washington's countercase is home field and the possibility that New York's defensive average looks stronger than its actual opponent-adjusted ability. The Giants have Jason Pinnock out, Brian Burns on injured reserve and Jaxson Dart on injured reserve in the retrieved report; that report does not establish the confirmed quarterback or a numeric replacement penalty. New York must still finish offensive chances for its competitive case to work. With only four games, uncertainty about opponent mix and personnel is substantial. No saved line means the baseline win chance is not a moneyline or spread recommendation."
+  ],
+  "DEN@LAC:2026-10-11": [
+    "Denver has scored 18.5 points per game and the Chargers 16.75 through four games, so the road side's plausible route is modest separation through drive consistency rather than a sudden scoring explosion. Los Angeles has allowed 26.5, providing an opening despite Denver's limited recent production. ESPN's October 10 report lists Chargers tackle Rashawn Slater and guard Trevor Penning on injured reserve, with Branson Taylor questionable. That is a reason to scrutinize protection, not to assign invented sacks, pressures or lost points.",
+    "Los Angeles has a specific passing countercase: Denver corners Pat Surtain II and Riley Moss are listed out in October 10 updates. Those absences can make the Chargers' low scoring average less representative of this particular matchup. Denver has allowed 23.5 per game, so it has not established a defense that removes that risk. Four opponents provide a small sample, and the existing model retains longer-term scoring history. A low offensive average does not itself make an Under valuable; any spread, total or moneyline needs the matching pregame line and prices."
+  ],
+  "DET@ARI:2026-10-11": [
+    "Detroit's route is to keep scoring against an Arizona defense allowing 29.25 points per game through four games. The Lions have scored 29.75, so that matchup is consistent with a productive Detroit game rather than dependent on a large offensive rebound. Arizona has scored 21.75 and faces a Detroit defense allowing 31.75, which leaves a plausible response. ESPN's October 10 report lists Marvin Harrison Jr. out, making Arizona's available receiving personnel a meaningful caveat rather than a reason to manufacture a new offensive adjustment.",
+    "Detroit's strongest risk is that defensive and offensive-line absences turn a promising scoring matchup into a less stable game. October 10 reports list Brian Branch and Rock Ya-Sin out, Ben Bartch out and Cade Mays on injured reserve. Arizona safety Andrew Wingard is also out in the October 9 report. These facts suggest several possible scripts, not certainty about a shootout or cover. Scoring averages from four unequal schedules need caution, and neither a Detroit win lean nor a high combined projection becomes a bet without an exact saved price."
+  ],
+  "SF@SEA:2026-10-11": [
+    "San Francisco has the stronger recent scoring balance at 30.5 points scored and 16 allowed per game, but Seattle's 26.25 scored and 18.25 allowed make this a substantial road test. The plausible San Francisco case is sustaining its offensive production while forcing Seattle below its usual pace of scoring. That inference is qualified by ESPN's October 10 report listing Nick Bosa out and Upton Stout questionable. The prior defensive average does not confirm that the same pass rush or secondary will be available Sunday.",
+    "Seattle's countercase is home field and the possibility that San Francisco's defensive absences leave enough passing opportunities to offset the offensive gap. The Seahawks have Zach Charbonnet out and George Holani questionable in October 5–9 reports, while San Francisco fullback Kyle Juszczyk is out. Those are workload and blocking questions, not validated point deductions. Both defenses' good four-game averages reflect their own opponent mix. The existing probability remains a scoring-model baseline; judging a spread, total or moneyline still requires the matching saved two-sided quote."
+  ],
+  "BAL@ATL:2026-10-12": [
+    "Baltimore has averaged 29 points through four games, compared with Atlanta's 24, so its plausible road route is keeping the Falcons in a game where they must repeatedly answer successful possessions. Atlanta has allowed 23 and Baltimore 24, which suggests neither side has established a defensive shutdown. ESPN's October 9–10 report lists Atlanta tackle Jake Matthews questionable and Baltimore center Cam Jurgens out. Protection is therefore a specific point of uncertainty on both sides rather than an assumed offensive continuation.",
+    "Atlanta can stay involved if Baltimore's receiving or defensive absences interrupt that road scoring case. ESPN lists Zay Flowers questionable and Trey Hendrickson out in October 9–10 updates, with Marlon Humphrey questionable; Atlanta also has defensive-front questions, including Za'Darius Smith out. A handful of stops can matter more than the five-point difference between four-game offensive averages. Those are descriptive counterarguments with no added numeric weights. The forecast is not a price-based selection until the exact line, book and two-sided odds are available."
+  ],
+  "BUF@LAR:2026-10-13": [
+    "Buffalo's 31.75 points per game through Week 4 gives it a plausible route to making the Rams answer a productive offense. Los Angeles has scored 21.25 and allowed 20.75, so its defense is the central resistance to that case. ESPN's October 10 report lists Rams defensive end Myles Garrett on injured reserve; that is a material availability fact, not a calibrated pass-rush penalty. Buffalo's own 26.75 points allowed leaves room for the Rams to respond without needing to match the Bills' best offensive version.",
+    "The Rams' countercase is that their longer-term offensive baseline is stronger than this four-game start, while Buffalo's receiving and defensive availability can narrow the apparent gap. ESPN's October 10 updates list DJ Moore questionable, Joshua Palmer out and Ed Oliver out. Monday's kickoff also leaves time for reports to change; today's report cannot settle game-day active status. Unequal opponent mix and four games do not establish a certain scoring order. Keep this as a football baseline, with no forced spread, total or moneyline recommendation without a saved matched price."
+  ]
+});
+
+export const noteSources = {
+  "PHI@JAX:2026-10-11": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872981"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "CHI@GB:2026-10-11": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872990"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "HOU@TEN:2026-10-11": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872984"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "CIN@MIA:2026-10-11": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872982"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "LV@NE:2026-10-11": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872986"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "MIN@NO:2026-10-11": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872987"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "CLE@NYJ:2026-10-11": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872983"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "IND@PIT:2026-10-11": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872985"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "NYG@WSH:2026-10-11": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872988"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "DEN@LAC:2026-10-11": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872989"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "DET@ARI:2026-10-11": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872991"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "SF@SEA:2026-10-11": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872992"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "BAL@ATL:2026-10-12": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872993"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ],
+  "BUF@LAR:2026-10-13": [
+    {
+      "label": "ESPN current matchup and injury report \u00b7 collected Oct 10, 2026",
+      "at": "2026-10-10",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872994"
+    },
+    {
+      "label": "ESPN Week 4 completed results \u00b7 Oct 1\u20135, 2026",
+      "at": "2026-10-05",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4"
+    }
+  ]
+};
