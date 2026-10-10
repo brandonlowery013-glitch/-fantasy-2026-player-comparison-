@@ -84,7 +84,7 @@ for(const [gameId,mg] of Object.entries(marketGames)){
   if(!Number.isInteger(marketWeek)||marketWeek<1||marketWeek>18){blocked.push(`${gameId} market week is invalid`);continue;}
   if(marketWeek!==currentWeek){historicalGames.push(gameId);continue;}
   const game=src.projections.games?.[gameId];
-  if(!game){blocked.push(`${gameId} has market snapshots but no Step 14 football projection`);continue;}
+  if(!game){const missing=src.projections.unavailable_games?.[gameId];if(missing?.status==='NO_ORIGINAL_PREGAME_FORECAST'&&missing.home_team===mg.home_team&&missing.away_team===mg.away_team&&missing.event_start===mg.kickoff&&Date.parse(mg.kickoff)<=Date.now())continue;blocked.push(`${gameId} has market snapshots but no Step 14 football projection`);continue;}
   if(game.sportsbook_inputs_used!==false){blocked.push(`${gameId} football projection market contamination`);continue;}
   const kickoff=Date.parse(mg.kickoff||game.event_start),evaluations=[];
   const draws=simulateGameDistribution(gameId,game);
