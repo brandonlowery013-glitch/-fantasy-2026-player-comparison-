@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {parseCSV} from '../lib/game-scoring-calibration.mjs';
+import {prepareQuarterbackStarters as prepare} from '../lib/prepare-quarterback-starters.mjs';
+import {quarterbackShadowForecast as forecast} from '../lib/quarterback-shadow-forecast.mjs';
+const read=f=>parseCSV(fs.readFileSync('.cache/matchup-context/'+f,'utf8'));
+const model=JSON.parse(fs.readFileSync('data/probability/generated/quarterback-score-model-2026.json'));
+const players=read('players.csv');
+const game={id:'2026-W4-GB-TB',verified:true,season:2026,week:4,home_team:'TB',away_team:'GB',kickoff:'2026-10-04T17:00:00Z',matchup_aliases:['Packers','Buccaneers'],opponent_aliases:{GB:['Packers'],TB:['Buccaneers']}};
+const article=(name,team,opponent)=>({headline:`${name} will start against ${opponent}`,description:'',published:'2026-10-02T17:00:00Z',links:{web:{href:'https://www.espn.com/nfl/story/_/id/test-only-'+team}},categories:[{type:'team',team:{abbreviation:team}},{type:'athlete',athleteId:players.find(p=>p.display_name===name).espn_id}]});
+const common={games:[game],players,schedule:read('games.csv'),stats:Array.from({length:7},(_,i)=>read(`stats_player_week_${2020+i}.csv`)).flat(),teamStats:Array.from({length:7},(_,i)=>read(`stats_team_week_${2020+i}.csv`)).flat(),model,receivedAt:'2026-10-02T18:00:00Z',sourceIds:['test-only-cached-statistics']};
+const news={articles:[article('Jalon Daniels','TB','Packers'),article('Jordan Love','GB','Buccaneers')]};
+const input=prepare({...common,news});assert.equal(input.games[game.id].scenarios.length,1);
+const result=forecast({gameId:game.id,kickoff:game.kickoff,now:common.receivedAt,input:input.games[game.id],model});
+assert.equal(result.status,'UPDATED_SHADOW_FORECAST');assert.ok(Math.abs(result.scenarios[0].away_score-23.29537426835219)<1e-8);
+const missing=prepare({...common,news:{articles:news.articles.slice(0,1)}});assert.equal(missing.games[game.id].scenarios.length,0);
+const next=prepare({...common,receivedAt:'2026-10-02T18:05:00Z',news:{articles:[]},previous:input});assert.equal(next.games[game.id].scenarios.length,1,'Missing feed entries do not erase confirmed reports');
+assert.equal(next.games[game.id].supporting_reports.length,2);
+console.log('PASS: synthetic ESPN announcements -> cached player/matchup inputs -> real fitted scores; missing opponent confirmation holds; reports survive feed omission.');
+
+const injury=prepare({...common,news,injuries:[{player:'Jalon Daniels',team:'TB',designation:'O',source_updated_at:'2026-10-02T17:30:00Z'}]});assert.equal(injury.games[game.id].scenarios.length,0);
