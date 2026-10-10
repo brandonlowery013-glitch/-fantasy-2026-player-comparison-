@@ -621,14 +621,14 @@ async function loadFeed(){
         total:m.total??null,
         moneyline:(m.home_moneyline!=null||m.away_moneyline!=null)?`${home} ${m.home_moneyline??'—'} / ${away} ${m.away_moneyline??'—'}`:null,
         model_edge:best?.probability_edge!=null?`${(Number(best.probability_edge)*100).toFixed(1)}%`:null,
-        model_pick:best?.selection||'PASS',
+        model_pick:best?.selection||(snaps.length?'PASS':'Not published'),
         win_probability:fp.home_win_probability??null,
         away_win_probability:fp.away_win_probability??null,
         home_win_probability:fp.home_win_probability??null,
         total_pick:totalSel||'PASS',
         model_spread_pick:spreadSel||'PASS',
         moneyline_pick:mlSel||'PASS',
-        model_summary:picks.length?`Our model has ${picks.length} qualified market edge${picks.length===1?'':'s'} at the current ${dk.book||'sportsbook'} lines.`:'No current game market clears the locked betting threshold.',
+        model_summary:picks.length?`Our model has ${picks.length} qualified market edge${picks.length===1?'':'s'} at the current ${dk.book||'sportsbook'} lines.`:snaps.length?'No current game market clears the locked betting threshold.':'The football forecast is published. Matching sportsbook quotes have not been published.',
         venue:`Week ${targetWeek} market · `+(dk.book||'sportsbook'),
         spread_breakdown:{
           model_projection_away:fp.away_score_mean?.toFixed?.(1)??fp.away_score_mean,
@@ -650,6 +650,15 @@ async function loadFeed(){
         }
       });
     }
+    // Preserve every verified scheduled game, including started games with no saved forecast.
+    try{
+      const sr=await fetch(`${RAW}data/calibration/weekly-event-schedule-2026.json?ts=${Date.now()}`,{cache:'no-store'});
+      if(sr.ok){const schedule=await sr.json();if(schedule.season===2026&&Number(schedule.week)===targetWeek){
+        const canon=t=>({LA:'LAR',WAS:'WSH'}[t]||t);
+        for(const [id,g] of Object.entries(schedule.games||{}))if(g.verified===true&&!games.some(x=>canon(x.home_team)===canon(g.home_team)&&canon(x.away_team)===canon(g.away_team)&&Date.parse(x.event_start)===Date.parse(g.event_start)))games.push({event_id:g.event_id||id,home_team:g.home_team,away_team:g.away_team,event_start:g.event_start,completed:g.completed===true,state:g.completed===true?'post':'pre',status:CTD_TIME.kickoff(g.event_start),model_pick:'Not published',total_pick:'Not published',model_spread_pick:'Not published',moneyline_pick:'Not published',model_summary:'No matching original pregame forecast was published. No retrospective model percentage or pick is substituted.',actionable:false});
+      }}
+    }catch{}
+    if(request!==feedRequest)return;
     replaceGameFeed({status:raw.status||'UNKNOWN',mode:raw.mode,actionable:raw.actionable===true,week:raw.week,games,props:[],parlays:[],eligible_legs:[]});
     renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);document.dispatchEvent(new Event('ctd:games-ready'));
     document.documentElement.dataset.gameFeedStatus=BET_FEED.status;
