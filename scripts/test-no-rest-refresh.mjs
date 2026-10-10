@@ -32,6 +32,15 @@ try{
  save('data/market/weekly-matchup-market-snapshots-2026.json',{season:2026,market_context_only:true,probability_fit_input:false,games:{missed:{week:2,home_team:game.home_team,away_team:game.away_team,kickoff:start,snapshots:[]}}});
  execFileSync(process.execPath,[path.join(root,'scripts/build-game-market-recommendations.mjs')],{cwd:temp,stdio:'pipe'});
  const recommendations=JSON.parse(fs.readFileSync(path.join(temp,'data/market/weekly-game-market-recommendations-2026.json')));assert.equal(recommendations.games.missed,undefined);assert.ok(recommendations.games.future.football_projection.home_win_probability>0);
+ const observed=new Date(Date.now()-60000).toISOString();
+ save('data/ingestion/team-personnel-2026.json',{season:2026,week:2,sportsbook_inputs_used:false,status:'COLLECTED',teams:{GB:{captured_at:observed,players:[{name:'Fixture QB',position:'QB',depth_roles:[{position:'QB',rank:1}],injury_reports:[{status:'Questionable',source_updated_at:observed,report_received_at:observed,source_url:'https://example.test/injury'}]}]},CHI:{captured_at:observed,players:[{name:'Fixture teammate',position:'WR',depth_roles:[],injury_reports:[]}]}}});
+ const quote={snapshot_kind:'CURRENT',captured_at:observed,source:'fixture',home_spread:-2.5,home_spread_price:-110,away_spread_price:-110,total:44.5,over_price:-110,under_price:-110,home_moneyline:-150,away_moneyline:130};
+ save('data/market/weekly-matchup-market-snapshots-2026.json',{season:2026,market_context_only:true,probability_fit_input:false,games:{future:{week:2,home_team:game.home_team,away_team:game.away_team,kickoff:future,snapshots:[{...quote,snapshot_id:'dk',book:'draftkings'},{...quote,snapshot_id:'other',book:'another-book'}]}}});
+ execFileSync(process.execPath,[path.join(root,'scripts/build-game-market-recommendations.mjs')],{cwd:temp,stdio:'pipe'});
+ const held=JSON.parse(fs.readFileSync(path.join(temp,'data/market/weekly-game-market-recommendations-2026.json'))).games.future;
+ for(const snapshot of held.snapshot_evaluations)for(const market of ['moneyline','spread','total'])assert.equal(snapshot.markets[market].recommendation.decision,'WAIT','Every sportsbook must honor the current QB hold');
+ assert.deepEqual(held.football_projection,recommendations.games.future.football_projection);
+ console.log('PASS: actual builder preserves football figures and holds all three markets at both sportsbooks, including the displayed DraftKings quote');
  const mismatched={...original,home_team:'OTHER'};save('data/probability/generated/current-game-scoring-2026.json',{games:{started:mismatched}});assert.throws(()=>execFileSync(process.execPath,['--input-type=module','-e',script],{cwd:temp,stdio:'pipe'}),/Mismatched original/);
  console.log('PASS: missed started game stays unpublished through scoring, projection and consumer output; future games proceed; existing forecast unchanged; mismatched identity rejected');
  console.log('PASS: future refresh with no rest collector, missing rest input, variant status and immutable started forecast');
