@@ -51,7 +51,7 @@
     return `<div class="ctdWhyPick"><b>${esc(kind.toUpperCase())} · ${esc(marketLabel)}</b>${window.CTD_FORMATTED_WORK?.(work)||`<p>${esc(projection)} ${esc(pieces.join(' · '))}</p>`}<small>${esc(s.book)} · ${esc(date(s.captured_at))}</small></div>`;
   }
   function modelPicks(g){
-    const raw=marketGame(g),s=snapshot(raw);if(!s){const note=document.getElementById('ctdPickContext');if(note)note.textContent='No matching pregame snapshot has been published for this week and matchup.';for(const id of ['spreadPick','totalPick','mlPick']){const el=document.getElementById(id);if(el){el.textContent='Not published';el.title='Waiting for a matching pregame model snapshot';}}return;}
+    const raw=marketGame(g),s=snapshot(raw);if(!s){const note=document.getElementById('ctdPickContext');if(note)note.textContent=raw?.football_projection?'The football forecast is published below. Matching sportsbook prices have not been published; no priced recommendation is available.':'No original pregame forecast has been published for this week and matchup.';for(const id of ['spreadPick','totalPick','mlPick']){const el=document.getElementById(id);if(el){el.textContent='Not published';el.title='Waiting for a matching pregame model snapshot';const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent='';}}return;}
     for(const [kind,id,field] of [['spread','spreadPick','model_spread_pick'],['total','totalPick','total_pick'],['moneyline','mlPick','moneyline_pick']]){
       const r=s.markets?.[kind]?.recommendation,el=document.getElementById(id);if(!el)continue;
       const value=r?.decision==='PICK'?r.selection:r?.decision==='WAIT'?'On hold':r?.decision==='PASS'?'No bet':'Not published';
