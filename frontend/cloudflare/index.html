@@ -579,7 +579,7 @@ async function loadFeed(){
   try{
     let raw=await window.CTD_GAME_MODEL.load();
     if(targetWeek===null){
-      try{const sr=await fetch(`${RAW}data/calibration/weekly-event-schedule-2026.json?ts=${Date.now()}`,{cache:'no-store'});if(sr.ok){const schedule=await sr.json();targetWeek=Number(schedule.week)}}catch{}
+      try{const schedule=await window.CTD_GAME_MODEL.load('schedule');targetWeek=Number(schedule.week)}catch{}
       if(!Number.isInteger(targetWeek)||targetWeek<1||targetWeek>18)targetWeek=Number(raw.week)||1;
     }
     if(request!==feedRequest)return;
@@ -652,8 +652,8 @@ async function loadFeed(){
     }
     // Preserve every verified scheduled game, including started games with no saved forecast.
     try{
-      const sr=await fetch(`${RAW}data/calibration/weekly-event-schedule-2026.json?ts=${Date.now()}`,{cache:'no-store'});
-      if(sr.ok){const schedule=await sr.json();if(schedule.season===2026&&Number(schedule.week)===targetWeek){
+      const schedule=await window.CTD_GAME_MODEL.load('schedule');
+      if(schedule){if(schedule.season===2026&&Number(schedule.week)===targetWeek){
         const canon=t=>({LA:'LAR',WAS:'WSH'}[t]||t);
         for(const [id,g] of Object.entries(schedule.games||{}))if(g.verified===true&&!games.some(x=>canon(x.home_team)===canon(g.home_team)&&canon(x.away_team)===canon(g.away_team)&&Date.parse(x.event_start)===Date.parse(g.event_start)))games.push({event_id:g.event_id||id,home_team:g.home_team,away_team:g.away_team,event_start:g.event_start,completed:g.completed===true,state:g.completed===true?'post':'pre',status:CTD_TIME.kickoff(g.event_start),model_pick:'Not published',total_pick:'Not published',model_spread_pick:'Not published',moneyline_pick:'Not published',model_summary:'No matching original pregame forecast was published. No retrospective model percentage or pick is substituted.',actionable:false});
       }}
