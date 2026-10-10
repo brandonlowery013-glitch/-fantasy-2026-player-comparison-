@@ -20,7 +20,7 @@
     }
     panel.innerHTML+='<p class="copy">Model picks above retain their original evaluated lines. A new sportsbook price does not automatically create a new model edge.</p>';
   }
-  async function refresh(){if(busy||document.hidden)return;busy=true;try{const r=await fetch('/api/live/odds');feed=await r.json()}catch{feed={status:'unavailable',message:'Live odds are temporarily unavailable.'}}finally{busy=false;render()}}
+  async function refresh(){if(busy||document.hidden)return;busy=true;try{feed=await window.CTD_GAME_MODEL.load('lines')}catch{feed={status:'unavailable',message:'Live odds are temporarily unavailable.'}}finally{busy=false;render()}}
   async function schedule(){
     const seq=++sequence,week=Number(BET_FEED.week);if(!week)return;
     try{const r=await fetch('/api/live/scoreboard?week='+week);if(!r.ok)return;const data=await r.json();if(seq!==sequence||Number(BET_FEED.week)!==week)return;
