@@ -9,7 +9,7 @@ const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true});fs.writeFileSync(path.join(root,p),JSON.stringify(x,null,2)+'\n');};
 const self=process.argv.includes('--self-test');
 
-const asArrayGames=x=>Array.isArray(x?.games)?x.games:Object.entries(x?.games||{}).map(([event_id,g])=>({event_id,...g}));
+const asArrayGames=x=>Array.isArray(x?.games)?x.games:Object.entries(x?.games||{}).map(([event_id,g])=>({...g,source_event_id:g.event_id??null,event_id}));
 const pickList=g=>Object.entries(g?.current_recommendations||{}).filter(([,r])=>r?.decision==='PICK').map(([market,r])=>({market,selection:r.selection,confidence:r.confidence,expected_value:r.expected_value,probability_edge:r.probability_edge}));
 
 function build({schedule,gameRecs,propRecs,parlays}){
@@ -82,6 +82,8 @@ if(self){
   const directions=build({...src,propRecs:{week:3,players:props}});
   if(directions.props.length!==3||directions.props.some(p=>p.side!=='OVER')||directions.props.filter(p=>p.recommendation.decision==='PICK').length!==1)throw Error('model directions and wagering recommendations must remain separate');
   if(directions.eligible_legs.length!==out.eligible_legs.length)throw Error('direction must not admit new parlay legs');
+  const providerIds=build({...src,schedule:{...src.schedule,games:Object.fromEntries(Object.entries(src.schedule.games).map(([id,g])=>[id,{...g,event_id:'ESPN-'+id}]))}});
+  if(providerIds.games[0].event_id!=='g1'||providerIds.games[0].source_event_id!=='ESPN-g1'||providerIds.games[0].spread!=='B -2.5'||providerIds.games[0].win_probability!==.57)throw Error('provider IDs must not replace canonical model game IDs');
   const stale=build({...src,gameRecs:{...src.gameRecs,week:2}});
   if(stale.status!=='WAITING_FOR_CURRENT_WEEK_OUTPUTS'||stale.games.length||stale.eligible_legs.length)throw new Error('self-test stale-week isolation failed');
 }
