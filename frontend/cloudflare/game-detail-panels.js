@@ -22,7 +22,7 @@
   function pregame(raw){return (raw?.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(raw.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at))}
   function snapshot(raw){const rows=pregame(raw);return rows.find(x=>x.book==='draftkings')||rows[0]}
   function pickWhy(kind,e,s,raw,g){
-    const rec=e?.recommendation;if(!rec)return '';if(rec.decision!=='PICK'){if(kind!=='spread')return '';const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);return `<div class="ctdWhyPick"><b>SPREAD · ${rec.decision==='WAIT'?'On hold':'No bet'}</b>${window.CTD_FORMATTED_WORK?.(work)||''}</div>`;}
+    const rec=e?.recommendation;if(!rec)return '';if(rec.decision!=='PICK'){const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);return `<div class="ctdWhyPick"><b>${esc(kind.toUpperCase())} · ${rec.decision==='WAIT'?'On hold':'No bet'}</b>${window.CTD_FORMATTED_WORK?.(work)||''}</div>`;}
     let side=null,marketLabel='';
     if(kind==='spread'){
       const home=norm(String(rec.selection||'').split(' ')[0])===norm(g.home_team);side=home?e.side_a:e.side_b;
