@@ -90,7 +90,7 @@
     if(defense)return playerRows(d,team,['defensive']).sort((a,b)=>(Number(b.stats?.TOT)||0)-(Number(a.stats?.TOT)||0)).slice(0,3);
     return ['passing','rushing','receiving'].flatMap(category=>playerRows(d,team,[category]).sort((a,b)=>(Number(b.stats?.YDS)||0)-(Number(a.stats?.YDS)||0)).slice(0,1));
   }
-  function playerList(rows){return rows.length?rows.map(p=>`<div class="ctdDetailPlayer"><strong>${esc(p.player)}</strong><span>${esc(p.team)} · ${esc(p.category)} · ${esc(Object.entries(p.stats||{}).slice(0,6).map(([k,v])=>`${k}: ${v}`).join(' · '))}</span></div>`).join(''):empty('No individual statistics have been reported for this game yet.')}
+  function playerList(rows){return rows.length?rows.map(p=>`<div class="ctdDetailPlayer"><strong>${window.CTD_PLAYER_DETAILS?.nameLink(p.player)||esc(p.player)}</strong><span>${esc(p.team)} · ${esc(p.category)} · ${esc(Object.entries(p.stats||{}).slice(0,6).map(([k,v])=>`${k}: ${v}`).join(' · '))}</span></div>`).join(''):empty('No individual statistics have been reported for this game yet.')}
   function pivotal(g,d){
     const a=document.getElementById('awayPlayers'),h=document.getElementById('homePlayers');
     if(a){a.innerHTML=playerList(leaders(d,g.away_team));if(a.previousElementSibling)a.previousElementSibling.textContent=`${g.away_team} OFFENSE · GAME LEADERS`}

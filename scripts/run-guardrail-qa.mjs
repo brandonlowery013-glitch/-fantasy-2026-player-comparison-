@@ -42,6 +42,9 @@ catch(e){block('guardrail_failure_candidate_identity',String(e.stderr||e.message
 try{execFileSync(process.execPath,['scripts/test-published-feed-stream.mjs'],{cwd:root,stdio:'pipe'});pass('published_feed_stream','3 MB published envelopes and bundle endpoint parity passed without request-time JSON parsing');}
 catch(e){block('published_feed_stream',String(e.stderr||e.message));}
 
+try{execFileSync(process.execPath,['scripts/test-fantasy-injury-rank-ui.mjs'],{cwd:root,stdio:'pipe'});execFileSync(process.execPath,['scripts/test-universal-player-details-ui.mjs'],{cwd:root,stdio:'pipe'});pass('fantasy_injury_rank_ui','Q/O badges, weekly OUT exclusion and ROS view switching passed');}
+catch(e){block('fantasy_injury_rank_ui',String(e.stderr||e.message));}
+
 pass('source_of_truth_count',String(authoritativePlayerCount));
 pass('source_of_truth_shards',String(authoritativePlayerShards));
 if(cfg.authoritative_player_count!=null&&Number(cfg.authoritative_player_count)!==authoritativePlayerCount) review('legacy_config_count',`non-authoritative guardrail config=${cfg.authoritative_player_count}, canonical=${authoritativePlayerCount}`);
