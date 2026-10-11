@@ -21,18 +21,22 @@
   function marketGame(g){return Number(markets?.week)===Number(BET_FEED.week)?Object.values(markets.games||{}).find(x=>same(x,g)):null}
   function pregame(raw){return (raw?.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(raw.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at))}
   function snapshot(raw){const rows=pregame(raw);return rows.find(x=>x.book==='draftkings')||rows[0]}
-  function predictionLabel(kind,e,s,raw,g){
-    if(!['moneyline','spread'].includes(kind))return '';
+  function modelDirection(kind,e,s,raw,g){
+    if(!['moneyline','spread'].includes(kind))return null;
     let p=e?.model_prediction;
     if(!p?.selection){
       let a=e?.side_a?.conditional_win_probability,b=e?.side_b?.conditional_win_probability;
       if(kind==='moneyline'&&(!Number.isFinite(a)||!Number.isFinite(b))){const f=raw?.football_projection||{},sum=f.home_win_probability+f.away_win_probability;if(sum>0){a=f.home_win_probability/sum;b=f.away_win_probability/sum;}}
-      if(!Number.isFinite(a)||!Number.isFinite(b))return '';
+      if(!Number.isFinite(a)||!Number.isFinite(b))return null;
       const tied=Math.abs(a-b)<1e-12,home=tied?g.home_team.localeCompare(g.away_team)<0:a>b,team=home?g.home_team:g.away_team,line=s?.market?.home_spread;
-      if(kind==='spread'&&!Number.isFinite(line))return '';
+      if(kind==='spread'&&!Number.isFinite(line))return null;
       const l=home?line:-line,prob=home?a:b;
       p={selection:kind==='moneyline'?`${team} ML`:`${team} ${l>0?'+':''}${l}`,probability:prob,confidence:prob<.52?'LOW':prob<.6?'MODERATE':'HIGH',exact_probability_tie:tied};
     }
+    return p;
+  }
+  function predictionLabel(kind,e,s,raw,g){
+    const p=modelDirection(kind,e,s,raw,g);if(!p)return '';
     return `<p><b>Model prediction: ${esc(p.selection)}</b> · ${pct(p.probability)} · ${esc(p.confidence.toLowerCase())} confidence${p.exact_probability_tie?' · Even probabilities; alphabetical tie-break':''}</p>`;
   }
   function pickWhy(kind,e,s,raw,g){
@@ -69,9 +73,11 @@
     for(const [kind,id,field] of [['spread','spreadPick','model_spread_pick'],['total','totalPick','total_pick'],['moneyline','mlPick','moneyline_pick']]){
       const r=s.markets?.[kind]?.recommendation,el=document.getElementById(id);if(!el)continue;
       const value=r?.decision==='PICK'?r.selection:r?.decision==='WAIT'?'On hold':r?.decision==='PASS'?'No bet':'Not published';
-      el.textContent=value;g[field]=value;
+      const direction=modelDirection(kind,s.markets?.[kind],s,raw,g);
+      el.textContent=direction?.selection||value;g[field]=value;
       el.title=r?.decision==='PASS'?(r.reason||'No side clears the model thresholds'):r?.decision==='PICK'?`Stored pregame model pick · ${date(s.captured_at)}`:'No stored decision';
-      const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent=r?.decision==='PICK'&&typeof r.probability_edge==='number'?`${(r.probability_edge*100).toFixed(1)} percentage points`:'';
+      if(direction)el.title=`Model prediction: ${direction.selection}, ${pct(direction.probability)}, ${direction.confidence.toLowerCase()} confidence. Betting decision: ${r?.decision||'WAIT'}${r?.selection?' '+r.selection:''}. ${r?.reason||''}`;
+      const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent=direction?`${pct(direction.probability)} · ${direction.confidence.toLowerCase()} · bet ${r?.decision||'WAIT'}`:r?.decision==='PICK'&&typeof r.probability_edge==='number'?`${(r.probability_edge*100).toFixed(1)} percentage points`:'';
     }
     const edge=document.getElementById('mlEdge');if(edge)edge.textContent=s.markets?.moneyline?.recommendation?.decision==='PICK'?pct(s.markets.moneyline.recommendation.probability_edge):'—';
     let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('section');note.id='ctdPickContext';note.className='ctdPickContext panel';note.style.maxWidth='none';document.getElementById('spreadPick')?.closest('.grid3')?.insertAdjacentElement('afterend',note)}
