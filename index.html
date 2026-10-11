@@ -908,7 +908,7 @@ async function loadPlayers(){
  }catch(e){PLAYER_SOURCE_READY=false;CURRENT_CANONICAL=null;PLAYERS.splice(0);document.getElementById('exportExcel').disabled=true;document.getElementById('exportWord').disabled=true;document.getElementById('playerSourceState').textContent=e.message;}
  renderSeason();renderWeekly();renderCompare();
 }
-document.getElementById('exportExcel').addEventListener('click',async()=>{if(!PLAYER_SOURCE_READY||!CURRENT_CANONICAL)return;const [,{buildExcelExport}]=await CANONICAL_MODULES;const url=URL.createObjectURL(new Blob([buildExcelExport(CURRENT_CANONICAL.players,CURRENT_CANONICAL.truth)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));const a=document.createElement('a');a.href=url;a.download='fantasy-2026-current.xlsx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+document.getElementById('exportExcel').addEventListener('click',async()=>{if(!PLAYER_SOURCE_READY||!CURRENT_CANONICAL)return;const [,{buildExcelExport}]=await CANONICAL_MODULES;const url=URL.createObjectURL(new Blob([buildExcelExport(CURRENT_CANONICAL.players,CURRENT_CANONICAL.truth,await fetch('data/weekly/in-season-ranking-layer-2026.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Current weekly ranks unavailable');return r.json()}))],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));const a=document.createElement('a');a.href=url;a.download='fantasy-2026-current.xlsx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 loadPlayers();
 async function loadFeed(){
   try{
@@ -1016,7 +1016,7 @@ window.CTD_INTERFACE_LOCK = {
 <script src="runtime-news-dashboard-2026.js"></script>
 <script src="runtime-public-splits-2026.js"></script>
 <script type="module" src="runtime-matchup-facts-2026.mjs"></script>
-<script>document.getElementById('exportWord').addEventListener('click',async()=>{if(!PLAYER_SOURCE_READY||!CURRENT_CANONICAL)return;const [,,{buildWordExport}]=await CANONICAL_MODULES;const url=URL.createObjectURL(new Blob([buildWordExport(CURRENT_CANONICAL.players,CURRENT_CANONICAL.truth)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}));const a=document.createElement('a');a.href=url;a.download='fantasy-2026-current.docx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});</script>
+<script>document.getElementById('exportWord').addEventListener('click',async()=>{if(!PLAYER_SOURCE_READY||!CURRENT_CANONICAL)return;const [,,{buildWordExport}]=await CANONICAL_MODULES;const url=URL.createObjectURL(new Blob([buildWordExport(CURRENT_CANONICAL.players,CURRENT_CANONICAL.truth,await fetch('data/weekly/in-season-ranking-layer-2026.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Current weekly ranks unavailable');return r.json()}))],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}));const a=document.createElement('a');a.href=url;a.download='fantasy-2026-current.docx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});</script>
 </body>
 </html>
 
