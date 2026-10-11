@@ -1,0 +1,68 @@
+{
+  "generated_at": "2026-10-11T15:01:55.711Z",
+  "result": "FAIL",
+  "universe": 197,
+  "verified": 195,
+  "counts": {
+    "MATCH": 193,
+    "MATCH_NAME_COLLISION": 2,
+    "MISMATCH": 1,
+    "MISMATCH_NAME_COLLISION": 0,
+    "UNRESOLVED_LIVE_TEAM": 1,
+    "UNKNOWN_CANONICAL_TEAM": 0
+  },
+  "source_quality": {
+    "depth_teams_checked": 32,
+    "depth_failures": [],
+    "roster_failures": [],
+    "roster_optional": true
+  },
+  "mismatches": [
+    {
+      "player": "Kaytron Allen",
+      "position": "RB",
+      "canonical_team_name": "Washington Commanders",
+      "canonical_team": "WAS",
+      "live_teams": [
+        "MIA"
+      ],
+      "status": "MISMATCH"
+    }
+  ],
+  "unknown_canonical": [],
+  "name_collisions": [
+    {
+      "player": "Justin Jefferson",
+      "position": "WR",
+      "canonical_team_name": "Minnesota Vikings",
+      "canonical_team": "MIN",
+      "live_teams": [
+        "CLE",
+        "MIN"
+      ],
+      "status": "MATCH_NAME_COLLISION"
+    },
+    {
+      "player": "DeVonta Smith",
+      "position": "WR",
+      "canonical_team_name": "Philadelphia Eagles",
+      "canonical_team": "PHI",
+      "live_teams": [
+        "CAR",
+        "PHI"
+      ],
+      "status": "MATCH_NAME_COLLISION"
+    }
+  ],
+  "unresolved": [
+    {
+      "player": "Kenneth Gainwell",
+      "position": "RB",
+      "canonical_team_name": "Tampa Bay Buccaneers",
+      "canonical_team": "TB",
+      "live_teams": [],
+      "status": "UNRESOLVED_LIVE_TEAM"
+    }
+  ],
+  "policy": "CANONICAL TEAM MUST BE PRESENT IN CURRENT ESPN DEPTH/ROSTER TEAM SET WHEN PLAYER NAME RESOLVES; SAME-NAME COLLISIONS PASS ONLY WHEN CANONICAL TEAM IS AMONG LIVE MATCHES; DEPTH SOURCE REQUIRED, ROSTER OPTIONAL; UNRESOLVED PLAYERS ARE SURFACED BUT NON-FATAL"
+}

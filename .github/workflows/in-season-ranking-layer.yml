@@ -36,7 +36,10 @@ jobs:
         run: node scripts/build-in-season-ranking-layer.mjs
 
       - name: Synchronize current ROS and weekly exports
-        run: node scripts/validate-canonical-consumers.mjs --write-exports
+        run: |
+          node scripts/validate-canonical-consumers.mjs --write-exports
+          node scripts/build-player-detail-feed.mjs
+          node scripts/validate-player-detail-feed.mjs
 
       - name: Verify in-season contract
         run: |
@@ -87,7 +90,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          FILES=(data/weekly/in-season-ranking-layer-2026.json guardrails/in-season-ranking-layer-report.json exports/fantasy-2026-current.xlsx exports/fantasy-2026-current.docx)
+          FILES=(data/weekly/player-detail-feed-2026.json data/weekly/in-season-ranking-layer-2026.json guardrails/in-season-ranking-layer-report.json exports/fantasy-2026-current.xlsx exports/fantasy-2026-current.docx)
           if git diff --quiet HEAD -- "${FILES[@]}"; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
             exit 0

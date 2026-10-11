@@ -9,7 +9,7 @@
     "primary_automated": [
       "ESPN public NFL team roster endpoint",
       "ESPN public NFL team depth-chart endpoint",
-      "ESPN public NFL team injury endpoint"
+      "ESPN public NFL league injury endpoint, bound by team ID and athlete identity"
     ],
     "authoritative_cross_check": [
       "NFL.com official injury/practice/game-status reporting",
@@ -61,9 +61,21 @@
     "same_evidence_event_applied_once": true
   },
   "materiality": {
-    "CRITICAL": ["QB_CHANGE"],
-    "HIGH": ["AVAILABILITY_CHANGE", "RETURN_TO_ACTIVE", "STARTER_CHANGE", "TEAM_CHANGE"],
-    "MEDIUM": ["ROLE_CHANGE", "ROSTER_ADD", "ROSTER_REMOVE", "TRANSACTION_PENDING_CLASSIFICATION"],
+    "CRITICAL": [
+      "QB_CHANGE"
+    ],
+    "HIGH": [
+      "AVAILABILITY_CHANGE",
+      "RETURN_TO_ACTIVE",
+      "STARTER_CHANGE",
+      "TEAM_CHANGE"
+    ],
+    "MEDIUM": [
+      "ROLE_CHANGE",
+      "ROSTER_ADD",
+      "ROSTER_REMOVE",
+      "TRANSACTION_PENDING_CLASSIFICATION"
+    ],
     "LOW": []
   },
   "outputs": {

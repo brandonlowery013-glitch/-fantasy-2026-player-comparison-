@@ -8,13 +8,31 @@
     "secondary": "fantasypros_ppr_ros_position_rank",
     "adp": "ARCHIVAL_ONLY",
     "draft_buy_fair_reach_fade": "DISABLED",
-    "in_season_value_labels": ["UNDERVALUED", "FAIR", "OVERVALUED"]
+    "in_season_value_labels": [
+      "UNDERVALUED",
+      "FAIR",
+      "OVERVALUED"
+    ]
   },
   "weekly_rank_policy": {
     "season_long_true_value_is_independent": true,
     "weekly_rank_is_matchup_sensitive": true,
     "opponent_signal_multiplier": 1.2,
-    "principle": "Increase matchup/SOS influence modestly for weekly decisions without allowing matchup to overwhelm role, volume, availability, or core player quality."
+    "principle": "Increase matchup/SOS influence modestly for weekly decisions without allowing matchup to overwhelm role, volume, availability, or core player quality.",
+    "injury_handling": {
+      "display_convention": "Yahoo/FantasyPros injury tags alongside independent model rankings",
+      "out_inactive_ir_pup_nfi_suspended": "EXCLUDE_FROM_WEEKLY_START_RANKS_KEEP_ROS_RECORD",
+      "questionable_doubtful": "KEEP_RANK_WITH_REPORTED_TAG",
+      "no_report": "NO_ADVERSE_STATUS_REPORTED_NOT_CONFIRMED_ACTIVE",
+      "designation_expiry": "RETAIN_UNTIL_SUPERSEDED",
+      "automatic_unknown_availability_score_penalty": 0,
+      "numeric_injury_effects": "QUESTIONABLE_LABEL_ONLY_DOUBTFUL_OUT_IR_REQUIRE_SOURCED_EVIDENCE",
+      "reference_urls": [
+        "https://help.yahoo.com/kb/SLN28136.html",
+        "https://www.fantasypros.com/nfl/players/injuries.php",
+        "https://www.fantasypros.com/nfl/rankings/ppr-flex.php"
+      ]
+    }
   },
   "required_outputs": [
     "ros_overall_rank",

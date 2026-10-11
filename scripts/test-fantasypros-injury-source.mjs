@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {parseFantasyProsInjuries} from '../lib/fantasypros-injury-source.mjs';
+const row=(name,team,status)=>`<tr><td><a href="/nfl/players/test.php">${name}</a><small>${team}</small></td><td>${status}</td><td>Concussion</td><td>3</td></tr>`;
+const table=(caption,body)=>`<table><caption>${caption}</caption>${body}</table>`;
+const html=`<script>year: 2026</script>`+table('Injured Wide Receivers',row('Test WR','CIN','Questionable')+Array.from({length:10},(_,i)=>row('Other '+i,'CIN','OUT')).join(''))+table('Players on Injured Reserve',`<tr><td><a href="/nfl/players/reserve.php">Reserve QB</a><small>NYG</small></td><td>4, 5</td></tr>`);
+const canonical=[{name:'Test WR',position:'WR',team:'CIN'},{name:'Reserve QB',position:'QB',team:'NYG'},{name:'Unlisted',position:'RB',team:'GB'}];
+const x=parseFantasyProsInjuries(html,2026,5,canonical);assert.equal(x.records.length,2);assert.equal(x.records[0].status,'Questionable');assert.equal(x.records[0].source_updated_at,null);assert.equal(x.records[1].status,'IR');
+assert.equal(parseFantasyProsInjuries(html,2026,6,canonical).records.length,1);assert.equal(parseFantasyProsInjuries(html,2026,5,[{...canonical[0],team:'GB'}]).records.length,0);
+assert.throws(()=>parseFantasyProsInjuries(html,2025,5,canonical));assert.throws(()=>parseFantasyProsInjuries('<html>captcha</html>',2026,5,canonical));
+console.log('PASS: season/team/position binding, current-week IR, missing-row non-clearance, and provider-date honesty');
