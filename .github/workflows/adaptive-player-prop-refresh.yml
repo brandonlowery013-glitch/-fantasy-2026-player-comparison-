@@ -55,12 +55,12 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     concurrency:
-      group: production-main-writer
+      group: production-player-prop-writer
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || 'main' }}
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
@@ -69,6 +69,15 @@ jobs:
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: node scripts/adaptive-player-prop-refresh.mjs
+      - name: Preserve captured API quotes for diagnosis without another paid capture
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: captured-player-prop-state
+          retention-days: 3
+          path: |
+            data/market/player-prop-market-snapshots-2026.json
+            data/market/adaptive-player-prop-refresh-status-2026.json
       - name: Validate player prop snapshots
         run: node scripts/validate-player-prop-market-snapshots.mjs
       - name: Rebuild website outputs when prop quotes change
