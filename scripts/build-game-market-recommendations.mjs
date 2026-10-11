@@ -1,4 +1,4 @@
-import {gameWork,gameMarketView} from '../lib/show-work.mjs';
+import {gameWork,gameMarketView,publicBettingContext} from '../lib/show-work.mjs';
 import {matchupPersonnel} from '../lib/team-personnel.mjs';
 import {gameContextEvidence} from '../lib/game-context-evidence.mjs';
 import {quarterbackShadowForecast} from '../lib/quarterback-shadow-forecast.mjs';
@@ -118,7 +118,12 @@ for(const [gameId,mg] of Object.entries(marketGames)){
       }
     }
   }
-  for(const snapshot of games[gameId].snapshot_evaluations)for(const [kind,evaluation]of Object.entries(snapshot.markets)){evaluation.show_work=gameWork(games[gameId],snapshot,kind);}
+  const currentByBook=new Map();for(const snapshot of eligible)currentByBook.set(snapshot.book,snapshot.snapshot_id);
+  for(const snapshot of games[gameId].snapshot_evaluations)for(const [kind,evaluation]of Object.entries(snapshot.markets)){
+    const asOf=!rerun&&snapshot.eligible_for_current_recommendation&&currentByBook.get(snapshot.book)===snapshot.snapshot_id?decisionNow:snapshot.captured_at;
+    evaluation.public_betting_context=publicBettingContext(src.markets.public_betting_splits,games[gameId],kind,asOf);
+    evaluation.show_work=gameWork(games[gameId],snapshot,kind);
+  }
 }
 
 if(self){
