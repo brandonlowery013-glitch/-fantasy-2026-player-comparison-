@@ -46,12 +46,12 @@ jobs:
         run: node scripts/build-game-market-recommendations.mjs
       - name: Commit recommendation refresh
         run: |
-          if git diff --quiet -- data/market/weekly-game-market-recommendations-2026.json; then
+          if git diff --quiet -- data/market/weekly-game-market-recommendations-2026.json data/market/game-model-consumer-2026.json; then
             echo "No recommendation changes"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/market/weekly-game-market-recommendations-2026.json
+          git add data/market/weekly-game-market-recommendations-2026.json data/market/game-model-consumer-2026.json
           git commit -m "Refresh weekly game market recommendations"
           git push origin HEAD:main
