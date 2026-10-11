@@ -9,10 +9,11 @@ export function approvedCheckpointPlan({pull,before,merged,current,beforeNames,m
  if(!containsMerge)throw Error('Approved merge is not an ancestor of current main');
  if(!same(mergedNames,currentNames))return {status:'OVERTAKEN_BY_LATER_POPULATION'};
  if(checkpoint?.player_count===current.active_player_model&&checkpoint?.player_shards===current.runtime_player_shards&&checkpoint?.commit===pull.merge_commit_sha)return {status:'ALREADY_CONSUMED'};
- const passed=checks=>checks?.length&&checks.every(x=>x.name==='guardrail-qa'&&x.app?.id===15368&&x.status==='completed'&&x.conclusion==='success');
+ const mergedAt=Date.parse(pull.merged_at);const passed=checks=>Number.isFinite(mergedAt)&&checks?.length&&checks.every(x=>x.name==='guardrail-qa'&&x.app?.id===15368&&x.status==='completed'&&x.conclusion==='success'&&Number.isFinite(Date.parse(x.completed_at))&&Date.parse(x.completed_at)<=mergedAt);
  if(!passed(headChecks)||!passed(mergeChecks)||headStatus!=='success'||mergeStatus!=='success'||!treeMatches)throw Error('Exact head and synthetic merge approval and tree equivalence are required');
  const evidence=[...headChecks].filter(c=>/Full Guardrail QA passed against protected synthetic merge ([a-f0-9]{40})/.test(c.output?.summary||'')).sort((a,b)=>Date.parse(b.completed_at)-Date.parse(a.completed_at))[0];
  const synthetic=evidence?.output.summary.match(/protected synthetic merge ([a-f0-9]{40})/)?.[1],run=evidence?.details_url?.match(/\/actions\/runs\/(\d+)/)?.[1];
+ if(headChecks.some(c=>c.head_sha!==pull.head.sha)||mergeChecks.some(c=>c.head_sha!==synthetic))throw Error('Approval SHA mismatch');
  if(!validSha(synthetic)||!run||!validSha(pull.merge_commit_sha))throw Error('Missing exact protected approval evidence');
  return {status:'READY',synthetic,run:Number(run),checkpoint:{status:'CONSUMED',migration:'APPROVED_CURRENT_UNIVERSE_'+current.active_player_model,merged_pr:pull.number,commit:pull.merge_commit_sha,player_count:current.active_player_model,player_shards:current.runtime_player_shards,guardrail_run:Number(run),guardrail_result:'success',protected_head:pull.head.sha,protected_synthetic_merge:synthetic,reason:'Approved population merge consumed only after exact head/synthetic success and matching merge tree. Future PR changes remain declaration-gated.'}};
 }
