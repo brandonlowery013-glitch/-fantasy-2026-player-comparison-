@@ -16,8 +16,10 @@ permissions:
   checks: read
   statuses: read
   actions: write
+# This job writes only a candidate branch and merges through protected checks.
+# A separate queue prevents scheduled writers from replacing its pending run.
 concurrency:
-  group: production-main-writer
+  group: approved-universe-checkpoint
   cancel-in-progress: false
 jobs:
   finalize:
@@ -26,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || 'main' }}
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:

@@ -30,8 +30,8 @@ status_for_sha() {
 check_for_sha() {
   local sha="$1"
   gh api -H 'Accept: application/vnd.github+json' \
-    "repos/${GITHUB_REPOSITORY}/commits/${sha}/check-runs?check_name=guardrail-qa" \
-    --jq "[.check_runs[] | select(.app.id == ${REQUIRED_CHECK_APP_ID})] | sort_by(.completed_at // .started_at) | last | .conclusion // \"missing\""
+    "repos/${GITHUB_REPOSITORY}/commits/${sha}/check-runs?check_name=guardrail-qa&per_page=100" \
+    --jq "[.check_runs[] | select(.name == \"guardrail-qa\" and .app.id == ${REQUIRED_CHECK_APP_ID})] | if length == 0 then \"missing\" elif all(.status == \"completed\" and .conclusion == \"success\") then \"success\" else \"pending_or_failed\" end"
 }
 
 dispatch_guardrail() {
