@@ -13,7 +13,7 @@ The team-scoring model already blends completed-season points-for/against with 2
 
 ## Available game information and limits
 
-The collector retains offensive plays, pass/rush attempts and share, passing/rushing yards, sacks allowed, turnovers, possession, third downs, red-zone results, player attempts/targets/receptions/yards/touchdowns, scoring evidence, and captured personnel/market context. Candidate features can use frozen prior-game team behavior differences once sufficient dated feature/outcome pairs exist.
+The collector retains offensive plays, pass/rush attempts and share, passing/rushing yards, sacks allowed, turnovers, possession, third downs, red-zone results, player attempts/targets/receptions/yards/touchdowns, scoring evidence, and captured personnel/market context. Candidate features can use frozen prior-game team behavior differences and dated consensus/money-share differences once sufficient dated feature/outcome pairs exist. Those shares are retained as separate market context, never as an adjustment to football scoring. Candidate validation is separated by rule version; existing candidate snapshots are not overwritten when the feature catalog changes.
 
 EPA, success rate, PROE, pressure, explosives, garbage-time splits, routes/snaps, weather/coaching/injury numeric effects, opponent-adjusted efficiency, Polymarket and public-split numeric weights are explicitly missing or unvalidated. Box-score sacks are not pressure; pass share is not PROE; possession is not neutral-situation pace. Recording a context item or winning a pick is not evidence that it caused the result.
 
