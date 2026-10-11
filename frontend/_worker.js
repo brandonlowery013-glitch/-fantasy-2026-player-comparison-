@@ -14,7 +14,7 @@ export default {
   if(cached)return request.method==='HEAD'?new Response(null,{status:cached.status,headers:cached.headers}):cached;
   const upstream=kind==='release'?`https://api.github.com/repos/${REPO}/git/ref/heads/main`:`https://raw.githubusercontent.com/${REPO}/${ref}/${PATHS[kind]}`;
   try{
-   const fetched=await fetch(upstream,{headers:{Accept:'application/json','User-Agent':'ctd-preview-model-delivery/1.0'},signal:AbortSignal.timeout(10000)});
+   const fetched=await fetch(upstream,{headers:{Accept:'application/json','Accept-Encoding':'identity','User-Agent':'ctd-preview-model-delivery/1.0'},signal:AbortSignal.timeout(10000)});
    if(!fetched.ok)return new Response(JSON.stringify({status:'MODEL_SOURCE_UNAVAILABLE',upstream_status:fetched.status}),{status:502,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
    const headers=new Headers({'Content-Type':'application/json; charset=utf-8','Cache-Control':`public, max-age=${kind==='release'?300:ref==='main'?60:3600}`,'X-CTD-Producer-Ref':kind==='release'?'main':ref});
    if(fetched.headers.get('etag'))headers.set('ETag',fetched.headers.get('etag'));
