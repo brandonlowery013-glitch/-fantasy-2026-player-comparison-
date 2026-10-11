@@ -165,3 +165,10 @@ write(rerun?'guardrails/all-game-rerun-market-report.json':'guardrails/game-mark
 if(!self)write(rerun?'data/market/all-game-model-rerun-2026.json':'data/market/weekly-game-market-recommendations-2026.json',rerun?{...out,rerun:true,source_generated_at:projections.source_generated_at,notice:projections.notice}:out);
 console.log(JSON.stringify(report,null,2));
 if(blocked.length)process.exit(1);
+
+// Keep full audited write-ups in the producer record. The browser regenerates
+// these from the same inputs, so its serving copy omits only that duplication.
+if(!self&&!rerun){
+ const consumer={...out,full_record_source:'data/market/weekly-game-market-recommendations-2026.json',games:Object.fromEntries(Object.entries(out.games).map(([id,g])=>[id,{...g,snapshot_evaluations:g.snapshot_evaluations.map(s=>({...s,markets:Object.fromEntries(Object.entries(s.markets).map(([kind,e])=>{const {show_work,...fields}=e;return [kind,fields];}))}))}]))};
+ fs.writeFileSync('data/market/game-model-consumer-2026.json',JSON.stringify(consumer)+'\n');
+}
