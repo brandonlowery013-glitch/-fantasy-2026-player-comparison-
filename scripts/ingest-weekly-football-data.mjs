@@ -47,7 +47,7 @@ function espnEventsToGames(payload,forcedWeek=null){
     const type=Number(e.season?.type??payload.season?.type??2);
     const start=e.date||comp.date||null;
     if(season!==2026||type!==2||!Number.isInteger(week)||!teams.away||!teams.home||parseTime(start)==null)continue;
-    out.push({season,week,away_team:teams.away,home_team:teams.home,event_start:new Date(parseTime(start)).toISOString(),event_id:String(e.id||''),completed:providerGameFinal(e.status?.type||comp.status?.type),source:contract.schedule_source.automated_feed_name});
+    out.push({season,week,away_team:teams.away,home_team:teams.home,event_start:new Date(parseTime(start)).toISOString(),event_id:String(e.id||''),neutral_site:comp.neutralSite===true,completed:providerGameFinal(e.status?.type||comp.status?.type),source:contract.schedule_source.automated_feed_name});
   }
   return out;
 }
@@ -142,7 +142,7 @@ async function main(){
   for(const g of weekGames){
     const start=parseTime(g.event_start);if(start==null)continue;
     const id=`2026-W${week}-${g.away_team}-${g.home_team}`;
-    gameOut[id]={week,away_team:g.away_team,home_team:g.home_team,event_start:new Date(start).toISOString(),verified:true,source:g.source||contract.schedule_source.automated_feed_name,authoritative_cross_check:contract.schedule_source.authoritative_cross_check,event_id:g.event_id||null,completed:g.completed===true,players:players.filter(p=>p.team===g.away_team||p.team===g.home_team).map(p=>p.name)};
+    gameOut[id]={week,away_team:g.away_team,home_team:g.home_team,event_start:new Date(start).toISOString(),verified:true,source:g.source||contract.schedule_source.automated_feed_name,authoritative_cross_check:contract.schedule_source.authoritative_cross_check,event_id:g.event_id||null,completed:g.completed===true,neutral_site:g.neutral_site===true,players:players.filter(p=>p.team===g.away_team||p.team===g.home_team).map(p=>p.name)};
   }
   const schedule={schema_version:'1.3.0',season:2026,week,status:Object.keys(gameOut).length?'LIVE_SCHEDULE_INGESTED':'AWAITING_VERIFIED_EVENTS',generated_at:nowIso,sportsbook_inputs_used:false,games:gameOut};
   // The fixed-time mapping self-test must not consume later production evidence.

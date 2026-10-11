@@ -23,12 +23,13 @@ const restRows=(artifact.rest_adjustment_enabled===false?[]:parseCSV(restText)).
 if(artifact.rest_adjustment_enabled!==false)sources.push({url:restUrl,sha256:createHash('sha256').update(restText).digest('hex')});
 const previousPath='data/probability/generated/current-game-scoring-2026.json';
 const previous=fs.existsSync(previousPath)?read(previousPath):null;
-const games={};
+const games={},unavailableGames={};
 for(const [id,g] of Object.entries(schedule.games||{})) {
   if(g.verified!==true||g.week!==schedule.week)throw Error(`Unverified game ${id}`);
   if(Date.parse(g.event_start)<=Date.now()){
     const saved=previous?.games?.[id];
-    if(!saved||saved.home_team!==g.home_team||saved.away_team!==g.away_team||saved.event_start!==g.event_start)throw Error(`No original started-game forecast ${id}`);
+    if(!saved){unavailableGames[id]={home_team:g.home_team,away_team:g.away_team,event_start:g.event_start,status:'NO_ORIGINAL_PREGAME_FORECAST',reason:'Kickoff passed before a valid forecast was saved; no retrospective prediction is published.'};continue;}
+    if(saved.home_team!==g.home_team||saved.away_team!==g.away_team||saved.event_start!==g.event_start)throw Error(`Mismatched original started-game forecast ${id}`);
     games[id]=saved;continue;
   }
   const restEnabled=artifact.rest_adjustment_enabled!==false;
@@ -42,6 +43,6 @@ for(const [id,g] of Object.entries(schedule.games||{})) {
 if(!Object.keys(games).length)throw Error('No verified games');
 const output={schema_version:1,season:2026,week:schedule.week,status:'READY',mode:'SHADOW_ONLY',actionable:false,sportsbook_inputs_used:false,
   generated_at:new Date().toISOString(),model_version:artifact.model_version,artifact_sha256:createHash('sha256').update(fs.readFileSync(modelPath)).digest('hex'),
-  sources,completed_games:completed.length,games};
+  sources,completed_games:completed.length,games,unavailable_games:unavailableGames};
 fs.writeFileSync('data/probability/generated/current-game-scoring-2026.json',JSON.stringify(output,null,2)+'\n');
 console.log(JSON.stringify({result:'PASS',week:schedule.week,game_count:Object.keys(games).length,completed_games:completed.length,model_version:artifact.model_version}));
