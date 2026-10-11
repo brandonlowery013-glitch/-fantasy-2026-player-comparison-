@@ -12,11 +12,13 @@ Candidate repair based on main 624dd000643615897e0518c1f31549d43ac63254. This re
 
 Event source/weekly hold regression, existing injury evidence tests, event contract, event state self-test, full-universe validator regression and hard Guardrail QA ran. Frozen baseline drift comparator PASS after full history was available. Hard QA had zero BLOCKED checks and three REVIEW_REQUIRED checks for old season-long odds and insufficient betting calibration; remote full workflow remains required.
 
-Actual review validation remains blocked by connected candidate dispositions/onboarding requirements. A live canonical team identity check also fails for Kaytron Allen (WAS canonical, MIA observed). No team/season-long values were silently rewritten and no missing admission scores or packages fabricated. Kenneth Gainwell lacks a resolved live identity. The review source-quality record explicitly retains the identity failure.
+Actual review validation remains BLOCKED with 147 connected candidate disposition/onboarding errors. A live canonical team identity check also fails for Kaytron Allen (WAS canonical, MIA observed). No team/season-long values were silently rewritten and no missing admission scores or packages fabricated. Kenneth Gainwell lacks a resolved live identity. The review source-quality record explicitly retains the identity failure.
 
 ## Consumer receipt and Week 5 probabilities
 
 On October 11 at about 10:01 AM Chicago time, deployed /api/live/model, /api/live/betting and /api/live/bundle returned JSON. Betting receipt was Week 5, READY, 15 games; 14 had published model probabilities. The TB-DAL recommendation is absent. Its football projection status is NO_ORIGINAL_PREGAME_FORECAST: kickoff passed before a valid forecast was saved. Do not reconstruct an original forecast or fabricate probability to fill that gap. PHI-JAX displayed 27.2%/72.8% conditional win/loss chances, distinct from the unconditional 26.5%/70.9% and 2.6% tie chance.
+
+The player probability producer also contains 596 SHADOW_ONLY stat distributions for Week 5. All 197 player projection records are REVIEW_REQUIRED; normalized context has 193 REVIEW_REQUIRED and four PASS records. Those are published shadow distributions, not validated actionable player probabilities. Availability/core-context and production-trust gates remain in effect.
 
 The preview also showed FEED_UNAVAILABLE and console feed timeouts. A Cloudflare CPU-limit response was not reproduced in these endpoint reads. The approximately 3 MB live bundle still parses and serializes the published betting feed on each request; a separate consumer candidate forwards validated published bytes, preserving exact envelopes without request-time model work. Local tests do not establish deployed CPU recovery.
 
