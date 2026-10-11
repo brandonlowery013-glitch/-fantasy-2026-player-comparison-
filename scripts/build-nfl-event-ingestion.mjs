@@ -110,7 +110,7 @@ function changed(a,b){ return JSON.stringify(stable(a??null)) !== JSON.stringify
 
 function comparePlayer(prev,next,captured,events){
   const source='ESPN public NFL league injury and team depth-chart endpoints; NFL.com authoritative cross-check required for consequential status';
-  if(prev.availability_observed && next.availability_observed && changed({...prev.availability,age_hours:null},{...next.availability,age_hours:null})){
+  if(prev.availability_observed && next.availability_observed && changed({...prev.availability,age_hours:null,source_updated_at:null},{...next.availability,age_hours:null,source_updated_at:null})){
     let type='AVAILABILITY_CHANGE';
     if(prev.availability?.expected_active===false && next.availability?.expected_active===true) type='RETURN_TO_ACTIVE';
     events.push(mkEvent(type,'player',next.name,next.team,prev.availability,next.availability,source,captured));
@@ -134,7 +134,7 @@ function selfTest(){
   if(!events.some(e=>e.event_type==='RETURN_TO_ACTIVE')) failures.push('return event missing');
   if(!events.some(e=>e.event_type==='STARTER_CHANGE')) failures.push('starter change missing');
   if(events.some(e=>['o','tr','projection','rank','market_value'].some(k=>Object.prototype.hasOwnProperty.call(e,k)))) failures.push('event wrote prohibited model output');
-  const repeated=[];comparePlayer({...p2,availability:{...p2.availability,age_hours:1}},{...p2,availability:{...p2.availability,age_hours:2}},now,repeated);
+  const repeated=[];comparePlayer({...p2,availability:{...p2.availability,age_hours:1,source_updated_at:'2026-09-01T01:00Z'}},{...p2,availability:{...p2.availability,age_hours:2,source_updated_at:'2026-09-01T02:00Z'}},now,repeated);
   if(repeated.length)failures.push('report age fabricated availability change');
   const ids=new Set(events.map(e=>e.event_id));
   if(ids.size!==events.length) failures.push('duplicate event ids');
