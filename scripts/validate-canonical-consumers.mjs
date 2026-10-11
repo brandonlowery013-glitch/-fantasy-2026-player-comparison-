@@ -4,10 +4,11 @@ import {loadCanonicalPlayers} from '../lib/canonical-player-source.mjs';
 import {buildWordExport} from '../lib/canonical-word-export.mjs';
 import {buildExcelExport} from '../lib/canonical-excel-export.mjs';
 const {truth,players}=await loadCanonicalPlayers(p=>JSON.parse(fs.readFileSync(p)));
-const bytes=Buffer.from(buildExcelExport(players,truth));
+const weeklyPath='data/weekly/in-season-ranking-layer-2026.json';const weekly=fs.existsSync(weeklyPath)?JSON.parse(fs.readFileSync(weeklyPath)):null;
+const bytes=Buffer.from(buildExcelExport(players,truth,weekly));
 if(process.argv.includes('--write-excel')||process.argv.includes('--write-exports')){fs.mkdirSync('exports',{recursive:true});fs.writeFileSync('exports/fantasy-2026-current.xlsx',bytes);}
 assert.deepEqual(fs.readFileSync('exports/fantasy-2026-current.xlsx'),bytes,'Excel export differs from canonical rows');
-const word=Buffer.from(buildWordExport(players,truth));
+const word=Buffer.from(buildWordExport(players,truth,weekly));
 if(process.argv.includes('--write-exports')){fs.mkdirSync('exports',{recursive:true});fs.writeFileSync('exports/fantasy-2026-current.xlsx',bytes);fs.writeFileSync('exports/fantasy-2026-current.docx',word);}
 assert.ok(fs.existsSync('exports/fantasy-2026-current.docx'),'Word export missing');
 assert.deepEqual(fs.readFileSync('exports/fantasy-2026-current.docx'),word,'Word export differs from canonical rows');
