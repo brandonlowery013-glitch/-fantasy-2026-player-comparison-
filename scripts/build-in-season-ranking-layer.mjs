@@ -1,3 +1,4 @@
+import {weeklyRankStatus} from '../lib/weekly-ranking-availability.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -54,7 +55,7 @@ const byGame=new Map(Object.entries(schedule?.week===context.week?schedule.games
 const rankNow=Date.now();
 const rows=canonical.map(p=>{
   const c=byContext.get(norm(p.n))||null;
-  const adj=weeklyAdjustment(c);const game=byGame.get(norm(p.n));const rankStatus=!game?'NO_CURRENT_WEEK_GAME':Date.parse(game.event_start)<=rankNow?'GAME_STARTED_NO_ORIGINAL_WEEKLY_RANK':adj.availability==='EXPECTED_INACTIVE'?'NOT_EXPECTED_TO_PLAY':adj.availability==='EXPECTED_ACTIVE'?'MODEL_RANK':'PROVISIONAL_AVAILABILITY_REVIEW';
+  const adj=weeklyAdjustment(c);const game=byGame.get(norm(p.n));const rankStatus=weeklyRankStatus(c,game,rankNow);
   const base=finite(p.s)?Number(p.s):0;
   const weeklyScore=base*(1+adj.pct);
   return {
@@ -65,7 +66,7 @@ const rows=canonical.map(p=>{
     ros_position_rank:p.pr,
     true_value_rank:Number(p.tr),
     true_value_score:base,
-    weekly_rank_status:rankStatus,weekly_game_id:game?.id||null,weekly_kickoff:game?.event_start||null,
+    weekly_rank_status:rankStatus,weekly_actionable:rankStatus==='MODEL_RANK',weekly_game_id:game?.id||null,weekly_kickoff:game?.event_start||null,
     weekly_score:['MODEL_RANK','PROVISIONAL_AVAILABILITY_REVIEW'].includes(rankStatus)?Number(weeklyScore.toFixed(5)):null,
     weekly_adjustment_pct:adj.pct,
     weekly_availability:adj.availability,
@@ -115,7 +116,7 @@ write('guardrails/in-season-ranking-layer-report.json',{
     'ADP and draft BUY/FAIR/REACH/FADE are disabled in the in-season ranking layer.',
     'ROS overall and positional ranks remain separate from the game-dependent weekly layer.',
     'Opponent/SOS context is modestly upweighted only in the weekly layer and cannot rewrite season-long True Value by itself.',
-    'Weekly context adjustments are capped at +/-25% and expected inactive players receive the maximum weekly penalty.'
+    'Weekly context adjustments are capped at +/-25% and reported inactive players receive no usable weekly score or rank; stale absence designations remain held for review.'
   ]
 });
 console.log(JSON.stringify(read('guardrails/in-season-ranking-layer-report.json'),null,2));
