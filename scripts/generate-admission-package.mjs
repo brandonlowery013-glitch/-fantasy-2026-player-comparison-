@@ -26,6 +26,7 @@ export function generateAdmission({base=process.cwd(),entry,input=null,now=new D
   const priorInput=input;
   input=deriveAdmissionInput({effective,entry,input,now});
   if(persist&&input&&input!==priorInput)write(base,inputPath,input);
+  const businessDate=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(now));
   const blockers=[];
   if(!input?.calibration?.method||!input?.calibration?.source_run)blockers.push('REVIEWED_CALIBRATION_METHOD_AND_SOURCE_RUN');
   if(input?.calibration?.reviewed!==true)blockers.push('CALIBRATION_REVIEW');
@@ -58,8 +59,8 @@ export function generateAdmission({base=process.cwd(),entry,input=null,now=new D
     for(let i=0;i<truth.runtime_player_shards;i++)sizes.push(read(base,`players${i}.json`).length);
     const capacity=Math.max(...sizes);if(sizes.at(-1)>=capacity)sizes.push(1);else sizes[sizes.length-1]++;
     let offset=0;sizes.forEach((size,i)=>{files[`players${i}.json`]=all.slice(offset,offset+size);offset+=size;});
-    files['MODEL_SOURCE_OF_TRUTH.json']={...truth,active_player_model:all.length,runtime_player_shards:sizes.length,effective_date:now.slice(0,10),current_update_layer_effective_date:now.slice(0,10),status:'authoritative_current_fluid_universe_admission'};
-    files[truth.current_update_layer]={...patch,updated:now.slice(0,10),players:{...patch.players,...Object.fromEntries(all.map(p=>[p.n,p]))}};
+    files['MODEL_SOURCE_OF_TRUTH.json']={...truth,active_player_model:all.length,runtime_player_shards:sizes.length,effective_date:businessDate,current_update_layer_effective_date:businessDate,status:'authoritative_current_fluid_universe_admission'};
+    files[truth.current_update_layer]={...patch,updated:businessDate,players:{...patch.players,...Object.fromEntries(all.map(p=>[p.n,p]))}};
     // Weekly membership follows the universe immediately. Missing week-specific calibration remains explicit and nonactionable.
     for(const file of ['data/probability/weekly-football-context-inputs-2026.json','data/probability/weekly-projection-inputs-2026.json']){
       if(!fs.existsSync(path.join(base,file)))continue;
@@ -67,8 +68,8 @@ export function generateAdmission({base=process.cwd(),entry,input=null,now=new D
       files[file]={...weekly,players:{...weekly.players,[row.n]:{position:row.p,status:'REVIEW_REQUIRED',context_status:'REVIEW_REQUIRED',source_context_status:'REVIEW_REQUIRED',projections:{},signals:{},actionable:false,reason:'New canonical admission: current-week football inputs require sourced review; season projection is not a weekly stat projection.'}}};
     }
     const cfg=read(base,'guardrails/guardrails-config.json');files['guardrails/guardrails-config.json']={...cfg,authoritative_player_count:all.length,authoritative_player_shards:sizes.length};
-    const boards=read(base,'canonicalBoards2026.json');files['canonicalBoards2026.json']={...boards,updated:now.slice(0,10),active_players:all.length,overall:ov,trueValue:tv,positions:Object.fromEntries(['QB','RB','WR','TE'].map(pos=>[pos,tv.filter(p=>p.p===pos)]))};
-    const locks=read(base,'lockedRanks2026.json');files['lockedRanks2026.json']={...locks,as_of:now.slice(0,10),players:Object.fromEntries(all.map(p=>[p.n,{...locks.players?.[p.n],trueValueRank:p.tr,trueValuePos:p.tp}]))};
+    const boards=read(base,'canonicalBoards2026.json');files['canonicalBoards2026.json']={...boards,updated:businessDate,active_players:all.length,overall:ov,trueValue:tv,positions:Object.fromEntries(['QB','RB','WR','TE'].map(pos=>[pos,tv.filter(p=>p.p===pos)]))};
+    const locks=read(base,'lockedRanks2026.json');files['lockedRanks2026.json']={...locks,as_of:businessDate,players:Object.fromEntries(all.map(p=>[p.n,{...locks.players?.[p.n],trueValueRank:p.tr,trueValuePos:p.tp}]))};
     const manifest=read(base,'guardrails/universe-change-manifest.json');files['guardrails/universe-change-manifest.json']={...manifest,changes:[...(manifest.changes||[]),{action:'ADMIT',player:entry.player_name,from_count:before.length,to_count:all.length,initial_overall_rank:row.o,initial_true_value_rank:row.tr,reason:entry.reason,source:entry.evidence.map(x=>x.source||x.url||x.summary).join('; ')}]};
     pkg={version:1,candidate_id:entry.candidate_id,player_name:entry.player_name,calibration:{...input.calibration,generated_at:now,input_sha256:hash(input),production_rule:input.components?.pd?'REVIEWED_COMPONENT_TARGET':'EXISTING_NEAREST_12_POSITIONAL_REGRESSION',weights},integration:{expected_before_count:before.length,expected_after_count:all.length,expected_before_shards:truth.runtime_player_shards,expected_after_shards:sizes.length,baseline_sha256:hash({truth,players:before,patch}),canonical_files:files},onboarding_review:{connected_review:input.connected_review,consumer_review:consumerReview,market_status:'PRICE PENDING'}};
     dossier.package_sha256=hash(pkg);

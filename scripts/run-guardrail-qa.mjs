@@ -58,6 +58,13 @@ if(unique.size!==authoritativePlayerCount) block('unique_player_count',`${unique
 const dup=[...new Set(names.filter((n,i)=>names.indexOf(n)!==i))];
 if(dup.length) block('duplicate_players',dup.join(', ')); else pass('duplicate_players','none');
 
+if(exists('data/weekly/in-season-ranking-layer-2026.json')){
+ const ranks=read('data/weekly/in-season-ranking-layer-2026.json'),rows=Object.values(ranks.players||{}),byName=new Map(players.map(p=>[p.n,p])),schedule=exists('data/calibration/weekly-event-schedule-2026.json')?read('data/calibration/weekly-event-schedule-2026.json'):null;
+ const mismatch=rows.filter(r=>!byName.has(r.player)||r.ros_overall_rank!==byName.get(r.player).o||r.ros_position_rank!==byName.get(r.player).pr);
+ if(ranks.universe!==authoritativePlayerCount||rows.length!==authoritativePlayerCount||new Set(rows.map(r=>r.player)).size!==authoritativePlayerCount||mismatch.length||ranks.mode!=='IN_SEASON_ROS_PLUS_WEEKLY'||Number(ranks.week)!==Number(schedule?.week))block('current_ros_weekly_roster_receipt',`Current roster/ranking mismatch: expected ${authoritativePlayerCount}, rows ${rows.length}, mismatched ${mismatch.length}, week ${ranks.week}/${schedule?.week}`);
+ else pass('current_ros_weekly_roster_receipt',`${rows.length} exact current-season players; separate Week ${ranks.week} rank view`);
+}
+
 const missing=[], badBounds=[];
 for(const p of players){
   for(const k of cfg.required_player_numeric_fields){if(!Number.isFinite(Number(p[k]))) missing.push(`${p.n}:${k}`)}
