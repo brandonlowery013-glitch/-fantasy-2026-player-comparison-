@@ -42,6 +42,9 @@ catch(e){block('guardrail_failure_candidate_identity',String(e.stderr||e.message
 try{execFileSync(process.execPath,['scripts/test-event-source-binding.mjs'],{cwd:root,stdio:'pipe'});pass('event_source_binding','League injuries, depth array order and inactive weekly holds passed');}
 catch(e){block('event_source_binding',String(e.stderr||e.message));}
 
+try{execFileSync(process.execPath,['scripts/test-fantasypros-injury-source.mjs'],{cwd:root,stdio:'pipe'});execFileSync(process.execPath,['scripts/validate-player-detail-feed.mjs'],{cwd:root,stdio:'pipe'});pass('universal_player_injury_news','All canonical profiles, source-bound labels/news and zero Questionable rank penalty passed');}
+catch(e){block('universal_player_injury_news',String(e.stderr||e.message));}
+
 pass('source_of_truth_count',String(authoritativePlayerCount));
 pass('source_of_truth_shards',String(authoritativePlayerShards));
 if(cfg.authoritative_player_count!=null&&Number(cfg.authoritative_player_count)!==authoritativePlayerCount) review('legacy_config_count',`non-authoritative guardrail config=${cfg.authoritative_player_count}, canonical=${authoritativePlayerCount}`);

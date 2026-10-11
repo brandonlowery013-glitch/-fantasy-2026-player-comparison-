@@ -1,4 +1,5 @@
-import {weeklyRankStatus} from '../lib/weekly-ranking-availability.mjs';
+import {numericInjuryAdjustmentAllowed} from '../lib/injury-ranking-policy.mjs';
+import {weeklyRankStatus,fantasyInjuryStatus} from '../lib/weekly-ranking-availability.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -38,6 +39,7 @@ function weeklyAdjustment(c){
   if(!c) return {pct:0,parts:[],availability:'MISSING_CONTEXT'};
   const parts=[];
   for(const [name,signal] of Object.entries(c.signals||{})){
+    if(name==='injury'&&!numericInjuryAdjustmentAllowed(signal))continue;
     const avg=signalMean(signal);
     if(avg==null) continue;
     const weight=name==='opponent'?opponentMultiplier:1;
@@ -45,17 +47,23 @@ function weeklyAdjustment(c){
   }
   let pct=parts.reduce((s,x)=>s+x.weighted_mean_pct,0);
   pct=clamp(pct,-.25,.25);
-  if(c.expected_active===false) pct=-.25;
-  else if(c.expected_active==null) pct=clamp(pct-.04,-.25,.25);
+  // Injury/role effects already present in sourced adjustments remain intact.
+  // An absent active-list confirmation adds no fabricated four-percent penalty.
   return {pct:Number(pct.toFixed(4)),parts,availability:c.expected_active===true?'EXPECTED_ACTIVE':c.expected_active===false?'EXPECTED_INACTIVE':'UNKNOWN'};
 }
 
 const schedulePath=path.join(root,'data/calibration/weekly-event-schedule-2026.json');const schedule=fs.existsSync(schedulePath)?read('data/calibration/weekly-event-schedule-2026.json'):null;
 const byGame=new Map(Object.entries(schedule?.week===context.week?schedule.games||{}:{}).flatMap(([id,g])=>(g.players||[]).map(n=>[norm(n),{id,...g}])));
 const rankNow=Date.now();
+const personnelPath='data/ingestion/team-personnel-2026.json';
+const personnel=fs.existsSync(personnelPath)?read(personnelPath):null;
+const rosterTime=Date.parse(personnel?.captured_at);
+const rosterCurrent=personnel?.season===2026&&personnel?.week===context.week&&Number.isFinite(rosterTime)&&rosterTime<=rankNow&&rankNow-rosterTime<=24*3600000;
+const rosterByName=new Map(rosterCurrent?(personnel.canonical_reconciliation||[]).map(p=>[norm(p.player),p.status]):[]);
 const rows=canonical.map(p=>{
-  const c=byContext.get(norm(p.n))||null;
-  const adj=weeklyAdjustment(c);const game=byGame.get(norm(p.n));const rankStatus=weeklyRankStatus(c,game,rankNow);
+  const rawContext=byContext.get(norm(p.n))||null;const rosterStatus=rosterByName.get(norm(p.n));
+  const c=rawContext?{...rawContext,ranking_roster_observed:rosterStatus==='MATCH',ranking_identity_status:rosterStatus||null}:null;
+  const adj=weeklyAdjustment(c);const game=byGame.get(norm(p.n));const rankStatus=weeklyRankStatus(c,game,rankNow);const injury=fantasyInjuryStatus(c,rankNow);
   const base=finite(p.s)?Number(p.s):0;
   const weeklyScore=base*(1+adj.pct);
   return {
@@ -69,7 +77,9 @@ const rows=canonical.map(p=>{
     weekly_rank_status:rankStatus,weekly_actionable:rankStatus==='MODEL_RANK',weekly_game_id:game?.id||null,weekly_kickoff:game?.event_start||null,
     weekly_score:['MODEL_RANK','PROVISIONAL_AVAILABILITY_REVIEW'].includes(rankStatus)?Number(weeklyScore.toFixed(5)):null,
     weekly_adjustment_pct:adj.pct,
-    weekly_availability:adj.availability,
+    weekly_availability:injury.designation||((c?.expected_active===false)?'EXPECTED_INACTIVE':c?.signals?.role?.status==='CURRENT'?'NO_ADVERSE_STATUS_REPORTED':'UNKNOWN'),
+    injury_status:injury.designation,injury_tag:injury.tag,injury_label:injury.label,injury_reported_at:injury.source_updated_at,
+    game_status_confirmed:false,
     weekly_matchup_context:{opponent_signal_multiplier:opponentMultiplier,components:adj.parts},
     weekly_overall_rank:null,
     weekly_position_rank:null
@@ -109,14 +119,15 @@ write('guardrails/in-season-ranking-layer-report.json',{
   week:out.week,
   opponent_signal_multiplier:opponentMultiplier,
   players_with_context:rows.filter(r=>r.weekly_matchup_context.components.length>0).length,
-  players_expected_inactive:rows.filter(r=>r.weekly_availability==='EXPECTED_INACTIVE').length,
+  players_expected_inactive:rows.filter(r=>r.weekly_rank_status==='NOT_EXPECTED_TO_PLAY').length,
   blocked,
   safeguards:[
     'Active universe count is resolved from MODEL_SOURCE_OF_TRUTH.json at runtime.',
     'ADP and draft BUY/FAIR/REACH/FADE are disabled in the in-season ranking layer.',
+    'Questionable/doubtful players retain model ranks with injury badges; missing active-list confirmation is not an automatic penalty.',
     'ROS overall and positional ranks remain separate from the game-dependent weekly layer.',
     'Opponent/SOS context is modestly upweighted only in the weekly layer and cannot rewrite season-long True Value by itself.',
-    'Weekly context adjustments are capped at +/-25% and reported inactive players receive no usable weekly score or rank; stale absence designations remain held for review.'
+    'Weekly context adjustments are capped at +/-25% and reported inactive players receive no usable weekly score or rank; injury designations persist until superseded.'
   ]
 });
 console.log(JSON.stringify(read('guardrails/in-season-ranking-layer-report.json'),null,2));
