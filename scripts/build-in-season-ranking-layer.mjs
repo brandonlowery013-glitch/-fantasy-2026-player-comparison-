@@ -66,7 +66,7 @@ const rows=canonical.map(p=>{
     true_value_rank:Number(p.tr),
     true_value_score:base,
     weekly_rank_status:rankStatus,weekly_game_id:game?.id||null,weekly_kickoff:game?.event_start||null,
-    weekly_score:Number(weeklyScore.toFixed(5)),
+    weekly_score:['MODEL_RANK','PROVISIONAL_AVAILABILITY_REVIEW'].includes(rankStatus)?Number(weeklyScore.toFixed(5)):null,
     weekly_adjustment_pct:adj.pct,
     weekly_availability:adj.availability,
     weekly_matchup_context:{opponent_signal_multiplier:opponentMultiplier,components:adj.parts},
