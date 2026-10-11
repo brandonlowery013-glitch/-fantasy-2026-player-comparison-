@@ -4,7 +4,7 @@
   "status": "SHADOW_ONLY",
   "mode": "SHADOW_ONLY",
   "actionable": false,
-  "generated_at": "2026-10-10T22:37:07.181Z",
+  "generated_at": "2026-10-11T15:39:24.730Z",
   "concurrency_group": "weekly-production-orchestration",
   "ordered_stages": [
     "SOURCE_INGESTION",
@@ -26,20 +26,20 @@
       "status": "READY",
       "evidence": {
         "schedule_games": 15,
-        "context_players": 167
+        "context_players": 197
       }
     },
     "WEEKLY_PLAYER_MODEL": {
-      "status": "WAITING_FOR_MODEL",
+      "status": "READY",
       "evidence": {
-        "week": 4,
-        "players": 167
+        "week": 5,
+        "players": 197
       }
     },
     "FORECAST_FREEZE": {
-      "status": "WAITING_FOR_MODEL",
+      "status": "READY",
       "evidence": {
-        "frozen_forecasts": 0
+        "frozen_forecasts": 517
       }
     },
     "GAME_PROJECTIONS": {
@@ -49,29 +49,29 @@
       }
     },
     "MARKET_CAPTURE": {
-      "status": "WAITING_FOR_CURRENT_WEEK_MARKET_CAPTURE",
+      "status": "LIVE_MARKET_INGESTED",
       "evidence": {
-        "provider_status": "WAITING_FOR_CURRENT_WEEK_MARKET_CAPTURE"
+        "provider_status": "LIVE_MARKET_INGESTED"
       }
     },
     "MARKET_RECOMMENDATIONS": {
-      "status": "WAITING_FOR_MARKETS",
+      "status": "READY",
       "evidence": {
         "game_recommendation_games": 14,
-        "evaluated_player_markets": 10285
+        "evaluated_player_markets": 0
       }
     },
     "OPPORTUNITY_RANKING": {
-      "status": "WAITING_FOR_CURRENT_WEEK_RECOMMENDATIONS",
+      "status": "SHADOW_ONLY",
       "evidence": {
-        "ranked_picks": 0,
+        "ranked_picks": 21,
         "near_misses": 0
       }
     },
     "POSTGAME_SETTLEMENT": {
       "status": "READY",
       "evidence": {
-        "settled": 485
+        "settled": 874
       }
     },
     "LIVE_MARKET_CALIBRATION": {
