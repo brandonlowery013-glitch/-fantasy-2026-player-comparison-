@@ -273,11 +273,8 @@ document.getElementById('boardRows').innerHTML=PLAYERS.slice().sort((a,b)=>a.ove
 <td>#${p.trueRank}</td><td>${p.adp??'—'}</td><td>${esc(read(p))}</td></tr>`).join('');
 
 document.getElementById('boardRows').addEventListener('click',e=>{
-  const tr=e.target.closest('tr[data-player]');
-  if(!tr)return;
-  const p=PLAYERS.find(x=>x.name===tr.dataset.player);
-  if(!p)return;
-  alert(`${p.name}\nOverall #${p.overall} · True Value #${p.trueRank} · ADP ${p.adp??'—'}\n${p.evaluationStatic?.headline||p.overallWriteup||''}`);
+  const row=e.target.closest('tr[data-player]');
+  if(row)window.CTD_PLAYER_DETAILS?.open(row.dataset.player);
 });
 
 function first(g,keys){
@@ -697,6 +694,7 @@ window.CTD_INTERFACE_LOCK = {
 })();
 </script>
 
+<script src="player-details.js"></script>
 <script src="../runtime-canonical-player-source-2026.js"></script>
 <script src="../runtime-model-state-semantics-2026.js"></script>
 <script src="show-work.js"></script>
