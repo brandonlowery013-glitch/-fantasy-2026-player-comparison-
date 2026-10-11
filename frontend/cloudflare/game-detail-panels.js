@@ -21,8 +21,22 @@
   function marketGame(g){return Number(markets?.week)===Number(BET_FEED.week)?Object.values(markets.games||{}).find(x=>same(x,g)):null}
   function pregame(raw){return (raw?.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(raw.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at))}
   function snapshot(raw){const rows=pregame(raw);return rows.find(x=>x.book==='draftkings')||rows[0]}
+  function predictionLabel(kind,e,s,raw,g){
+    if(!['moneyline','spread'].includes(kind))return '';
+    let p=e?.model_prediction;
+    if(!p?.selection){
+      let a=e?.side_a?.conditional_win_probability,b=e?.side_b?.conditional_win_probability;
+      if(kind==='moneyline'&&(!Number.isFinite(a)||!Number.isFinite(b))){const f=raw?.football_projection||{},sum=f.home_win_probability+f.away_win_probability;if(sum>0){a=f.home_win_probability/sum;b=f.away_win_probability/sum;}}
+      if(!Number.isFinite(a)||!Number.isFinite(b))return '';
+      const tied=Math.abs(a-b)<1e-12,home=tied?g.home_team.localeCompare(g.away_team)<0:a>b,team=home?g.home_team:g.away_team,line=s?.market?.home_spread;
+      if(kind==='spread'&&!Number.isFinite(line))return '';
+      const l=home?line:-line,prob=home?a:b;
+      p={selection:kind==='moneyline'?`${team} ML`:`${team} ${l>0?'+':''}${l}`,probability:prob,confidence:prob<.52?'LOW':prob<.6?'MODERATE':'HIGH',exact_probability_tie:tied};
+    }
+    return `<p><b>Model prediction: ${esc(p.selection)}</b> · ${pct(p.probability)} · ${esc(p.confidence.toLowerCase())} confidence${p.exact_probability_tie?' · Even probabilities; alphabetical tie-break':''}</p>`;
+  }
   function pickWhy(kind,e,s,raw,g){
-    const rec=e?.recommendation;if(!rec)return '';if(rec.decision!=='PICK'){const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);return `<div class="ctdWhyPick"><b>${esc(kind.toUpperCase())} · ${rec.decision==='WAIT'?'On hold':'No bet'}</b>${window.CTD_FORMATTED_WORK?.(work)||''}</div>`;}
+    const rec=e?.recommendation;if(!rec)return '';const prediction=predictionLabel(kind,e,s,raw,g);if(rec.decision!=='PICK'){const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);return `<div class="ctdWhyPick">${prediction}<b>${esc(kind.toUpperCase())} · ${rec.decision==='WAIT'?'On hold':'No bet'}</b>${window.CTD_FORMATTED_WORK?.(work)||''}</div>`;}
     let side=null,marketLabel='';
     if(kind==='spread'){
       const home=norm(String(rec.selection||'').split(' ')[0])===norm(g.home_team);side=home?e.side_a:e.side_b;
@@ -48,7 +62,7 @@
     if(Number.isFinite(edge))pieces.push(`Our estimate is ${Math.abs(edge*100).toFixed(1)} percentage points ${edge>=0?'higher':'lower'}.`);
     if(Number.isFinite(ev))pieces.push(`At this price, the estimated average result is ${ev>=0?'+':'−'}$${Math.abs(ev*100).toFixed(2)} per $100 bet over many similar bets. This is not a guaranteed return.`);
     const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);
-    return `<div class="ctdWhyPick"><b>${esc(kind.toUpperCase())} · ${esc(marketLabel)}</b>${window.CTD_FORMATTED_WORK?.(work)||`<p>${esc(projection)} ${esc(pieces.join(' · '))}</p>`}<small>${esc(s.book)} · ${esc(date(s.captured_at))}</small></div>`;
+    return `<div class="ctdWhyPick">${prediction}<b>${esc(kind.toUpperCase())} · ${esc(marketLabel)}</b>${window.CTD_FORMATTED_WORK?.(work)||`<p>${esc(projection)} ${esc(pieces.join(' · '))}</p>`}<small>${esc(s.book)} · ${esc(date(s.captured_at))}</small></div>`;
   }
   function modelPicks(g){
     const raw=marketGame(g),s=snapshot(raw);if(!s){let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('section');note.id='ctdPickContext';note.className='ctdPickContext panel';document.getElementById('spreadPick')?.closest('.grid3')?.insertAdjacentElement('afterend',note)}if(note)note.textContent=raw?.football_projection?'The football forecast is published below. Matching sportsbook prices have not been published; no priced recommendation is available.':'No original pregame forecast has been published for this week and matchup.';if(note&&raw?.football_projection){const facts=window.CTD_MATCHUP_REPORTS?.get(`${norm(raw.away_team)}@${norm(raw.home_team)}:${Date.parse(raw.kickoff)}`),review=facts&&window.CTD_MATCHUP_ASSESSMENT?.({kind:'moneyline'},facts);if(review?.sections?.length)note.innerHTML='<h3>OUR MATCHUP ASSESSMENT</h3><p>The football forecast is published below. Matching sportsbook prices have not been published; no priced recommendation is available.</p>'+review.sections.map(x=>`<h4>${esc(x.title)}</h4><p>${esc(x.text)}</p>`).join('')+'<details><summary>Sources</summary>'+review.sources.map(x=>`<p><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label)}</a> ${esc(x.at||'')}</p>`).join('')+'</details>';}for(const id of ['spreadPick','totalPick','mlPick']){const el=document.getElementById(id);if(el){el.textContent='Not published';el.title='Waiting for a matching pregame model snapshot';const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent='';}}const edge=document.getElementById('mlEdge');if(edge)edge.textContent='—';return;}
