@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {generateAdmission} from './generate-admission-package.mjs';
+import {buildWordExport} from '../lib/canonical-word-export.mjs';
 import {buildExcelExport} from '../lib/canonical-excel-export.mjs';
 import {weights,score} from '../lib/admission-model.mjs';
 
@@ -158,12 +159,16 @@ export function processAdmission({base=root,candidateId,apply=false}){
   if(!apply) return {result:'PASS',candidate_id:candidateId,status:'READY_FOR_APPLY',package_sha256:digest,post_count:Number(pkg.integration.expected_after_count)};
   entry.status='COMPLETE';entry.onboarding_complete=true;entry.completed_at=new Date().toISOString();entry.package_sha256=digest;
   const workbook=buildExcelExport(loadPlayers(base,pkg.integration.expected_after_shards,pkg.integration.canonical_files),pkg.integration.canonical_files['MODEL_SOURCE_OF_TRUTH.json']);
+  const postPlayers=loadPlayers(base,pkg.integration.expected_after_shards,pkg.integration.canonical_files);
+  const word=buildWordExport(postPlayers,pkg.integration.canonical_files['MODEL_SOURCE_OF_TRUTH.json']);
+  const rankChanges=loadPlayers(base,truth.runtime_player_shards).map(p=>{const next=postPlayers.find(x=>x.n===p.n);return {player:p.n,overall_before:p.o,overall_after:next.o,true_value_before:p.tr,true_value_after:next.tr};});
   const workbookDigest=crypto.createHash('sha256').update(workbook).digest('hex');
-  const completion={version:1,candidate_id:candidateId,player_name:entry.player_name,completed_at:entry.completed_at,package_path:entry.package_path,package_sha256:digest,excel_sha256:workbookDigest,post_count:pkg.integration.expected_after_count};
+  const completion={version:1,candidate_id:candidateId,player_name:entry.player_name,completed_at:entry.completed_at,package_path:entry.package_path,package_sha256:digest,excel_sha256:workbookDigest,word_sha256:crypto.createHash('sha256').update(word).digest('hex'),rank_changes:rankChanges,post_count:pkg.integration.expected_after_count};
   // Include ledger, completion and Excel in the same rollback transaction as the canonical JSON.
   const outputs={...pkg.integration.canonical_files,[queuePath]:q,[`admissions/completed/${candidateId}.json`]:completion};
   const bytes=new Map(Object.entries(outputs).map(([f,v])=>[f,Buffer.from(JSON.stringify(v,null,2)+'\n')]));
   bytes.set('exports/fantasy-2026-current.xlsx',Buffer.from(workbook));
+  bytes.set('exports/fantasy-2026-current.docx',Buffer.from(word));
   const originals=new Map([...bytes.keys()].map(f=>[f,exists(f,base)?fs.readFileSync(path.join(base,f)):null]));
   try{for(const [file,value] of bytes){const dst=path.join(base,file);fs.mkdirSync(path.dirname(dst),{recursive:true});const tmp=`${dst}.tmp-${process.pid}`;fs.writeFileSync(tmp,value);fs.renameSync(tmp,dst);}}
   catch(error){for(const [file,value] of originals){const dst=path.join(base,file);if(value===null)fs.rmSync(dst,{force:true});else fs.writeFileSync(dst,value);}throw error;}

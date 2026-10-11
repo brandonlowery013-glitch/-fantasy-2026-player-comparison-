@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import {buildWordExport} from '../lib/canonical-word-export.mjs';
 import {generateAdmission} from './generate-admission-package.mjs';
 import {processAdmission,validatePostState} from './process-admissions.mjs';
 const base=fs.mkdtempSync(path.join(os.tmpdir(),'fluid-admission-'));
@@ -15,6 +17,8 @@ try{
   write('guardrails/guardrails-config.json',{required_player_numeric_fields:['o','tr','s','pd','ce','r','e','a','rl','su','mp'],numeric_bounds:{s:[0,10]}});write('guardrails/universe-change-manifest.json',{changes:[]});
   const entry={candidate_id:'test-player',player_name:'Test Player',team:'OTHER',position:'RB',decision:'ADMIT',status:'NEW',reason:'Verified role',evidence:[{source:'fixture',summary:'verified role'}],package_path:'admissions/packages/test-player.json'};write('admissions/queue.json',{version:1,entries:[entry]});
   const blocked=generateAdmission({base,entry});assert(blocked.blockers.includes('CALIBRATED_COMPONENT_CE'));assert.equal(read('MODEL_SOURCE_OF_TRUTH.json').active_player_model,168);assert(!fs.existsSync(path.join(base,entry.package_path)));
+  const derived=generateAdmission({base,entry,input:{player_name:entry.player_name,team:entry.team,position:entry.position,roster_review:{status:'ACTIVE_FANTASY_ROLE',source:'fixture roster',as_of:new Date().toISOString()},calibration:{reviewed:false,method:'PENDING',source_run:'fixture'},writeup:{nm:'Verified role'}}});
+  assert.equal(derived.status,'READY_FOR_APPLY');assert.equal(read('admissions/inputs/test-player.json').calibration.reviewed,true);assert.equal(derived.package.calibration.input_sha256,crypto.createHash('sha256').update(JSON.stringify(read('admissions/inputs/test-player.json'))).digest('hex'),'derived calibration must persist its exact reviewed inputs');
   const input={player_name:entry.player_name,team:entry.team,position:entry.position,calibration:{reviewed:true,method:'fixture reviewed targets',source_run:'fixture'},roster_review:{status:'ACTIVE_FANTASY_ROLE',source:'fixture',as_of:new Date().toISOString()},projection:{mp:100,method:'fixture',source:'fixture'},components:Object.fromEntries(['ce','r','e','a','rl','su'].map(k=>[k,{value:7,method:'fixture',source:'fixture'}])),overall_rank:100,overall_review:{method:'fixture',source:'fixture'},writeup:Object.fromEntries(['m','cl','en','nm','na','current_recommendation'].map(k=>[k,'fixture'])),connected_review:[],consumer_review:Object.fromEntries(['runtime','site','excel'].map(k=>[k,{status:'PASS',source:'fixture'}]))};
   const expired=generateAdmission({base,entry,input:{...input,roster_review:{...input.roster_review,as_of:new Date(Date.now()-8*86400000).toISOString()}}});assert(expired.blockers.includes('CURRENT_ROSTER_REVIEW_WITHIN_7_DAYS'));
   write('admissions/inputs/test-player.json',input);
@@ -31,7 +35,19 @@ try{
   assert(validatePostState({base,entry,pkg:badOutput,cfg:read('guardrails/guardrails-config.json'),truth}).some(x=>x.includes('unapproved admission output')));
   const before=read('players0.json');write('players0.json',before.map((p,i)=>i? p:{...p,mp:p.mp+1}));assert.throws(()=>processAdmission({base,candidateId:entry.candidate_id}),/stale admission baseline/);write('players0.json',before);
   const complete=processAdmission({base,candidateId:entry.candidate_id,apply:true});assert.equal(complete.post_count,169);assert.equal(read('MODEL_SOURCE_OF_TRUTH.json').runtime_player_shards,15);assert.equal(read('canonicalBoards2026.json').overall.length,169);assert(processAdmission({base,candidateId:entry.candidate_id}).idempotent);assert(fs.existsSync(path.join(base,'exports/fantasy-2026-current.xlsx')));assert.equal(read('data/probability/weekly-projection-inputs-2026.json').players[entry.player_name].actionable,false);
+  assert(fs.existsSync(path.join(base,'exports/fantasy-2026-current.docx')));
+  const done=read('admissions/completed/test-player.json');assert.equal(done.rank_changes.length,168);assert.equal(done.word_sha256.length,64);
+  const shifted=done.rank_changes.find(p=>p.player==='Existing 99');assert.equal(shifted.overall_before,100);assert.equal(shifted.overall_after,101);
+  const word=fs.readFileSync(path.join(base,'exports/fantasy-2026-current.docx'),'utf8');assert(word.includes('Test Player'));assert(word.includes('Weekly reliability'));
+  assert.throws(()=>buildWordExport([row],{active_player_model:2}),/count/);
+  assert.throws(()=>buildWordExport([row,row],{active_player_model:2}),/identity/);
+  const escaped=Buffer.from(buildWordExport([{...row,n:'Name & <tag>'}],{active_player_model:1})).toString();assert(escaped.includes('Name &amp; &lt;tag&gt;'));
+  const frozenPath='data/market/issued-pick-history-2026.json';write(frozenPath,{fixture:'original pregame decisions'});const frozen=fs.readFileSync(path.join(base,frozenPath));
   const next={...entry,candidate_id:'second-player',player_name:'Second Player',package_path:'admissions/packages/second-player.json',status:'NEW'};write('admissions/queue.json',{version:1,entries:[next]});const nextInput={...input,player_name:next.player_name,connected_review:[{player:entry.player_name,decision:'HOLD',reason:'fixture',source:'fixture'}]};
   const nextGenerated=generateAdmission({base,entry:next,input:nextInput});assert.equal(nextGenerated.expected_after_count,170);assert.equal(nextGenerated.package.integration.expected_before_count,169);
+  processAdmission({base,candidateId:next.candidate_id,apply:true});
+  assert.deepEqual(fs.readFileSync(path.join(base,frozenPath)),frozen);
+  assert(fs.readFileSync(path.join(base,'exports/fantasy-2026-current.docx'),'utf8').includes('Second Player'));
+  assert.equal(read('admissions/completed/second-player.json').rank_changes.length,169);
   console.log(JSON.stringify({result:'PASS',verified:['missing-input fail-closed','automatic package creation','168→169→170 dynamic counts','14→15 shards','market pending','rank/board/patch/lock synchronization','unrelated mutation rejection','stale baseline rejection','idempotent apply']}));
 }finally{fs.rmSync(base,{recursive:true,force:true});}

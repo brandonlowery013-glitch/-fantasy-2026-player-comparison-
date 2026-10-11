@@ -24,7 +24,7 @@ const due=(last,minutes,now)=>{const t=ts(last);return t==null||now-t>=Number(mi
 
 function scheduleEntries(){return Object.entries(schedule.games||{}).map(([game_id,g])=>({game_id,...g,kickoff:g.event_start||g.kickoff}));}
 function matchEvent(e,games){const home=teamMap[e.home_team],away=teamMap[e.away_team],start=ts(e.commence_time);if(!home||!away||start==null)return null;return games.find(g=>g.home_team===home&&g.away_team===away&&Math.abs(ts(g.kickoff)-start)<=12*3600000)||null;}
-function loadPlayers(){const canonical=[];for(let i=0;i<13;i++)canonical.push(...read(`players${i}.json`));return playerResolver(canonical,exists('data/ingestion/team-personnel-2026.json')?read('data/ingestion/team-personnel-2026.json'):null);}
+function loadPlayers(){const canonical=[];for(let i=0;i<Number(JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8')).runtime_player_shards);i++)canonical.push(...read(`players${i}.json`));return playerResolver(canonical,exists('data/ingestion/team-personnel-2026.json')?read('data/ingestion/team-personnel-2026.json'):null);}
 function market(book,key){return (book?.markets||[]).find(x=>x.key===key);}
 function apiUrl(pathname,params,key){const u=new URL(contract.provider.host+pathname);for(const [k,v] of Object.entries(params||{}))if(v!=null)u.searchParams.set(k,String(v));u.searchParams.set('apiKey',key);return u.toString();}
 let runCost=0;

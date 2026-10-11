@@ -23,7 +23,9 @@ export function generateAdmission({base=process.cwd(),entry,input=null,now=new D
       components:Object.fromEntries(Object.keys(weights).map(k=>[k,{value:p[k],method:cal.component_methods?.[k],source:cal.component_sources?.[k]}])),
       overall_rank:p.o,overall_review:cal.overall_review,writeup:p,connected_review:cal.connected_review,consumer_review:cal.consumer_review};
   }
+  const priorInput=input;
   input=deriveAdmissionInput({effective,entry,input,now});
+  if(persist&&input&&input!==priorInput)write(base,inputPath,input);
   const blockers=[];
   if(!input?.calibration?.method||!input?.calibration?.source_run)blockers.push('REVIEWED_CALIBRATION_METHOD_AND_SOURCE_RUN');
   if(input?.calibration?.reviewed!==true)blockers.push('CALIBRATION_REVIEW');

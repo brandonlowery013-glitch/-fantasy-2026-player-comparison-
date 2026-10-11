@@ -4,15 +4,136 @@
   "position": "WR",
   "roster_review": {
     "status": "ACTIVE_FANTASY_ROLE",
-    "source": "guardrails/current-football-review.json",
-    "as_of": "2026-10-03"
+    "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster",
+    "as_of": "2026-10-10T23:24:56.865Z",
+    "athlete_id": "4428718",
+    "team": "Las Vegas Raiders",
+    "position": "WR",
+    "depth_rank": 1,
+    "depth_source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/depthcharts",
+    "latest_reported_status": "Active",
+    "injury_reported_at": "2026-10-06T00:57:00.000Z",
+    "playing_status_confirmed": false
   },
   "calibration": {
-    "reviewed": false,
-    "method": "PENDING_EXISTING_MODEL_CALIBRATION",
-    "source_run": "2026-10-03-preserved-ledger-reconciliation"
+    "reviewed": true,
+    "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+    "source_run": "verified-current-roster-2026-10-11T00:41:14.134Z",
+    "review_note": "Admission-only calibration from current sourced football role and existing canonical positional peers; no ECR/ADP input."
   },
   "writeup": {
-    "nm": "Current October 3 depth review confirms an active fantasy role; preserve prior ADMIT and stage model calibration."
+    "m": "ROS median: 207.0 PPR points from current starter peer calibration",
+    "cl": "Ceiling is conditional on sustained role; calibrated ceiling component 8.25/10.",
+    "en": "Team-environment component 7.90/10 is inherited from current canonical Las Vegas Raiders context.",
+    "nm": "Current ESPN roster and depth chart identify Tre Tucker as Las Vegas Raiders WR depth 1. Latest sourced designation: Active reported 2026-10-06T00:57:00.000Z. This establishes a season-long modeled role; current-week game availability remains a separate check.",
+    "na": "ADMIT through the fluid-universe path; football-role calibration is independent of market ECR/ADP.",
+    "current_recommendation": "IN-SEASON WAIVER / ROLE TRACK"
+  },
+  "projection": {
+    "mp": 207,
+    "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+    "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+  },
+  "components": {
+    "pd": {
+      "value": 8.016,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    },
+    "ce": {
+      "value": 8.25,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    },
+    "r": {
+      "value": 8.746,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    },
+    "e": {
+      "value": 7.9,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    },
+    "a": {
+      "value": 8.3,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    },
+    "rl": {
+      "value": 8.25,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    },
+    "su": {
+      "value": 8.7,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    }
+  },
+  "overall_rank": 82,
+  "overall_review": {
+    "method": "CANONICAL_POSITION_SCORE_GAP_OVERLAY_V1",
+    "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+  },
+  "connected_review": [
+    {
+      "player": "Ashton Jeanty",
+      "decision": "HOLD",
+      "reason": "Tre Tucker admission changes membership/rank insertion only; no separate season-long component change is supported by this evidence.",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    },
+    {
+      "player": "Brock Bowers",
+      "decision": "HOLD",
+      "reason": "Tre Tucker admission changes membership/rank insertion only; no separate season-long component change is supported by this evidence.",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    },
+    {
+      "player": "Mike Washington Jr.",
+      "decision": "HOLD",
+      "reason": "Tre Tucker admission changes membership/rank insertion only; no separate season-long component change is supported by this evidence.",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    },
+    {
+      "player": "Jalen Nailor",
+      "decision": "HOLD",
+      "reason": "Tre Tucker admission changes membership/rank insertion only; no separate season-long component change is supported by this evidence.",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    },
+    {
+      "player": "Michael Mayer",
+      "decision": "HOLD",
+      "reason": "Tre Tucker admission changes membership/rank insertion only; no separate season-long component change is supported by this evidence.",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    },
+    {
+      "player": "Kirk Cousins",
+      "decision": "HOLD",
+      "reason": "Reviewed admission affects membership and insertion ranks only; no supported change to this teammate’s saved components or projection.",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/13/roster"
+    }
+  ],
+  "auto_calibration": {
+    "tier": "STARTER",
+    "peer_count": 12,
+    "peer_names": [
+      "Josh Downs",
+      "Jameson Williams",
+      "Ladd McConkey",
+      "Rome Odunze",
+      "Carnell Tate",
+      "Marvin Harrison Jr.",
+      "Wan'Dale Robinson",
+      "DJ Moore",
+      "Jaylen Waddle",
+      "Luther Burden III",
+      "Parker Washington",
+      "Davante Adams"
+    ],
+    "candidate_score": 8.235,
+    "estimated_true_value_insertion": 82,
+    "estimated_overall_insertion": 82,
+    "market_inputs_used": false
   }
 }

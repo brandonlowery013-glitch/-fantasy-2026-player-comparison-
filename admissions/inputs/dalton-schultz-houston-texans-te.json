@@ -4,15 +4,136 @@
   "position": "TE",
   "roster_review": {
     "status": "ACTIVE_FANTASY_ROLE",
-    "source": "guardrails/current-football-review.json",
-    "as_of": "2026-10-03"
+    "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster",
+    "as_of": "2026-10-10T23:24:56.755Z",
+    "athlete_id": "3117256",
+    "team": "Houston Texans",
+    "position": "TE",
+    "depth_rank": 1,
+    "depth_source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/depthcharts",
+    "latest_reported_status": "Active",
+    "injury_reported_at": "2026-10-06T00:37:00.000Z",
+    "playing_status_confirmed": false
   },
   "calibration": {
-    "reviewed": false,
-    "method": "PENDING_EXISTING_MODEL_CALIBRATION",
-    "source_run": "2026-10-03-preserved-ledger-reconciliation"
+    "reviewed": true,
+    "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+    "source_run": "verified-current-roster-2026-10-11T00:41:14.134Z",
+    "review_note": "Admission-only calibration from current sourced football role and existing canonical positional peers; no ECR/ADP input."
   },
   "writeup": {
-    "nm": "Current October 3 depth review confirms an active fantasy role; preserve prior ADMIT and stage model calibration."
+    "m": "ROS median: 181.8 PPR points from current starter peer calibration",
+    "cl": "Ceiling is conditional on sustained role; calibrated ceiling component 7.80/10.",
+    "en": "Team-environment component 8.70/10 is inherited from current canonical Houston Texans context.",
+    "nm": "Current ESPN roster and depth chart identify Dalton Schultz as Houston Texans TE depth 1. Latest sourced designation: Active reported 2026-10-06T00:37:00.000Z. This establishes a season-long modeled role; current-week game availability remains a separate check.",
+    "na": "ADMIT through the fluid-universe path; football-role calibration is independent of market ECR/ADP.",
+    "current_recommendation": "IN-SEASON WAIVER / ROLE TRACK"
+  },
+  "projection": {
+    "mp": 181.75,
+    "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+    "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+  },
+  "components": {
+    "pd": {
+      "value": 8.241,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    },
+    "ce": {
+      "value": 7.8,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    },
+    "r": {
+      "value": 8.7,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    },
+    "e": {
+      "value": 8.7,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    },
+    "a": {
+      "value": 8.1,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    },
+    "rl": {
+      "value": 8.1,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    },
+    "su": {
+      "value": 8.45,
+      "method": "CANONICAL_POSITION_ROLE_COHORT_V1",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    }
+  },
+  "overall_rank": 78,
+  "overall_review": {
+    "method": "CANONICAL_POSITION_SCORE_GAP_OVERLAY_V1",
+    "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+  },
+  "connected_review": [
+    {
+      "player": "Nico Collins",
+      "decision": "HOLD",
+      "reason": "Dalton Schultz admission changes membership/rank insertion only; no separate season-long component change is supported by this evidence.",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    },
+    {
+      "player": "David Montgomery",
+      "decision": "HOLD",
+      "reason": "Dalton Schultz admission changes membership/rank insertion only; no separate season-long component change is supported by this evidence.",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    },
+    {
+      "player": "Woody Marks",
+      "decision": "HOLD",
+      "reason": "Dalton Schultz admission changes membership/rank insertion only; no separate season-long component change is supported by this evidence.",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    },
+    {
+      "player": "C.J. Stroud",
+      "decision": "HOLD",
+      "reason": "Dalton Schultz admission changes membership/rank insertion only; no separate season-long component change is supported by this evidence.",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    },
+    {
+      "player": "Jayden Higgins",
+      "decision": "HOLD",
+      "reason": "Dalton Schultz admission changes membership/rank insertion only; no separate season-long component change is supported by this evidence.",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    },
+    {
+      "player": "Tank Dell",
+      "decision": "HOLD",
+      "reason": "Dalton Schultz admission changes membership/rank insertion only; no separate season-long component change is supported by this evidence.",
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/34/roster"
+    }
+  ],
+  "auto_calibration": {
+    "tier": "STARTER",
+    "peer_count": 12,
+    "peer_names": [
+      "Travis Kelce",
+      "Tucker Kraft",
+      "Jake Ferguson",
+      "Dallas Goedert",
+      "Colston Loveland",
+      "Kyle Pitts",
+      "Tyler Warren",
+      "Hunter Henry",
+      "Brenton Strange",
+      "Sam LaPorta",
+      "Isaiah Likely",
+      "Harold Fannin Jr."
+    ],
+    "candidate_score": 8.25685,
+    "estimated_true_value_insertion": 81,
+    "estimated_overall_insertion": 78,
+    "market_inputs_used": false
   }
 }

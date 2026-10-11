@@ -38,7 +38,7 @@ async function fetchWithRetry(url,label,{attempts=4,baseDelayMs=1000}={}){
 }
 
 const canonicalByNorm=new Map();
-for(let i=0;i<13;i++) for(const p of JSON.parse(fs.readFileSync(path.join(root,`players${i}.json`),'utf8'))) canonicalByNorm.set(norm(p.n),p.n);
+for(let i=0;i<Number(JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8')).runtime_player_shards);i++) for(const p of JSON.parse(fs.readFileSync(path.join(root,`players${i}.json`),'utf8'))) canonicalByNorm.set(norm(p.n),p.n);
 const canonical=name=>{const k=norm(name);return canonicalByNorm.get(k)||canonicalByNorm.get(aliases[k]||'')||null};
 
 const playersUrl='https://github.com/nflverse/nflverse-data/releases/download/players/players.csv';

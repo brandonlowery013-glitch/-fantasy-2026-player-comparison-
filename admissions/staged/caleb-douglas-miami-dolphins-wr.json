@@ -5,48 +5,44 @@
   "team": "Miami Dolphins",
   "position": "WR",
   "decision": "ADMIT",
-  "generated_at": "2026-10-10T22:46:32.470Z",
+  "generated_at": "2026-10-11T00:42:20.887Z",
   "canonical_before": {
-    "players": 167,
+    "players": 170,
     "shards": 14
   },
-  "expected_after_count": 168,
+  "expected_after_count": 171,
   "input_path": "admissions/inputs/caleb-douglas-miami-dolphins-wr.json",
   "evidence": [
     {
       "source": "https://amp.nfl.com/news/nfl-week-4-injury-report-player-statuses-for-all-16-games",
       "observed_at": "2026-10-03",
       "summary": "Prior established receiving usage persists as a season-long admission case; Week 4 ankle OUT blocks weekly actionability."
+    },
+    {
+      "source": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/15/roster",
+      "observed_at": "2026-10-10T23:24:56.797Z",
+      "summary": "Current ESPN roster and depth chart identify Caleb Douglas as Miami Dolphins WR depth 1. Latest sourced designation: Out (Ankle) reported 2026-10-09T20:46:00.000Z. This establishes a season-long modeled role; current-week game availability remains a separate check."
     }
   ],
-  "components": {},
-  "score": null,
+  "components": {
+    "pd": 7.739,
+    "ce": 8.25,
+    "r": 8.746,
+    "e": 6.5,
+    "a": 7.8,
+    "rl": 8.25,
+    "su": 8.7
+  },
+  "score": 7.94805,
   "connected_teammates": [
     "De'Von Achane",
     "Malik Washington",
     "Chris Bell",
     "Malik Willis"
   ],
-  "blockers": [
-    "CALIBRATION_REVIEW",
-    "CURRENT_ROSTER_REVIEW_WITHIN_7_DAYS",
-    "CALIBRATED_ROS_PPR_PROJECTION",
-    "CALIBRATED_COMPONENT_PD",
-    "CALIBRATED_COMPONENT_CE",
-    "CALIBRATED_COMPONENT_R",
-    "CALIBRATED_COMPONENT_E",
-    "CALIBRATED_COMPONENT_A",
-    "CALIBRATED_COMPONENT_RL",
-    "CALIBRATED_COMPONENT_SU",
-    "REVIEWED_OVERALL_ACTIONABLE_PLACEMENT",
-    "COMPARISON_WRITEUP_M",
-    "COMPARISON_WRITEUP_CL",
-    "COMPARISON_WRITEUP_EN",
-    "COMPARISON_WRITEUP_NA",
-    "COMPARISON_WRITEUP_CURRENT_RECOMMENDATION",
-    "CONNECTED_TEAMMATE_HOLD_REVIEW"
-  ],
-  "status": "BLOCKED_MODEL_INPUTS",
+  "blockers": [],
+  "status": "READY_FOR_APPLY",
   "market_status": "PRICE PENDING",
-  "adp_status": "ARCHIVAL_INACTIVE"
+  "adp_status": "ARCHIVAL_INACTIVE",
+  "package_sha256": "f954664bc4d95117a9a78ed28101fc2cacced64a855006552cb59c4a45e3b082"
 }
