@@ -23,12 +23,13 @@ const paths={
 };
 for(const p of Object.values(paths)) if(!fs.existsSync(p)) throw new Error(`Step 3H missing required artifact: ${p}`);
 const config=read(paths.config),a=read(paths.a),b=read(paths.b),c=read(paths.c),d=read(paths.d),e=read(paths.e),approval=read(paths.approval),patch=read(paths.patch),market=read(paths.market),f=read(paths.f),fv=read(paths.fv),bb=read(paths.bb),hs=read(paths.hs),season=read(paths.season),weekly=read(paths.weekly),games=read(paths.games),hist=read(paths.hist),g=read(paths.g),gv=read(paths.gv);
-const expected=Number(config.authoritative_player_count);
+const source=read('MODEL_SOURCE_OF_TRUTH.json');
+const expected=Number(source.active_player_model);
 if(!Number.isInteger(expected)||expected<=0) throw new Error(`Invalid authoritative player count: ${config.authoritative_player_count}`);
 const checks=[];const add=(name,ok,details)=>checks.push({name,status:ok?'PASS':'FAIL',details});
 const rankPermutation=(values,count)=>values.length===count&&values.every((x,i)=>x===i+1);
 
-add('authoritative_universe_config',expected===166,`authoritative=${expected}`);
+add('authoritative_universe_config',Number(config.authoritative_player_count)===expected,`configured=${config.authoritative_player_count}; canonical=${expected}`);
 add('3A_locked_six_features',a.status==='LOCKED_FOR_IMPLEMENTATION'&&Array.isArray(a.scope)&&a.scope.length===6,`${a.status}; scope=${a.scope?.length}`);
 add('3B_substantive_closure_pass',b.result==='PASS'&&b.failed_count===0,`${b.result}; failed=${b.failed_count}`);
 

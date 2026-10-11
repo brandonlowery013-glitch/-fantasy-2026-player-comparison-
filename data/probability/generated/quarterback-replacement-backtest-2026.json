@@ -1,0 +1,866 @@
+{
+  "status": "RESEARCH_ONLY",
+  "production_numeric_authority": 0,
+  "automatic_promotion": false,
+  "scenario": {
+    "game": "2026_04_GB_TB",
+    "cutoff": "Before Week 4; no Week 4 outcomes",
+    "status": "EXPERIMENTAL_NOT_A_BET",
+    "lambda": 100,
+    "GB": 23.29537426835219,
+    "TB": 19.677175721758402,
+    "home_margin": -3.618198546593791,
+    "baseline": 3.1442882343582284,
+    "mayfield_comparison": {
+      "GB": 22.62988151875019,
+      "TB": 25.241925073244623,
+      "home_margin": 2.6120435544944334
+    },
+    "replacement_margin_change": -6.2302421010882245,
+    "contributions": [
+      {
+        "name": "prior starts",
+        "home_margin_change": -0.5805040859116113
+      },
+      {
+        "name": "previous passing efficiency",
+        "home_margin_change": -0.757125398320149
+      },
+      {
+        "name": "observed dropbacks",
+        "home_margin_change": -3.7601945626364564
+      },
+      {
+        "name": "rookie status",
+        "home_margin_change": 1.2768563998283575
+      },
+      {
+        "name": "no observed dropbacks",
+        "home_margin_change": 0
+      },
+      {
+        "name": "same-team attempts",
+        "home_margin_change": -2.9435055473420633
+      },
+      {
+        "name": "team sack rate",
+        "home_margin_change": 0
+      },
+      {
+        "name": "team rush efficiency",
+        "home_margin_change": 0
+      },
+      {
+        "name": "opponent passing defense",
+        "home_margin_change": 0
+      },
+      {
+        "name": "experience with sack rate",
+        "home_margin_change": -0.00027386221377987687
+      },
+      {
+        "name": "experience with rushing support",
+        "home_margin_change": 0.0058709950738097556
+      },
+      {
+        "name": "experience with opponent passing defense",
+        "home_margin_change": 0.5286339604336687
+      }
+    ],
+    "interpretation": "Regression sensitivity with all team inputs held fixed, not a causal injury estimate. Three Daniels pass attempts do not establish his true NFL ability."
+  },
+  "limitation": "Conditional on known actual starter identity; not an archived pregame simulation. No 2026 outcomes used. Missing performance is explicitly flagged; unobserved EPA is not treated as a measured zero.",
+  "features": [
+    "prior starts",
+    "prior two-season passing EPA per dropback",
+    "prior two-season dropbacks",
+    "rookie",
+    "no observed dropbacks",
+    "prior two-season same-team attempts",
+    "team sack rate",
+    "team rush EPA/carry",
+    "opponent passing EPA allowed/dropback",
+    "starting-experience interactions with three support features"
+  ],
+  "scope": "QB-aware score model with team support. Starter-change cohort includes performance/rotation changes as well as injuries; it is not an injury-only cohort. Missing team coverage is not permitted in a production deployment.",
+  "folds": [
+    {
+      "season": 2024,
+      "lambda": 100,
+      "baseline": {
+        "games": 272,
+        "margin_mae": 10.36972050932408,
+        "margin_rmse": 13.448255226903795,
+        "total_mae": 10.046706634418902,
+        "total_rmse": 13.082513249935007,
+        "team_score_mae": 7.405383583541127
+      },
+      "candidate": {
+        "games": 272,
+        "margin_mae": 9.983686230591193,
+        "margin_rmse": 12.986838110350373,
+        "total_mae": 9.918750382986728,
+        "total_rmse": 12.943309665256574,
+        "team_score_mae": 7.2657176508707995
+      },
+      "starter_change": {
+        "baseline": {
+          "games": 47,
+          "margin_mae": 11.622404810004083,
+          "margin_rmse": 14.948434094164854,
+          "total_mae": 11.028479725760262,
+          "total_rmse": 14.519763623673548,
+          "team_score_mae": 8.213974427311266
+        },
+        "candidate": {
+          "games": 47,
+          "margin_mae": 11.05165499233818,
+          "margin_rmse": 13.912624092158723,
+          "total_mae": 11.022217768314803,
+          "total_rmse": 14.586086731336945,
+          "team_score_mae": 8.076657387281886
+        }
+      },
+      "probability_validation": {
+        "residual_source_season": 2023,
+        "method": "Empirical earlier-season out-of-sample margin residuals; rounded integer margins; three-outcome Brier score (lower is better). Hyperparameters selected on that earlier season.",
+        "groups": {
+          "all": {
+            "baseline": {
+              "games": 272,
+              "brier": 0.44645275051521455,
+              "home_win_calibration": [
+                {
+                  "range": [
+                    0,
+                    0.2
+                  ],
+                  "games": 0,
+                  "predicted": null,
+                  "observed": null
+                },
+                {
+                  "range": [
+                    0.2,
+                    0.4
+                  ],
+                  "games": 47,
+                  "predicted": 0.334715269086358,
+                  "observed": 0.2978723404255319
+                },
+                {
+                  "range": [
+                    0.4,
+                    0.6000000000000001
+                  ],
+                  "games": 117,
+                  "predicted": 0.50465057817999,
+                  "observed": 0.4444444444444444
+                },
+                {
+                  "range": [
+                    0.6000000000000001,
+                    0.8
+                  ],
+                  "games": 88,
+                  "predicted": 0.693683155080214,
+                  "observed": 0.7045454545454546
+                },
+                {
+                  "range": [
+                    0.8,
+                    1
+                  ],
+                  "games": 20,
+                  "predicted": 0.840625,
+                  "observed": 0.85
+                }
+              ]
+            },
+            "candidate": {
+              "games": 272,
+              "brier": 0.4197897915924589,
+              "home_win_calibration": [
+                {
+                  "range": [
+                    0,
+                    0.2
+                  ],
+                  "games": 0,
+                  "predicted": null,
+                  "observed": null
+                },
+                {
+                  "range": [
+                    0.2,
+                    0.4
+                  ],
+                  "games": 48,
+                  "predicted": 0.3386948529411764,
+                  "observed": 0.22916666666666666
+                },
+                {
+                  "range": [
+                    0.4,
+                    0.6000000000000001
+                  ],
+                  "games": 116,
+                  "predicted": 0.504975912778905,
+                  "observed": 0.4482758620689655
+                },
+                {
+                  "range": [
+                    0.6000000000000001,
+                    0.8
+                  ],
+                  "games": 90,
+                  "predicted": 0.7113153594771244,
+                  "observed": 0.7333333333333333
+                },
+                {
+                  "range": [
+                    0.8,
+                    1
+                  ],
+                  "games": 18,
+                  "predicted": 0.8498774509803924,
+                  "observed": 0.8888888888888888
+                }
+              ]
+            }
+          },
+          "starter_changes": {
+            "baseline": {
+              "games": 47,
+              "brier": 0.44941977103732605,
+              "home_win_calibration": [
+                {
+                  "range": [
+                    0,
+                    0.2
+                  ],
+                  "games": 0,
+                  "predicted": null,
+                  "observed": null
+                },
+                {
+                  "range": [
+                    0.2,
+                    0.4
+                  ],
+                  "games": 9,
+                  "predicted": 0.32965686274509803,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "range": [
+                    0.4,
+                    0.6000000000000001
+                  ],
+                  "games": 21,
+                  "predicted": 0.4898459383753502,
+                  "observed": 0.42857142857142855
+                },
+                {
+                  "range": [
+                    0.6000000000000001,
+                    0.8
+                  ],
+                  "games": 13,
+                  "predicted": 0.6968325791855203,
+                  "observed": 0.8461538461538461
+                },
+                {
+                  "range": [
+                    0.8,
+                    1
+                  ],
+                  "games": 4,
+                  "predicted": 0.8492647058823529,
+                  "observed": 0.75
+                }
+              ]
+            },
+            "candidate": {
+              "games": 47,
+              "brier": 0.4010355315467863,
+              "home_win_calibration": [
+                {
+                  "range": [
+                    0,
+                    0.2
+                  ],
+                  "games": 0,
+                  "predicted": null,
+                  "observed": null
+                },
+                {
+                  "range": [
+                    0.2,
+                    0.4
+                  ],
+                  "games": 10,
+                  "predicted": 0.3308823529411764,
+                  "observed": 0.4
+                },
+                {
+                  "range": [
+                    0.4,
+                    0.6000000000000001
+                  ],
+                  "games": 19,
+                  "predicted": 0.5106424148606812,
+                  "observed": 0.3684210526315789
+                },
+                {
+                  "range": [
+                    0.6000000000000001,
+                    0.8
+                  ],
+                  "games": 14,
+                  "predicted": 0.703781512605042,
+                  "observed": 0.7857142857142857
+                },
+                {
+                  "range": [
+                    0.8,
+                    1
+                  ],
+                  "games": 4,
+                  "predicted": 0.8648897058823528,
+                  "observed": 1
+                }
+              ]
+            }
+          },
+          "rookie_first_starts": {
+            "baseline": {
+              "games": 7,
+              "brier": 0.46062469105289167,
+              "home_win_calibration": [
+                {
+                  "range": [
+                    0,
+                    0.2
+                  ],
+                  "games": 0,
+                  "predicted": null,
+                  "observed": null
+                },
+                {
+                  "range": [
+                    0.2,
+                    0.4
+                  ],
+                  "games": 2,
+                  "predicted": 0.2996323529411765,
+                  "observed": 0.5
+                },
+                {
+                  "range": [
+                    0.4,
+                    0.6000000000000001
+                  ],
+                  "games": 1,
+                  "predicted": 0.5808823529411765,
+                  "observed": 1
+                },
+                {
+                  "range": [
+                    0.6000000000000001,
+                    0.8
+                  ],
+                  "games": 3,
+                  "predicted": 0.6531862745098039,
+                  "observed": 0.6666666666666666
+                },
+                {
+                  "range": [
+                    0.8,
+                    1
+                  ],
+                  "games": 1,
+                  "predicted": 0.8198529411764706,
+                  "observed": 1
+                }
+              ]
+            },
+            "candidate": {
+              "games": 7,
+              "brier": 0.3996771502718734,
+              "home_win_calibration": [
+                {
+                  "range": [
+                    0,
+                    0.2
+                  ],
+                  "games": 0,
+                  "predicted": null,
+                  "observed": null
+                },
+                {
+                  "range": [
+                    0.2,
+                    0.4
+                  ],
+                  "games": 2,
+                  "predicted": 0.2849264705882353,
+                  "observed": 0.5
+                },
+                {
+                  "range": [
+                    0.4,
+                    0.6000000000000001
+                  ],
+                  "games": 2,
+                  "predicted": 0.5882352941176471,
+                  "observed": 0.5
+                },
+                {
+                  "range": [
+                    0.6000000000000001,
+                    0.8
+                  ],
+                  "games": 3,
+                  "predicted": 0.7512254901960783,
+                  "observed": 1
+                },
+                {
+                  "range": [
+                    0.8,
+                    1
+                  ],
+                  "games": 0,
+                  "predicted": null,
+                  "observed": null
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "season": 2025,
+      "lambda": 10,
+      "baseline": {
+        "games": 272,
+        "margin_mae": 10.249524191408417,
+        "margin_rmse": 12.966594924663498,
+        "total_mae": 10.731812330691188,
+        "total_rmse": 13.513033954087405,
+        "team_score_mae": 7.48771739754079
+      },
+      "candidate": {
+        "games": 272,
+        "margin_mae": 10.28997163786596,
+        "margin_rmse": 13.02632230308518,
+        "total_mae": 10.640633408007345,
+        "total_rmse": 13.461576646988284,
+        "team_score_mae": 7.5372627767134075
+      },
+      "starter_change": {
+        "baseline": {
+          "games": 51,
+          "margin_mae": 13.25416164631837,
+          "margin_rmse": 16.1490155096321,
+          "total_mae": 10.088955214237167,
+          "total_rmse": 12.33984787411222,
+          "team_score_mae": 7.965110759185584
+        },
+        "candidate": {
+          "games": 51,
+          "margin_mae": 12.861444396591628,
+          "margin_rmse": 15.992321201812157,
+          "total_mae": 9.964682156962402,
+          "total_rmse": 12.485103379686471,
+          "team_score_mae": 7.9563493404406636
+        }
+      },
+      "probability_validation": {
+        "residual_source_season": 2024,
+        "method": "Empirical earlier-season out-of-sample margin residuals; rounded integer margins; three-outcome Brier score (lower is better). Hyperparameters selected on that earlier season.",
+        "groups": {
+          "all": {
+            "baseline": {
+              "games": 272,
+              "brier": 0.4445848983245981,
+              "home_win_calibration": [
+                {
+                  "range": [
+                    0,
+                    0.2
+                  ],
+                  "games": 3,
+                  "predicted": 0.17769607843137256,
+                  "observed": 0.3333333333333333
+                },
+                {
+                  "range": [
+                    0.2,
+                    0.4
+                  ],
+                  "games": 72,
+                  "predicted": 0.3088745915032678,
+                  "observed": 0.3611111111111111
+                },
+                {
+                  "range": [
+                    0.4,
+                    0.6000000000000001
+                  ],
+                  "games": 111,
+                  "predicted": 0.5115593534711181,
+                  "observed": 0.46846846846846846
+                },
+                {
+                  "range": [
+                    0.6000000000000001,
+                    0.8
+                  ],
+                  "games": 68,
+                  "predicted": 0.6881487889273354,
+                  "observed": 0.7352941176470589
+                },
+                {
+                  "range": [
+                    0.8,
+                    1
+                  ],
+                  "games": 18,
+                  "predicted": 0.8333333333333333,
+                  "observed": 0.9444444444444444
+                }
+              ]
+            },
+            "candidate": {
+              "games": 272,
+              "brier": 0.45389553623676987,
+              "home_win_calibration": [
+                {
+                  "range": [
+                    0,
+                    0.2
+                  ],
+                  "games": 12,
+                  "predicted": 0.17861519607843138,
+                  "observed": 0.4166666666666667
+                },
+                {
+                  "range": [
+                    0.2,
+                    0.4
+                  ],
+                  "games": 76,
+                  "predicted": 0.31516060371517024,
+                  "observed": 0.3684210526315789
+                },
+                {
+                  "range": [
+                    0.4,
+                    0.6000000000000001
+                  ],
+                  "games": 79,
+                  "predicted": 0.5090748324646315,
+                  "observed": 0.46835443037974683
+                },
+                {
+                  "range": [
+                    0.6000000000000001,
+                    0.8
+                  ],
+                  "games": 77,
+                  "predicted": 0.6797173414820471,
+                  "observed": 0.6623376623376623
+                },
+                {
+                  "range": [
+                    0.8,
+                    1
+                  ],
+                  "games": 28,
+                  "predicted": 0.8526785714285715,
+                  "observed": 0.8928571428571429
+                }
+              ]
+            }
+          },
+          "starter_changes": {
+            "baseline": {
+              "games": 51,
+              "brier": 0.47943805549901636,
+              "home_win_calibration": [
+                {
+                  "range": [
+                    0,
+                    0.2
+                  ],
+                  "games": 0,
+                  "predicted": null,
+                  "observed": null
+                },
+                {
+                  "range": [
+                    0.2,
+                    0.4
+                  ],
+                  "games": 8,
+                  "predicted": 0.2679227941176471,
+                  "observed": 0.625
+                },
+                {
+                  "range": [
+                    0.4,
+                    0.6000000000000001
+                  ],
+                  "games": 22,
+                  "predicted": 0.5173796791443852,
+                  "observed": 0.5
+                },
+                {
+                  "range": [
+                    0.6000000000000001,
+                    0.8
+                  ],
+                  "games": 18,
+                  "predicted": 0.7054738562091505,
+                  "observed": 0.6111111111111112
+                },
+                {
+                  "range": [
+                    0.8,
+                    1
+                  ],
+                  "games": 3,
+                  "predicted": 0.8345588235294118,
+                  "observed": 1
+                }
+              ]
+            },
+            "candidate": {
+              "games": 51,
+              "brier": 0.4869733360472216,
+              "home_win_calibration": [
+                {
+                  "range": [
+                    0,
+                    0.2
+                  ],
+                  "games": 3,
+                  "predicted": 0.18014705882352944,
+                  "observed": 0.6666666666666666
+                },
+                {
+                  "range": [
+                    0.2,
+                    0.4
+                  ],
+                  "games": 13,
+                  "predicted": 0.3045814479638009,
+                  "observed": 0.46153846153846156
+                },
+                {
+                  "range": [
+                    0.4,
+                    0.6000000000000001
+                  ],
+                  "games": 10,
+                  "predicted": 0.51875,
+                  "observed": 0.5
+                },
+                {
+                  "range": [
+                    0.6000000000000001,
+                    0.8
+                  ],
+                  "games": 15,
+                  "predicted": 0.6764705882352942,
+                  "observed": 0.5333333333333333
+                },
+                {
+                  "range": [
+                    0.8,
+                    1
+                  ],
+                  "games": 10,
+                  "predicted": 0.8496323529411764,
+                  "observed": 0.9
+                }
+              ]
+            }
+          },
+          "rookie_first_starts": {
+            "baseline": {
+              "games": 9,
+              "brier": 0.3787365436370627,
+              "home_win_calibration": [
+                {
+                  "range": [
+                    0,
+                    0.2
+                  ],
+                  "games": 0,
+                  "predicted": null,
+                  "observed": null
+                },
+                {
+                  "range": [
+                    0.2,
+                    0.4
+                  ],
+                  "games": 2,
+                  "predicted": 0.22426470588235292,
+                  "observed": 0.5
+                },
+                {
+                  "range": [
+                    0.4,
+                    0.6000000000000001
+                  ],
+                  "games": 2,
+                  "predicted": 0.5533088235294117,
+                  "observed": 0.5
+                },
+                {
+                  "range": [
+                    0.6000000000000001,
+                    0.8
+                  ],
+                  "games": 3,
+                  "predicted": 0.704656862745098,
+                  "observed": 0.6666666666666666
+                },
+                {
+                  "range": [
+                    0.8,
+                    1
+                  ],
+                  "games": 2,
+                  "predicted": 0.8161764705882353,
+                  "observed": 1
+                }
+              ]
+            },
+            "candidate": {
+              "games": 9,
+              "brier": 0.3350544261822377,
+              "home_win_calibration": [
+                {
+                  "range": [
+                    0,
+                    0.2
+                  ],
+                  "games": 1,
+                  "predicted": 0.1948529411764706,
+                  "observed": 1
+                },
+                {
+                  "range": [
+                    0.2,
+                    0.4
+                  ],
+                  "games": 1,
+                  "predicted": 0.25,
+                  "observed": 0
+                },
+                {
+                  "range": [
+                    0.4,
+                    0.6000000000000001
+                  ],
+                  "games": 1,
+                  "predicted": 0.4338235294117647,
+                  "observed": 0
+                },
+                {
+                  "range": [
+                    0.6000000000000001,
+                    0.8
+                  ],
+                  "games": 2,
+                  "predicted": 0.6488970588235294,
+                  "observed": 0.5
+                },
+                {
+                  "range": [
+                    0.8,
+                    1
+                  ],
+                  "games": 4,
+                  "predicted": 0.8575367647058824,
+                  "observed": 1
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "sources": [
+    {
+      "file": "games.csv",
+      "sha256": "4f47b55b40930fd4865c904e2771639c335c5bb24fdc358cd6d30f3a3c3a19af"
+    },
+    {
+      "file": "players.csv",
+      "sha256": "a7c82b0f6f6ee4863e5a714a26d734841f2dc5ce3e685bf9fd53d52f128e18cc"
+    },
+    {
+      "file": "stats_player_week_2020.csv",
+      "sha256": "05b992676faccc8940efbf6242cb76358069372d31d7c2e02c1a4acdcd3cbe18"
+    },
+    {
+      "file": "stats_player_week_2021.csv",
+      "sha256": "41915fb49238902ad1f129ebf0405b11a1e710454ae0fe8f7b3e4f9145875f48"
+    },
+    {
+      "file": "stats_player_week_2022.csv",
+      "sha256": "ad426c3fe5bf1cc30c3f137fdfe96d054e19d400879ee4413129da49fa7b54be"
+    },
+    {
+      "file": "stats_player_week_2023.csv",
+      "sha256": "f19cb71a5de0dce7fd09376026237c9ee9d5a93fe13815a2ea3ec2d37204cb17"
+    },
+    {
+      "file": "stats_player_week_2024.csv",
+      "sha256": "3ddc45a84f759aa348ce465ae001752c530575455717657cdfe1f8abfcdb4759"
+    },
+    {
+      "file": "stats_player_week_2025.csv",
+      "sha256": "e5e0615b3d96a3eaebfaee91e55afb4a4e7fe0caf057454177bcd7d6ad4bcfc2"
+    },
+    {
+      "file": "stats_player_week_2026.csv",
+      "sha256": "479883490a09a9144679f36dac118cf10c88a7c5780a668a835379396b54c5a3"
+    },
+    {
+      "file": "stats_team_week_2020.csv",
+      "sha256": "a8f2cc2055404fc293105af25f14ff28593c32961912e752e2e50f4a6ba461ad"
+    },
+    {
+      "file": "stats_team_week_2021.csv",
+      "sha256": "a094523217f7f351a79f5e667dbe67267e0861a3b76a7a3b62a1cfe49f289673"
+    },
+    {
+      "file": "stats_team_week_2022.csv",
+      "sha256": "9803875bd0b74aa49230288d45359c75e45910f1cf1953ea0f07b9d3db35e4d1"
+    },
+    {
+      "file": "stats_team_week_2023.csv",
+      "sha256": "dc5a387daabe8663deaddac492ad7020d47fb1a66048690b355b406cd8e4c454"
+    },
+    {
+      "file": "stats_team_week_2024.csv",
+      "sha256": "b207a1430c2715d03bbf1844c4eae98695f364851ff6025f422febc2c13f5255"
+    },
+    {
+      "file": "stats_team_week_2025.csv",
+      "sha256": "91058a59d894855377b2f39f40c4e7bdbeef96d12144289dc68215209a1c93cb"
+    },
+    {
+      "file": "stats_team_week_2026.csv",
+      "sha256": "6cfdae5ca0503770eeea630f28d69a6671a8afc68b1ebb77a022b25e788ded3f"
+    }
+  ]
+}

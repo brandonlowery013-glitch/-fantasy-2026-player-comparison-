@@ -17,7 +17,17 @@ if(!workflow.includes("if: steps.context.outputs.ready == 'true'"))blocked.push(
 if(!workflow.includes('Verified schedule exists, but explicit current player availability context is not ready.'))blocked.push('context waiting path is not explicit');
 if((workflow.match(/git commit -m/g)||[]).length!==1)blocked.push('atomic single commit invariant drift');
 if(workflow.includes('git push origin HEAD:main'))blocked.push('production must not push directly to protected main');
-for(const needle of ['pull-requests: write','checks: read','gh pr create','gh pr checks','gh pr merge'])if(!workflow.includes(needle))blocked.push(`PR-based persistence safeguard missing: ${needle}`);
+for(const needle of ['pull-requests: write','checks: read','gh pr create'])if(!workflow.includes(needle))blocked.push(`PR-based persistence safeguard missing: ${needle}`);
 if(!workflow.includes('production/state-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}'))blocked.push('production state branch must be unique per run');
+
+const helperPath='scripts/merge-guarded-production-pr.sh';
+if(!workflow.includes('bash '+helperPath+' "${{ steps.state_pr.outputs.pr_number }}" "${{ steps.persist.outputs.branch }}" merge'))blocked.push('shared protected merge handoff missing');
+const helper=fs.existsSync(helperPath)?fs.readFileSync(helperPath,'utf8'):'';
+for(const needle of ['check_name=guardrail-qa','select(.app.id ==','HEAD_STATUS','MERGE_STATUS','HEAD_CHECK','MERGE_CHECK','--match-head-commit "$HEAD_SHA"','gh pr merge','git merge-base --is-ancestor "$CURRENT_MAIN" "$HEAD_SHA"']){
+  if(!helper.includes(needle))blocked.push('protected merge helper safeguard missing: '+needle);
+}
+if(!helper.includes('[ "$HEAD_STATUS" = \'success\' ] && [ "$MERGE_STATUS" = \'success\' ] && [ "$HEAD_CHECK" = \'success\' ] && [ "$MERGE_CHECK" = \'success\' ]'))blocked.push('head and merge candidate must both pass status and check gates');
+if(/--admin\b|git push[^\n]*HEAD:main/.test(helper))blocked.push('protected merge helper must not bypass branch protection');
+
 const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',status:c.status,ordered_stages:c.ordered_stages,concurrency_group:c.schedule?.concurrency_group,context_gate:true,persistence:'PR_REQUIRED_GUARDRAIL_THEN_MERGE',blocked};
 fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/weekly-production-orchestration-contract-report.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);

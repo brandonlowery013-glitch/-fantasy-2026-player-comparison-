@@ -1,3 +1,4 @@
+import {verifyNoHistoryRookie} from '../lib/no-history-rookie-review.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -31,6 +32,8 @@ const expectedNoHistory=new Set([
   'Jonah Coleman','Mike Washington Jr.','Kaytron Allen','Chris Bell','Jordyn Tyson',
   'Kaelon Black'
 ]);
+const verifiedPath=path.join(root,'data/sources/verified-no-history-roster-additions-2026.json');
+if(fs.existsSync(verifiedPath)){const verified=JSON.parse(fs.readFileSync(verifiedPath,'utf8'));for(const r of verified.players||[]){const p=players.find(p=>p.n===r.name);if(verified.season!==2026||r.roster_season?.year!==2026||r.experience?.years!==0||!r.athlete_id||!/^https:\/\/site\.api\.espn\.com\//.test(r.source||'')||!p||p.p!==r.position?.abbreviation)throw Error('Unverified no-history classification '+r.name);expectedNoHistory.add(r.name);}}
 const canonical=new Map();
 for(const p of players){
   const k=norm(p.n); canonical.set(k,p);
@@ -103,6 +106,15 @@ for(const r of rows){if(!byPlayer.has(r.player))byPlayer.set(r.player,[]);byPlay
 const playerSummary=players.map(p=>({player:p.n,position:p.p,rows:(byPlayer.get(p.n)||[]).length,seasons:[...new Set((byPlayer.get(p.n)||[]).map(r=>r.season))]}));
 const withHistory=playerSummary.filter(x=>x.rows>0);
 const noHistory=playerSummary.filter(x=>x.rows===0);
+const automaticNoHistoryReviews=[];
+const needingReview=noHistory.filter(x=>!expectedNoHistory.has(x.player));
+if(needingReview.length){
+ try{
+  const response=await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=40');if(!response.ok)throw Error('Team source unavailable');const directory=await response.json();const teams=new Map((directory.sports?.[0]?.leagues?.[0]?.teams||[]).map(t=>[t.team.displayName,t.team.id])),cache=new Map();
+  for(const x of needingReview){const p=players.find(p=>p.n===x.player),id=teams.get(p.t);if(!id)continue;const source=`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${id}/roster`;if(!cache.has(id)){const r=await fetch(source);if(!r.ok)continue;cache.set(id,await r.json());}const verified=verifyNoHistoryRookie(p,cache.get(id),source,new Date().toISOString());if(verified){expectedNoHistory.add(p.n);automaticNoHistoryReviews.push(verified);}}
+ }catch(error){console.log('No-history roster verification unavailable; unexplained missing history remains blocked.');}
+}
+fs.writeFileSync(path.join(root,'guardrails/historical-no-history-roster-review.json'),JSON.stringify({season:2026,players:automaticNoHistoryReviews},null,2)+'\n');
 const unexpectedNoHistory=noHistory.filter(x=>!expectedNoHistory.has(x.player));
 const expectedMissingNowPresent=[...expectedNoHistory].filter(n=>playerSummary.find(x=>x.player===n)?.rows>0);
 const duplicateKeys=[]; const seen=new Set();

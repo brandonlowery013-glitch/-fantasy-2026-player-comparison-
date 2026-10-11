@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {quarterbackReplacementContext as build} from '../lib/quarterback-replacement-context.mjs';
+const row={player_id:'qb',game_id:'old',season_type:'REG',season:2026,week:3,team:'TB',attempts:3,sacks_suffered:0,passing_epa:-.45};
+const input={playerId:'qb',team:'TB',opponent:'GB',season:2026,week:4,players:[{gsis_id:'qb',display_name:'Rookie',rookie_season:2026,draft_round:'',draft_pick:''}],stats:[row],games:[],teamStats:[]};
+const a=build(input);
+assert.equal(a.prior_nfl.attempts,3);assert.equal(a.observed_starts,0);assert.equal(a.starts_history_complete,true);
+assert.equal(a.draft_pick,null);assert.equal(a.numeric_adjustment,null);assert.equal(a.opponent_allowed.sack_rate,null);
+assert.deepEqual(build({...input,stats:[row,{...row,game_id:'future',week:4,attempts:50,passing_epa:1000}]}),a);
+assert.throws(()=>build({...input,stats:[row,row]}),/Duplicate/);
+const veteran=build({...input,players:[{gsis_id:'qb',rookie_season:2012}]});assert.equal(veteran.starts_history_complete,false);
+assert.equal(build({...input,stats:[{...row,team:'CHI'}]}).same_team.attempts,0);
+console.log('QB context: no target-week leakage, missing values retained, duplicate rejection and veteran history limits passed.');

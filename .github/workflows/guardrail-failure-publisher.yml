@@ -22,6 +22,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           SOURCE_RUN_URL: ${{ github.event.workflow_run.html_url }}
+          SOURCE_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           SOURCE_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           SOURCE_EVENT: ${{ github.event.workflow_run.event }}
         shell: bash
@@ -38,7 +39,11 @@ jobs:
             exit 0
           fi
 
-          TARGET_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.merge_commit_sha // empty')
+          read -r PR_STATE CURRENT_HEAD TARGET_SHA <<< "$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '"\(.state) \(.head.sha) \(.merge_commit_sha // "")"')"
+          if [ "$PR_STATE" != 'open' ] || [ "$CURRENT_HEAD" != "$SOURCE_HEAD_SHA" ]; then
+            echo "Guardrail failure belongs to an obsolete or closed PR candidate; preserving its original failed run without marking the current merge failed."
+            exit 0
+          fi
           if [ -z "$TARGET_SHA" ]; then
             echo "FAIL: PR #${PR_NUMBER} has no synthetic merge commit SHA."
             exit 1

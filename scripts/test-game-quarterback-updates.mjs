@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {applyQuarterbackUpdates as apply} from '../lib/game-quarterback-updates.mjs';
+const kickoff='2026-10-11T17:00:00Z',now='2026-10-08T17:00:00Z';
+const pick={decision:'PICK',selection:'BUF -3'};
+const g={home_team:'BUF',away_team:'NE',kickoff,current_recommendations:{snapshot_id:'q',spread:pick,total:pick,moneyline:pick},snapshot_evaluations:[{snapshot_id:'q',captured_at:now}],personnel_context:{teams:{BUF:{players:[{name:'Josh Allen',position:'QB',depth_roles:[{position:'QB',rank:1}],injury_reports:[{status:'Out',source_updated_at:now}]}]}}}};
+const before=structuredClone(g),held=apply('g',g,null,now);
+assert.equal(held.current_recommendations.spread.decision,'WAIT');assert.equal(held.quarterback_updates.BUF.spread.history.length,1);assert.deepEqual(g,before);
+const cleared=structuredClone(g);cleared.personnel_context.teams.BUF.players[0].injury_reports.push({status:'Active',source_updated_at:'2026-10-09T17:00:00Z'});
+assert.equal(apply('g',cleared,held,'2026-10-09T17:00:00Z').current_recommendations.spread.decision,'WAIT','Clearance alone cannot release an un-recalculated pick');
+const locked=apply('g',g,held,kickoff);assert.equal(locked.quarterback_updates.BUF.spread.locked_at,kickoff);assert.deepEqual(locked.current_recommendations,held.current_recommendations,'Original issued decision remains unchanged after kickoff');
+assert.deepEqual(apply('g',{...g,rerun:true},held,now),{...g,rerun:true});
+assert.deepEqual(apply('g',{...g,personnel_context:{}},null,now),{...g,personnel_context:{}});
+console.log('PASS: recommendation-builder bridge holds adverse QB news, persists revisions, requires reevaluation after clearance, preserves started games and separates reruns.');

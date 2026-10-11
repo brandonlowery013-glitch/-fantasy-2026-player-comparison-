@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {spawnSync} from 'node:child_process';
 const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const exists=p=>fs.existsSync(path.join(root,p));
@@ -64,8 +65,9 @@ if(self){
 const commitCount=(workflow.match(/git commit -m/g)||[]).length;
 const protectedDirectPush=!workflow.includes('git push origin HEAD:main');
 const stateBranchPush=(workflow.match(/git push origin "HEAD:\$branch"/g)||[]).length===1;
-const guardedPr=workflow.includes('gh pr create')&&workflow.includes('gh pr checks')&&workflow.includes('gh pr merge');
-const concurrencyOk=workflow.includes('group: weekly-production-orchestration')&&workflow.includes('cancel-in-progress: false');
+const handoffValidation=spawnSync(process.execPath,['scripts/validate-weekly-production-orchestration-contract.mjs'],{encoding:'utf8'});
+const guardedPr=handoffValidation.status===0;
+const concurrencyOk=workflow.includes('group: production-main-writer')&&workflow.includes('cancel-in-progress: false');
 const secretWired=workflow.includes('ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}');
 const ownershipValidatorPresent=ownership.includes('weekly-production-orchestration');
 if(commitCount!==1)blocked.push(`Step 24 production workflow must contain exactly one commit point; found ${commitCount}`);

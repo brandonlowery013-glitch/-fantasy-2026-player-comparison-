@@ -1,0 +1,16 @@
+{
+  "experiment": "game-score-recency-v1",
+  "baseline": "Prior three completed seasons; offense/defense arithmetic mean; eight-game league shrinkage; empirical home-field margin split equally.",
+  "challenger": "Same score formula, but include completed earlier weeks of the target season; exponentially weight each team's appearances with a fixed 16-game half-life and eight-game league shrinkage.",
+  "development_season": 2024,
+  "holdout_season": 2025,
+  "hyperparameter_search": false,
+  "exclude_2026_from_evaluation": true,
+  "information_cutoff": "Exclude all target-week games and all later weeks; use final regular-season scores only.",
+  "primary_metric": "total MAE",
+  "secondary_metrics": ["team-score MAE", "margin MAE", "total RMSE", "margin RMSE", "total bias"],
+  "comparison": "Paired errors on identical games; bootstrap whole weeks with a fixed seed, 2000 resamples.",
+  "research_gate": "Total MAE improvement interval must be strictly below zero; no secondary error metric may worsen by over 2 percent. Passing is eligibility for prospective testing, not promotion.",
+  "prohibited_inputs": ["sportsbook lines", "odds", "future results", "target-week scores", "2026 examples"],
+  "limitations": ["Historical source differs from original ESPN priors: this reproduces the baseline method, not its exact stored historical predictions.", "Retrospective final data lacks original ingestion timestamps.", "No injury, pace or player-context coefficients are being validated.", "No win-probability calibration or wagering return claim.", "No automatic production change."]
+}

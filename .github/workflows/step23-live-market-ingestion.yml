@@ -28,7 +28,9 @@ jobs:
       - name: Revalidate shared no-vig and EV math
         run: node scripts/test-ev-math.mjs
       - name: Revalidate Step 22 real-season chronology
-        run: node scripts/validate-real-season-validation.mjs --self-test
+        run: |
+          node scripts/build-player-prop-recommendations.mjs
+          node scripts/validate-real-season-validation.mjs --self-test
 
   manual-live-market-refresh:
     if: github.event_name == 'workflow_dispatch'
@@ -67,7 +69,7 @@ jobs:
       - name: Commit market refresh
         run: |
           paths=(
-            data/market/weekly-matchup-market-snapshots-2026.json
+            data/market/weekly-matchup-market-snapshots-2026.json data/market/current-game-lines-2026.json
             data/market/player-prop-market-snapshots-2026.json
             data/market/live-market-ingestion-status-2026.json
             data/market/weekly-game-market-recommendations-2026.json

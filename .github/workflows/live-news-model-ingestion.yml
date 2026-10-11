@@ -24,7 +24,7 @@ permissions:
   actions: write
 
 concurrency:
-  group: live-news-model-ingestion-production
+  group: ${{ github.event_name == 'pull_request' && format('news-validation-pr-{0}', github.event.pull_request.number) || 'production-main-writer' }}
   cancel-in-progress: false
 
 jobs:
@@ -39,16 +39,17 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Hard-lock canonical universe to 166
+      - name: Validate manifest-defined canonical universe
         run: |
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
-          if(Number(src.active_player_model)!==166) throw new Error(`Expected canonical universe 166, got ${src.active_player_model}`);
+          const expected=Number(src.active_player_model);
+          if(!Number.isInteger(expected)||expected<1) throw new Error('Invalid canonical player count');
           let names=[];
           for(let i=0;i<Number(src.runtime_player_shards);i++) names.push(...require(`./players${i}.json`).map(p=>p.n));
-          if(names.length!==166||new Set(names).size!==166) throw new Error(`Loaded player universe ${names.length}/${new Set(names).size}, expected 166/166`);
-          console.log(JSON.stringify({result:'PASS',players:166,shards:src.runtime_player_shards},null,2));
+          if(names.length!==expected||new Set(names).size!==expected) throw new Error(`Loaded player universe ${names.length}/${new Set(names).size}, expected ${expected}/${expected}`);
+          console.log(JSON.stringify({result:'PASS',players:expected,shards:src.runtime_player_shards},null,2));
           NODE
 
       - name: Use protected main as the canonical starting state
@@ -64,11 +65,13 @@ jobs:
           node scripts/enrich-transition-from-unified-evidence.mjs
           node scripts/integrate-transition-intelligence.mjs
 
-      - name: Validate tracked 166-player review coverage
+      - name: Validate tracked canonical-player review coverage
         run: |
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const expected=Number(src.active_player_model);
+          if(!Number.isInteger(expected)||expected<1) throw new Error('Invalid canonical player count');
           let canonical=[];
           for(let i=0;i<Number(src.runtime_player_shards);i++) canonical.push(...require(`./players${i}.json`).map(p=>p.n));
           const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
@@ -77,13 +80,13 @@ jobs:
           const nameSet=new Set(names),canonicalSet=new Set(canonical);
           const missing=canonical.filter(x=>!nameSet.has(x));
           const extra=names.filter(x=>!canonicalSet.has(x));
-          if(canonical.length!==166||canonicalSet.size!==166) throw new Error('Canonical 166-player universe invalid');
-          if(rows.length!==166||nameSet.size!==166||missing.length||extra.length) throw new Error(`Tracked review coverage failed: rows=${rows.length}, unique=${nameSet.size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
+          if(canonical.length!==expected||canonicalSet.size!==expected) throw new Error('Canonical player universe invalid');
+          if(rows.length!==expected||nameSet.size!==expected||missing.length||extra.length) throw new Error(`Tracked review coverage failed: rows=${rows.length}, unique=${nameSet.size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
           if(review.materiality_filter?.name_collision_regression_tests!==true||review.source_quality?.name_collision_regression_tests!==true) throw new Error('Name-collision regression guard did not run');
           if(Number(review.source_quality?.espn_player_news_calls)<150) throw new Error(`ESPN player-news coverage too low: ${review.source_quality?.espn_player_news_calls}`);
           if(Number(review.source_quality?.espn_modeled_athlete_ids_resolved)<150) throw new Error(`Modeled ESPN athlete-ID coverage too low: ${review.source_quality?.espn_modeled_athlete_ids_resolved}`);
           for(const r of rows){if(!r.reviewed_at)throw new Error(`${r.player} missing reviewed_at`);if(!Array.isArray(r.categories_checked)||!r.categories_checked.length)throw new Error(`${r.player} missing categories_checked`);}
-          console.log(JSON.stringify({result:'PASS',tracked_players:166,untracked_admissions:'NON_BLOCKING_IN_THIS_WORKFLOW'},null,2));
+          console.log(JSON.stringify({result:'PASS',tracked_players:expected,untracked_admissions:'NON_BLOCKING_IN_THIS_WORKFLOW'},null,2));
           NODE
 
       - name: Build quantitative evidence and autonomous model decisions
@@ -103,14 +106,16 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const expected=Number(src.active_player_model);
+          if(!Number.isInteger(expected)||expected<1) throw new Error('Invalid canonical player count');
           const report=JSON.parse(fs.readFileSync('guardrails/live-news-model-application-report.json','utf8'));
           const decisions=JSON.parse(fs.readFileSync('analysis/live-news-decision-audit-current.json','utf8'));
           const patch=JSON.parse(fs.readFileSync(src.current_update_layer,'utf8'));
-          if(report.result!=='PASS'||report.universe!==166||report.decision_self_audit!=='PASS') throw new Error('Live news decision application did not PASS for 166 players');
-          if(decisions.universe!==166||decisions.counts?.self_audit_errors!==0) throw new Error('Decision self-audit did not PASS');
-          if(patch.live_news_model_sync?.players!==166||patch.live_news_model_sync?.decision_policy!=='DECIDE_THEN_SELF_AUDIT') throw new Error('Canonical current-model layer did not receive decision sync');
+          if(report.result!=='PASS'||report.universe!==expected||report.decision_self_audit!=='PASS') throw new Error('Live news decision application did not PASS for canonical players');
+          if(decisions.universe!==expected||decisions.counts?.self_audit_errors!==0) throw new Error('Decision self-audit did not PASS');
+          if(patch.live_news_model_sync?.players!==expected||patch.live_news_model_sync?.decision_policy!=='DECIDE_THEN_SELF_AUDIT') throw new Error('Canonical current-model layer did not receive decision sync');
           const rows=Object.values(patch.players||{});
-          if(rows.length!==166) throw new Error(`Current-model layer coverage ${rows.length}/166`);
+          if(rows.length!==expected) throw new Error(`Current-model layer coverage ${rows.length}/${expected}`);
           if(rows.some(p=>!p.currentModelImpact||!p.currentModelDecision||!p.newsFeedState)) throw new Error('At least one player lacks currentModelImpact/currentModelDecision/newsFeedState after ingestion');
           const material=rows.filter(p=>p.currentModelImpact.material);
           if(material.some(p=>p.currentModelDecision.status!=='ADJUDICATED'||p.currentModelDecision.self_audit!=='PASS')) throw new Error('At least one material update reached persistence without an adjudicated PASS decision');
@@ -129,7 +134,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: live-news-model-ingestion-166
+          name: live-news-model-ingestion
           path: |
             guardrails/current-football-review.json
             guardrails/live-news-model-application-report.json
@@ -160,15 +165,15 @@ jobs:
 
           BRANCH="production/live-news-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git switch -c "$BRANCH"
-          git commit -m "Persist live 166-player news model decisions [skip ci]"
+          git commit -m "Persist live canonical-player news model decisions [skip ci]"
           git push --set-upstream origin "$BRANCH"
 
           PR_URL=$(gh pr create \
             --repo "$GITHUB_REPOSITORY" \
             --base main \
             --head "$BRANCH" \
-            --title 'Persist live 166-player news model decisions' \
-            --body "Automated live-news ingestion for the canonical 166-player model. Material evidence is converted into an explicit current-model decision, self-audited, hard-Guardrail validated, and persisted. Static player evaluations, canonical boards, and CTD interface are not mutated. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
+            --title 'Persist live canonical-player news model decisions' \
+            --body "Automated live-news ingestion for the canonical player model. Material evidence is converted into an explicit current-model decision, self-audited, hard-Guardrail validated, and persisted. Static player evaluations, canonical boards, and CTD interface are not mutated. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
           PR_NUMBER="${PR_URL##*/}"
           test -n "$PR_NUMBER"
           echo 'changed=true' >> "$GITHUB_OUTPUT"
@@ -176,168 +181,9 @@ jobs:
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "Opened protected live-news update PR #${PR_NUMBER} from ${BRANCH}."
 
-      - name: Run Guardrail QA on exact live-news update branch
+      - name: Merge validated live-news state PR through shared protected handoff
         if: steps.persist.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          BRANCH: ${{ steps.persist.outputs.branch }}
         shell: bash
-        run: |
-          set -euo pipefail
-          HEAD_SHA=$(git rev-parse HEAD)
-          DISPATCHED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          gh workflow run guardrail-qa.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
-
-          RUN_ID=''
-          for _ in $(seq 1 60); do
-            RUN_ID=$(gh run list \
-              --repo "$GITHUB_REPOSITORY" \
-              --workflow guardrail-qa.yml \
-              --branch "$BRANCH" \
-              --event workflow_dispatch \
-              --limit 20 \
-              --json databaseId,headSha,createdAt \
-              --jq ".[] | select(.headSha == \"$HEAD_SHA\" and .createdAt >= \"$DISPATCHED_AT\") | .databaseId" \
-              | head -n 1)
-            if [ -n "$RUN_ID" ]; then
-              break
-            fi
-            sleep 5
-          done
-
-          if [ -z "$RUN_ID" ]; then
-            echo "FAIL: could not discover Guardrail QA workflow_dispatch run for exact branch $BRANCH at head $HEAD_SHA."
-            exit 1
-          fi
-          echo "Guardrail QA run: ${RUN_ID} (branch=${BRANCH}, head=${HEAD_SHA})"
-
-          for _ in $(seq 1 360); do
-            STATUS=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json status --jq '.status')
-            if [ "$STATUS" = 'completed' ]; then
-              CONCLUSION=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json conclusion --jq '.conclusion')
-              RUN_HEAD=$(gh run view "$RUN_ID" --repo "$GITHUB_REPOSITORY" --json headSha --jq '.headSha')
-              if [ "$RUN_HEAD" != "$HEAD_SHA" ]; then
-                echo "FAIL: Guardrail QA head mismatch: expected $HEAD_SHA, got $RUN_HEAD."
-                exit 1
-              fi
-              if [ "$CONCLUSION" != 'success' ]; then
-                echo "FAIL: Guardrail QA concluded ${CONCLUSION}."
-                exit 1
-              fi
-              echo 'Guardrail QA passed on the exact live-news update commit.'
-              exit 0
-            fi
-            sleep 10
-          done
-
-          echo 'FAIL: timed out waiting for Guardrail QA.'
-          exit 1
-
-      - name: Merge validated live-news state PR
-        if: steps.persist.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ steps.persist.outputs.pr_number }}
-          BRANCH: ${{ steps.persist.outputs.branch }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          run_guardrail_for_exact_head() {
-            local head_sha="$1"
-            local dispatched_at run_id status conclusion run_head
-            dispatched_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-            gh workflow run guardrail-qa.yml --repo "$GITHUB_REPOSITORY" --ref "$BRANCH"
-            run_id=''
-            for _ in $(seq 1 60); do
-              run_id=$(gh run list \
-                --repo "$GITHUB_REPOSITORY" \
-                --workflow guardrail-qa.yml \
-                --branch "$BRANCH" \
-                --event workflow_dispatch \
-                --limit 20 \
-                --json databaseId,headSha,createdAt \
-                --jq ".[] | select(.headSha == \"$head_sha\" and .createdAt >= \"$dispatched_at\") | .databaseId" \
-                | head -n 1)
-              if [ -n "$run_id" ]; then
-                break
-              fi
-              sleep 5
-            done
-            if [ -z "$run_id" ]; then
-              echo "FAIL: could not discover refreshed Guardrail QA run for exact head $head_sha."
-              return 1
-            fi
-            echo "Refreshed Guardrail QA run: ${run_id} (branch=${BRANCH}, head=${head_sha})"
-            for _ in $(seq 1 360); do
-              status=$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json status --jq '.status')
-              if [ "$status" = 'completed' ]; then
-                conclusion=$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json conclusion --jq '.conclusion')
-                run_head=$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json headSha --jq '.headSha')
-                if [ "$run_head" != "$head_sha" ]; then
-                  echo "FAIL: refreshed Guardrail head mismatch: expected $head_sha, got $run_head."
-                  return 1
-                fi
-                if [ "$conclusion" != 'success' ]; then
-                  echo "FAIL: refreshed Guardrail QA concluded ${conclusion}."
-                  return 1
-                fi
-                echo "Refreshed Guardrail QA passed on exact head $head_sha."
-                return 0
-              fi
-              sleep 10
-            done
-            echo "FAIL: timed out waiting for refreshed Guardrail QA on $head_sha."
-            return 1
-          }
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin main "$BRANCH"
-          git switch "$BRANCH"
-
-          for _ in $(seq 1 60); do
-            STATE=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state --jq '.state')
-            if [ "$STATE" = 'MERGED' ]; then
-              echo "PR #${PR_NUMBER} already merged."
-              exit 0
-            fi
-
-            git fetch origin main
-            HEAD_SHA=$(git rev-parse HEAD)
-            MAIN_SHA=$(git rev-parse origin/main)
-
-            if ! git merge-base --is-ancestor "$MAIN_SHA" "$HEAD_SHA"; then
-              echo "Protected main advanced to $MAIN_SHA after Guardrail validated $HEAD_SHA; refreshing candidate."
-              if ! git rebase origin/main; then
-                git rebase --abort || true
-                echo 'FAIL: live-news candidate conflicts with current protected main; refusing to force or bypass protection.'
-                exit 1
-              fi
-              REFRESHED_SHA=$(git rev-parse HEAD)
-              if [ "$REFRESHED_SHA" = "$HEAD_SHA" ]; then
-                echo 'FAIL: expected refreshed candidate SHA to change after base advance.'
-                exit 1
-              fi
-              git push --force-with-lease origin "$BRANCH"
-              run_guardrail_for_exact_head "$REFRESHED_SHA"
-              HEAD_SHA="$REFRESHED_SHA"
-              continue
-            fi
-
-            REQUIRED_STATUS=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${HEAD_SHA}/status" --jq '.state')
-            if [ "$REQUIRED_STATUS" != 'success' ]; then
-              echo "Required guardrail-qa commit status is ${REQUIRED_STATUS}; waiting."
-              sleep 10
-              continue
-            fi
-
-            if gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --squash --delete-branch; then
-              echo "Merged validated live-news PR #${PR_NUMBER} after exact-head Guardrail and current-main freshness checks succeeded."
-              exit 0
-            fi
-            echo 'Required status is green but protected merge is not ready; rechecking protected main before retrying.'
-            sleep 10
-          done
-          echo "FAIL: validated live-news PR #${PR_NUMBER} did not become mergeable after exact-head Guardrail and current-main freshness checks."
-          exit 1
+        run: bash scripts/merge-guarded-production-pr.sh "${{ steps.persist.outputs.pr_number }}" "${{ steps.persist.outputs.branch }}" squash

@@ -14,7 +14,9 @@ jobs:
         with:
           node-version: '20'
       - name: Validate Step 22 chronology and guardrails
-        run: node scripts/validate-real-season-validation.mjs --self-test
+        run: |
+          node scripts/build-player-prop-recommendations.mjs
+          node scripts/validate-real-season-validation.mjs --self-test
       - name: Build current Step 22 live validation state
         run: node scripts/validate-real-season-validation.mjs
       - name: Revalidate weekly pipeline health

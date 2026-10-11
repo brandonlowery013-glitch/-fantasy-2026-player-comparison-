@@ -13,7 +13,11 @@
     "regions": "us",
     "odds_format": "american",
     "date_format": "iso",
-    "featured_markets": ["h2h", "spreads", "totals"],
+    "featured_markets": [
+      "h2h",
+      "spreads",
+      "totals"
+    ],
     "weekly_player_prop_markets": {
       "player_pass_yds": "passing_yards",
       "player_pass_tds": "passing_tds",
@@ -29,12 +33,36 @@
     "workflow_cron": "*/5 * * * *",
     "adaptive_featured_refresh": true,
     "adaptive_bands": [
-      {"minimum_minutes_to_kickoff": 10080, "target_refresh_seconds": 3600, "label": "14_TO_7_DAYS_PLUS"},
-      {"minimum_minutes_to_kickoff": 2880, "target_refresh_seconds": 1800, "label": "7_TO_2_DAYS"},
-      {"minimum_minutes_to_kickoff": 1440, "target_refresh_seconds": 900, "label": "48_TO_24_HOURS"},
-      {"minimum_minutes_to_kickoff": 60, "target_refresh_seconds": 600, "label": "24_TO_1_HOUR"},
-      {"minimum_minutes_to_kickoff": 15, "target_refresh_seconds": 120, "label": "FINAL_60_TO_15_MINUTES"},
-      {"minimum_minutes_to_kickoff": 0, "target_refresh_seconds": 60, "label": "FINAL_15_MINUTES"}
+      {
+        "minimum_minutes_to_kickoff": 10080,
+        "target_refresh_seconds": 3600,
+        "label": "14_TO_7_DAYS_PLUS"
+      },
+      {
+        "minimum_minutes_to_kickoff": 2880,
+        "target_refresh_seconds": 1800,
+        "label": "7_TO_2_DAYS"
+      },
+      {
+        "minimum_minutes_to_kickoff": 1440,
+        "target_refresh_seconds": 900,
+        "label": "48_TO_24_HOURS"
+      },
+      {
+        "minimum_minutes_to_kickoff": 60,
+        "target_refresh_seconds": 600,
+        "label": "24_TO_1_HOUR"
+      },
+      {
+        "minimum_minutes_to_kickoff": 15,
+        "target_refresh_seconds": 120,
+        "label": "FINAL_60_TO_15_MINUTES"
+      },
+      {
+        "minimum_minutes_to_kickoff": 0,
+        "target_refresh_seconds": 60,
+        "label": "FINAL_15_MINUTES"
+      }
     ],
     "github_actions_scheduler_floor_seconds": 300,
     "effective_scheduled_refresh_never_slower_than_target_when_target_is_at_least_floor": true,
@@ -48,18 +76,36 @@
     "early_prop_discovery_enabled": true,
     "early_prop_discovery_minutes": 360,
     "early_prop_discovery_uses_event_markets_endpoint": true,
-    "early_prop_capture_then_pause_until_hours": 48,
+    "early_prop_capture_then_pause_until_hours": null,
     "player_prop_adaptive_bands": [
-      {"maximum_minutes_to_kickoff": 60, "refresh_minutes": 15, "label": "FINAL_1_HOUR"},
-      {"maximum_minutes_to_kickoff": 360, "refresh_minutes": 30, "label": "6_TO_1_HOURS"},
-      {"maximum_minutes_to_kickoff": 1440, "refresh_minutes": 90, "label": "24_TO_6_HOURS"},
-      {"maximum_minutes_to_kickoff": 2880, "refresh_minutes": 180, "label": "48_TO_24_HOURS"}
+      {
+        "maximum_minutes_to_kickoff": 60,
+        "refresh_minutes": 15,
+        "label": "FINAL_1_HOUR"
+      },
+      {
+        "maximum_minutes_to_kickoff": 360,
+        "refresh_minutes": 30,
+        "label": "6_TO_1_HOURS"
+      },
+      {
+        "maximum_minutes_to_kickoff": 1440,
+        "refresh_minutes": 90,
+        "label": "24_TO_6_HOURS"
+      },
+      {
+        "maximum_minutes_to_kickoff": 2880,
+        "refresh_minutes": 180,
+        "label": "48_TO_24_HOURS"
+      }
     ],
     "prop_quota_soft_reserve_credits": 4000,
     "prop_quota_hard_reserve_credits": 2000,
     "prop_quota_critical_reserve_credits": 1000,
     "max_prop_events_per_run": 16,
-    "max_provider_market_credits_per_run": 128
+    "max_provider_market_credits_per_run": 128,
+    "early_prop_price_refresh_minutes": 1440,
+    "early_prop_capture_new_market_types": true
   },
   "freshness": {
     "weekly_market_stale_after_minutes": 150,
@@ -78,7 +124,13 @@
   },
   "best_price_rules": {
     "select_across_latest_fresh_book_snapshots": true,
-    "ranking": ["PICK_FIRST", "EXPECTED_VALUE", "PROBABILITY_EDGE", "MODEL_WIN_PROBABILITY", "FRESHNESS"],
+    "ranking": [
+      "PICK_FIRST",
+      "EXPECTED_VALUE",
+      "PROBABILITY_EDGE",
+      "MODEL_WIN_PROBABILITY",
+      "FRESHNESS"
+    ],
     "never_merge_prices_from_different_books_into_one_two_sided_market": true
   },
   "guardrails": {
