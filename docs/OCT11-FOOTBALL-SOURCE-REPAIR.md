@@ -10,7 +10,7 @@ Candidate repair based on main 624dd000643615897e0518c1f31549d43ac63254. This re
 
 ## Validation and blockers
 
-Event source/weekly hold regression, existing injury evidence tests, event contract, event state self-test, full-universe validator regression and hard Guardrail QA ran. Hard QA had zero BLOCKED checks and REVIEW_REQUIRED for baseline history availability, old season-long odds and insufficient betting calibration; remote full workflow remains required.
+Event source/weekly hold regression, existing injury evidence tests, event contract, event state self-test, full-universe validator regression and hard Guardrail QA ran. Frozen baseline drift comparator PASS after full history was available. Hard QA had zero BLOCKED checks and three REVIEW_REQUIRED checks for old season-long odds and insufficient betting calibration; remote full workflow remains required.
 
 Actual review validation remains blocked by connected candidate dispositions/onboarding requirements. A live canonical team identity check also fails for Kaytron Allen (WAS canonical, MIA observed). No team/season-long values were silently rewritten and no missing admission scores or packages fabricated. Kenneth Gainwell lacks a resolved live identity. The review source-quality record explicitly retains the identity failure.
 
