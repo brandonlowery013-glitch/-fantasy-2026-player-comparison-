@@ -59,7 +59,7 @@ export function generateAdmission({base=process.cwd(),entry,input=null,now=new D
     for(let i=0;i<truth.runtime_player_shards;i++)sizes.push(read(base,`players${i}.json`).length);
     const capacity=Math.max(...sizes);if(sizes.at(-1)>=capacity)sizes.push(1);else sizes[sizes.length-1]++;
     let offset=0;sizes.forEach((size,i)=>{files[`players${i}.json`]=all.slice(offset,offset+size);offset+=size;});
-    files['MODEL_SOURCE_OF_TRUTH.json']={...truth,active_player_model:all.length,runtime_player_shards:sizes.length,effective_date:businessDate,current_update_layer_effective_date:businessDate,status:'authoritative_current_fluid_universe_admission'};
+    files['MODEL_SOURCE_OF_TRUTH.json']={...truth,active_player_model:all.length,runtime_player_shards:sizes.length,effective_date:businessDate,current_update_layer_effective_date:businessDate,status:'authoritative_current_fluid_universe_admission',current_ros_rank_coverage:`${all.length}/${all.length} internal current-season ROS overall and positional ranks; external market ranks remain separately sourced`};
     files[truth.current_update_layer]={...patch,updated:businessDate,players:{...patch.players,...Object.fromEntries(all.map(p=>[p.n,p]))}};
     // Weekly membership follows the universe immediately. Missing week-specific calibration remains explicit and nonactionable.
     for(const file of ['data/probability/weekly-football-context-inputs-2026.json','data/probability/weekly-projection-inputs-2026.json']){
