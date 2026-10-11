@@ -43,7 +43,14 @@ jobs:
           fs.writeFileSync('overall-rank-audit-context.json',JSON.stringify({generated_at:new Date().toISOString(),universe_size:expected,runtime_player_shards:shards,rows:out},null,2)+'\n');
           console.log(JSON.stringify({universe_size:expected,runtime_player_shards:shards,flagged:out.length,status:'PASS'}));
           NODE
+      - name: Upload audit context without changing the candidate branch
+        uses: actions/upload-artifact@v4
+        with:
+          name: overall-rank-audit-context
+          path: overall-rank-audit-context.json
+
       - name: Commit audit context
+        if: github.event_name == 'workflow_dispatch'
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com

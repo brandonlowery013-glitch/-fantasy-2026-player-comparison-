@@ -44,7 +44,7 @@ jobs:
       - name: Rebuild Step 3 market board from synchronized Step 2
         run: node scripts/build-market-value-board-2026.mjs
       - name: Commit derived synchronization when needed
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'workflow_dispatch'
         run: |
           if git diff --quiet -- data/market/draft-edge-opportunity-screen-166.json data/market/market-value-board-2026.json; then
             echo 'Derived market layers already synchronized.'
