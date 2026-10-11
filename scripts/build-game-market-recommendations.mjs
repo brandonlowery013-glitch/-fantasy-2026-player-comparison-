@@ -128,7 +128,7 @@ for(const [gameId,mg] of Object.entries(marketGames)){
     const asOf=!rerun&&snapshot.eligible_for_current_recommendation&&currentByBook.get(snapshot.book)===snapshot.snapshot_id?decisionNow:snapshot.captured_at;
     evaluation.public_betting_context=publicBettingContext(src.markets.public_betting_splits,games[gameId],kind,asOf);
     if(!self&&!rerun&&learningLedger&&currentByBook.get(snapshot.book)===snapshot.snapshot_id&&['moneyline','spread'].includes(kind)&&Date.parse(asOf)<kickoff&&Number.isFinite(evaluation.side_a?.conditional_win_probability)){
-      const f={game_id:gameId,market:kind,week:currentWeek,home_team:game.home_team,away_team:game.away_team,probability:evaluation.side_a.conditional_win_probability,home_score_mean:game.model.home_score_mean,away_score_mean:game.model.away_score_mean};
+      const f={game_id:gameId,market:kind,week:currentWeek,home_team:game.home_team,away_team:game.away_team,probability:evaluation.side_a.conditional_win_probability,home_score_mean:game.model.home_score_mean,away_score_mean:game.model.away_score_mean,market_context:evaluation.public_betting_context};
       f.features=gameFeatures(f,behaviorState(learningLedger.observations||[],{season:2026,week:currentWeek,asOf}));
       evaluation.postgame_learning=candidateFor(learningLedger,f,asOf);
     }
