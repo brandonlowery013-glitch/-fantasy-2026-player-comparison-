@@ -17,6 +17,28 @@ const review=(name,details)=>checks.push({name,status:'REVIEW_REQUIRED',details}
 const pass=(name,details)=>checks.push({name,status:'PASS',details});
 const insufficient=(name,details)=>checks.push({name,status:'INSUFFICIENT_DATA',details});
 
+if(exists('data/sources/weekly-game-projection-engine-2026.json')&&read('data/sources/weekly-game-projection-engine-2026.json').calibrated_scoring?.enabled){
+  try{execFileSync(process.execPath,['scripts/test-current-game-scoring.mjs'],{cwd:root,stdio:'pipe'});pass('calibrated_game_scoring','Historical/live parity, provenance, leakage, and ablation gates passed');}
+  catch(e){block('calibrated_game_scoring',String(e.stderr||e.message));}
+}
+
+try{execFileSync(process.execPath,['scripts/test-matchup-assessments.mjs'],{cwd:root,stdio:'pipe'});pass('matchup_assessment_coverage','Dated full-slate assessments, exact prop direction, injury as-of isolation and chronological selection passed');}
+catch(e){block('matchup_assessment_coverage',String(e.stderr||e.message));}
+
+try{execFileSync(process.execPath,['scripts/test-injury-evidence.mjs'],{cwd:root,stdio:'pipe'});pass('personnel_availability_evidence','Stable identities, source-age expiry and injury precedence passed');}
+catch(e){block('personnel_availability_evidence',String(e.stderr||e.message));}
+
+try{execFileSync(process.execPath,['scripts/validate-admission-state.mjs'],{cwd:root,stdio:'pipe'});pass('canonical_admission_state','Every accepted admission is complete and immutable package hashes match');}
+catch(e){block('canonical_admission_state',String(e.stdout||e.stderr||e.message));}
+try{execFileSync(process.execPath,['scripts/test-weekly-schedule-selection.mjs'],{cwd:root,stdio:'pipe'});pass('weekly_schedule_selection','Unfinished current-week retention and deployed schedule regression passed');}
+catch(e){block('weekly_schedule_selection',String(e.stderr||e.message));}
+
+try{execFileSync(process.execPath,['scripts/test-github-api-retry.mjs'],{cwd:root,stdio:'pipe'});pass('github_check_publication_retry','Transient failures retried; permanent errors and exhausted retries remain failures');}
+catch(e){block('github_check_publication_retry',String(e.stderr||e.message));}
+
+try{execFileSync(process.execPath,['scripts/test-guardrail-failure-publication.mjs'],{cwd:root,stdio:'pipe'});pass('guardrail_failure_candidate_identity','Only failed runs for the current open PR head can block its synthetic merge');}
+catch(e){block('guardrail_failure_candidate_identity',String(e.stderr||e.message));}
+
 pass('source_of_truth_count',String(authoritativePlayerCount));
 pass('source_of_truth_shards',String(authoritativePlayerShards));
 if(cfg.authoritative_player_count!=null&&Number(cfg.authoritative_player_count)!==authoritativePlayerCount) review('legacy_config_count',`non-authoritative guardrail config=${cfg.authoritative_player_count}, canonical=${authoritativePlayerCount}`);
@@ -35,6 +57,13 @@ if(players.length!==authoritativePlayerCount) block('active_player_count',`${pla
 if(unique.size!==authoritativePlayerCount) block('unique_player_count',`${unique.size} unique != ${authoritativePlayerCount}`); else pass('unique_player_count',String(unique.size));
 const dup=[...new Set(names.filter((n,i)=>names.indexOf(n)!==i))];
 if(dup.length) block('duplicate_players',dup.join(', ')); else pass('duplicate_players','none');
+
+if(exists('data/weekly/in-season-ranking-layer-2026.json')){
+ const ranks=read('data/weekly/in-season-ranking-layer-2026.json'),rows=Object.values(ranks.players||{}),byName=new Map(players.map(p=>[p.n,p])),schedule=exists('data/calibration/weekly-event-schedule-2026.json')?read('data/calibration/weekly-event-schedule-2026.json'):null;
+ const mismatch=rows.filter(r=>!byName.has(r.player)||r.ros_overall_rank!==byName.get(r.player).o||r.ros_position_rank!==byName.get(r.player).pr);
+ if(ranks.universe!==authoritativePlayerCount||rows.length!==authoritativePlayerCount||new Set(rows.map(r=>r.player)).size!==authoritativePlayerCount||mismatch.length||ranks.mode!=='IN_SEASON_ROS_PLUS_WEEKLY'||Number(ranks.week)!==Number(schedule?.week))block('current_ros_weekly_roster_receipt',`Current roster/ranking mismatch: expected ${authoritativePlayerCount}, rows ${rows.length}, mismatched ${mismatch.length}, week ${ranks.week}/${schedule?.week}`);
+ else pass('current_ros_weekly_roster_receipt',`${rows.length} exact current-season players; separate Week ${ranks.week} rank view`);
+}
 
 const missing=[], badBounds=[];
 for(const p of players){

@@ -4,7 +4,7 @@ const audit=JSON.parse(fs.readFileSync('data/sources/step6-5b-roster-driven-inju
 const failures=[];
 const need=(v,m)=>{if(!v) failures.push(m)};
 let players=[];
-for(let i=0;i<13;i++) players.push(...JSON.parse(fs.readFileSync(`players${i}.json`,'utf8')));
+for(let i=0;i<Number(JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8')).runtime_player_shards);i++) players.push(...JSON.parse(fs.readFileSync(`players${i}.json`,'utf8')));
 const names=new Set(players.map(p=>p.n));
 need(players.length===162,`authoritative player universe ${players.length} != 162`);
 const known=new Map((audit.known_material_or_review_cases||[]).map(x=>[x.player,x]));

@@ -1,0 +1,134 @@
+name: Raw Feed Production Smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_run:
+    workflows:
+      - Live Scoring Resilience Proof
+      - Advance Week After Finals
+    types: [completed]
+  pull_request:
+    paths:
+      - '.github/workflows/raw-feed-production-smoke.yml'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'players*.json'
+      - 'guardrails/current-football-review.json'
+      - 'data/market/weekly-matchup-market-snapshots-2026.json'
+      - 'data/market/player-prop-market-snapshots-2026.json'
+      - 'scripts/validate-weekly-matchup-market-snapshots.mjs'
+      - 'scripts/validate-player-prop-market-snapshots.mjs'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: raw-feed-production-smoke-${{ github.event_name == 'workflow_run' && github.event.workflow_run.event || github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  trigger-gate:
+    runs-on: ubuntu-latest
+    outputs:
+      run_smoke: ${{ steps.gate.outputs.run_smoke }}
+    steps:
+      - name: Decide whether autonomous fallback is needed
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "run_smoke=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "${{ github.event_name }}" != "workflow_run" ] ||              [ "${{ github.event.workflow_run.event }}" != "schedule" ] ||              [ "${{ github.event.workflow_run.head_branch }}" != "main" ]; then
+            echo "run_smoke=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          latest=$(gh api --method GET             "repos/${GITHUB_REPOSITORY}/actions/workflows/raw-feed-production-smoke.yml/runs"             -f event=schedule -f per_page=1 --jq '.workflow_runs[0].created_at // ""')
+          if [ -z "$latest" ]; then
+            echo "run_smoke=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          latest_epoch=$(date -u -d "$latest" +%s)
+          now_epoch=$(date -u +%s)
+          age=$((now_epoch-latest_epoch))
+          if [ "$age" -ge 2700 ]; then
+            echo "run_smoke=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_smoke=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  raw-news-feed:
+    needs: trigger-gate
+    if: needs.trigger-gate.outputs.run_smoke == 'true'
+    name: Raw News Feed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'main' || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify canonical player news feed coverage
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const src=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+          const expected=Number(src.active_player_model);
+          if(!Number.isInteger(expected)||expected<=0) throw new Error(`Invalid canonical universe size: ${src.active_player_model}`);
+          let canonical=[];
+          for(let i=0;i<Number(src.runtime_player_shards);i++) canonical.push(...require(`./players${i}.json`).map(p=>p.n));
+          const review=JSON.parse(fs.readFileSync('guardrails/current-football-review.json','utf8'));
+          const rows=Array.isArray(review.players)?review.players:[];
+          const names=rows.map(r=>r.player);
+          const canonicalSet=new Set(canonical),nameSet=new Set(names);
+          const missing=canonical.filter(n=>!nameSet.has(n));
+          const extra=names.filter(n=>!canonicalSet.has(n));
+          if(canonical.length!==expected||canonicalSet.size!==expected) throw new Error(`Canonical load ${canonical.length}/${canonicalSet.size}, expected ${expected}/${expected}`);
+          if(Number(review.active_player_count)!==expected) throw new Error(`Review header active_player_count=${review.active_player_count}, expected ${expected}`);
+          if(rows.length!==expected||nameSet.size!==expected||missing.length||extra.length) throw new Error(`Raw news coverage failed: rows=${rows.length}, unique=${nameSet.size}, missing=${missing.join(', ')}, extra=${extra.join(', ')}`);
+          if(rows.some(r=>!r.reviewed_at)) throw new Error('At least one player is missing reviewed_at');
+          console.log(JSON.stringify({layer:'RAW_NEWS_FEED',result:'PASS',players:expected},null,2));
+          NODE
+      - name: Raw news feed PASS
+        run: echo 'PASS — news was collected and mapped across the canonical active-player universe. Model upgrade/downgrade decisions are intentionally outside this smoke check.'
+
+  raw-game-lines-feed:
+    needs: trigger-gate
+    if: needs.trigger-gate.outputs.run_smoke == 'true'
+    name: Raw Game Lines Feed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'main' || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate sportsbook game-line snapshots only
+        run: node scripts/validate-weekly-matchup-market-snapshots.mjs
+      - name: Raw game lines feed PASS
+        run: echo 'PASS — sportsbook game lines satisfy the raw snapshot contract. Recommendations, edges, parlays, and model comparisons are intentionally outside this smoke check.'
+
+  raw-player-props-feed:
+    needs: trigger-gate
+    if: needs.trigger-gate.outputs.run_smoke == 'true'
+    name: Raw Player Props Feed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'schedule' && 'main' || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate sportsbook player-prop snapshots only
+        run: node scripts/validate-player-prop-market-snapshots.mjs
+      - name: Raw player props feed PASS
+        run: echo 'PASS — player props satisfy the raw snapshot contract. Betting recommendations and model-vs-market decisions are intentionally outside this smoke check.'

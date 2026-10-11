@@ -1,3 +1,6 @@
+import {modelPropPick} from '../lib/model-prop-pick.mjs';
+import {execFileSync} from 'node:child_process';
+import {captureHistory} from '../lib/issued-pick-history.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -6,7 +9,7 @@ const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true});fs.writeFileSync(path.join(root,p),JSON.stringify(x,null,2)+'\n');};
 const self=process.argv.includes('--self-test');
 
-const asArrayGames=x=>Array.isArray(x?.games)?x.games:Object.entries(x?.games||{}).map(([event_id,g])=>({event_id,...g}));
+const asArrayGames=x=>Array.isArray(x?.games)?x.games:Object.entries(x?.games||{}).map(([event_id,g])=>({...g,source_event_id:g.event_id??null,event_id}));
 const pickList=g=>Object.entries(g?.current_recommendations||{}).filter(([,r])=>r?.decision==='PICK').map(([market,r])=>({market,selection:r.selection,confidence:r.confidence,expected_value:r.expected_value,probability_edge:r.probability_edge}));
 
 function build({schedule,gameRecs,propRecs,parlays}){
@@ -17,7 +20,7 @@ function build({schedule,gameRecs,propRecs,parlays}){
   if(week!=null&&propRecs?.week!=null&&Number(propRecs.week)!==Number(week)&&hasPropOutput)blocked.push(`prop recommendation week ${propRecs.week} != active week ${week}`);
   if(week!=null&&parlays?.week!=null&&Number(parlays.week)!==Number(week)&&(parlays?.eligible_leg_count||parlays?.model_picks?.length))blocked.push(`parlay week ${parlays.week} != active week ${week}`);
 
-  const empty=status=>({schema_version:'1.1.0',season:2026,week:week==null?null:Number(week),status,generated_at:new Date().toISOString(),games:[],props:[],parlays:[],eligible_legs:[],correlations:[],blocked:status==='WAITING_FOR_CURRENT_WEEK_OUTPUTS'?blocked:[]});
+  const empty=status=>({schema_version:'1.2.0',season:2026,week:week==null?null:Number(week),status,generated_at:new Date().toISOString(),games:[],props:[],parlays:[],eligible_legs:[],correlations:[],blocked:status==='WAITING_FOR_CURRENT_WEEK_OUTPUTS'?blocked:[]});
   if(week==null)return empty('WAITING_FOR_CURRENT_WEEK');
   if(blocked.length)return empty('WAITING_FOR_CURRENT_WEEK_OUTPUTS');
 
@@ -25,8 +28,9 @@ function build({schedule,gameRecs,propRecs,parlays}){
   for(const [player,p] of Object.entries(propRecs?.players||{})){
     if(Number(p?.weekly?.week)!==Number(week))continue;
     for(const [stat,e] of Object.entries(p?.weekly?.current_by_stat||{})){
-      if(e?.recommendation?.decision!=='PICK')continue;
-      propRows.push({player,position:p.position,team:p.team,stat,line:e.line,side:e.recommendation.side,book:e.book,odds:(e.sides||[]).find(x=>x.side===e.recommendation.side)?.offered_odds??null,confidence:e.recommendation.confidence,expected_value:e.recommendation.expected_value,probability_edge:e.recommendation.probability_edge,snapshot_id:e.snapshot_id,captured_at:e.captured_at,event_id:null});
+      if(Number(e.week)!==Number(week))continue;
+      const modelPick=e.model_pick||modelPropPick({over:e.model?.over_probability,under:e.model?.under_probability,push:e.model?.push_probability});
+      propRows.push({show_work:e.show_work??null,player,position:p.position,team:p.team,stat,line:e.line,side:modelPick.side,model_pick:modelPick,recommendation:e.recommendation,eligibility:e.eligibility||null,book:e.book,odds:(e.sides||[]).find(x=>x.side===modelPick.side)?.offered_odds??null,confidence:e.recommendation.confidence,expected_value:e.recommendation.expected_value,probability_edge:e.recommendation.probability_edge,snapshot_id:e.snapshot_id,captured_at:e.captured_at,event_id:null});
     }
   }
   const eligibleLegs=(parlays?.eligible_legs||[]).filter(x=>Number(x.week)===Number(week)&&x?.standalone_approved===true&&x?.label==='PICK').map(x=>({...x}));
@@ -53,6 +57,7 @@ function build({schedule,gameRecs,propRecs,parlays}){
       spread:market.home_spread!=null?`${gr?.home_team||sg.home_team||sg.home} ${Number(market.home_spread)>0?'+':''}${market.home_spread}`:null,
       total:market.total??null,
       moneyline:market.home_moneyline!=null||market.away_moneyline!=null?`${gr?.away_team||sg.away_team||sg.away} ${market.away_moneyline??'—'} / ${gr?.home_team||sg.home_team||sg.home} ${market.home_moneyline??'—'}`:null,
+      show_work:Object.fromEntries(Object.entries(snap?.markets||{}).map(([kind,e])=>[kind,e.show_work??null])),
       model_edge:bestEdge,
       model_pick:picks.length?picks.map(x=>`${x.market.toUpperCase()}: ${x.selection} (${x.confidence})`):null,
       win_probability:gr?.football_projection?.home_win_probability??null,
@@ -63,7 +68,7 @@ function build({schedule,gameRecs,propRecs,parlays}){
     });
   }
 
-  return {schema_version:'1.1.0',season:2026,week:Number(week),status:'READY',generated_at:new Date().toISOString(),games,props:propRows.slice(0,100),parlays:parlayRows,eligible_legs:eligibleLegs,correlations:[],blocked:[],provenance:{schedule_status:schedule.status||null,game_recommendation_status:gameRecs.status||null,prop_recommendation_status:propRecs.status||null,parlay_status:parlays.status||null,eligible_leg_source:'ALREADY_APPROVED_DOWNSTREAM_RECOMMENDATION',same_game_correlation_runtime:'BLOCK_UNTIL_VERIFIED_PAIR_CORRELATION_AVAILABLE'}};
+  return {schema_version:'1.2.0',season:2026,week:Number(week),status:'READY',generated_at:new Date().toISOString(),games,props:propRows,parlays:parlayRows,eligible_legs:eligibleLegs,correlations:[],blocked:[],provenance:{schedule_status:schedule.status||null,game_recommendation_status:gameRecs.status||null,prop_recommendation_status:propRecs.status||null,parlay_status:parlays.status||null,eligible_leg_source:'ALREADY_APPROVED_DOWNSTREAM_RECOMMENDATION',same_game_correlation_runtime:'BLOCK_UNTIL_VERIFIED_PAIR_CORRELATION_AVAILABLE'}};
 }
 
 function synthetic(){const leg=(id,event)=>({leg_id:id,event_id:event,week:3,market_type:'spread',side:'B -2.5',sportsbook:'BOOK',american_odds:-110,model_win_probability:.58,probability_edge:.05,expected_value:.08,observed_at:'2026-09-24T12:00:00Z',standalone_approved:true,label:'PICK',source_type:'GAME'});return {schedule:{season:2026,week:3,status:'VERIFIED',games:{g1:{away_team:'A',home_team:'B',status:'Scheduled'},g2:{away_team:'C',home_team:'D',status:'Scheduled'}}},gameRecs:{week:3,status:'SHADOW_ONLY',games:{g1:{week:3,away_team:'A',home_team:'B',football_projection:{home_win_probability:.57},current_recommendations:{snapshot_id:'s',spread:{decision:'PICK',selection:'B -2.5',confidence:'MODERATE',expected_value:.08,probability_edge:.05},total:{decision:'PASS'},moneyline:{decision:'PASS'}},snapshot_evaluations:[{snapshot_id:'s',market:{home_spread:-2.5,total:45.5,home_moneyline:-130,away_moneyline:110}}]}}},propRecs:{week:3,players:{}},parlays:{week:3,status:'READY',eligible_leg_count:2,eligible_legs:[leg('g1:spread:s:B_-2.5','g1'),leg('g2:spread:s:D_-1.5','g2')],model_picks:[]}};}
@@ -73,9 +78,22 @@ const out=build(src);
 if(self){
   if(out.status!=='READY'||out.week!==3||out.games.length!==2)throw new Error('self-test current-week feed failed');
   if(out.eligible_legs.length!==2||out.eligible_legs.some(x=>x.standalone_approved!==true||x.label!=='PICK'))throw new Error('self-test eligible-leg exposure failed');
+  const props=Object.fromEntries(['PICK','PASS','WAIT'].map((decision,i)=>['P'+i,{weekly:{week:3,current_by_stat:{yards:{week:3,line:50.5,model:{over_probability:.6,under_probability:.4,push_probability:0},recommendation:{decision,side:decision==='PICK'?'OVER':null},sides:[{side:'OVER',offered_odds:-110}]}}}}]));
+  const directions=build({...src,propRecs:{week:3,players:props}});
+  if(directions.props.length!==3||directions.props.some(p=>p.side!=='OVER')||directions.props.filter(p=>p.recommendation.decision==='PICK').length!==1)throw Error('model directions and wagering recommendations must remain separate');
+  if(directions.eligible_legs.length!==out.eligible_legs.length)throw Error('direction must not admit new parlay legs');
+  const providerIds=build({...src,schedule:{...src.schedule,games:Object.fromEntries(Object.entries(src.schedule.games).map(([id,g])=>[id,{...g,event_id:'ESPN-'+id}]))}});
+  if(providerIds.games[0].event_id!=='g1'||providerIds.games[0].source_event_id!=='ESPN-g1'||providerIds.games[0].spread!=='B -2.5'||providerIds.games[0].win_probability!==.57)throw Error('provider IDs must not replace canonical model game IDs');
   const stale=build({...src,gameRecs:{...src.gameRecs,week:2}});
   if(stale.status!=='WAITING_FOR_CURRENT_WEEK_OUTPUTS'||stale.games.length||stale.eligible_legs.length)throw new Error('self-test stale-week isolation failed');
 }
-if(!self)write('data/market/final-betting-ui-feed-2026.json',out);
+if(!self){
+ const historyPath='data/market/issued-pick-history-2026.json';
+ if(out.status==='READY'){
+  const history=captureHistory({...src,ledger:fs.existsSync(historyPath)?read(historyPath):null,propSnapshots:read('data/market/player-prop-market-snapshots-2026.json'),now:out.generated_at,sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()});
+  write(historyPath,history.ledger);
+ }
+ write('data/market/final-betting-ui-feed-2026.json',out);
+}
 console.log(JSON.stringify({result:out.blocked?.length?'BLOCKED':'PASS',week:out.week,status:out.status,games:out.games.length,props:out.props.length,parlays:out.parlays.length,eligible_legs:out.eligible_legs.length,blocked:out.blocked},null,2));
 if(out.blocked?.length)process.exit(1);

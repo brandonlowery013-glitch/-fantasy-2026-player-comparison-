@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import {playerResolver,earlyPropRefreshNeeded} from '../lib/prop-player-identity.mjs';
+const canonical=[{n:'James Cook',p:'RB'},{n:'Justin Jefferson',p:'WR'}];
+const personnel={teams:{BUF:{team:'BUF',players:[{name:'James Cook III',position:'RB',athlete_id:'1'},{name:'New Backup',position:'RB',athlete_id:'2'}]},MIN:{team:'MIN',players:[{name:'Justin Jefferson',position:'WR',athlete_id:'3'}]},CLE:{team:'CLE',players:[{name:'Justin Jefferson',position:'LB',athlete_id:'4'}]}}};
+const resolve=playerResolver(canonical,personnel),game={home_team:'BUF',away_team:'MIN'};
+assert.equal(resolve('James Cook',game,'rushing_yards').athlete_id,'1');
+assert.equal(resolve('New Backup',game,'rushing_yards').market_only,true);
+assert.equal(resolve('Justin Jefferson',game,'receiving_yards').athlete_id,'3');
+assert.equal(resolve('Unmapped Rookie',game,'rushing_yards').name,'Unmapped Rookie');
+assert.equal(resolve('Unmapped Rookie',game,'rushing_yards').market_only,true);
+assert.equal(resolve('James Cook',{home_team:'CLE',away_team:'MIN'},'rushing_yards').identity_status,'UNRESOLVED');
+const now=Date.parse('2026-09-17T12:00:00Z'),state={coverage_version:2,last_prop_fetch_at:new Date(now-6*3600000).toISOString(),last_fetched_markets:['player_rush_yds']};
+assert.equal(earlyPropRefreshNeeded(state,['player_rush_yds'],now),false);
+assert.equal(earlyPropRefreshNeeded(state,['player_rush_yds','player_receptions'],now),true);
+assert.equal(earlyPropRefreshNeeded(state,['player_rush_yds'],now+18*3600000),true);
+assert.equal(earlyPropRefreshNeeded({...state,coverage_version:1},['player_rush_yds'],now),true);
+assert.equal(earlyPropRefreshNeeded(state,[],now),false);
+console.log('PASS: roster expansion, suffixes, team/position identity, retained unknown offers, discovery and daily refresh gates');
+
+import {currentGameLines} from '../lib/current-game-lines.mjs';
+const quote={book:'book',home_spread:-3.5,home_spread_price:-110,away_spread_price:-110,total:44.5,over_price:-110,under_price:-110,snapshot_kind:'CURRENT',captured_at:'2026-09-17T10:00:00Z'};
+const compact=currentGameLines({games:{fixture:{home_team:'BUF',away_team:'MIN',week:2,kickoff:'2026-09-20T17:00:00Z',snapshots:[quote,{...quote,captured_at:'2026-09-17T11:00:00Z',total:45.5},{...quote,snapshot_kind:'CLOSE',captured_at:'2026-09-20T17:00:01Z',total:99}]}}});
+assert.equal(compact.games[0].bookmakers.length,1);
+assert.equal(compact.games[0].bookmakers[0].markets[0].outcomes[1].point,3.5);
+assert.equal(compact.games[0].bookmakers[0].markets[1].outcomes[0].point,45.5);
+console.log('PASS: compact lines preserve latest per-book quotes, spread signs, and exclude derived closes');

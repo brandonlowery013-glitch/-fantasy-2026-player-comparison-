@@ -37,7 +37,7 @@ for(const season of seasons){
 let scheduleMatched=0,snapMatched=0,injuryMatched=0,activeZeroAdded=0,injuryInactiveAdded=0;
 const existing=new Set(rows.map(r=>`${r.player}|${r.season}|${r.week}`));
 const playerMeta=new Map();
-for(let i=0;i<13;i++) for(const p of JSON.parse(fs.readFileSync(path.join(root,`players${i}.json`),'utf8'))) playerMeta.set(norm(p.n),p);
+for(let i=0;i<Number(JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8')).runtime_player_shards);i++) for(const p of JSON.parse(fs.readFileSync(path.join(root,`players${i}.json`),'utf8'))) playerMeta.set(norm(p.n),p);
 function matchName(name){const k=norm(name);return playerMeta.get(k)||playerMeta.get(aliases[k]||'')||null}
 function enrichRow(r){
   const g=gameByTeamWeek.get(`${r.season}|${r.week}|${r.team}`);

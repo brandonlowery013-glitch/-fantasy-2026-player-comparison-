@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {parseSplits} from '../lib/public-splits.mjs';
+import {previousGames,teamFacts} from '../lib/matchup-facts.mjs';
+const row=(label,money,bets)=>`<div class="tb-sodd"><div>${label}</div><div>−110</div><div>${money}%<div><div></div></div></div><div>${bets}%<div></div></div></div>`;
+const html=`<div class="tb-se"><div class="tb-se-title"><img src="https://example.org/teams/nfl/NYJ.png"><img src="https://example.org/teams/nfl/CHI.png"><span>10/4, 01:00PM</span></div><div class="tb-market-wrap"><div><div class="tb-se-head"><div>Moneyline</div><div>Odds</div><div>% Handle</div><div>% Bets</div></div>${row('NY Jets',70,40)}${row('CHI Bears',30,60)}</div></div></div>`;
+const event={id:'1',date:'2026-10-04T17:00:00Z',competitions:[{competitors:[{homeAway:'away',team:{abbreviation:'NYJ'}},{homeAway:'home',team:{abbreviation:'CHI'}}]}]};
+const parsed=parseSplits(html,[event],'2026-10-04T05:00:00Z');assert.equal(parsed.games[0].moneyline[0].side,'NYJ');assert.equal(parsed.games[0].moneyline[0].bets,40);assert.equal(parsed.games[0].moneyline[0].money,70);
+assert.equal(parseSplits(html,[{...event,date:'2026-10-11T17:00Z'}],'2026-10-04').games.length,0);
+assert.equal(parseSplits(html.replace('70%','120%'),[event],'2026-10-04').games.length,0);
+assert.equal(parseSplits(html.replace('70%','50%'),[event],'2026-10-04').games.length,0);
+assert.equal(parseSplits(html.replace('% Handle','% Bets'),[event],'2026-10-04').games.length,0);
+assert.equal(parseSplits(html,[event,event],'2026-10-04').games.length,0);
+const ev=(id,date,completed)=>({id,date,competitions:[{status:{type:{completed}}}]});
+assert.deepEqual(previousGames({events:[ev('prior','2026-09-27',true),ev('target','2026-10-04',true),ev('future','2026-10-11',true),ev('notfinal','2026-09-20',false)]},'2026-10-04').map(e=>e.id),['prior']);
+const team=(abbreviation,stats)=>({team:{abbreviation},statistics:Object.entries(stats).map(([name,displayValue])=>({name,displayValue:String(displayValue)}))});
+const facts=teamFacts('BUF',[{header:{id:'prior'},boxscore:{teams:[team('BUF',{totalOffensivePlays:60,rushingAttempts:24,sacksYardsLost:'2-12'}),team('NE',{netPassingYards:200,rushingYards:100,rushingAttempts:25,sacksYardsLost:'3-18'})]}}]);
+assert(facts.some(f=>f.text.includes('60.0% passing')));assert(facts.some(f=>f.text.includes('4.0 yards per carry')));assert(facts.some(f=>f.text.includes('made 3 sacks')));assert.equal(teamFacts('BUF',[]).length,0);
+console.log('PASS: real ticket/money columns, team aliases, wrong-date rejection, malformed split rejection, no target-game leakage, recent-game arithmetic');

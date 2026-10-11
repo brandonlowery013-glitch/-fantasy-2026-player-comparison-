@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import {quarterbackRefreshPlan as plan} from '../lib/quarterback-refresh-plan.mjs';
+const g={id:'g',verified:true,kickoff:'2026-10-11T17:00:00Z',completed:false};
+const run=(now,extra={})=>plan({games:[g],now,...extra});
+assert.equal(run('2026-10-11T15:29:00Z').length,0);assert.equal(run('2026-10-11T15:30:00Z').length,1);
+assert.equal(run(g.kickoff).length,0);
+const task=run('2026-10-11T15:30:00Z')[0];assert.equal(run('2026-10-11T15:34:00Z',{completedKeys:[task.key]}).length,0);
+assert.equal(run('2026-10-11T15:35:00Z',{completedKeys:[task.key]}).length,1);
+const r={game_id:'g',id:'report',verified:true,received_at:'2026-10-08T18:00:00Z'};
+assert.equal(run(r.received_at,{reports:[r]}).length,1);assert.equal(run('2026-10-08T17:00:00Z',{reports:[r]}).length,0);
+assert.equal(run('2026-10-11T21:00:00Z').length,0,'Do not assume final after a fixed duration');
+assert.equal(run('2026-10-11T21:00:00Z',{games:[{...g,completed:true}]}).length,1);
+assert.equal(run('2026-10-11T21:00:00Z',{games:[{...g,completed:true},{...g,id:'overtime'}]}).length,0);
+assert.equal(run('2026-11-08T16:30:00Z',{games:[{...g,kickoff:'2026-11-08T18:00:00Z'}]}).length,1);
+assert.equal(run('2026-10-11T12:00:00Z',{games:[{...g,kickoff:'2026-10-11T13:30:00Z'}]}).length,1);
+console.log('PASS: Central/DST, early kickoff, midweek news, five-minute dedupe, kickoff stop and final-only waves.');
+
+const original={...r,status:'QUESTIONABLE',reported_at:r.received_at};
+const reportKey=run(r.received_at,{reports:[original]})[0].key;
+assert.equal(run(r.received_at,{reports:[original],completedKeys:[reportKey]}).length,0);
+const updated={...original,status:'OUT',reported_at:'2026-10-08T19:00:00Z',received_at:'2026-10-08T19:01:00Z'};
+assert.equal(run(updated.received_at,{reports:[updated],completedKeys:[reportKey]}).length,1,'A changed report with the same provider ID must trigger another update');
+assert.equal(run('2026-10-08T19:02:00Z',{reports:[{...original,received_at:'2026-10-08T19:02:00Z'}],completedKeys:[reportKey]}).length,0,'Polling the same report again must not repeat completed work');
+console.log('PASS: changed provider reports trigger updates; repeated polling does not.');

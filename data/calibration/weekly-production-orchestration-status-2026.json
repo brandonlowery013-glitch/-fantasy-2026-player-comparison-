@@ -4,7 +4,7 @@
   "status": "SHADOW_ONLY",
   "mode": "SHADOW_ONLY",
   "actionable": false,
-  "generated_at": "2026-09-14T22:28:38.932Z",
+  "generated_at": "2026-10-10T22:37:07.181Z",
   "concurrency_group": "weekly-production-orchestration",
   "ordered_stages": [
     "SOURCE_INGESTION",
@@ -25,53 +25,53 @@
     "SOURCE_INGESTION": {
       "status": "READY",
       "evidence": {
-        "schedule_games": 16,
-        "context_players": 0
+        "schedule_games": 15,
+        "context_players": 167
       }
     },
     "WEEKLY_PLAYER_MODEL": {
       "status": "WAITING_FOR_MODEL",
       "evidence": {
-        "week": 1,
-        "players": 162
+        "week": 4,
+        "players": 167
       }
     },
     "FORECAST_FREEZE": {
       "status": "WAITING_FOR_MODEL",
       "evidence": {
-        "frozen_forecasts": 472
+        "frozen_forecasts": 0
       }
     },
     "GAME_PROJECTIONS": {
       "status": "READY",
       "evidence": {
-        "games": 16
+        "games": 14
       }
     },
     "MARKET_CAPTURE": {
-      "status": "LIVE_MARKET_INGESTED",
+      "status": "WAITING_FOR_CURRENT_WEEK_MARKET_CAPTURE",
       "evidence": {
-        "provider_status": "LIVE_MARKET_INGESTED"
+        "provider_status": "WAITING_FOR_CURRENT_WEEK_MARKET_CAPTURE"
       }
     },
     "MARKET_RECOMMENDATIONS": {
-      "status": "READY",
+      "status": "WAITING_FOR_MARKETS",
       "evidence": {
-        "game_recommendation_games": 16,
-        "evaluated_player_markets": 5146
+        "game_recommendation_games": 14,
+        "evaluated_player_markets": 10285
       }
     },
     "OPPORTUNITY_RANKING": {
-      "status": "SHADOW_ONLY",
+      "status": "WAITING_FOR_CURRENT_WEEK_RECOMMENDATIONS",
       "evidence": {
-        "ranked_picks": 26,
+        "ranked_picks": 0,
         "near_misses": 0
       }
     },
     "POSTGAME_SETTLEMENT": {
       "status": "READY",
       "evidence": {
-        "settled": 380
+        "settled": 485
       }
     },
     "LIVE_MARKET_CALIBRATION": {
@@ -85,7 +85,7 @@
       }
     },
     "PIPELINE_HEALTH": {
-      "status": "WAITING_FOR_CONTEXT",
+      "status": "WAITING_FOR_SOURCE",
       "evidence": {
         "actionable": false
       }

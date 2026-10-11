@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "model_version": "scoring-decay-rest-2026-v1",
+  "season": 2026,
+  "status": "VALIDATED_SHADOW_CANDIDATE",
+  "generated_at": "2026-09-16T05:32:10.254Z",
+  "sportsbook_inputs_used": false,
+  "trained_through_season": 2025,
+  "half_life_games": 4,
+  "ridge_lambda": 100,
+  "margin": {
+    "mu": [
+      1.0322212853771517,
+      0.005886681383370125
+    ],
+    "sd": [
+      4.0478595159637,
+      2.3520149185335586
+    ],
+    "beta": [
+      4.99192169841483,
+      0.44750383286354456
+    ],
+    "a": 2.0625459896983074
+  },
+  "total": {
+    "mu": [
+      45.2720513740941,
+      1.1464311994113319
+    ],
+    "sd": [
+      3.330240876050951,
+      2.0537050262972074
+    ],
+    "beta": [
+      2.225550796781011,
+      -0.2331384108386849
+    ],
+    "a": 45.02354672553348
+  },
+  "hfa": 1.7442724458204335,
+  "prior_season": 2025,
+  "prior": {
+    "NO": {
+      "games": 17,
+      "pf": 306,
+      "pa": 383
+    },
+    "ARI": {
+      "games": 17,
+      "pf": 355,
+      "pa": 488
+    },
+    "BUF": {
+      "games": 17,
+      "pf": 481,
+      "pa": 365
+    },
+    "BAL": {
+      "games": 17,
+      "pf": 424,
+      "pa": 398
+    },
+    "JAX": {
+      "games": 17,
+      "pf": 474,
+      "pa": 336
+    },
+    "CAR": {
+      "games": 17,
+      "pf": 311,
+      "pa": 380
+    },
+    "CLE": {
+      "games": 17,
+      "pf": 279,
+      "pa": 379
+    },
+    "CIN": {
+      "games": 17,
+      "pf": 414,
+      "pa": 492
+    },
+    "PHI": {
+      "games": 17,
+      "pf": 379,
+      "pa": 325
+    },
+    "DAL": {
+      "games": 17,
+      "pf": 471,
+      "pa": 511
+    },
+    "GB": {
+      "games": 17,
+      "pf": 391,
+      "pa": 360
+    },
+    "DET": {
+      "games": 17,
+      "pf": 481,
+      "pa": 413
+    },
+    "LAR": {
+      "games": 17,
+      "pf": 518,
+      "pa": 346
+    },
+    "HOU": {
+      "games": 17,
+      "pf": 404,
+      "pa": 295
+    },
+    "LAC": {
+      "games": 17,
+      "pf": 368,
+      "pa": 340
+    },
+    "KC": {
+      "games": 17,
+      "pf": 362,
+      "pa": 328
+    },
+    "NE": {
+      "games": 17,
+      "pf": 490,
+      "pa": 320
+    },
+    "LV": {
+      "games": 17,
+      "pf": 241,
+      "pa": 432
+    },
+    "IND": {
+      "games": 17,
+      "pf": 466,
+      "pa": 412
+    },
+    "MIA": {
+      "games": 17,
+      "pf": 347,
+      "pa": 424
+    },
+    "CHI": {
+      "games": 17,
+      "pf": 441,
+      "pa": 415
+    },
+    "MIN": {
+      "games": 17,
+      "pf": 344,
+      "pa": 333
+    },
+    "WAS": {
+      "games": 17,
+      "pf": 356,
+      "pa": 451
+    },
+    "NYG": {
+      "games": 17,
+      "pf": 381,
+      "pa": 439
+    },
+    "NYJ": {
+      "games": 17,
+      "pf": 300,
+      "pa": 503
+    },
+    "PIT": {
+      "games": 17,
+      "pf": 397,
+      "pa": 387
+    },
+    "SEA": {
+      "games": 17,
+      "pf": 483,
+      "pa": 292
+    },
+    "SF": {
+      "games": 17,
+      "pf": 437,
+      "pa": 371
+    },
+    "ATL": {
+      "games": 17,
+      "pf": 353,
+      "pa": 401
+    },
+    "TB": {
+      "games": 17,
+      "pf": 380,
+      "pa": 411
+    },
+    "DEN": {
+      "games": 17,
+      "pf": 401,
+      "pa": 311
+    },
+    "TEN": {
+      "games": 17,
+      "pf": 284,
+      "pa": 478
+    }
+  },
+  "distribution": {
+    "team_score_sd": 9.322092091970088,
+    "home_away_score_correlation": 0.004801120766302407,
+    "source": "Earlier-fit held-out 2024/2025 prediction residuals",
+    "games": 544
+  },
+  "validation_path": "data/probability/generated/matchup-score-validation-2026.json",
+  "numeric_features": [
+    "prior/current team scoring offense versus opponent points allowed",
+    "historically selected current-season decay",
+    "empirical home advantage, removed at neutral venues",
+    "rest differential"
+  ],
+  "excluded_numeric_features": [
+    "granular EPA/pace/explosive matchup extension failed ablation",
+    "observed personnel continuity failed ablation",
+    "injury and coaching coefficients not validated"
+  ]
+}

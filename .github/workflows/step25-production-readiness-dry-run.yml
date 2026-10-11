@@ -32,7 +32,9 @@ jobs:
       - name: Revalidate Step 20 pipeline health
         run: node scripts/check-weekly-pipeline-health.mjs --self-test
       - name: Revalidate Step 22 chronology
-        run: node scripts/validate-real-season-validation.mjs --self-test
+        run: |
+          node scripts/build-player-prop-recommendations.mjs
+          node scripts/validate-real-season-validation.mjs --self-test
       - name: Upload Step 25 QA
         if: always()
         uses: actions/upload-artifact@v4

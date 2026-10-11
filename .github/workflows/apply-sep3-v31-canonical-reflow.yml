@@ -1,8 +1,6 @@
 name: Apply Sep 3 V3.1 Canonical Reflow
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:
@@ -36,6 +34,7 @@ jobs:
       - name: Prove baseline drift is exactly declared
         run: node scripts/run-baseline-drift-check.mjs
       - name: Commit declarations and spreadsheet sync bridge only when changed
+        if: github.event_name == 'workflow_dispatch'
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com

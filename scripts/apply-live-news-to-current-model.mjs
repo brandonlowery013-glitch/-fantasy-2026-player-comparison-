@@ -14,10 +14,10 @@ function boundSignalView(player,signal,canonical){
 
 const source=read('MODEL_SOURCE_OF_TRUTH.json');
 const expected=Number(source.active_player_model);
-if(expected!==166) throw new Error(`Canonical universe must be 166; found ${expected}`);
+if(!Number.isInteger(expected)||expected<1) throw new Error(`Invalid canonical player count: ${expected}`);
 let active=[];for(let i=0;i<Number(source.runtime_player_shards);i++) active.push(...read(`players${i}.json`));
 const names=active.map(p=>p.n);
-if(active.length!==166||new Set(names).size!==166) throw new Error(`Loaded canonical universe is not 166 unique players: ${active.length}/${new Set(names).size}`);
+if(active.length!==expected||new Set(names).size!==expected) throw new Error(`Loaded canonical universe is not ${expected} unique players: ${active.length}/${new Set(names).size}`);
 const activeByName=new Map(active.map(p=>[p.n,p]));
 const review=read('guardrails/current-football-review.json');
 const taxonomy=read('analysis/full-universe-reconciliation-taxonomy-current.json');
@@ -26,13 +26,21 @@ const adjudication=read('analysis/live-news-decision-audit-current.json');
 const patchPath=source.current_update_layer||'current162patch-2026-08-24.json';
 const patch=read(patchPath);
 if(!patch.players||typeof patch.players!=='object') throw new Error('Current update layer missing players map');
-for(const n of names) if(!patch.players[n]) throw new Error(`Current update layer missing canonical player: ${n}`);
+
 const taxBy=new Map((taxonomy.rows||[]).map(x=>[x.player,x]));
 const calcBy=new Map((recalc.rows||[]).map(x=>[x.player,x]));
 const reviewBy=new Map((review.players||[]).map(x=>[x.player,x]));
 const decisionBy=new Map((adjudication.decisions||[]).map(x=>[x.player,x]));
-if(reviewBy.size!==166) throw new Error(`Review coverage ${reviewBy.size}/166`);
-if(decisionBy.size!==166||adjudication.counts?.self_audit_errors!==0) throw new Error(`Decision/self-audit coverage failed: ${decisionBy.size}/166`);
+if(reviewBy.size!==expected) throw new Error(`Review coverage ${reviewBy.size}/${expected}`);
+if(decisionBy.size!==expected||adjudication.counts?.self_audit_errors!==0) throw new Error(`Decision/self-audit coverage failed: ${decisionBy.size}/${expected}`);
+for(const [label,rows,map] of [['Review',review.players||[],reviewBy],['Decision',adjudication.decisions||[],decisionBy]]) {
+  if(rows.length!==expected||names.some(n=>!map.has(n))) throw new Error(`${label} must cover each canonical player exactly once`);
+}
+// Newly admitted canonical players may not yet have a news overlay.
+for(const name of names){
+  if(!Object.prototype.hasOwnProperty.call(patch.players,name)) patch.players[name]={};
+  if(!patch.players[name]||typeof patch.players[name]!=='object'||Array.isArray(patch.players[name])) throw new Error(`Invalid current update layer for ${name}`);
+}
 const now=new Date().toISOString();
 let material=0,directMaterial=0,connectedMaterial=0,connectedReview=0,numeric=0,noChange=0,preservedNews=0,adjudicatedCount=0,unboundSuppressed=0;
 for(const name of names){
@@ -84,8 +92,8 @@ for(const name of names){
   if(acceptedDirectMaterial&&c&&c.status==='NUMERIC_TV_PROPOSAL') numeric++;
 }
 patch.updated=now.slice(0,10);
-patch.model=`single 166-player active board — live news/model decisions synced ${now}`;
-patch.live_news_model_sync={updated_at:now,players:166,material_players:material,direct_material_players:directMaterial,connected_context_players:connectedMaterial,connected_context_review_only:connectedReview,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_policy:'DECIDE_THEN_SELF_AUDIT',evidence_binding_policy:'SUBJECT_AWARE_PLAYER_EVENT_FRAGMENTS_OR_VERIFIED_CAUSAL_CONNECTED_QB_CONTEXT',connected_context_policy:'SAME_TEAM_QB OUT/RETURN MAY CHANGE NEAR_TERM OUTLOOK; STARTER CHANGE ALONE IS REVIEW_ONLY; CONNECTED EVIDENCE NEVER OVERWRITES PLAYER NEWSFEED',source_review:'guardrails/current-football-review.json',taxonomy:'analysis/full-universe-reconciliation-taxonomy-current.json',recalculation:'analysis/substantive-component-recalculation-current.json',adjudication:'analysis/live-news-decision-audit-current.json'};
+patch.model=`single ${expected}-player active board — live news/model decisions synced ${now}`;
+patch.live_news_model_sync={updated_at:now,players:expected,material_players:material,direct_material_players:directMaterial,connected_context_players:connectedMaterial,connected_context_review_only:connectedReview,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_policy:'DECIDE_THEN_SELF_AUDIT',evidence_binding_policy:'SUBJECT_AWARE_PLAYER_EVENT_FRAGMENTS_OR_VERIFIED_CAUSAL_CONNECTED_QB_CONTEXT',connected_context_policy:'SAME_TEAM_QB OUT/RETURN MAY CHANGE NEAR_TERM OUTLOOK; STARTER CHANGE ALONE IS REVIEW_ONLY; CONNECTED EVIDENCE NEVER OVERWRITES PLAYER NEWSFEED',source_review:'guardrails/current-football-review.json',taxonomy:'analysis/full-universe-reconciliation-taxonomy-current.json',recalculation:'analysis/substantive-component-recalculation-current.json',adjudication:'analysis/live-news-decision-audit-current.json'};
 write(patchPath,patch);
-write('guardrails/live-news-model-application-report.json',{result:'PASS',generated_at:now,universe:166,patch:patchPath,material_players:material,direct_material_players:directMaterial,connected_context_players:connectedMaterial,connected_context_review_only:connectedReview,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_self_audit:'PASS',static_evaluation_mutated:false});
-console.log(JSON.stringify({result:'PASS',universe:166,material_players:material,direct_material_players:directMaterial,connected_context_players:connectedMaterial,connected_context_review_only:connectedReview,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_self_audit:'PASS',patch:patchPath},null,2));
+write('guardrails/live-news-model-application-report.json',{result:'PASS',generated_at:now,universe:expected,patch:patchPath,material_players:material,direct_material_players:directMaterial,connected_context_players:connectedMaterial,connected_context_review_only:connectedReview,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_self_audit:'PASS',static_evaluation_mutated:false});
+console.log(JSON.stringify({result:'PASS',universe:expected,material_players:material,direct_material_players:directMaterial,connected_context_players:connectedMaterial,connected_context_review_only:connectedReview,adjudicated_material_players:adjudicatedCount,numeric_proposals:numeric,no_material_update:noChange,preserved_latest_news_players:preservedNews,unbound_candidates_suppressed:unboundSuppressed,decision_self_audit:'PASS',patch:patchPath},null,2));
