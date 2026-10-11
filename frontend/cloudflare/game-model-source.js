@@ -6,7 +6,7 @@
  const read=async url=>{const r=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('Game model unavailable: '+r.status);return r.json()};
  function release(slot){if(!releases.has(slot)){releases.clear();releases.set(slot,read(HEAD).then(x=>{if(x.ref!=='refs/heads/main'||x.object?.type!=='commit'||!/^[a-f0-9]{40}$/.test(x.object?.sha||''))throw Error('Invalid producer release');return x.object.sha;}).catch(()=> 'main'));}return releases.get(slot);}
  function select(base,rerun){return rerun?.rerun===true&&rerun.actionable===false&&rerun.season===base.season&&rerun.week===base.week&&Object.keys(base.games||{}).every(id=>rerun.games?.[id])?rerun:base;}
- window.CTD_GAME_MODEL={select,load(kind='recommendations'){
+ window.CTD_GAME_MODEL={select,release:()=>release(Math.floor(Date.now()/300000)),load(kind='recommendations'){
   if(!paths[kind])return Promise.reject(Error('Unknown game model source'));
   const slot=Math.floor(Date.now()/300000),key=kind+slot;if(cache.has(key))return cache.get(key);
   for(const old of cache.keys())if(old.startsWith(kind))cache.delete(old);

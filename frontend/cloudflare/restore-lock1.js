@@ -314,6 +314,7 @@ document.addEventListener('click',ev=>{const p=ev.target.closest('[data-profile]
     .then(()=>load('./runtime-public-splits-2026.js'))
     .then(()=>load('./runtime-matchup-facts-2026.mjs'))
     .then(()=>load('./news-updates.js'))
+    .then(()=>load('./current-rank-views.js'))
     .catch(err=>console.error('CTD news updates failed',err))
     .then(()=>{const render=renderSelectedGame;renderSelectedGame=function(){return window.CTD_READING.preserve(document.getElementById('gamesPage'),render);};});
 })();

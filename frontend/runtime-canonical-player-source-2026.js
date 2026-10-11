@@ -1,6 +1,8 @@
 (()=>{
- const RAW='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/';
- const get=async p=>{const r=await fetch(RAW+p+'?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(p+' '+r.status);return r.json()};
+ const ROOT='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/';
+ const release=window.CTD_GAME_MODEL?.release?.()||Promise.resolve('main');let RAW=ROOT+'main/';
+ const pinned=release.then(sha=>{RAW=ROOT+sha+'/';return sha});
+ const get=async p=>{await pinned;const r=await fetch(RAW+p+'?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(p+' '+r.status);return r.json()};
  (async()=>{try{
   const manifest=await get('MODEL_SOURCE_OF_TRUTH.json');
   const expected=manifest.active_player_model,shards=manifest.runtime_player_shards;
