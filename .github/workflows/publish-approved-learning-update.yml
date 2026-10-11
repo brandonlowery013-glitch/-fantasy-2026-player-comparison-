@@ -1,0 +1,79 @@
+name: Publish explicitly approved learning update
+
+on:
+  push:
+    branches: ['fix/continuous-postgame-learning']
+    paths: ['.github/workflows/publish-approved-learning-update.yml']
+
+# One-time publication of PR 2212, explicitly approved in the Codex task.
+# Acquire both existing writer groups; leave their scheduled workflows enabled.
+concurrency:
+  group: production-player-prop-writer
+  cancel-in-progress: false
+  queue: max
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  checks: read
+  statuses: read
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/fix/continuous-postgame-learning'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: production-main-writer
+      cancel-in-progress: false
+      queue: max
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/continuous-postgame-learning
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify the explicitly approved PR identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/${GITHUB_REPOSITORY}/pulls/2212 --jq '.head.ref + "|" + .base.ref + "|" + .head.repo.full_name' > /tmp/approved-target.txt
+          test "$(cat /tmp/approved-target.txt)" = "fix/continuous-postgame-learning|main|${GITHUB_REPOSITORY}"
+      - name: Incorporate current production data under the writer locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          if ! git merge --no-edit origin/main; then
+            conflicts=$(git diff --name-only --diff-filter=U)
+            test "$conflicts" = 'data/market/weekly-game-market-recommendations-2026.json'
+            git checkout --theirs data/market/weekly-game-market-recommendations-2026.json
+            git add data/market/weekly-game-market-recommendations-2026.json
+            git commit --no-edit
+          fi
+          cp data/market/weekly-game-market-recommendations-2026.json /tmp/current-production-games.json
+          node scripts/build-game-market-recommendations.mjs
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';import assert from 'node:assert/strict';
+          const before=JSON.parse(fs.readFileSync('/tmp/current-production-games.json'));
+          const after=JSON.parse(fs.readFileSync('data/market/weekly-game-market-recommendations-2026.json'));
+          for(const [id,g] of Object.entries(before.games))assert.deepEqual(after.games[id].football_projection,g.football_projection,id);
+          console.log('PASS: latest published football projections preserved');
+          JS
+          git add data/market/weekly-game-market-recommendations-2026.json data/market/game-model-consumer-2026.json
+          git diff --cached --quiet || git commit -m 'Prepare approved learning publication from latest cached production inputs'
+          git push origin HEAD:fix/continuous-postgame-learning
+      - name: Test postgame learning and prediction separation
+        run: |
+          node scripts/test-postgame-model-learning.mjs
+          node scripts/test-game-direction-prediction.mjs
+          node scripts/test-show-work.mjs
+      - name: Merge only the exact fully validated protected candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/merge-guarded-production-pr.sh 2212 fix/continuous-postgame-learning merge
