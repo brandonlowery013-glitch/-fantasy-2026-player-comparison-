@@ -1,3 +1,6 @@
+import {candidateFor,gameFeatures} from '../lib/postgame-model-learning.mjs';
+import {behaviorState} from '../lib/football-learning.mjs';
+import {gameDirectionPrediction} from '../lib/game-direction-prediction.mjs';
 import {gameWork,gameMarketView,publicBettingContext} from '../lib/show-work.mjs';
 import {matchupPersonnel} from '../lib/team-personnel.mjs';
 import {gameContextEvidence} from '../lib/game-context-evidence.mjs';
@@ -21,6 +24,7 @@ const optional=p=>fs.existsSync(path.join(root,p))?read(p):null;
 const currentPersonnel=optional('data/ingestion/team-personnel-2026.json');
 const quarterbackInputs=optional('data/context/quarterback-starter-scenarios-2026.json');
 const quarterbackModel=optional('data/probability/generated/quarterback-score-model-2026.json');
+const learningLedger=optional('data/market/postgame-model-learning-2026.json');
 const previousPath=path.join(root,'data/market/weekly-game-market-recommendations-2026.json');
 const previousRecommendations=!rerun&&!process.argv.includes('--self-test')&&fs.existsSync(previousPath)?JSON.parse(fs.readFileSync(previousPath,'utf8')):null;
 const roundObj=x=>JSON.parse(JSON.stringify(x,(k,v)=>typeof v==='number'?Number(v.toFixed(6)):v));
@@ -118,10 +122,17 @@ for(const [gameId,mg] of Object.entries(marketGames)){
       }
     }
   }
+  games[gameId].model_predictions=Object.fromEntries(['moneyline','spread'].map(kind=>[kind,gameDirectionPrediction(games[gameId],latest,kind)]));
   const currentByBook=new Map();for(const snapshot of eligible)currentByBook.set(snapshot.book,snapshot.snapshot_id);
   for(const snapshot of games[gameId].snapshot_evaluations)for(const [kind,evaluation]of Object.entries(snapshot.markets)){
     const asOf=!rerun&&snapshot.eligible_for_current_recommendation&&currentByBook.get(snapshot.book)===snapshot.snapshot_id?decisionNow:snapshot.captured_at;
     evaluation.public_betting_context=publicBettingContext(src.markets.public_betting_splits,games[gameId],kind,asOf);
+    if(!self&&!rerun&&learningLedger&&currentByBook.get(snapshot.book)===snapshot.snapshot_id&&['moneyline','spread'].includes(kind)&&Date.parse(asOf)<kickoff&&Number.isFinite(evaluation.side_a?.conditional_win_probability)){
+      const f={game_id:gameId,market:kind,week:currentWeek,home_team:game.home_team,away_team:game.away_team,probability:evaluation.side_a.conditional_win_probability,home_score_mean:game.model.home_score_mean,away_score_mean:game.model.away_score_mean};
+      f.features=gameFeatures(f,behaviorState(learningLedger.observations||[],{season:2026,week:currentWeek,asOf}));
+      evaluation.postgame_learning=candidateFor(learningLedger,f,asOf);
+    }
+    evaluation.model_prediction=gameDirectionPrediction(games[gameId],snapshot,kind);
     evaluation.show_work=gameWork(games[gameId],snapshot,kind);
   }
 }

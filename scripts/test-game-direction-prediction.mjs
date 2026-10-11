@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {gameDirectionPrediction} from '../lib/game-direction-prediction.mjs';
+const g={home_team:'CHI',away_team:'GB',football_projection:{home_win_probability:.49,away_win_probability:.48}};
+const s={market:{home_spread:1.5},markets:{moneyline:{side_a:{conditional_win_probability:.51},side_b:{conditional_win_probability:.49},recommendation:{decision:'PASS'}},spread:{side_a:{conditional_win_probability:.49},side_b:{conditional_win_probability:.51},recommendation:{decision:'WAIT'}}}};
+const before=JSON.stringify(s);
+assert.equal(gameDirectionPrediction(g,s,'moneyline').selection,'CHI ML');
+assert.equal(gameDirectionPrediction(g,s,'moneyline').confidence,'LOW');
+assert.equal(gameDirectionPrediction(g,s,'moneyline').betting_decision,'PASS');
+assert.equal(gameDirectionPrediction(g,s,'spread').selection,'GB -1.5');
+assert.equal(gameDirectionPrediction(g,s,'spread').betting_decision,'WAIT');
+assert.equal(JSON.stringify(s),before);
+assert.equal(gameDirectionPrediction(g,null,'moneyline').selection,'CHI ML');
+assert.equal(gameDirectionPrediction(g,null,'spread').status,'UNAVAILABLE');
+const even=structuredClone(s);even.markets.moneyline.side_a.conditional_win_probability=.5;even.markets.moneyline.side_b.conditional_win_probability=.5;
+assert.equal(gameDirectionPrediction(g,even,'moneyline').exact_probability_tie,true);
+console.log('PASS: low-confidence prediction retained, PASS/WAIT unchanged, exact-tie disclosed, no-odds moneyline, missing-line rejection');

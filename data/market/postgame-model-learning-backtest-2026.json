@@ -1,0 +1,402 @@
+{
+  "status": "RETROSPECTIVE_DIAGNOSTIC_NOT_PROMOTION_EVIDENCE",
+  "method": "Train only on preceding weeks; fixed ridge strength and maximum 2-point correction; no test-week outcomes in the fit. Moneyline and spread fitted separately.",
+  "limitations": [
+    "Historical finals were retrieved now; this is a reconstructed diagnostic, not contemporaneously frozen challenger predictions.",
+    "Original forecast versions changed across Weeks 1–4; this diagnostic does not validate the current no-rest model.",
+    "Detailed gameplay inputs were not frozen before those historical games, so they are not backfilled into historical training features.",
+    "Fresh independently paired candidate outcomes and existing governance are required before production promotion."
+  ],
+  "results": [
+    {
+      "market": "moneyline",
+      "week": 1,
+      "training_weeks": [],
+      "trained_games": 0,
+      "base": {
+        "n": 16,
+        "brier": 0.22143173284812895,
+        "log_loss": 0.6346717010775844,
+        "correct": 11
+      },
+      "candidate": {
+        "n": 16,
+        "brier": 0.22143173284812895,
+        "log_loss": 0.6346717010775844,
+        "correct": 11
+      },
+      "model": {
+        "rule_id": "postgame-logit-residual-ridge-v1",
+        "n": 0,
+        "training_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "intercept": 0,
+        "coefficients": [],
+        "excluded_features": [
+          "probability_confidence",
+          "scoring_margin",
+          "offensive_plays",
+          "pass_play_share",
+          "rush_yards_per_attempt",
+          "turnovers",
+          "sacks_allowed",
+          "third_down_rate",
+          "red_zone_rate",
+          "net_yards_per_play",
+          "possession_seconds"
+        ],
+        "probability_change_cap": 0.02
+      }
+    },
+    {
+      "market": "moneyline",
+      "week": 2,
+      "training_weeks": [
+        1
+      ],
+      "trained_games": 16,
+      "base": {
+        "n": 16,
+        "brier": 0.25152716297170613,
+        "log_loss": 0.6976023570352965,
+        "correct": 10
+      },
+      "candidate": {
+        "n": 16,
+        "brier": 0.25237515156443996,
+        "log_loss": 0.6997152775352269,
+        "correct": 10
+      },
+      "model": {
+        "rule_id": "postgame-logit-residual-ridge-v1",
+        "n": 16,
+        "training_sha256": "b385fd65ce4f758b2da9d890ac8424ce47d2fb8a9578eb0900c1b2e601cb49a2",
+        "intercept": 0.01597862737740366,
+        "coefficients": [
+          {
+            "key": "probability_confidence",
+            "mean": 0.23540826863838715,
+            "sd": 0.2794143066777567,
+            "observations": 16,
+            "coefficient": 0.022421579987559517
+          }
+        ],
+        "excluded_features": [
+          "scoring_margin",
+          "offensive_plays",
+          "pass_play_share",
+          "rush_yards_per_attempt",
+          "turnovers",
+          "sacks_allowed",
+          "third_down_rate",
+          "red_zone_rate",
+          "net_yards_per_play",
+          "possession_seconds"
+        ],
+        "probability_change_cap": 0.02
+      }
+    },
+    {
+      "market": "moneyline",
+      "week": 3,
+      "training_weeks": [
+        1,
+        2
+      ],
+      "trained_games": 32,
+      "base": {
+        "n": 16,
+        "brier": 0.22300577548163125,
+        "log_loss": 0.6356069296425972,
+        "correct": 10
+      },
+      "candidate": {
+        "n": 16,
+        "brier": 0.224048986166759,
+        "log_loss": 0.6380457612884988,
+        "correct": 10
+      },
+      "model": {
+        "rule_id": "postgame-logit-residual-ridge-v1",
+        "n": 32,
+        "training_sha256": "d5de1760304e4e13819b7b17804b33d0891ff567f4584ce6b32a7145fe2a57d0",
+        "intercept": -0.008582200361197018,
+        "coefficients": [
+          {
+            "key": "probability_confidence",
+            "mean": 0.2781494804106748,
+            "sd": 0.3075091216003187,
+            "observations": 32,
+            "coefficient": 0.01265223147022877
+          }
+        ],
+        "excluded_features": [
+          "scoring_margin",
+          "offensive_plays",
+          "pass_play_share",
+          "rush_yards_per_attempt",
+          "turnovers",
+          "sacks_allowed",
+          "third_down_rate",
+          "red_zone_rate",
+          "net_yards_per_play",
+          "possession_seconds"
+        ],
+        "probability_change_cap": 0.02
+      }
+    },
+    {
+      "market": "moneyline",
+      "week": 4,
+      "training_weeks": [
+        1,
+        2,
+        3
+      ],
+      "trained_games": 48,
+      "base": {
+        "n": 16,
+        "brier": 0.20094447520544573,
+        "log_loss": 0.5821221213519993,
+        "correct": 10
+      },
+      "candidate": {
+        "n": 16,
+        "brier": 0.20115403429993173,
+        "log_loss": 0.5825212954686496,
+        "correct": 10
+      },
+      "model": {
+        "rule_id": "postgame-logit-residual-ridge-v1",
+        "n": 48,
+        "training_sha256": "30d37a37d0660d64ba473158e528186da0bda45bbcd20eda6c4974cef7e7ea92",
+        "intercept": 0.0029008157733383033,
+        "coefficients": [
+          {
+            "key": "probability_confidence",
+            "mean": 0.3003042989704884,
+            "sd": 0.4683221716826608,
+            "observations": 48,
+            "coefficient": -0.0003709600901921747
+          }
+        ],
+        "excluded_features": [
+          "scoring_margin",
+          "offensive_plays",
+          "pass_play_share",
+          "rush_yards_per_attempt",
+          "turnovers",
+          "sacks_allowed",
+          "third_down_rate",
+          "red_zone_rate",
+          "net_yards_per_play",
+          "possession_seconds"
+        ],
+        "probability_change_cap": 0.02
+      }
+    },
+    {
+      "market": "spread",
+      "week": 1,
+      "training_weeks": [],
+      "trained_games": 0,
+      "base": {
+        "n": 16,
+        "brier": 0.2652263260807036,
+        "log_loss": 0.7235881240850355,
+        "correct": 5
+      },
+      "candidate": {
+        "n": 16,
+        "brier": 0.2652263260807036,
+        "log_loss": 0.7235881240850355,
+        "correct": 5
+      },
+      "model": {
+        "rule_id": "postgame-logit-residual-ridge-v1",
+        "n": 0,
+        "training_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "intercept": 0,
+        "coefficients": [],
+        "excluded_features": [
+          "probability_confidence",
+          "scoring_margin",
+          "offensive_plays",
+          "pass_play_share",
+          "rush_yards_per_attempt",
+          "turnovers",
+          "sacks_allowed",
+          "third_down_rate",
+          "red_zone_rate",
+          "net_yards_per_play",
+          "possession_seconds"
+        ],
+        "probability_change_cap": 0.02
+      }
+    },
+    {
+      "market": "spread",
+      "week": 2,
+      "training_weeks": [
+        1
+      ],
+      "trained_games": 16,
+      "base": {
+        "n": 16,
+        "brier": 0.27026411053351274,
+        "log_loss": 0.7390146077697094,
+        "correct": 8
+      },
+      "candidate": {
+        "n": 16,
+        "brier": 0.26770515507888804,
+        "log_loss": 0.7324040747132547,
+        "correct": 7
+      },
+      "model": {
+        "rule_id": "postgame-logit-residual-ridge-v1",
+        "n": 16,
+        "training_sha256": "a35134ae8e2399ce8b11bcd3539bbb6b872004bdd7668088867998c6cdf55647",
+        "intercept": -0.010067510786211533,
+        "coefficients": [
+          {
+            "key": "probability_confidence",
+            "mean": -0.0803219914734273,
+            "sd": 0.23802345782933013,
+            "observations": 16,
+            "coefficient": -0.041498372509687395
+          },
+          {
+            "key": "scoring_margin",
+            "mean": 0.20631249999999995,
+            "sd": 0.23916061777339093,
+            "observations": 16,
+            "coefficient": -0.01629331902300569
+          }
+        ],
+        "excluded_features": [
+          "offensive_plays",
+          "pass_play_share",
+          "rush_yards_per_attempt",
+          "turnovers",
+          "sacks_allowed",
+          "third_down_rate",
+          "red_zone_rate",
+          "net_yards_per_play",
+          "possession_seconds"
+        ],
+        "probability_change_cap": 0.02
+      }
+    },
+    {
+      "market": "spread",
+      "week": 3,
+      "training_weeks": [
+        1,
+        2
+      ],
+      "trained_games": 32,
+      "base": {
+        "n": 16,
+        "brier": 0.22743084925871127,
+        "log_loss": 0.6463646392867853,
+        "correct": 9
+      },
+      "candidate": {
+        "n": 16,
+        "brier": 0.22884724858669198,
+        "log_loss": 0.649692733725397,
+        "correct": 9
+      },
+      "model": {
+        "rule_id": "postgame-logit-residual-ridge-v1",
+        "n": 32,
+        "training_sha256": "0fa7a48029c5e961e1c75cdb0c7eea8888fe1acacea84f467685b1d745284756",
+        "intercept": -0.0027751524671327473,
+        "coefficients": [
+          {
+            "key": "probability_confidence",
+            "mean": -0.08037690148359374,
+            "sd": 0.34022813993616724,
+            "observations": 32,
+            "coefficient": -0.03750227445330122
+          },
+          {
+            "key": "scoring_margin",
+            "mean": 0.244815625,
+            "sd": 0.2659867772904499,
+            "observations": 32,
+            "coefficient": -0.020444734473858753
+          }
+        ],
+        "excluded_features": [
+          "offensive_plays",
+          "pass_play_share",
+          "rush_yards_per_attempt",
+          "turnovers",
+          "sacks_allowed",
+          "third_down_rate",
+          "red_zone_rate",
+          "net_yards_per_play",
+          "possession_seconds"
+        ],
+        "probability_change_cap": 0.02
+      }
+    },
+    {
+      "market": "spread",
+      "week": 4,
+      "training_weeks": [
+        1,
+        2,
+        3
+      ],
+      "trained_games": 48,
+      "base": {
+        "n": 15,
+        "brier": 0.20128053940597923,
+        "log_loss": 0.5919658808134419,
+        "correct": 11
+      },
+      "candidate": {
+        "n": 15,
+        "brier": 0.20242529985398935,
+        "log_loss": 0.5948336496589304,
+        "correct": 10
+      },
+      "model": {
+        "rule_id": "postgame-logit-residual-ridge-v1",
+        "n": 48,
+        "training_sha256": "0855a7b66546356d4248feefffbe72f904603b4a56c6231cf664817c3f765552",
+        "intercept": 0.006175119764029668,
+        "coefficients": [
+          {
+            "key": "probability_confidence",
+            "mean": 0.06317110656123821,
+            "sd": 0.3825969206469367,
+            "observations": 48,
+            "coefficient": -0.01805726911759648
+          },
+          {
+            "key": "scoring_margin",
+            "mean": 0.2531729166666667,
+            "sd": 0.37572961118978415,
+            "observations": 48,
+            "coefficient": -0.0165709157051173
+          }
+        ],
+        "excluded_features": [
+          "offensive_plays",
+          "pass_play_share",
+          "rush_yards_per_attempt",
+          "turnovers",
+          "sacks_allowed",
+          "third_down_rate",
+          "red_zone_rate",
+          "net_yards_per_play",
+          "possession_seconds"
+        ],
+        "probability_change_cap": 0.02
+      }
+    }
+  ]
+}
