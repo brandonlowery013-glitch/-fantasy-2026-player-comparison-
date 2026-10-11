@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {publicBettingContext,publicBettingRead,gameWork} from '../lib/show-work.mjs';
+const game={home_team:'WAS',away_team:'LA',kickoff:'2026-10-11T17:00:00Z'};
+const g={home:'WSH',away:'LAR',start_at:game.kickoff,observed_at:'2026-10-11T15:00:00Z',source:'DraftKings Sportsbook',source_url:'https://dknetwork.draftkings.com/',spread:[{side:'WSH',label:'WSH -3',bets:35,money:65},{side:'LAR',label:'LAR +3',bets:65,money:35}]};
+const feed={snapshots:[g]},at=Date.parse('2026-10-11T16:00:00Z'),before=JSON.stringify([game,feed]);
+const c=publicBettingContext(feed,game,'spread',at);
+assert.equal(c.status,'OBSERVATION');assert.equal(c.rows[0].handle_minus_bets_pp,30);assert.equal(c.numeric_authority,0);
+assert.match(publicBettingRead(c,'WAS'),/majority of bets opposes/);assert.match(publicBettingRead(c,'WAS'),/majority of dollars agrees/);
+for(const change of [{home:'GB'},{start_at:'2025-10-11T17:00:00Z'},{observed_at:'2026-10-11T16:01:00Z'},{observed_at:game.kickoff},{spread:[{side:'WSH',bets:35,money:130},{side:'LAR',bets:65,money:35}]},{spread:[{side:'WSH',bets:35,money:65},{side:'WSH',bets:65,money:35}]}])assert.equal(publicBettingContext({snapshots:[{...g,...change}]},game,'spread',at).status,'UNAVAILABLE');
+assert.equal(publicBettingContext(feed,game,'spread',Date.parse('2026-10-11T22:00:00Z')).status,'STALE');
+assert.equal(publicBettingContext(feed,game,'moneyline',at).status,'UNAVAILABLE');
+const side={win_probability:.6,loss_probability:.4,push_probability:0,conditional_win_probability:.6,offered_odds:-110,expected_value:.145,probability_edge:.1};const snapshot={book:'draftkings',captured_at:'2026-10-11T15:30:00Z',market:{home_spread:-3,total:45},markets:{spread:{side_a:side,side_b:{...side,expected_value:-.1},recommendation:{decision:'PICK',selection:'WAS -3',confidence:'HIGH'},public_betting_context:c}}};
+const w=gameWork({...game,football_projection:{home_score_mean:27,away_score_mean:20}},snapshot,'spread',at);assert.equal(w.decision,'PICK');assert.equal(w.final_probability,.6);assert.match(w.reader.publicBettingRead,/35% of bets/);assert.equal(w.additional_probability_adjustment,0);assert.equal(JSON.stringify([game,feed]),before);
+console.log('PASS: exact schedule/side binding, no future or post-kickoff evidence, stale/invalid shares excluded, bet-versus-money disagreement, unchanged forecast and decision');
