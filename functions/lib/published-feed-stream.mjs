@@ -2,9 +2,19 @@
 // never rebuild distributions or parse/stringify multi-megabyte feeds in Workers.
 const encode=text=>new TextEncoder().encode(text);
 export async function publishedFeed(url){
-  const response=await fetch(url,{headers:{accept:'application/json'},cf:{cacheTtl:20,cacheEverything:true},signal:AbortSignal.timeout(10000)});
-  if(!response.ok||!response.body)throw Error(`Published feed unavailable: ${response.status}`);
-  return response;
+  let last;
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      const response=await fetch(url,{headers:{accept:'application/json'},cf:{cacheTtl:20,cacheEverything:true},signal:AbortSignal.timeout(10000)});
+      if(!response.ok||!response.body){const error=Error(`Published feed unavailable: ${response.status}`);error.status=response.status;throw error;}
+      return response;
+    }catch(error){
+      last=error;
+      if(attempt===0&&(!error.status||error.status===429||error.status>=500))await new Promise(resolve=>setTimeout(resolve,180));
+      else throw error;
+    }
+  }
+  throw last;
 }
 export function streamPublishedObject(fields,headers){
   const body=new ReadableStream({async start(controller){
