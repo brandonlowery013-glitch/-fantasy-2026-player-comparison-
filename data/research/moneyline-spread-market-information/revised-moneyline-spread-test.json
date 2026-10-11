@@ -1,0 +1,2555 @@
+{
+  "revision": 2,
+  "created_at": "2026-10-11T04:03:11.730Z",
+  "scope": [
+    "moneyline",
+    "spread"
+  ],
+  "status": "EXPLORATORY_RETEST_AFTER_WEEK_4_WAS_EXAMINED",
+  "formula": "p = w_football*p_original_football + w_book*p_no_vig_sportsbook + w_poly*p_polymarket_conditional",
+  "method": "Convex weights on a predeclared 0.1 grid, fitted by training log loss. No raw score/uncertainty predictors are counted again. Each week uses preceding weeks only; compare with an identically fitted football-plus-book control.",
+  "input_sha256": "aad110b0b0bcb30ab8dbeaab77bcf003c7d2b63fefa41886604185099768911d",
+  "results": {
+    "moneyline": {
+      "weeks": [
+        {
+          "week": 1,
+          "role": "COLD_START_BASELINE_RETAINED_NO_PRIOR_TRAINING",
+          "existing": {
+            "n": 16,
+            "brier": 0.22143173284812895,
+            "log_loss": 0.6346717010775844,
+            "correct": 11,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "revised": {
+            "n": 16,
+            "brier": 0.22143173284812895,
+            "log_loss": 0.6346717010775844,
+            "correct": 11,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "price_qualified": {
+            "existing": {
+              "wins": 0,
+              "losses": 1,
+              "passes": 15,
+              "selected": 1,
+              "hit_rate": 0,
+              "selections": [
+                {
+                  "game_id": "2026-W1-MIA-LV",
+                  "side": "AWAY",
+                  "probability": 0.5204640590770244,
+                  "edge": 0.151404402858622,
+                  "ev": 0.34341920000000026,
+                  "odds": 160,
+                  "won": false
+                }
+              ],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            },
+            "revised": {
+              "wins": 0,
+              "losses": 1,
+              "passes": 15,
+              "selected": 1,
+              "hit_rate": 0,
+              "selections": [
+                {
+                  "game_id": "2026-W1-MIA-LV",
+                  "side": "AWAY",
+                  "probability": 0.5204640590770244,
+                  "edge": 0.151404402858622,
+                  "ev": 0.34341920000000026,
+                  "odds": 160,
+                  "won": false
+                }
+              ],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            }
+          }
+        },
+        {
+          "week": 2,
+          "role": "RETROSPECTIVE_WALK_FORWARD_EXPLORATORY",
+          "training_weeks": [
+            1
+          ],
+          "weights": {
+            "book": 0,
+            "poly": 0.6,
+            "football": 0.4,
+            "training": {
+              "n": 16,
+              "brier": 0.21644662003382684,
+              "log_loss": 0.6262640353024743,
+              "correct": 11,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          "football_plus_book_control_weights": {
+            "book": 0.6,
+            "poly": 0,
+            "football": 0.4,
+            "training": {
+              "n": 16,
+              "brier": 0.21691322527619925,
+              "log_loss": 0.6274410048628308,
+              "correct": 12,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          "existing": {
+            "n": 16,
+            "brier": 0.25152716297170613,
+            "log_loss": 0.6976023570352965,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "football_plus_book": {
+            "n": 16,
+            "brier": 0.23508637296296606,
+            "log_loss": 0.6647515598217612,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "revised": {
+            "n": 16,
+            "brier": 0.23679442097506465,
+            "log_loss": 0.6693786534070876,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "price_qualified": {
+            "existing": {
+              "wins": 0,
+              "losses": 2,
+              "passes": 14,
+              "selected": 2,
+              "hit_rate": 0,
+              "selections": [
+                {
+                  "game_id": "2026-W2-CAR-ATL",
+                  "side": "HOME",
+                  "probability": 0.6345257152597299,
+                  "edge": 0.1859668299762789,
+                  "ev": 0.34853599999999985,
+                  "odds": 114,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W2-CIN-HOU",
+                  "side": "HOME",
+                  "probability": 0.6094813016845015,
+                  "edge": 0.04598923819243805,
+                  "ev": 0.037685056338028225,
+                  "odds": -142,
+                  "won": false
+                }
+              ],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            },
+            "revised": {
+              "wins": 0,
+              "losses": 0,
+              "passes": 16,
+              "selected": 0,
+              "hit_rate": null,
+              "selections": [],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            }
+          }
+        },
+        {
+          "week": 3,
+          "role": "RETROSPECTIVE_WALK_FORWARD_EXPLORATORY",
+          "training_weeks": [
+            1,
+            2
+          ],
+          "weights": {
+            "book": 0.9,
+            "poly": 0,
+            "football": 0.1,
+            "training": {
+              "n": 32,
+              "brier": 0.22361608107869524,
+              "log_loss": 0.6430888537964852,
+              "correct": 23,
+              "decisive": 32,
+              "no_direction": 0
+            }
+          },
+          "football_plus_book_control_weights": {
+            "book": 0.9,
+            "poly": 0,
+            "football": 0.1,
+            "training": {
+              "n": 32,
+              "brier": 0.22361608107869524,
+              "log_loss": 0.6430888537964852,
+              "correct": 23,
+              "decisive": 32,
+              "no_direction": 0
+            }
+          },
+          "existing": {
+            "n": 16,
+            "brier": 0.22300577548163125,
+            "log_loss": 0.6356069296425972,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "football_plus_book": {
+            "n": 16,
+            "brier": 0.25442970279296256,
+            "log_loss": 0.6987107771604926,
+            "correct": 8,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "revised": {
+            "n": 16,
+            "brier": 0.25442970279296256,
+            "log_loss": 0.6987107771604926,
+            "correct": 8,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "price_qualified": {
+            "existing": {
+              "wins": 5,
+              "losses": 1,
+              "passes": 10,
+              "selected": 6,
+              "hit_rate": 0.8333333333333334,
+              "selections": [
+                {
+                  "game_id": "2026-W3-ARI-SF",
+                  "side": "HOME",
+                  "probability": 0.8439884858435263,
+                  "edge": 0.05724496999338213,
+                  "ev": 0.02889117582417583,
+                  "odds": -455,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W3-BAL-DAL",
+                  "side": "HOME",
+                  "probability": 0.5321605153095791,
+                  "edge": 0.14859887147396267,
+                  "ev": 0.320893,
+                  "odds": 150,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W3-CIN-PIT",
+                  "side": "HOME",
+                  "probability": 0.573430122623379,
+                  "edge": 0.20437046640497653,
+                  "ev": 0.4758918,
+                  "odds": 160,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W3-HOU-IND",
+                  "side": "HOME",
+                  "probability": 0.5388975260205771,
+                  "edge": 0.1023895895126406,
+                  "ev": 0.1798829855745571,
+                  "odds": 120,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W3-PHI-CHI",
+                  "side": "HOME",
+                  "probability": 0.594540078084374,
+                  "edge": 0.2581882022758359,
+                  "ev": 0.6730560499999999,
+                  "odds": 185,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W3-TEN-NYG",
+                  "side": "HOME",
+                  "probability": 0.6937799879482639,
+                  "edge": 0.1302879244562004,
+                  "ev": 0.17733769088199233,
+                  "odds": -142,
+                  "won": true
+                }
+              ],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            },
+            "revised": {
+              "wins": 0,
+              "losses": 0,
+              "passes": 16,
+              "selected": 0,
+              "hit_rate": null,
+              "selections": [],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            }
+          }
+        },
+        {
+          "week": 4,
+          "role": "RETROSPECTIVE_WALK_FORWARD_EXPLORATORY",
+          "training_weeks": [
+            1,
+            2,
+            3
+          ],
+          "weights": {
+            "book": 0.3,
+            "poly": 0,
+            "football": 0.7,
+            "training": {
+              "n": 48,
+              "brier": 0.23060539976990793,
+              "log_loss": 0.6534630404869267,
+              "correct": 33,
+              "decisive": 48,
+              "no_direction": 0
+            }
+          },
+          "football_plus_book_control_weights": {
+            "book": 0.3,
+            "poly": 0,
+            "football": 0.7,
+            "training": {
+              "n": 48,
+              "brier": 0.23060539976990793,
+              "log_loss": 0.6534630404869267,
+              "correct": 33,
+              "decisive": 48,
+              "no_direction": 0
+            }
+          },
+          "existing": {
+            "n": 16,
+            "brier": 0.20094447520544573,
+            "log_loss": 0.5821221213519993,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "football_plus_book": {
+            "n": 16,
+            "brier": 0.203038676851745,
+            "log_loss": 0.5881995770841877,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "revised": {
+            "n": 16,
+            "brier": 0.203038676851745,
+            "log_loss": 0.5881995770841877,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "price_qualified": {
+            "existing": {
+              "wins": 6,
+              "losses": 3,
+              "passes": 7,
+              "selected": 9,
+              "hit_rate": 0.6666666666666666,
+              "selections": [
+                {
+                  "game_id": "2026-W4-ARI-NYG",
+                  "side": "HOME",
+                  "probability": 0.6593831748974135,
+                  "edge": 0.17021741108376237,
+                  "ev": 0.27935161904761885,
+                  "odds": -105,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-DAL-HOU",
+                  "side": "HOME",
+                  "probability": 0.6179218914698621,
+                  "edge": 0.054429827977798606,
+                  "ev": 0.05146319718309869,
+                  "odds": -142,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W4-DEN-SF",
+                  "side": "HOME",
+                  "probability": 0.711349182391487,
+                  "edge": 0.1283565413448804,
+                  "ev": 0.16584619354838726,
+                  "odds": -155,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-DET-CAR",
+                  "side": "HOME",
+                  "probability": 0.5202054317728287,
+                  "edge": 0.14267198363400235,
+                  "ev": 0.31157482132179665,
+                  "odds": 154,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-GB-TB",
+                  "side": "HOME",
+                  "probability": 0.585152263238973,
+                  "edge": 0.21609260702057048,
+                  "ev": 0.5066774000000001,
+                  "odds": 160,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W4-JAX-CIN",
+                  "side": "AWAY",
+                  "probability": 0.6248230671927142,
+                  "edge": 0.19688270275317798,
+                  "ev": 0.38761595999999987,
+                  "odds": 124,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-LA-PHI",
+                  "side": "HOME",
+                  "probability": 0.5289059709412404,
+                  "edge": 0.10096560650170422,
+                  "ev": 0.17895896,
+                  "odds": 124,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W4-LAC-SEA",
+                  "side": "HOME",
+                  "probability": 0.8122637882233602,
+                  "edge": 0.06448108312358192,
+                  "ev": 0.040164309859154916,
+                  "odds": -355,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-NYJ-CHI",
+                  "side": "HOME",
+                  "probability": 0.7568757484784356,
+                  "edge": 0.11997156678431331,
+                  "ev": 0.13570109318700488,
+                  "odds": -198,
+                  "won": true
+                }
+              ],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            },
+            "revised": {
+              "wins": 4,
+              "losses": 2,
+              "passes": 10,
+              "selected": 6,
+              "hit_rate": 0.6666666666666666,
+              "selections": [
+                {
+                  "game_id": "2026-W4-ARI-NYG",
+                  "side": "HOME",
+                  "probability": 0.6083179515722847,
+                  "edge": 0.11915218775863362,
+                  "ev": 0.18243374747201135,
+                  "odds": -105,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-DAL-HOU",
+                  "side": "HOME",
+                  "probability": 0.6015929430765224,
+                  "edge": 0.03810087958445896,
+                  "ev": 0.024481690409121366,
+                  "odds": -142,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W4-DEN-SF",
+                  "side": "HOME",
+                  "probability": 0.6728422199880228,
+                  "edge": 0.08984957894141621,
+                  "ev": 0.10414706156727238,
+                  "odds": -155,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-GB-TB",
+                  "side": "HOME",
+                  "probability": 0.5203244811328017,
+                  "edge": 0.15126482491439924,
+                  "ev": 0.3428832275227501,
+                  "odds": 160,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W4-JAX-CIN",
+                  "side": "AWAY",
+                  "probability": 0.5657582563667609,
+                  "edge": 0.1378178919272247,
+                  "ev": 0.2592798067321923,
+                  "odds": 124,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-NYJ-CHI",
+                  "side": "HOME",
+                  "probability": 0.7208842784431416,
+                  "edge": 0.0839800967490193,
+                  "ev": 0.08286949098390078,
+                  "odds": -198,
+                  "won": true
+                }
+              ],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            }
+          }
+        }
+      ],
+      "frozen_future_weights": {
+        "book": 0,
+        "poly": 0.2,
+        "football": 0.8,
+        "training": {
+          "n": 64,
+          "brier": 0.22360550202728055,
+          "log_loss": 0.6366735362315057,
+          "correct": 43,
+          "decisive": 64,
+          "no_direction": 0
+        }
+      }
+    },
+    "spread": {
+      "weeks": [
+        {
+          "week": 1,
+          "role": "COLD_START_BASELINE_RETAINED_NO_PRIOR_TRAINING",
+          "existing": {
+            "n": 14,
+            "brier": 0.26839535563652006,
+            "log_loss": 0.7299308757614084,
+            "correct": 4,
+            "decisive": 14,
+            "no_direction": 0
+          },
+          "revised": {
+            "n": 14,
+            "brier": 0.26839535563652006,
+            "log_loss": 0.7299308757614084,
+            "correct": 4,
+            "decisive": 14,
+            "no_direction": 0
+          },
+          "price_qualified": {
+            "existing": {
+              "wins": 3,
+              "losses": 6,
+              "passes": 5,
+              "selected": 9,
+              "hit_rate": 0.3333333333333333,
+              "selections": [
+                {
+                  "game_id": "2026-W1-ARI-LAC",
+                  "side": "AWAY",
+                  "probability": 0.655181884765625,
+                  "edge": 0.155181884765625,
+                  "ev": 0.2508017800071023,
+                  "odds": -110,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W1-BAL-IND",
+                  "side": "HOME",
+                  "probability": 0.560760498046875,
+                  "edge": 0.05643074397690617,
+                  "ev": 0.06143951416015625,
+                  "odds": -112,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W1-CHI-CAR",
+                  "side": "HOME",
+                  "probability": 0.53314208984375,
+                  "edge": 0.05050621556002022,
+                  "ev": 0.055830413219975505,
+                  "odds": -102,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W1-CLE-JAX",
+                  "side": "AWAY",
+                  "probability": 0.580322265625,
+                  "edge": 0.080322265625,
+                  "ev": 0.10788796164772729,
+                  "odds": -110,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W1-DAL-NYG",
+                  "side": "HOME",
+                  "probability": 0.53997802734375,
+                  "edge": 0.05734215306002022,
+                  "ev": 0.06936825022977944,
+                  "odds": -102,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W1-MIA-LV",
+                  "side": "AWAY",
+                  "probability": 0.612640380859375,
+                  "edge": 0.112640380859375,
+                  "ev": 0.169586181640625,
+                  "odds": -110,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W1-NE-SEA",
+                  "side": "HOME",
+                  "probability": 0.5244140625,
+                  "edge": 0.03524829868634888,
+                  "ev": 0.023856026785714246,
+                  "odds": -105,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W1-SF-LA",
+                  "side": "AWAY",
+                  "probability": 0.542724609375,
+                  "edge": 0.03839485530503117,
+                  "ev": 0.027300153459821452,
+                  "odds": -112,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W1-TB-CIN",
+                  "side": "AWAY",
+                  "probability": 0.574188232421875,
+                  "edge": 0.08502246860822382,
+                  "ev": 0.12103416806175593,
+                  "odds": -105,
+                  "won": false
+                }
+              ],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            },
+            "revised": {
+              "wins": 3,
+              "losses": 6,
+              "passes": 5,
+              "selected": 9,
+              "hit_rate": 0.3333333333333333,
+              "selections": [
+                {
+                  "game_id": "2026-W1-ARI-LAC",
+                  "side": "AWAY",
+                  "probability": 0.655181884765625,
+                  "edge": 0.155181884765625,
+                  "ev": 0.2508017800071023,
+                  "odds": -110,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W1-BAL-IND",
+                  "side": "HOME",
+                  "probability": 0.560760498046875,
+                  "edge": 0.05643074397690617,
+                  "ev": 0.06143951416015625,
+                  "odds": -112,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W1-CHI-CAR",
+                  "side": "HOME",
+                  "probability": 0.53314208984375,
+                  "edge": 0.05050621556002022,
+                  "ev": 0.055830413219975505,
+                  "odds": -102,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W1-CLE-JAX",
+                  "side": "AWAY",
+                  "probability": 0.580322265625,
+                  "edge": 0.080322265625,
+                  "ev": 0.10788796164772729,
+                  "odds": -110,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W1-DAL-NYG",
+                  "side": "HOME",
+                  "probability": 0.53997802734375,
+                  "edge": 0.05734215306002022,
+                  "ev": 0.06936825022977944,
+                  "odds": -102,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W1-MIA-LV",
+                  "side": "AWAY",
+                  "probability": 0.612640380859375,
+                  "edge": 0.112640380859375,
+                  "ev": 0.169586181640625,
+                  "odds": -110,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W1-NE-SEA",
+                  "side": "HOME",
+                  "probability": 0.5244140625,
+                  "edge": 0.03524829868634888,
+                  "ev": 0.023856026785714246,
+                  "odds": -105,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W1-SF-LA",
+                  "side": "AWAY",
+                  "probability": 0.542724609375,
+                  "edge": 0.03839485530503117,
+                  "ev": 0.027300153459821452,
+                  "odds": -112,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W1-TB-CIN",
+                  "side": "AWAY",
+                  "probability": 0.574188232421875,
+                  "edge": 0.08502246860822382,
+                  "ev": 0.12103416806175593,
+                  "odds": -105,
+                  "won": false
+                }
+              ],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            }
+          }
+        },
+        {
+          "week": 2,
+          "role": "RETROSPECTIVE_WALK_FORWARD_EXPLORATORY",
+          "training_weeks": [
+            1
+          ],
+          "weights": {
+            "book": 0,
+            "poly": 1,
+            "football": 0,
+            "training": {
+              "n": 14,
+              "brier": 0.24874464285714287,
+              "log_loss": 0.6906458614799905,
+              "correct": 8,
+              "decisive": 14,
+              "no_direction": 0
+            }
+          },
+          "football_plus_book_control_weights": {
+            "book": 1,
+            "poly": 0,
+            "football": 0,
+            "training": {
+              "n": 14,
+              "brier": 0.2508862375617992,
+              "log_loss": 0.6949205247803347,
+              "correct": 5,
+              "decisive": 11,
+              "no_direction": 3
+            }
+          },
+          "existing": {
+            "n": 13,
+            "brier": 0.28174381531201875,
+            "log_loss": 0.7634240102644415,
+            "correct": 6,
+            "decisive": 13,
+            "no_direction": 0
+          },
+          "football_plus_book": {
+            "n": 13,
+            "brier": 0.2519757716769728,
+            "log_loss": 0.6970996411680819,
+            "correct": 6,
+            "decisive": 13,
+            "no_direction": 0
+          },
+          "revised": {
+            "n": 13,
+            "brier": 0.24496538461538458,
+            "log_loss": 0.6830476027466502,
+            "correct": 8,
+            "decisive": 12,
+            "no_direction": 1
+          },
+          "price_qualified": {
+            "existing": {
+              "wins": 6,
+              "losses": 5,
+              "passes": 2,
+              "selected": 11,
+              "hit_rate": 0.5454545454545454,
+              "selections": [
+                {
+                  "game_id": "2026-W2-CAR-ATL",
+                  "side": "HOME",
+                  "probability": 0.693328857421875,
+                  "edge": 0.19765861149184383,
+                  "ev": 0.33530002170138884,
+                  "odds": -108,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W2-CLE-TB",
+                  "side": "AWAY",
+                  "probability": 0.596343994140625,
+                  "edge": 0.09201424007065617,
+                  "ev": 0.12879398890904026,
+                  "odds": -112,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W2-DET-BUF",
+                  "side": "AWAY",
+                  "probability": 0.549224853515625,
+                  "edge": 0.05355460758559383,
+                  "ev": 0.05776638454861116,
+                  "odds": -108,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W2-GB-NYJ",
+                  "side": "HOME",
+                  "probability": 0.561737060546875,
+                  "edge": 0.039997930112092406,
+                  "ev": 0.02985127766927087,
+                  "odds": -120,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W2-IND-KC",
+                  "side": "AWAY",
+                  "probability": 0.57843017578125,
+                  "edge": 0.1001693062160326,
+                  "ev": 0.1568603515625,
+                  "odds": 100,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W2-LV-LAC",
+                  "side": "AWAY",
+                  "probability": 0.524017333984375,
+                  "edge": 0.03485157017072382,
+                  "ev": 0.02308146158854163,
+                  "odds": -105,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W2-MIA-SF",
+                  "side": "AWAY",
+                  "probability": 0.747406005859375,
+                  "edge": 0.23657176967302607,
+                  "ev": 0.39732427182404895,
+                  "odds": -115,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W2-MIN-CHI",
+                  "side": "AWAY",
+                  "probability": 0.622100830078125,
+                  "edge": 0.12643058414809383,
+                  "ev": 0.1981201171875,
+                  "odds": -108,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W2-NO-BAL",
+                  "side": "AWAY",
+                  "probability": 0.547088623046875,
+                  "edge": 0.05792285923322382,
+                  "ev": 0.06812540690104163,
+                  "odds": -105,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W2-PIT-NE",
+                  "side": "AWAY",
+                  "probability": 0.5889892578125,
+                  "edge": 0.09982349399884882,
+                  "ev": 0.14993140811011907,
+                  "odds": -105,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W2-SEA-ARI",
+                  "side": "HOME",
+                  "probability": 0.5643310546875,
+                  "edge": 0.07516529087384888,
+                  "ev": 0.10178920200892849,
+                  "odds": -105,
+                  "won": false
+                }
+              ],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            },
+            "revised": {
+              "wins": 0,
+              "losses": 0,
+              "passes": 13,
+              "selected": 0,
+              "hit_rate": null,
+              "selections": [],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            }
+          }
+        },
+        {
+          "week": 3,
+          "role": "RETROSPECTIVE_WALK_FORWARD_EXPLORATORY",
+          "training_weeks": [
+            1,
+            2
+          ],
+          "weights": {
+            "book": 0,
+            "poly": 1,
+            "football": 0,
+            "training": {
+              "n": 27,
+              "brier": 0.246925,
+              "log_loss": 0.6869874406083821,
+              "correct": 16,
+              "decisive": 26,
+              "no_direction": 1
+            }
+          },
+          "football_plus_book_control_weights": {
+            "book": 1,
+            "poly": 0,
+            "football": 0,
+            "training": {
+              "n": 27,
+              "brier": 0.25141082806169757,
+              "log_loss": 0.6959697289670279,
+              "correct": 11,
+              "decisive": 24,
+              "no_direction": 3
+            }
+          },
+          "existing": {
+            "n": 12,
+            "brier": 0.21609663086322448,
+            "log_loss": 0.6231666335555807,
+            "correct": 8,
+            "decisive": 12,
+            "no_direction": 0
+          },
+          "football_plus_book": {
+            "n": 12,
+            "brier": 0.252308660865013,
+            "log_loss": 0.6977652626994227,
+            "correct": 4,
+            "decisive": 11,
+            "no_direction": 1
+          },
+          "revised": {
+            "n": 12,
+            "brier": 0.25100833333333333,
+            "log_loss": 0.6951688916353594,
+            "correct": 6,
+            "decisive": 12,
+            "no_direction": 0
+          },
+          "price_qualified": {
+            "existing": {
+              "wins": 8,
+              "losses": 3,
+              "passes": 1,
+              "selected": 11,
+              "hit_rate": 0.7272727272727273,
+              "selections": [
+                {
+                  "game_id": "2026-W3-ARI-SF",
+                  "side": "HOME",
+                  "probability": 0.628570556640625,
+                  "edge": 0.13290031071059383,
+                  "ev": 0.21058033130787035,
+                  "odds": -108,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W3-ATL-GB",
+                  "side": "HOME",
+                  "probability": 0.578277587890625,
+                  "edge": 0.06744335170427618,
+                  "ev": 0.08112766431725538,
+                  "odds": -115,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W3-BAL-DAL",
+                  "side": "HOME",
+                  "probability": 0.635101318359375,
+                  "edge": 0.135101318359375,
+                  "ev": 0.21246615323153406,
+                  "odds": -110,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W3-CAR-CLE",
+                  "side": "HOME",
+                  "probability": 0.564971923828125,
+                  "edge": 0.0867110542629076,
+                  "ev": 0.12994384765625,
+                  "odds": 100,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W3-CIN-PIT",
+                  "side": "HOME",
+                  "probability": 0.673126220703125,
+                  "edge": 0.18396045688947388,
+                  "ev": 0.31419881184895826,
+                  "odds": -105,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W3-HOU-IND",
+                  "side": "HOME",
+                  "probability": 0.613067626953125,
+                  "edge": 0.12390186313947388,
+                  "ev": 0.19694155738467256,
+                  "odds": -105,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W3-KC-MIA",
+                  "side": "HOME",
+                  "probability": 0.653533935546875,
+                  "edge": 0.16436817173322388,
+                  "ev": 0.27594720749627977,
+                  "odds": -105,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W3-LA-DEN",
+                  "side": "HOME",
+                  "probability": 0.564453125,
+                  "edge": 0.06878287906996883,
+                  "ev": 0.08709490740740744,
+                  "odds": -108,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W3-NYJ-DET",
+                  "side": "HOME",
+                  "probability": 0.57135009765625,
+                  "edge": 0.06051586146990118,
+                  "ev": 0.06817626953125,
+                  "odds": -115,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W3-PHI-CHI",
+                  "side": "HOME",
+                  "probability": 0.72100830078125,
+                  "edge": 0.23184253696759888,
+                  "ev": 0.40768287295386896,
+                  "odds": -105,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W3-TEN-NYG",
+                  "side": "HOME",
+                  "probability": 0.61529541015625,
+                  "edge": 0.0935562797214674,
+                  "ev": 0.12804158528645837,
+                  "odds": -120,
+                  "won": true
+                }
+              ],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            },
+            "revised": {
+              "wins": 0,
+              "losses": 0,
+              "passes": 12,
+              "selected": 0,
+              "hit_rate": null,
+              "selections": [],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            }
+          }
+        },
+        {
+          "week": 4,
+          "role": "RETROSPECTIVE_WALK_FORWARD_EXPLORATORY",
+          "training_weeks": [
+            1,
+            2,
+            3
+          ],
+          "weights": {
+            "book": 0,
+            "poly": 0.9,
+            "football": 0.1,
+            "training": {
+              "n": 39,
+              "brier": 0.2481062511268996,
+              "log_loss": 0.6893481069491829,
+              "correct": 20,
+              "decisive": 39,
+              "no_direction": 0
+            }
+          },
+          "football_plus_book_control_weights": {
+            "book": 0.7,
+            "poly": 0,
+            "football": 0.3,
+            "training": {
+              "n": 39,
+              "brier": 0.25097924252289705,
+              "log_loss": 0.695129461166458,
+              "correct": 18,
+              "decisive": 39,
+              "no_direction": 0
+            }
+          },
+          "existing": {
+            "n": 11,
+            "brier": 0.20192020344124598,
+            "log_loss": 0.5924102782539656,
+            "correct": 7,
+            "decisive": 11,
+            "no_direction": 0
+          },
+          "football_plus_book": {
+            "n": 11,
+            "brier": 0.23570778272356135,
+            "log_loss": 0.6644159115328974,
+            "correct": 7,
+            "decisive": 11,
+            "no_direction": 0
+          },
+          "revised": {
+            "n": 11,
+            "brier": 0.24237817005199058,
+            "log_loss": 0.6778588367991958,
+            "correct": 7,
+            "decisive": 11,
+            "no_direction": 0
+          },
+          "price_qualified": {
+            "existing": {
+              "wins": 7,
+              "losses": 2,
+              "passes": 2,
+              "selected": 9,
+              "hit_rate": 0.7777777777777778,
+              "selections": [
+                {
+                  "game_id": "2026-W4-ARI-NYG",
+                  "side": "HOME",
+                  "probability": 0.6968994140625,
+                  "edge": 0.1795352883462299,
+                  "ev": 0.2874921378442796,
+                  "odds": -118,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-DET-CAR",
+                  "side": "HOME",
+                  "probability": 0.623321533203125,
+                  "edge": 0.12765128727309383,
+                  "ev": 0.20047110098379628,
+                  "odds": -108,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-GB-TB",
+                  "side": "HOME",
+                  "probability": 0.683197021484375,
+                  "edge": 0.2049361519191576,
+                  "ev": 0.36639404296875,
+                  "odds": 100,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-IND-WAS",
+                  "side": "HOME",
+                  "probability": 0.605682373046875,
+                  "edge": 0.10135261897690617,
+                  "ev": 0.14647020612444195,
+                  "odds": -112,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W4-JAX-CIN",
+                  "side": "AWAY",
+                  "probability": 0.691253662109375,
+                  "edge": 0.2086177878256451,
+                  "ev": 0.36895333084405635,
+                  "odds": -102,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-KC-LV",
+                  "side": "HOME",
+                  "probability": 0.571014404296875,
+                  "edge": 0.08184864048322388,
+                  "ev": 0.114837646484375,
+                  "odds": -105,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-LA-PHI",
+                  "side": "HOME",
+                  "probability": 0.6038818359375,
+                  "edge": 0.1256209663722826,
+                  "ev": 0.207763671875,
+                  "odds": 100,
+                  "won": false
+                },
+                {
+                  "game_id": "2026-W4-NYJ-CHI",
+                  "side": "HOME",
+                  "probability": 0.660552978515625,
+                  "edge": 0.14971874232927618,
+                  "ev": 0.23494687287703808,
+                  "odds": -115,
+                  "won": true
+                },
+                {
+                  "game_id": "2026-W4-PIT-CLE",
+                  "side": "HOME",
+                  "probability": 0.564422607421875,
+                  "edge": 0.0861617378566576,
+                  "ev": 0.12884521484375,
+                  "odds": 100,
+                  "won": true
+                }
+              ],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            },
+            "revised": {
+              "wins": 0,
+              "losses": 0,
+              "passes": 11,
+              "selected": 0,
+              "hit_rate": null,
+              "selections": [],
+              "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+            }
+          }
+        }
+      ],
+      "frozen_future_weights": {
+        "book": 0,
+        "poly": 0.4,
+        "football": 0.6,
+        "training": {
+          "n": 50,
+          "brier": 0.24320443801565175,
+          "log_loss": 0.6794181371703811,
+          "correct": 25,
+          "decisive": 50,
+          "no_direction": 0
+        }
+      }
+    }
+  },
+  "audit": {
+    "contracts": "Exact game, teams, kickoff, home spread line and outcome orientation verified",
+    "historical_price_kind": "Historical price-series sample; sample timestamp does not establish last-trade freshness",
+    "historical_depth_and_fees": "Unavailable; no profitability claim",
+    "moneyline_tie_normalization": "Polymarket half-payout normalized using the original forecast tie probability",
+    "old_blend_issue": "Old fit was anchored to sportsbook log odds and penalized the football correction toward zero; market-dominated output could erase useful football information",
+    "evaluation_issue": "Earlier Week 1–3 results used the final fit and were in-sample; this revision reports preceding-week fits instead",
+    "independent_validation": "Week 4 has already been examined; its reuse is exploratory. Only games after this recorded freeze can provide a new prospective test"
+  },
+  "frozen_protocol": {
+    "weights": {
+      "moneyline": {
+        "weeks": [
+          {
+            "week": 1,
+            "role": "COLD_START_BASELINE_RETAINED_NO_PRIOR_TRAINING",
+            "existing": {
+              "n": 16,
+              "brier": 0.22143173284812895,
+              "log_loss": 0.6346717010775844,
+              "correct": 11,
+              "decisive": 16,
+              "no_direction": 0
+            },
+            "revised": {
+              "n": 16,
+              "brier": 0.22143173284812895,
+              "log_loss": 0.6346717010775844,
+              "correct": 11,
+              "decisive": 16,
+              "no_direction": 0
+            },
+            "price_qualified": {
+              "existing": {
+                "wins": 0,
+                "losses": 1,
+                "passes": 15,
+                "selected": 1,
+                "hit_rate": 0,
+                "selections": [
+                  {
+                    "game_id": "2026-W1-MIA-LV",
+                    "side": "AWAY",
+                    "probability": 0.5204640590770244,
+                    "edge": 0.151404402858622,
+                    "ev": 0.34341920000000026,
+                    "odds": 160,
+                    "won": false
+                  }
+                ],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              },
+              "revised": {
+                "wins": 0,
+                "losses": 1,
+                "passes": 15,
+                "selected": 1,
+                "hit_rate": 0,
+                "selections": [
+                  {
+                    "game_id": "2026-W1-MIA-LV",
+                    "side": "AWAY",
+                    "probability": 0.5204640590770244,
+                    "edge": 0.151404402858622,
+                    "ev": 0.34341920000000026,
+                    "odds": 160,
+                    "won": false
+                  }
+                ],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              }
+            }
+          },
+          {
+            "week": 2,
+            "role": "RETROSPECTIVE_WALK_FORWARD_EXPLORATORY",
+            "training_weeks": [
+              1
+            ],
+            "weights": {
+              "book": 0,
+              "poly": 0.6,
+              "football": 0.4,
+              "training": {
+                "n": 16,
+                "brier": 0.21644662003382684,
+                "log_loss": 0.6262640353024743,
+                "correct": 11,
+                "decisive": 16,
+                "no_direction": 0
+              }
+            },
+            "football_plus_book_control_weights": {
+              "book": 0.6,
+              "poly": 0,
+              "football": 0.4,
+              "training": {
+                "n": 16,
+                "brier": 0.21691322527619925,
+                "log_loss": 0.6274410048628308,
+                "correct": 12,
+                "decisive": 16,
+                "no_direction": 0
+              }
+            },
+            "existing": {
+              "n": 16,
+              "brier": 0.25152716297170613,
+              "log_loss": 0.6976023570352965,
+              "correct": 10,
+              "decisive": 16,
+              "no_direction": 0
+            },
+            "football_plus_book": {
+              "n": 16,
+              "brier": 0.23508637296296606,
+              "log_loss": 0.6647515598217612,
+              "correct": 10,
+              "decisive": 16,
+              "no_direction": 0
+            },
+            "revised": {
+              "n": 16,
+              "brier": 0.23679442097506465,
+              "log_loss": 0.6693786534070876,
+              "correct": 10,
+              "decisive": 16,
+              "no_direction": 0
+            },
+            "price_qualified": {
+              "existing": {
+                "wins": 0,
+                "losses": 2,
+                "passes": 14,
+                "selected": 2,
+                "hit_rate": 0,
+                "selections": [
+                  {
+                    "game_id": "2026-W2-CAR-ATL",
+                    "side": "HOME",
+                    "probability": 0.6345257152597299,
+                    "edge": 0.1859668299762789,
+                    "ev": 0.34853599999999985,
+                    "odds": 114,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W2-CIN-HOU",
+                    "side": "HOME",
+                    "probability": 0.6094813016845015,
+                    "edge": 0.04598923819243805,
+                    "ev": 0.037685056338028225,
+                    "odds": -142,
+                    "won": false
+                  }
+                ],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              },
+              "revised": {
+                "wins": 0,
+                "losses": 0,
+                "passes": 16,
+                "selected": 0,
+                "hit_rate": null,
+                "selections": [],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              }
+            }
+          },
+          {
+            "week": 3,
+            "role": "RETROSPECTIVE_WALK_FORWARD_EXPLORATORY",
+            "training_weeks": [
+              1,
+              2
+            ],
+            "weights": {
+              "book": 0.9,
+              "poly": 0,
+              "football": 0.1,
+              "training": {
+                "n": 32,
+                "brier": 0.22361608107869524,
+                "log_loss": 0.6430888537964852,
+                "correct": 23,
+                "decisive": 32,
+                "no_direction": 0
+              }
+            },
+            "football_plus_book_control_weights": {
+              "book": 0.9,
+              "poly": 0,
+              "football": 0.1,
+              "training": {
+                "n": 32,
+                "brier": 0.22361608107869524,
+                "log_loss": 0.6430888537964852,
+                "correct": 23,
+                "decisive": 32,
+                "no_direction": 0
+              }
+            },
+            "existing": {
+              "n": 16,
+              "brier": 0.22300577548163125,
+              "log_loss": 0.6356069296425972,
+              "correct": 10,
+              "decisive": 16,
+              "no_direction": 0
+            },
+            "football_plus_book": {
+              "n": 16,
+              "brier": 0.25442970279296256,
+              "log_loss": 0.6987107771604926,
+              "correct": 8,
+              "decisive": 16,
+              "no_direction": 0
+            },
+            "revised": {
+              "n": 16,
+              "brier": 0.25442970279296256,
+              "log_loss": 0.6987107771604926,
+              "correct": 8,
+              "decisive": 16,
+              "no_direction": 0
+            },
+            "price_qualified": {
+              "existing": {
+                "wins": 5,
+                "losses": 1,
+                "passes": 10,
+                "selected": 6,
+                "hit_rate": 0.8333333333333334,
+                "selections": [
+                  {
+                    "game_id": "2026-W3-ARI-SF",
+                    "side": "HOME",
+                    "probability": 0.8439884858435263,
+                    "edge": 0.05724496999338213,
+                    "ev": 0.02889117582417583,
+                    "odds": -455,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W3-BAL-DAL",
+                    "side": "HOME",
+                    "probability": 0.5321605153095791,
+                    "edge": 0.14859887147396267,
+                    "ev": 0.320893,
+                    "odds": 150,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W3-CIN-PIT",
+                    "side": "HOME",
+                    "probability": 0.573430122623379,
+                    "edge": 0.20437046640497653,
+                    "ev": 0.4758918,
+                    "odds": 160,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W3-HOU-IND",
+                    "side": "HOME",
+                    "probability": 0.5388975260205771,
+                    "edge": 0.1023895895126406,
+                    "ev": 0.1798829855745571,
+                    "odds": 120,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W3-PHI-CHI",
+                    "side": "HOME",
+                    "probability": 0.594540078084374,
+                    "edge": 0.2581882022758359,
+                    "ev": 0.6730560499999999,
+                    "odds": 185,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W3-TEN-NYG",
+                    "side": "HOME",
+                    "probability": 0.6937799879482639,
+                    "edge": 0.1302879244562004,
+                    "ev": 0.17733769088199233,
+                    "odds": -142,
+                    "won": true
+                  }
+                ],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              },
+              "revised": {
+                "wins": 0,
+                "losses": 0,
+                "passes": 16,
+                "selected": 0,
+                "hit_rate": null,
+                "selections": [],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              }
+            }
+          },
+          {
+            "week": 4,
+            "role": "RETROSPECTIVE_WALK_FORWARD_EXPLORATORY",
+            "training_weeks": [
+              1,
+              2,
+              3
+            ],
+            "weights": {
+              "book": 0.3,
+              "poly": 0,
+              "football": 0.7,
+              "training": {
+                "n": 48,
+                "brier": 0.23060539976990793,
+                "log_loss": 0.6534630404869267,
+                "correct": 33,
+                "decisive": 48,
+                "no_direction": 0
+              }
+            },
+            "football_plus_book_control_weights": {
+              "book": 0.3,
+              "poly": 0,
+              "football": 0.7,
+              "training": {
+                "n": 48,
+                "brier": 0.23060539976990793,
+                "log_loss": 0.6534630404869267,
+                "correct": 33,
+                "decisive": 48,
+                "no_direction": 0
+              }
+            },
+            "existing": {
+              "n": 16,
+              "brier": 0.20094447520544573,
+              "log_loss": 0.5821221213519993,
+              "correct": 10,
+              "decisive": 16,
+              "no_direction": 0
+            },
+            "football_plus_book": {
+              "n": 16,
+              "brier": 0.203038676851745,
+              "log_loss": 0.5881995770841877,
+              "correct": 10,
+              "decisive": 16,
+              "no_direction": 0
+            },
+            "revised": {
+              "n": 16,
+              "brier": 0.203038676851745,
+              "log_loss": 0.5881995770841877,
+              "correct": 10,
+              "decisive": 16,
+              "no_direction": 0
+            },
+            "price_qualified": {
+              "existing": {
+                "wins": 6,
+                "losses": 3,
+                "passes": 7,
+                "selected": 9,
+                "hit_rate": 0.6666666666666666,
+                "selections": [
+                  {
+                    "game_id": "2026-W4-ARI-NYG",
+                    "side": "HOME",
+                    "probability": 0.6593831748974135,
+                    "edge": 0.17021741108376237,
+                    "ev": 0.27935161904761885,
+                    "odds": -105,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-DAL-HOU",
+                    "side": "HOME",
+                    "probability": 0.6179218914698621,
+                    "edge": 0.054429827977798606,
+                    "ev": 0.05146319718309869,
+                    "odds": -142,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W4-DEN-SF",
+                    "side": "HOME",
+                    "probability": 0.711349182391487,
+                    "edge": 0.1283565413448804,
+                    "ev": 0.16584619354838726,
+                    "odds": -155,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-DET-CAR",
+                    "side": "HOME",
+                    "probability": 0.5202054317728287,
+                    "edge": 0.14267198363400235,
+                    "ev": 0.31157482132179665,
+                    "odds": 154,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-GB-TB",
+                    "side": "HOME",
+                    "probability": 0.585152263238973,
+                    "edge": 0.21609260702057048,
+                    "ev": 0.5066774000000001,
+                    "odds": 160,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W4-JAX-CIN",
+                    "side": "AWAY",
+                    "probability": 0.6248230671927142,
+                    "edge": 0.19688270275317798,
+                    "ev": 0.38761595999999987,
+                    "odds": 124,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-LA-PHI",
+                    "side": "HOME",
+                    "probability": 0.5289059709412404,
+                    "edge": 0.10096560650170422,
+                    "ev": 0.17895896,
+                    "odds": 124,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W4-LAC-SEA",
+                    "side": "HOME",
+                    "probability": 0.8122637882233602,
+                    "edge": 0.06448108312358192,
+                    "ev": 0.040164309859154916,
+                    "odds": -355,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-NYJ-CHI",
+                    "side": "HOME",
+                    "probability": 0.7568757484784356,
+                    "edge": 0.11997156678431331,
+                    "ev": 0.13570109318700488,
+                    "odds": -198,
+                    "won": true
+                  }
+                ],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              },
+              "revised": {
+                "wins": 4,
+                "losses": 2,
+                "passes": 10,
+                "selected": 6,
+                "hit_rate": 0.6666666666666666,
+                "selections": [
+                  {
+                    "game_id": "2026-W4-ARI-NYG",
+                    "side": "HOME",
+                    "probability": 0.6083179515722847,
+                    "edge": 0.11915218775863362,
+                    "ev": 0.18243374747201135,
+                    "odds": -105,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-DAL-HOU",
+                    "side": "HOME",
+                    "probability": 0.6015929430765224,
+                    "edge": 0.03810087958445896,
+                    "ev": 0.024481690409121366,
+                    "odds": -142,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W4-DEN-SF",
+                    "side": "HOME",
+                    "probability": 0.6728422199880228,
+                    "edge": 0.08984957894141621,
+                    "ev": 0.10414706156727238,
+                    "odds": -155,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-GB-TB",
+                    "side": "HOME",
+                    "probability": 0.5203244811328017,
+                    "edge": 0.15126482491439924,
+                    "ev": 0.3428832275227501,
+                    "odds": 160,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W4-JAX-CIN",
+                    "side": "AWAY",
+                    "probability": 0.5657582563667609,
+                    "edge": 0.1378178919272247,
+                    "ev": 0.2592798067321923,
+                    "odds": 124,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-NYJ-CHI",
+                    "side": "HOME",
+                    "probability": 0.7208842784431416,
+                    "edge": 0.0839800967490193,
+                    "ev": 0.08286949098390078,
+                    "odds": -198,
+                    "won": true
+                  }
+                ],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              }
+            }
+          }
+        ],
+        "frozen_future_weights": {
+          "book": 0,
+          "poly": 0.2,
+          "football": 0.8,
+          "training": {
+            "n": 64,
+            "brier": 0.22360550202728055,
+            "log_loss": 0.6366735362315057,
+            "correct": 43,
+            "decisive": 64,
+            "no_direction": 0
+          }
+        }
+      },
+      "spread": {
+        "weeks": [
+          {
+            "week": 1,
+            "role": "COLD_START_BASELINE_RETAINED_NO_PRIOR_TRAINING",
+            "existing": {
+              "n": 14,
+              "brier": 0.26839535563652006,
+              "log_loss": 0.7299308757614084,
+              "correct": 4,
+              "decisive": 14,
+              "no_direction": 0
+            },
+            "revised": {
+              "n": 14,
+              "brier": 0.26839535563652006,
+              "log_loss": 0.7299308757614084,
+              "correct": 4,
+              "decisive": 14,
+              "no_direction": 0
+            },
+            "price_qualified": {
+              "existing": {
+                "wins": 3,
+                "losses": 6,
+                "passes": 5,
+                "selected": 9,
+                "hit_rate": 0.3333333333333333,
+                "selections": [
+                  {
+                    "game_id": "2026-W1-ARI-LAC",
+                    "side": "AWAY",
+                    "probability": 0.655181884765625,
+                    "edge": 0.155181884765625,
+                    "ev": 0.2508017800071023,
+                    "odds": -110,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W1-BAL-IND",
+                    "side": "HOME",
+                    "probability": 0.560760498046875,
+                    "edge": 0.05643074397690617,
+                    "ev": 0.06143951416015625,
+                    "odds": -112,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W1-CHI-CAR",
+                    "side": "HOME",
+                    "probability": 0.53314208984375,
+                    "edge": 0.05050621556002022,
+                    "ev": 0.055830413219975505,
+                    "odds": -102,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W1-CLE-JAX",
+                    "side": "AWAY",
+                    "probability": 0.580322265625,
+                    "edge": 0.080322265625,
+                    "ev": 0.10788796164772729,
+                    "odds": -110,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W1-DAL-NYG",
+                    "side": "HOME",
+                    "probability": 0.53997802734375,
+                    "edge": 0.05734215306002022,
+                    "ev": 0.06936825022977944,
+                    "odds": -102,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W1-MIA-LV",
+                    "side": "AWAY",
+                    "probability": 0.612640380859375,
+                    "edge": 0.112640380859375,
+                    "ev": 0.169586181640625,
+                    "odds": -110,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W1-NE-SEA",
+                    "side": "HOME",
+                    "probability": 0.5244140625,
+                    "edge": 0.03524829868634888,
+                    "ev": 0.023856026785714246,
+                    "odds": -105,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W1-SF-LA",
+                    "side": "AWAY",
+                    "probability": 0.542724609375,
+                    "edge": 0.03839485530503117,
+                    "ev": 0.027300153459821452,
+                    "odds": -112,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W1-TB-CIN",
+                    "side": "AWAY",
+                    "probability": 0.574188232421875,
+                    "edge": 0.08502246860822382,
+                    "ev": 0.12103416806175593,
+                    "odds": -105,
+                    "won": false
+                  }
+                ],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              },
+              "revised": {
+                "wins": 3,
+                "losses": 6,
+                "passes": 5,
+                "selected": 9,
+                "hit_rate": 0.3333333333333333,
+                "selections": [
+                  {
+                    "game_id": "2026-W1-ARI-LAC",
+                    "side": "AWAY",
+                    "probability": 0.655181884765625,
+                    "edge": 0.155181884765625,
+                    "ev": 0.2508017800071023,
+                    "odds": -110,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W1-BAL-IND",
+                    "side": "HOME",
+                    "probability": 0.560760498046875,
+                    "edge": 0.05643074397690617,
+                    "ev": 0.06143951416015625,
+                    "odds": -112,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W1-CHI-CAR",
+                    "side": "HOME",
+                    "probability": 0.53314208984375,
+                    "edge": 0.05050621556002022,
+                    "ev": 0.055830413219975505,
+                    "odds": -102,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W1-CLE-JAX",
+                    "side": "AWAY",
+                    "probability": 0.580322265625,
+                    "edge": 0.080322265625,
+                    "ev": 0.10788796164772729,
+                    "odds": -110,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W1-DAL-NYG",
+                    "side": "HOME",
+                    "probability": 0.53997802734375,
+                    "edge": 0.05734215306002022,
+                    "ev": 0.06936825022977944,
+                    "odds": -102,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W1-MIA-LV",
+                    "side": "AWAY",
+                    "probability": 0.612640380859375,
+                    "edge": 0.112640380859375,
+                    "ev": 0.169586181640625,
+                    "odds": -110,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W1-NE-SEA",
+                    "side": "HOME",
+                    "probability": 0.5244140625,
+                    "edge": 0.03524829868634888,
+                    "ev": 0.023856026785714246,
+                    "odds": -105,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W1-SF-LA",
+                    "side": "AWAY",
+                    "probability": 0.542724609375,
+                    "edge": 0.03839485530503117,
+                    "ev": 0.027300153459821452,
+                    "odds": -112,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W1-TB-CIN",
+                    "side": "AWAY",
+                    "probability": 0.574188232421875,
+                    "edge": 0.08502246860822382,
+                    "ev": 0.12103416806175593,
+                    "odds": -105,
+                    "won": false
+                  }
+                ],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              }
+            }
+          },
+          {
+            "week": 2,
+            "role": "RETROSPECTIVE_WALK_FORWARD_EXPLORATORY",
+            "training_weeks": [
+              1
+            ],
+            "weights": {
+              "book": 0,
+              "poly": 1,
+              "football": 0,
+              "training": {
+                "n": 14,
+                "brier": 0.24874464285714287,
+                "log_loss": 0.6906458614799905,
+                "correct": 8,
+                "decisive": 14,
+                "no_direction": 0
+              }
+            },
+            "football_plus_book_control_weights": {
+              "book": 1,
+              "poly": 0,
+              "football": 0,
+              "training": {
+                "n": 14,
+                "brier": 0.2508862375617992,
+                "log_loss": 0.6949205247803347,
+                "correct": 5,
+                "decisive": 11,
+                "no_direction": 3
+              }
+            },
+            "existing": {
+              "n": 13,
+              "brier": 0.28174381531201875,
+              "log_loss": 0.7634240102644415,
+              "correct": 6,
+              "decisive": 13,
+              "no_direction": 0
+            },
+            "football_plus_book": {
+              "n": 13,
+              "brier": 0.2519757716769728,
+              "log_loss": 0.6970996411680819,
+              "correct": 6,
+              "decisive": 13,
+              "no_direction": 0
+            },
+            "revised": {
+              "n": 13,
+              "brier": 0.24496538461538458,
+              "log_loss": 0.6830476027466502,
+              "correct": 8,
+              "decisive": 12,
+              "no_direction": 1
+            },
+            "price_qualified": {
+              "existing": {
+                "wins": 6,
+                "losses": 5,
+                "passes": 2,
+                "selected": 11,
+                "hit_rate": 0.5454545454545454,
+                "selections": [
+                  {
+                    "game_id": "2026-W2-CAR-ATL",
+                    "side": "HOME",
+                    "probability": 0.693328857421875,
+                    "edge": 0.19765861149184383,
+                    "ev": 0.33530002170138884,
+                    "odds": -108,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W2-CLE-TB",
+                    "side": "AWAY",
+                    "probability": 0.596343994140625,
+                    "edge": 0.09201424007065617,
+                    "ev": 0.12879398890904026,
+                    "odds": -112,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W2-DET-BUF",
+                    "side": "AWAY",
+                    "probability": 0.549224853515625,
+                    "edge": 0.05355460758559383,
+                    "ev": 0.05776638454861116,
+                    "odds": -108,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W2-GB-NYJ",
+                    "side": "HOME",
+                    "probability": 0.561737060546875,
+                    "edge": 0.039997930112092406,
+                    "ev": 0.02985127766927087,
+                    "odds": -120,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W2-IND-KC",
+                    "side": "AWAY",
+                    "probability": 0.57843017578125,
+                    "edge": 0.1001693062160326,
+                    "ev": 0.1568603515625,
+                    "odds": 100,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W2-LV-LAC",
+                    "side": "AWAY",
+                    "probability": 0.524017333984375,
+                    "edge": 0.03485157017072382,
+                    "ev": 0.02308146158854163,
+                    "odds": -105,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W2-MIA-SF",
+                    "side": "AWAY",
+                    "probability": 0.747406005859375,
+                    "edge": 0.23657176967302607,
+                    "ev": 0.39732427182404895,
+                    "odds": -115,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W2-MIN-CHI",
+                    "side": "AWAY",
+                    "probability": 0.622100830078125,
+                    "edge": 0.12643058414809383,
+                    "ev": 0.1981201171875,
+                    "odds": -108,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W2-NO-BAL",
+                    "side": "AWAY",
+                    "probability": 0.547088623046875,
+                    "edge": 0.05792285923322382,
+                    "ev": 0.06812540690104163,
+                    "odds": -105,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W2-PIT-NE",
+                    "side": "AWAY",
+                    "probability": 0.5889892578125,
+                    "edge": 0.09982349399884882,
+                    "ev": 0.14993140811011907,
+                    "odds": -105,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W2-SEA-ARI",
+                    "side": "HOME",
+                    "probability": 0.5643310546875,
+                    "edge": 0.07516529087384888,
+                    "ev": 0.10178920200892849,
+                    "odds": -105,
+                    "won": false
+                  }
+                ],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              },
+              "revised": {
+                "wins": 0,
+                "losses": 0,
+                "passes": 13,
+                "selected": 0,
+                "hit_rate": null,
+                "selections": [],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              }
+            }
+          },
+          {
+            "week": 3,
+            "role": "RETROSPECTIVE_WALK_FORWARD_EXPLORATORY",
+            "training_weeks": [
+              1,
+              2
+            ],
+            "weights": {
+              "book": 0,
+              "poly": 1,
+              "football": 0,
+              "training": {
+                "n": 27,
+                "brier": 0.246925,
+                "log_loss": 0.6869874406083821,
+                "correct": 16,
+                "decisive": 26,
+                "no_direction": 1
+              }
+            },
+            "football_plus_book_control_weights": {
+              "book": 1,
+              "poly": 0,
+              "football": 0,
+              "training": {
+                "n": 27,
+                "brier": 0.25141082806169757,
+                "log_loss": 0.6959697289670279,
+                "correct": 11,
+                "decisive": 24,
+                "no_direction": 3
+              }
+            },
+            "existing": {
+              "n": 12,
+              "brier": 0.21609663086322448,
+              "log_loss": 0.6231666335555807,
+              "correct": 8,
+              "decisive": 12,
+              "no_direction": 0
+            },
+            "football_plus_book": {
+              "n": 12,
+              "brier": 0.252308660865013,
+              "log_loss": 0.6977652626994227,
+              "correct": 4,
+              "decisive": 11,
+              "no_direction": 1
+            },
+            "revised": {
+              "n": 12,
+              "brier": 0.25100833333333333,
+              "log_loss": 0.6951688916353594,
+              "correct": 6,
+              "decisive": 12,
+              "no_direction": 0
+            },
+            "price_qualified": {
+              "existing": {
+                "wins": 8,
+                "losses": 3,
+                "passes": 1,
+                "selected": 11,
+                "hit_rate": 0.7272727272727273,
+                "selections": [
+                  {
+                    "game_id": "2026-W3-ARI-SF",
+                    "side": "HOME",
+                    "probability": 0.628570556640625,
+                    "edge": 0.13290031071059383,
+                    "ev": 0.21058033130787035,
+                    "odds": -108,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W3-ATL-GB",
+                    "side": "HOME",
+                    "probability": 0.578277587890625,
+                    "edge": 0.06744335170427618,
+                    "ev": 0.08112766431725538,
+                    "odds": -115,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W3-BAL-DAL",
+                    "side": "HOME",
+                    "probability": 0.635101318359375,
+                    "edge": 0.135101318359375,
+                    "ev": 0.21246615323153406,
+                    "odds": -110,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W3-CAR-CLE",
+                    "side": "HOME",
+                    "probability": 0.564971923828125,
+                    "edge": 0.0867110542629076,
+                    "ev": 0.12994384765625,
+                    "odds": 100,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W3-CIN-PIT",
+                    "side": "HOME",
+                    "probability": 0.673126220703125,
+                    "edge": 0.18396045688947388,
+                    "ev": 0.31419881184895826,
+                    "odds": -105,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W3-HOU-IND",
+                    "side": "HOME",
+                    "probability": 0.613067626953125,
+                    "edge": 0.12390186313947388,
+                    "ev": 0.19694155738467256,
+                    "odds": -105,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W3-KC-MIA",
+                    "side": "HOME",
+                    "probability": 0.653533935546875,
+                    "edge": 0.16436817173322388,
+                    "ev": 0.27594720749627977,
+                    "odds": -105,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W3-LA-DEN",
+                    "side": "HOME",
+                    "probability": 0.564453125,
+                    "edge": 0.06878287906996883,
+                    "ev": 0.08709490740740744,
+                    "odds": -108,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W3-NYJ-DET",
+                    "side": "HOME",
+                    "probability": 0.57135009765625,
+                    "edge": 0.06051586146990118,
+                    "ev": 0.06817626953125,
+                    "odds": -115,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W3-PHI-CHI",
+                    "side": "HOME",
+                    "probability": 0.72100830078125,
+                    "edge": 0.23184253696759888,
+                    "ev": 0.40768287295386896,
+                    "odds": -105,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W3-TEN-NYG",
+                    "side": "HOME",
+                    "probability": 0.61529541015625,
+                    "edge": 0.0935562797214674,
+                    "ev": 0.12804158528645837,
+                    "odds": -120,
+                    "won": true
+                  }
+                ],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              },
+              "revised": {
+                "wins": 0,
+                "losses": 0,
+                "passes": 12,
+                "selected": 0,
+                "hit_rate": null,
+                "selections": [],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              }
+            }
+          },
+          {
+            "week": 4,
+            "role": "RETROSPECTIVE_WALK_FORWARD_EXPLORATORY",
+            "training_weeks": [
+              1,
+              2,
+              3
+            ],
+            "weights": {
+              "book": 0,
+              "poly": 0.9,
+              "football": 0.1,
+              "training": {
+                "n": 39,
+                "brier": 0.2481062511268996,
+                "log_loss": 0.6893481069491829,
+                "correct": 20,
+                "decisive": 39,
+                "no_direction": 0
+              }
+            },
+            "football_plus_book_control_weights": {
+              "book": 0.7,
+              "poly": 0,
+              "football": 0.3,
+              "training": {
+                "n": 39,
+                "brier": 0.25097924252289705,
+                "log_loss": 0.695129461166458,
+                "correct": 18,
+                "decisive": 39,
+                "no_direction": 0
+              }
+            },
+            "existing": {
+              "n": 11,
+              "brier": 0.20192020344124598,
+              "log_loss": 0.5924102782539656,
+              "correct": 7,
+              "decisive": 11,
+              "no_direction": 0
+            },
+            "football_plus_book": {
+              "n": 11,
+              "brier": 0.23570778272356135,
+              "log_loss": 0.6644159115328974,
+              "correct": 7,
+              "decisive": 11,
+              "no_direction": 0
+            },
+            "revised": {
+              "n": 11,
+              "brier": 0.24237817005199058,
+              "log_loss": 0.6778588367991958,
+              "correct": 7,
+              "decisive": 11,
+              "no_direction": 0
+            },
+            "price_qualified": {
+              "existing": {
+                "wins": 7,
+                "losses": 2,
+                "passes": 2,
+                "selected": 9,
+                "hit_rate": 0.7777777777777778,
+                "selections": [
+                  {
+                    "game_id": "2026-W4-ARI-NYG",
+                    "side": "HOME",
+                    "probability": 0.6968994140625,
+                    "edge": 0.1795352883462299,
+                    "ev": 0.2874921378442796,
+                    "odds": -118,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-DET-CAR",
+                    "side": "HOME",
+                    "probability": 0.623321533203125,
+                    "edge": 0.12765128727309383,
+                    "ev": 0.20047110098379628,
+                    "odds": -108,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-GB-TB",
+                    "side": "HOME",
+                    "probability": 0.683197021484375,
+                    "edge": 0.2049361519191576,
+                    "ev": 0.36639404296875,
+                    "odds": 100,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-IND-WAS",
+                    "side": "HOME",
+                    "probability": 0.605682373046875,
+                    "edge": 0.10135261897690617,
+                    "ev": 0.14647020612444195,
+                    "odds": -112,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W4-JAX-CIN",
+                    "side": "AWAY",
+                    "probability": 0.691253662109375,
+                    "edge": 0.2086177878256451,
+                    "ev": 0.36895333084405635,
+                    "odds": -102,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-KC-LV",
+                    "side": "HOME",
+                    "probability": 0.571014404296875,
+                    "edge": 0.08184864048322388,
+                    "ev": 0.114837646484375,
+                    "odds": -105,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-LA-PHI",
+                    "side": "HOME",
+                    "probability": 0.6038818359375,
+                    "edge": 0.1256209663722826,
+                    "ev": 0.207763671875,
+                    "odds": 100,
+                    "won": false
+                  },
+                  {
+                    "game_id": "2026-W4-NYJ-CHI",
+                    "side": "HOME",
+                    "probability": 0.660552978515625,
+                    "edge": 0.14971874232927618,
+                    "ev": 0.23494687287703808,
+                    "odds": -115,
+                    "won": true
+                  },
+                  {
+                    "game_id": "2026-W4-PIT-CLE",
+                    "side": "HOME",
+                    "probability": 0.564422607421875,
+                    "edge": 0.0861617378566576,
+                    "ev": 0.12884521484375,
+                    "odds": 100,
+                    "won": true
+                  }
+                ],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              },
+              "revised": {
+                "wins": 0,
+                "losses": 0,
+                "passes": 11,
+                "selected": 0,
+                "hit_rate": null,
+                "selections": [],
+                "basis": "Hypothetical price-qualified selections at saved sportsbook prices; not actual issued bets; historical QB/availability holds are not fully reconstructed"
+              }
+            }
+          }
+        ],
+        "frozen_future_weights": {
+          "book": 0,
+          "poly": 0.4,
+          "football": 0.6,
+          "training": {
+            "n": 50,
+            "brier": 0.24320443801565175,
+            "log_loss": 0.6794181371703811,
+            "correct": 25,
+            "decisive": 50,
+            "no_direction": 0
+          }
+        }
+      }
+    },
+    "weight_updates_during_future_test": false,
+    "minimum_existing_holdout_requirement": 100,
+    "required_metrics": [
+      "brier_score",
+      "log_loss",
+      "roi",
+      "closing_line_value"
+    ],
+    "production_numeric_authority": 0,
+    "original_picks_changed": false
+  }
+}
