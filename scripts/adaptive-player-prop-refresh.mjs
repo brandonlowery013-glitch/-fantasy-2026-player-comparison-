@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
 
 const root=process.cwd();
 const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
-const write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true});fs.writeFileSync(path.join(root,p),JSON.stringify(x,null,2)+'\n');};
+const write=(p,x)=>{fs.mkdirSync(path.dirname(path.join(root,p)),{recursive:true});fs.writeFileSync(path.join(root,p),JSON.stringify(x,null,p==='data/market/player-prop-market-snapshots-2026.json'?undefined:2)+'\n');};
 const exists=p=>fs.existsSync(path.join(root,p));
 const contract=read('data/sources/live-market-ingestion-2026.json');
 const schedule=read('data/calibration/weekly-event-schedule-2026.json');
