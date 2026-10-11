@@ -1,0 +1,2543 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-11T03:47:45.333Z",
+  "status": "RESEARCH_COMPLETE",
+  "scope": [
+    "moneyline",
+    "spread"
+  ],
+  "weeks": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "week_1_included": true,
+  "model_game_count": 64,
+  "rows": 127,
+  "results": {
+    "moneyline": {
+      "by_week": {
+        "1": {
+          "games": 16,
+          "polymarket_matched": 16
+        },
+        "2": {
+          "games": 16,
+          "polymarket_matched": 16
+        },
+        "3": {
+          "games": 16,
+          "polymarket_matched": 16
+        },
+        "4": {
+          "games": 16,
+          "polymarket_matched": 16
+        }
+      },
+      "four_week_baselines": {
+        "football": {
+          "n": 64,
+          "brier": 0.22422728662672806,
+          "log_loss": 0.6375007772768695,
+          "correct": 41,
+          "decisive": 64,
+          "no_direction": 0
+        },
+        "sportsbook": {
+          "n": 64,
+          "brier": 0.2307878893706678,
+          "log_loss": 0.6536365286821245,
+          "correct": 40,
+          "decisive": 64,
+          "no_direction": 0
+        }
+      },
+      "calibrated_sportsbook_benchmark": {
+        "status": "RESEARCH_COMPLETE_NOT_PROMOTED",
+        "split": "Weeks 1–2 training; Week 3 penalty selection; Week 4 untouched evaluation",
+        "training": 32,
+        "validation": 16,
+        "holdout": 16,
+        "model": {
+          "formula": "sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))",
+          "emh_null": "All fitted corrections equal zero: the market benchmark remains the estimate",
+          "columns": [
+            "market_logit"
+          ],
+          "excluded_columns": [],
+          "mean": {
+            "market_logit": 0.2990944784663196
+          },
+          "sd": {
+            "market_logit": 0.7218610685975618
+          },
+          "beta": [
+            0.0064991852163684034,
+            -0.02522395549384601
+          ],
+          "penalty": 100,
+          "training_game_ids": [
+            "2026-W1-ARI-LAC",
+            "2026-W1-ATL-PIT",
+            "2026-W1-BAL-IND",
+            "2026-W1-BUF-HOU",
+            "2026-W1-CHI-CAR",
+            "2026-W1-CLE-JAX",
+            "2026-W1-DAL-NYG",
+            "2026-W1-DEN-KC",
+            "2026-W1-GB-MIN",
+            "2026-W1-MIA-LV",
+            "2026-W1-NE-SEA",
+            "2026-W1-NO-DET",
+            "2026-W1-NYJ-TEN",
+            "2026-W1-SF-LA",
+            "2026-W1-TB-CIN",
+            "2026-W1-WAS-PHI",
+            "2026-W2-CAR-ATL",
+            "2026-W2-CIN-HOU",
+            "2026-W2-CLE-TB",
+            "2026-W2-DET-BUF",
+            "2026-W2-GB-NYJ",
+            "2026-W2-IND-KC",
+            "2026-W2-JAX-DEN",
+            "2026-W2-LV-LAC",
+            "2026-W2-MIA-SF",
+            "2026-W2-MIN-CHI",
+            "2026-W2-NO-BAL",
+            "2026-W2-NYG-LA",
+            "2026-W2-PHI-TEN",
+            "2026-W2-PIT-NE",
+            "2026-W2-SEA-ARI",
+            "2026-W2-WAS-DAL",
+            "2026-W3-ARI-SF",
+            "2026-W3-ATL-GB",
+            "2026-W3-BAL-DAL",
+            "2026-W3-CAR-CLE",
+            "2026-W3-CIN-PIT",
+            "2026-W3-HOU-IND",
+            "2026-W3-KC-MIA",
+            "2026-W3-LA-DEN",
+            "2026-W3-LAC-BUF",
+            "2026-W3-LV-NO",
+            "2026-W3-MIN-TB",
+            "2026-W3-NE-JAX",
+            "2026-W3-NYJ-DET",
+            "2026-W3-PHI-CHI",
+            "2026-W3-SEA-WAS",
+            "2026-W3-TEN-NYG"
+          ],
+          "numeric_authority": 0
+        },
+        "penalty_selection": [
+          {
+            "penalty": 100,
+            "validation": {
+              "n": 16,
+              "brier": 0.2618722616751389,
+              "log_loss": 0.7143483624712069,
+              "correct": 8,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 10,
+            "validation": {
+              "n": 16,
+              "brier": 0.2765567972761849,
+              "log_loss": 0.7477032168600906,
+              "correct": 8,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 1,
+            "validation": {
+              "n": 16,
+              "brier": 0.29739578998984195,
+              "log_loss": 0.7983904275376238,
+              "correct": 7,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 0.1,
+            "validation": {
+              "n": 16,
+              "brier": 0.3026976235167952,
+              "log_loss": 0.8119910081811086,
+              "correct": 7,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          }
+        ],
+        "holdout_metrics": {
+          "sportsbook": {
+            "n": 16,
+            "brier": 0.21749692849279129,
+            "log_loss": 0.6195390595589171,
+            "correct": 9,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "football": {
+            "n": 16,
+            "brier": 0.20094447520544573,
+            "log_loss": 0.5821221213519993,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "combined": {
+            "n": 16,
+            "brier": 0.21798754607692636,
+            "log_loss": 0.6209525219040446,
+            "correct": 9,
+            "decisive": 16,
+            "no_direction": 0
+          }
+        },
+        "predictions": [
+          {
+            "game_id": "2026-W4-ARI-NYG",
+            "probability": 0.49378063511121584,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-ATL-NO",
+            "probability": 0.584266495237293,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DAL-HOU",
+            "probability": 0.56546565017809,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DEN-SF",
+            "probability": 0.584266495237293,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-DET-CAR",
+            "probability": 0.3856563561388307,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-GB-TB",
+            "probability": 0.37740805983144843,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-IND-WAS",
+            "probability": 0.3856563561388307,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-JAX-CIN",
+            "probability": 0.5737254385245305,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-KC-LV",
+            "probability": 0.3402550809320629,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-LA-PHI",
+            "probability": 0.4345854857692904,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-LAC-SEA",
+            "probability": 0.7437964415170588,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-MIA-MIN",
+            "probability": 0.8315367331764343,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-NE-BUF",
+            "probability": 0.722344858092059,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-NYJ-CHI",
+            "probability": 0.6362828317317556,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-PIT-CLE",
+            "probability": 0.4345854857692904,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-TEN-BAL",
+            "probability": 0.8344134665630377,
+            "outcome": 1
+          }
+        ],
+        "numeric_authority": 0,
+        "promotion_allowed": false,
+        "limitations": [
+          "Small four-week sample; existing 100-holdout and review requirements are not met",
+          "Historical Polymarket trade prices are not historical executable bid/ask quotes",
+          "Model versions changed during these four weeks",
+          "No ROI or closing-line-value claim without corresponding archived execution and closing data"
+        ]
+      },
+      "existing_variables_plus_market": {
+        "status": "RESEARCH_COMPLETE_NOT_PROMOTED",
+        "split": "Weeks 1–2 training; Week 3 penalty selection; Week 4 untouched evaluation",
+        "training": 32,
+        "validation": 16,
+        "holdout": 16,
+        "model": {
+          "formula": "sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))",
+          "emh_null": "All fitted corrections equal zero: the market benchmark remains the estimate",
+          "columns": [
+            "market_logit",
+            "football_minus_market_logit",
+            "home_score_mean",
+            "away_score_mean",
+            "team_score_sd"
+          ],
+          "excluded_columns": [
+            {
+              "column": "home_away_score_correlation",
+              "reason": "EXACTLY_COLLINEAR_WITH_team_score_sd"
+            }
+          ],
+          "mean": {
+            "market_logit": 0.2990944784663196,
+            "football_minus_market_logit": 0.0012098205041687373,
+            "home_score_mean": 23.873354166666672,
+            "away_score_mean": 21.341624999999997,
+            "team_score_sd": 9.727333333333338,
+            "home_away_score_correlation": -0.035200000000000016
+          },
+          "sd": {
+            "market_logit": 0.7218610685975618,
+            "football_minus_market_logit": 0.48528636743762493,
+            "home_score_mean": 2.2013918086972395,
+            "away_score_mean": 2.0444021092669122,
+            "team_score_sd": 0.2866139486409474,
+            "home_away_score_correlation": 0.0282842712474619
+          },
+          "beta": [
+            0.006350740981655254,
+            -0.02134588470516084,
+            0.026383163686592534,
+            0.008311319649634824,
+            0.021589747894920287,
+            -0.051155257917451444
+          ],
+          "penalty": 100,
+          "training_game_ids": [
+            "2026-W1-ARI-LAC",
+            "2026-W1-ATL-PIT",
+            "2026-W1-BAL-IND",
+            "2026-W1-BUF-HOU",
+            "2026-W1-CHI-CAR",
+            "2026-W1-CLE-JAX",
+            "2026-W1-DAL-NYG",
+            "2026-W1-DEN-KC",
+            "2026-W1-GB-MIN",
+            "2026-W1-MIA-LV",
+            "2026-W1-NE-SEA",
+            "2026-W1-NO-DET",
+            "2026-W1-NYJ-TEN",
+            "2026-W1-SF-LA",
+            "2026-W1-TB-CIN",
+            "2026-W1-WAS-PHI",
+            "2026-W2-CAR-ATL",
+            "2026-W2-CIN-HOU",
+            "2026-W2-CLE-TB",
+            "2026-W2-DET-BUF",
+            "2026-W2-GB-NYJ",
+            "2026-W2-IND-KC",
+            "2026-W2-JAX-DEN",
+            "2026-W2-LV-LAC",
+            "2026-W2-MIA-SF",
+            "2026-W2-MIN-CHI",
+            "2026-W2-NO-BAL",
+            "2026-W2-NYG-LA",
+            "2026-W2-PHI-TEN",
+            "2026-W2-PIT-NE",
+            "2026-W2-SEA-ARI",
+            "2026-W2-WAS-DAL",
+            "2026-W3-ARI-SF",
+            "2026-W3-ATL-GB",
+            "2026-W3-BAL-DAL",
+            "2026-W3-CAR-CLE",
+            "2026-W3-CIN-PIT",
+            "2026-W3-HOU-IND",
+            "2026-W3-KC-MIA",
+            "2026-W3-LA-DEN",
+            "2026-W3-LAC-BUF",
+            "2026-W3-LV-NO",
+            "2026-W3-MIN-TB",
+            "2026-W3-NE-JAX",
+            "2026-W3-NYJ-DET",
+            "2026-W3-PHI-CHI",
+            "2026-W3-SEA-WAS",
+            "2026-W3-TEN-NYG"
+          ],
+          "numeric_authority": 0
+        },
+        "penalty_selection": [
+          {
+            "penalty": 100,
+            "validation": {
+              "n": 16,
+              "brier": 0.2626048276905956,
+              "log_loss": 0.7157791611619277,
+              "correct": 8,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 10,
+            "validation": {
+              "n": 16,
+              "brier": 0.27748146151468706,
+              "log_loss": 0.7492963696210034,
+              "correct": 8,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 1,
+            "validation": {
+              "n": 16,
+              "brier": 0.29514019221378157,
+              "log_loss": 0.7919380891644682,
+              "correct": 7,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 0.1,
+            "validation": {
+              "n": 16,
+              "brier": 0.299483004681065,
+              "log_loss": 0.8028453383099421,
+              "correct": 7,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          }
+        ],
+        "holdout_metrics": {
+          "sportsbook": {
+            "n": 16,
+            "brier": 0.21749692849279129,
+            "log_loss": 0.6195390595589171,
+            "correct": 9,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "football": {
+            "n": 16,
+            "brier": 0.20094447520544573,
+            "log_loss": 0.5821221213519993,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "combined": {
+            "n": 16,
+            "brier": 0.2204564756463614,
+            "log_loss": 0.6261601805663779,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          }
+        },
+        "predictions": [
+          {
+            "game_id": "2026-W4-ARI-NYG",
+            "probability": 0.5188833482807244,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-ATL-NO",
+            "probability": 0.6001007619545959,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DAL-HOU",
+            "probability": 0.58980531398308,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DEN-SF",
+            "probability": 0.6052627410871683,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-DET-CAR",
+            "probability": 0.4187732531198637,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-GB-TB",
+            "probability": 0.40554244196904404,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-IND-WAS",
+            "probability": 0.4179147524726114,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-JAX-CIN",
+            "probability": 0.5888419130768285,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-KC-LV",
+            "probability": 0.3615868111227543,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-LA-PHI",
+            "probability": 0.4572835991421253,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-LAC-SEA",
+            "probability": 0.7538989185749345,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-MIA-MIN",
+            "probability": 0.8343502731916603,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-NE-BUF",
+            "probability": 0.733559272581317,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-NYJ-CHI",
+            "probability": 0.658105901324478,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-PIT-CLE",
+            "probability": 0.4524733229318753,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-TEN-BAL",
+            "probability": 0.8396885239456491,
+            "outcome": 1
+          }
+        ],
+        "numeric_authority": 0,
+        "promotion_allowed": false,
+        "limitations": [
+          "Small four-week sample; existing 100-holdout and review requirements are not met",
+          "Historical Polymarket trade prices are not historical executable bid/ask quotes",
+          "Model versions changed during these four weeks",
+          "No ROI or closing-line-value claim without corresponding archived execution and closing data"
+        ]
+      },
+      "paired_calibrated_sportsbook_benchmark": {
+        "status": "RESEARCH_COMPLETE_NOT_PROMOTED",
+        "split": "Weeks 1–2 training; Week 3 penalty selection; Week 4 untouched evaluation",
+        "training": 32,
+        "validation": 16,
+        "holdout": 16,
+        "model": {
+          "formula": "sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))",
+          "emh_null": "All fitted corrections equal zero: the market benchmark remains the estimate",
+          "columns": [
+            "market_logit"
+          ],
+          "excluded_columns": [],
+          "mean": {
+            "market_logit": 0.2990944784663196
+          },
+          "sd": {
+            "market_logit": 0.7218610685975618
+          },
+          "beta": [
+            0.0064991852163684034,
+            -0.02522395549384601
+          ],
+          "penalty": 100,
+          "training_game_ids": [
+            "2026-W1-ARI-LAC",
+            "2026-W1-ATL-PIT",
+            "2026-W1-BAL-IND",
+            "2026-W1-BUF-HOU",
+            "2026-W1-CHI-CAR",
+            "2026-W1-CLE-JAX",
+            "2026-W1-DAL-NYG",
+            "2026-W1-DEN-KC",
+            "2026-W1-GB-MIN",
+            "2026-W1-MIA-LV",
+            "2026-W1-NE-SEA",
+            "2026-W1-NO-DET",
+            "2026-W1-NYJ-TEN",
+            "2026-W1-SF-LA",
+            "2026-W1-TB-CIN",
+            "2026-W1-WAS-PHI",
+            "2026-W2-CAR-ATL",
+            "2026-W2-CIN-HOU",
+            "2026-W2-CLE-TB",
+            "2026-W2-DET-BUF",
+            "2026-W2-GB-NYJ",
+            "2026-W2-IND-KC",
+            "2026-W2-JAX-DEN",
+            "2026-W2-LV-LAC",
+            "2026-W2-MIA-SF",
+            "2026-W2-MIN-CHI",
+            "2026-W2-NO-BAL",
+            "2026-W2-NYG-LA",
+            "2026-W2-PHI-TEN",
+            "2026-W2-PIT-NE",
+            "2026-W2-SEA-ARI",
+            "2026-W2-WAS-DAL",
+            "2026-W3-ARI-SF",
+            "2026-W3-ATL-GB",
+            "2026-W3-BAL-DAL",
+            "2026-W3-CAR-CLE",
+            "2026-W3-CIN-PIT",
+            "2026-W3-HOU-IND",
+            "2026-W3-KC-MIA",
+            "2026-W3-LA-DEN",
+            "2026-W3-LAC-BUF",
+            "2026-W3-LV-NO",
+            "2026-W3-MIN-TB",
+            "2026-W3-NE-JAX",
+            "2026-W3-NYJ-DET",
+            "2026-W3-PHI-CHI",
+            "2026-W3-SEA-WAS",
+            "2026-W3-TEN-NYG"
+          ],
+          "numeric_authority": 0
+        },
+        "penalty_selection": [
+          {
+            "penalty": 100,
+            "validation": {
+              "n": 16,
+              "brier": 0.2618722616751389,
+              "log_loss": 0.7143483624712069,
+              "correct": 8,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 10,
+            "validation": {
+              "n": 16,
+              "brier": 0.2765567972761849,
+              "log_loss": 0.7477032168600906,
+              "correct": 8,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 1,
+            "validation": {
+              "n": 16,
+              "brier": 0.29739578998984195,
+              "log_loss": 0.7983904275376238,
+              "correct": 7,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 0.1,
+            "validation": {
+              "n": 16,
+              "brier": 0.3026976235167952,
+              "log_loss": 0.8119910081811086,
+              "correct": 7,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          }
+        ],
+        "holdout_metrics": {
+          "sportsbook": {
+            "n": 16,
+            "brier": 0.21749692849279129,
+            "log_loss": 0.6195390595589171,
+            "correct": 9,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "football": {
+            "n": 16,
+            "brier": 0.20094447520544573,
+            "log_loss": 0.5821221213519993,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "polymarket": {
+            "n": 16,
+            "brier": 0.21755682383768987,
+            "log_loss": 0.6186053369937041,
+            "correct": 9,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "combined": {
+            "n": 16,
+            "brier": 0.21798754607692636,
+            "log_loss": 0.6209525219040446,
+            "correct": 9,
+            "decisive": 16,
+            "no_direction": 0
+          }
+        },
+        "predictions": [
+          {
+            "game_id": "2026-W4-ARI-NYG",
+            "probability": 0.49378063511121584,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-ATL-NO",
+            "probability": 0.584266495237293,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DAL-HOU",
+            "probability": 0.56546565017809,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DEN-SF",
+            "probability": 0.584266495237293,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-DET-CAR",
+            "probability": 0.3856563561388307,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-GB-TB",
+            "probability": 0.37740805983144843,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-IND-WAS",
+            "probability": 0.3856563561388307,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-JAX-CIN",
+            "probability": 0.5737254385245305,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-KC-LV",
+            "probability": 0.3402550809320629,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-LA-PHI",
+            "probability": 0.4345854857692904,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-LAC-SEA",
+            "probability": 0.7437964415170588,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-MIA-MIN",
+            "probability": 0.8315367331764343,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-NE-BUF",
+            "probability": 0.722344858092059,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-NYJ-CHI",
+            "probability": 0.6362828317317556,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-PIT-CLE",
+            "probability": 0.4345854857692904,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-TEN-BAL",
+            "probability": 0.8344134665630377,
+            "outcome": 1
+          }
+        ],
+        "numeric_authority": 0,
+        "promotion_allowed": false,
+        "limitations": [
+          "Small four-week sample; existing 100-holdout and review requirements are not met",
+          "Historical Polymarket trade prices are not historical executable bid/ask quotes",
+          "Model versions changed during these four weeks",
+          "No ROI or closing-line-value claim without corresponding archived execution and closing data"
+        ]
+      },
+      "paired_calibrated_two_market_benchmark": {
+        "status": "RESEARCH_COMPLETE_NOT_PROMOTED",
+        "split": "Weeks 1–2 training; Week 3 penalty selection; Week 4 untouched evaluation",
+        "training": 32,
+        "validation": 16,
+        "holdout": 16,
+        "model": {
+          "formula": "sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))",
+          "emh_null": "All fitted corrections equal zero: the market benchmark remains the estimate",
+          "columns": [
+            "market_logit",
+            "polymarket_minus_market_logit"
+          ],
+          "excluded_columns": [],
+          "mean": {
+            "market_logit": 0.2990944784663196,
+            "polymarket_minus_market_logit": 0.027800231539016045
+          },
+          "sd": {
+            "market_logit": 0.7218610685975618,
+            "polymarket_minus_market_logit": 0.10799265023461663
+          },
+          "beta": [
+            0.0064009885369357075,
+            -0.02379023307023128,
+            -0.02211521330192973
+          ],
+          "penalty": 100,
+          "training_game_ids": [
+            "2026-W1-ARI-LAC",
+            "2026-W1-ATL-PIT",
+            "2026-W1-BAL-IND",
+            "2026-W1-BUF-HOU",
+            "2026-W1-CHI-CAR",
+            "2026-W1-CLE-JAX",
+            "2026-W1-DAL-NYG",
+            "2026-W1-DEN-KC",
+            "2026-W1-GB-MIN",
+            "2026-W1-MIA-LV",
+            "2026-W1-NE-SEA",
+            "2026-W1-NO-DET",
+            "2026-W1-NYJ-TEN",
+            "2026-W1-SF-LA",
+            "2026-W1-TB-CIN",
+            "2026-W1-WAS-PHI",
+            "2026-W2-CAR-ATL",
+            "2026-W2-CIN-HOU",
+            "2026-W2-CLE-TB",
+            "2026-W2-DET-BUF",
+            "2026-W2-GB-NYJ",
+            "2026-W2-IND-KC",
+            "2026-W2-JAX-DEN",
+            "2026-W2-LV-LAC",
+            "2026-W2-MIA-SF",
+            "2026-W2-MIN-CHI",
+            "2026-W2-NO-BAL",
+            "2026-W2-NYG-LA",
+            "2026-W2-PHI-TEN",
+            "2026-W2-PIT-NE",
+            "2026-W2-SEA-ARI",
+            "2026-W2-WAS-DAL",
+            "2026-W3-ARI-SF",
+            "2026-W3-ATL-GB",
+            "2026-W3-BAL-DAL",
+            "2026-W3-CAR-CLE",
+            "2026-W3-CIN-PIT",
+            "2026-W3-HOU-IND",
+            "2026-W3-KC-MIA",
+            "2026-W3-LA-DEN",
+            "2026-W3-LAC-BUF",
+            "2026-W3-LV-NO",
+            "2026-W3-MIN-TB",
+            "2026-W3-NE-JAX",
+            "2026-W3-NYJ-DET",
+            "2026-W3-PHI-CHI",
+            "2026-W3-SEA-WAS",
+            "2026-W3-TEN-NYG"
+          ],
+          "numeric_authority": 0
+        },
+        "penalty_selection": [
+          {
+            "penalty": 100,
+            "validation": {
+              "n": 16,
+              "brier": 0.26147774493552756,
+              "log_loss": 0.7135548148646776,
+              "correct": 8,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 10,
+            "validation": {
+              "n": 16,
+              "brier": 0.2746820563278337,
+              "log_loss": 0.7439966935047292,
+              "correct": 8,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 1,
+            "validation": {
+              "n": 16,
+              "brier": 0.302548135265102,
+              "log_loss": 0.8164608265910788,
+              "correct": 6,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 0.1,
+            "validation": {
+              "n": 16,
+              "brier": 0.31815558122762744,
+              "log_loss": 0.865389635305114,
+              "correct": 6,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          }
+        ],
+        "holdout_metrics": {
+          "sportsbook": {
+            "n": 16,
+            "brier": 0.21749692849279129,
+            "log_loss": 0.6195390595589171,
+            "correct": 9,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "football": {
+            "n": 16,
+            "brier": 0.20094447520544573,
+            "log_loss": 0.5821221213519993,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "polymarket": {
+            "n": 16,
+            "brier": 0.21755682383768987,
+            "log_loss": 0.6186053369937041,
+            "correct": 9,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "combined": {
+            "n": 16,
+            "brier": 0.2182491786951167,
+            "log_loss": 0.6216568888669858,
+            "correct": 9,
+            "decisive": 16,
+            "no_direction": 0
+          }
+        },
+        "predictions": [
+          {
+            "game_id": "2026-W4-ARI-NYG",
+            "probability": 0.4959509633323398,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-ATL-NO",
+            "probability": 0.5857433784407036,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DAL-HOU",
+            "probability": 0.5660924940555185,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DEN-SF",
+            "probability": 0.5889434625736116,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-DET-CAR",
+            "probability": 0.3923019024382677,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-GB-TB",
+            "probability": 0.3778563739720337,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-IND-WAS",
+            "probability": 0.39233627384024417,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-JAX-CIN",
+            "probability": 0.5761192182758299,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-KC-LV",
+            "probability": 0.33923211287297256,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-LA-PHI",
+            "probability": 0.4454574239537644,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-LAC-SEA",
+            "probability": 0.7445899264376173,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-MIA-MIN",
+            "probability": 0.8292918549721637,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-NE-BUF",
+            "probability": 0.7225355740037678,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-NYJ-CHI",
+            "probability": 0.6373873465746505,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-PIT-CLE",
+            "probability": 0.43674019701012684,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-TEN-BAL",
+            "probability": 0.8303212040116952,
+            "outcome": 1
+          }
+        ],
+        "numeric_authority": 0,
+        "promotion_allowed": false,
+        "limitations": [
+          "Small four-week sample; existing 100-holdout and review requirements are not met",
+          "Historical Polymarket trade prices are not historical executable bid/ask quotes",
+          "Model versions changed during these four weeks",
+          "No ROI or closing-line-value claim without corresponding archived execution and closing data"
+        ]
+      },
+      "existing_variables_plus_market_and_polymarket": {
+        "status": "RESEARCH_COMPLETE_NOT_PROMOTED",
+        "split": "Weeks 1–2 training; Week 3 penalty selection; Week 4 untouched evaluation",
+        "training": 32,
+        "validation": 16,
+        "holdout": 16,
+        "model": {
+          "formula": "sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))",
+          "emh_null": "All fitted corrections equal zero: the market benchmark remains the estimate",
+          "columns": [
+            "market_logit",
+            "football_minus_market_logit",
+            "home_score_mean",
+            "away_score_mean",
+            "team_score_sd",
+            "polymarket_minus_market_logit"
+          ],
+          "excluded_columns": [
+            {
+              "column": "home_away_score_correlation",
+              "reason": "EXACTLY_COLLINEAR_WITH_team_score_sd"
+            }
+          ],
+          "mean": {
+            "market_logit": 0.2990944784663196,
+            "football_minus_market_logit": 0.0012098205041687373,
+            "home_score_mean": 23.873354166666672,
+            "away_score_mean": 21.341624999999997,
+            "team_score_sd": 9.727333333333338,
+            "home_away_score_correlation": -0.035200000000000016,
+            "polymarket_minus_market_logit": 0.027800231539016045
+          },
+          "sd": {
+            "market_logit": 0.7218610685975618,
+            "football_minus_market_logit": 0.48528636743762493,
+            "home_score_mean": 2.2013918086972395,
+            "away_score_mean": 2.0444021092669122,
+            "team_score_sd": 0.2866139486409474,
+            "home_away_score_correlation": 0.0282842712474619,
+            "polymarket_minus_market_logit": 0.10799265023461663
+          },
+          "beta": [
+            0.006276244937262843,
+            -0.020212783943881124,
+            0.02535711620276718,
+            0.00892886551278106,
+            0.02094769417986418,
+            -0.050796607423534576,
+            -0.019245280636041428
+          ],
+          "penalty": 100,
+          "training_game_ids": [
+            "2026-W1-ARI-LAC",
+            "2026-W1-ATL-PIT",
+            "2026-W1-BAL-IND",
+            "2026-W1-BUF-HOU",
+            "2026-W1-CHI-CAR",
+            "2026-W1-CLE-JAX",
+            "2026-W1-DAL-NYG",
+            "2026-W1-DEN-KC",
+            "2026-W1-GB-MIN",
+            "2026-W1-MIA-LV",
+            "2026-W1-NE-SEA",
+            "2026-W1-NO-DET",
+            "2026-W1-NYJ-TEN",
+            "2026-W1-SF-LA",
+            "2026-W1-TB-CIN",
+            "2026-W1-WAS-PHI",
+            "2026-W2-CAR-ATL",
+            "2026-W2-CIN-HOU",
+            "2026-W2-CLE-TB",
+            "2026-W2-DET-BUF",
+            "2026-W2-GB-NYJ",
+            "2026-W2-IND-KC",
+            "2026-W2-JAX-DEN",
+            "2026-W2-LV-LAC",
+            "2026-W2-MIA-SF",
+            "2026-W2-MIN-CHI",
+            "2026-W2-NO-BAL",
+            "2026-W2-NYG-LA",
+            "2026-W2-PHI-TEN",
+            "2026-W2-PIT-NE",
+            "2026-W2-SEA-ARI",
+            "2026-W2-WAS-DAL",
+            "2026-W3-ARI-SF",
+            "2026-W3-ATL-GB",
+            "2026-W3-BAL-DAL",
+            "2026-W3-CAR-CLE",
+            "2026-W3-CIN-PIT",
+            "2026-W3-HOU-IND",
+            "2026-W3-KC-MIA",
+            "2026-W3-LA-DEN",
+            "2026-W3-LAC-BUF",
+            "2026-W3-LV-NO",
+            "2026-W3-MIN-TB",
+            "2026-W3-NE-JAX",
+            "2026-W3-NYJ-DET",
+            "2026-W3-PHI-CHI",
+            "2026-W3-SEA-WAS",
+            "2026-W3-TEN-NYG"
+          ],
+          "numeric_authority": 0
+        },
+        "penalty_selection": [
+          {
+            "penalty": 100,
+            "validation": {
+              "n": 16,
+              "brier": 0.26223152566296015,
+              "log_loss": 0.7150306586739508,
+              "correct": 8,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 10,
+            "validation": {
+              "n": 16,
+              "brier": 0.27678932897464426,
+              "log_loss": 0.7484015584576225,
+              "correct": 8,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 1,
+            "validation": {
+              "n": 16,
+              "brier": 0.30513542030409885,
+              "log_loss": 0.8228665459018315,
+              "correct": 6,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 0.1,
+            "validation": {
+              "n": 16,
+              "brier": 0.31933690597283754,
+              "log_loss": 0.8672765176066992,
+              "correct": 6,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          }
+        ],
+        "holdout_metrics": {
+          "sportsbook": {
+            "n": 16,
+            "brier": 0.21749692849279129,
+            "log_loss": 0.6195390595589171,
+            "correct": 9,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "football": {
+            "n": 16,
+            "brier": 0.20094447520544573,
+            "log_loss": 0.5821221213519993,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "polymarket": {
+            "n": 16,
+            "brier": 0.21755682383768987,
+            "log_loss": 0.6186053369937041,
+            "correct": 9,
+            "decisive": 16,
+            "no_direction": 0
+          },
+          "combined": {
+            "n": 16,
+            "brier": 0.2207247018030265,
+            "log_loss": 0.6268326545333478,
+            "correct": 10,
+            "decisive": 16,
+            "no_direction": 0
+          }
+        },
+        "predictions": [
+          {
+            "game_id": "2026-W4-ARI-NYG",
+            "probability": 0.5204933339767182,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-ATL-NO",
+            "probability": 0.6012683376427059,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DAL-HOU",
+            "probability": 0.5901966170358713,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DEN-SF",
+            "probability": 0.6091955420669004,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-DET-CAR",
+            "probability": 0.42416278431337207,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-GB-TB",
+            "probability": 0.4054054440209275,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-IND-WAS",
+            "probability": 0.4233229105503799,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-JAX-CIN",
+            "probability": 0.5907087963059031,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-KC-LV",
+            "probability": 0.36006531141853954,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-LA-PHI",
+            "probability": 0.46641314747626317,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-LAC-SEA",
+            "probability": 0.7547920589904948,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-MIA-MIN",
+            "probability": 0.8327495868742405,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-NE-BUF",
+            "probability": 0.7338804488058142,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-NYJ-CHI",
+            "probability": 0.6590721814699059,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-PIT-CLE",
+            "probability": 0.4539391522659486,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-TEN-BAL",
+            "probability": 0.8365346158115587,
+            "outcome": 1
+          }
+        ],
+        "numeric_authority": 0,
+        "promotion_allowed": false,
+        "limitations": [
+          "Small four-week sample; existing 100-holdout and review requirements are not met",
+          "Historical Polymarket trade prices are not historical executable bid/ask quotes",
+          "Model versions changed during these four weeks",
+          "No ROI or closing-line-value claim without corresponding archived execution and closing data"
+        ]
+      }
+    },
+    "spread": {
+      "by_week": {
+        "1": {
+          "games": 16,
+          "polymarket_matched": 14
+        },
+        "2": {
+          "games": 16,
+          "polymarket_matched": 13
+        },
+        "3": {
+          "games": 16,
+          "polymarket_matched": 12
+        },
+        "4": {
+          "games": 15,
+          "polymarket_matched": 11
+        }
+      },
+      "four_week_baselines": {
+        "football": {
+          "n": 63,
+          "brier": 0.2416817248421671,
+          "log_loss": 0.676555018261367,
+          "correct": 33,
+          "decisive": 63,
+          "no_direction": 0
+        },
+        "sportsbook": {
+          "n": 63,
+          "brier": 0.2529229027379542,
+          "log_loss": 0.698995715055812,
+          "correct": 23,
+          "decisive": 58,
+          "no_direction": 5
+        }
+      },
+      "calibrated_sportsbook_benchmark": {
+        "status": "RESEARCH_COMPLETE_NOT_PROMOTED",
+        "split": "Weeks 1–2 training; Week 3 penalty selection; Week 4 untouched evaluation",
+        "training": 32,
+        "validation": 16,
+        "holdout": 15,
+        "model": {
+          "formula": "sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))",
+          "emh_null": "All fitted corrections equal zero: the market benchmark remains the estimate",
+          "columns": [
+            "market_logit"
+          ],
+          "excluded_columns": [],
+          "mean": {
+            "market_logit": -0.0034288395018312475
+          },
+          "sd": {
+            "market_logit": 0.048966574068660736
+          },
+          "beta": [
+            0.16229033085636296,
+            -0.47775480850962043
+          ],
+          "penalty": 1,
+          "training_game_ids": [
+            "2026-W1-ARI-LAC",
+            "2026-W1-ATL-PIT",
+            "2026-W1-BAL-IND",
+            "2026-W1-BUF-HOU",
+            "2026-W1-CHI-CAR",
+            "2026-W1-CLE-JAX",
+            "2026-W1-DAL-NYG",
+            "2026-W1-DEN-KC",
+            "2026-W1-GB-MIN",
+            "2026-W1-MIA-LV",
+            "2026-W1-NE-SEA",
+            "2026-W1-NO-DET",
+            "2026-W1-NYJ-TEN",
+            "2026-W1-SF-LA",
+            "2026-W1-TB-CIN",
+            "2026-W1-WAS-PHI",
+            "2026-W2-CAR-ATL",
+            "2026-W2-CIN-HOU",
+            "2026-W2-CLE-TB",
+            "2026-W2-DET-BUF",
+            "2026-W2-GB-NYJ",
+            "2026-W2-IND-KC",
+            "2026-W2-JAX-DEN",
+            "2026-W2-LV-LAC",
+            "2026-W2-MIA-SF",
+            "2026-W2-MIN-CHI",
+            "2026-W2-NO-BAL",
+            "2026-W2-NYG-LA",
+            "2026-W2-PHI-TEN",
+            "2026-W2-PIT-NE",
+            "2026-W2-SEA-ARI",
+            "2026-W2-WAS-DAL",
+            "2026-W3-ARI-SF",
+            "2026-W3-ATL-GB",
+            "2026-W3-BAL-DAL",
+            "2026-W3-CAR-CLE",
+            "2026-W3-CIN-PIT",
+            "2026-W3-HOU-IND",
+            "2026-W3-KC-MIA",
+            "2026-W3-LA-DEN",
+            "2026-W3-LAC-BUF",
+            "2026-W3-LV-NO",
+            "2026-W3-MIN-TB",
+            "2026-W3-NE-JAX",
+            "2026-W3-NYJ-DET",
+            "2026-W3-PHI-CHI",
+            "2026-W3-SEA-WAS",
+            "2026-W3-TEN-NYG"
+          ],
+          "numeric_authority": 0
+        },
+        "penalty_selection": [
+          {
+            "penalty": 1,
+            "validation": {
+              "n": 16,
+              "brier": 0.24136437287143328,
+              "log_loss": 0.6760273065131186,
+              "correct": 10,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 0.1,
+            "validation": {
+              "n": 16,
+              "brier": 0.24134269785029708,
+              "log_loss": 0.6762215798278421,
+              "correct": 10,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 10,
+            "validation": {
+              "n": 16,
+              "brier": 0.2449501015512599,
+              "log_loss": 0.6830214027257769,
+              "correct": 10,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 100,
+            "validation": {
+              "n": 16,
+              "brier": 0.2525017336763792,
+              "log_loss": 0.6981510718397506,
+              "correct": 6,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          }
+        ],
+        "holdout_metrics": {
+          "sportsbook": {
+            "n": 15,
+            "brier": 0.25267800567963133,
+            "log_loss": 0.6985055556122447,
+            "correct": 6,
+            "decisive": 15,
+            "no_direction": 0
+          },
+          "football": {
+            "n": 15,
+            "brier": 0.20128053940597923,
+            "log_loss": 0.5919658808134419,
+            "correct": 11,
+            "decisive": 15,
+            "no_direction": 0
+          },
+          "combined": {
+            "n": 15,
+            "brier": 0.24915187124224925,
+            "log_loss": 0.6924274600760714,
+            "correct": 9,
+            "decisive": 15,
+            "no_direction": 0
+          }
+        },
+        "predictions": [
+          {
+            "game_id": "2026-W4-ARI-NYG",
+            "probability": 0.3823413416263887,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-ATL-NO",
+            "probability": 0.6764038834378872,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DAL-HOU",
+            "probability": 0.3823413416263887,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DEN-SF",
+            "probability": 0.6244281221242216,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-DET-CAR",
+            "probability": 0.5696683455763267,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-GB-TB",
+            "probability": 0.7090497072284109,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-IND-WAS",
+            "probability": 0.494293706522575,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-JAX-CIN",
+            "probability": 0.3823413416263887,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-KC-LV",
+            "probability": 0.6244281221242216,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-LA-PHI",
+            "probability": 0.7090497072284109,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-MIA-MIN",
+            "probability": 0.43764767406964883,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-NE-BUF",
+            "probability": 0.6244281221242216,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-NYJ-CHI",
+            "probability": 0.43764767406964883,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-PIT-CLE",
+            "probability": 0.7090497072284109,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-TEN-BAL",
+            "probability": 0.5696683455763267,
+            "outcome": 0
+          }
+        ],
+        "numeric_authority": 0,
+        "promotion_allowed": false,
+        "limitations": [
+          "Small four-week sample; existing 100-holdout and review requirements are not met",
+          "Historical Polymarket trade prices are not historical executable bid/ask quotes",
+          "Model versions changed during these four weeks",
+          "No ROI or closing-line-value claim without corresponding archived execution and closing data"
+        ]
+      },
+      "existing_variables_plus_market": {
+        "status": "RESEARCH_COMPLETE_NOT_PROMOTED",
+        "split": "Weeks 1–2 training; Week 3 penalty selection; Week 4 untouched evaluation",
+        "training": 32,
+        "validation": 16,
+        "holdout": 15,
+        "model": {
+          "formula": "sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))",
+          "emh_null": "All fitted corrections equal zero: the market benchmark remains the estimate",
+          "columns": [
+            "market_logit",
+            "football_minus_market_logit",
+            "home_score_mean",
+            "away_score_mean",
+            "team_score_sd"
+          ],
+          "excluded_columns": [
+            {
+              "column": "home_away_score_correlation",
+              "reason": "EXACTLY_COLLINEAR_WITH_team_score_sd"
+            }
+          ],
+          "mean": {
+            "market_logit": -0.0034288395018312475,
+            "football_minus_market_logit": 0.06659994606306945,
+            "home_score_mean": 23.873354166666672,
+            "away_score_mean": 21.341624999999997,
+            "team_score_sd": 9.727333333333338,
+            "home_away_score_correlation": -0.035200000000000016
+          },
+          "sd": {
+            "market_logit": 0.048966574068660736,
+            "football_minus_market_logit": 0.38969944575100596,
+            "home_score_mean": 2.2013918086972395,
+            "away_score_mean": 2.0444021092669122,
+            "team_score_sd": 0.2866139486409474,
+            "home_away_score_correlation": 0.0282842712474619
+          },
+          "beta": [
+            0.018229197992006303,
+            -0.05223036996223603,
+            0.00967182240515656,
+            -0.00830495752688854,
+            0.043663981657849175,
+            -0.043699950940638436
+          ],
+          "penalty": 100,
+          "training_game_ids": [
+            "2026-W1-ARI-LAC",
+            "2026-W1-ATL-PIT",
+            "2026-W1-BAL-IND",
+            "2026-W1-BUF-HOU",
+            "2026-W1-CHI-CAR",
+            "2026-W1-CLE-JAX",
+            "2026-W1-DAL-NYG",
+            "2026-W1-DEN-KC",
+            "2026-W1-GB-MIN",
+            "2026-W1-MIA-LV",
+            "2026-W1-NE-SEA",
+            "2026-W1-NO-DET",
+            "2026-W1-NYJ-TEN",
+            "2026-W1-SF-LA",
+            "2026-W1-TB-CIN",
+            "2026-W1-WAS-PHI",
+            "2026-W2-CAR-ATL",
+            "2026-W2-CIN-HOU",
+            "2026-W2-CLE-TB",
+            "2026-W2-DET-BUF",
+            "2026-W2-GB-NYJ",
+            "2026-W2-IND-KC",
+            "2026-W2-JAX-DEN",
+            "2026-W2-LV-LAC",
+            "2026-W2-MIA-SF",
+            "2026-W2-MIN-CHI",
+            "2026-W2-NO-BAL",
+            "2026-W2-NYG-LA",
+            "2026-W2-PHI-TEN",
+            "2026-W2-PIT-NE",
+            "2026-W2-SEA-ARI",
+            "2026-W2-WAS-DAL",
+            "2026-W3-ARI-SF",
+            "2026-W3-ATL-GB",
+            "2026-W3-BAL-DAL",
+            "2026-W3-CAR-CLE",
+            "2026-W3-CIN-PIT",
+            "2026-W3-HOU-IND",
+            "2026-W3-KC-MIA",
+            "2026-W3-LA-DEN",
+            "2026-W3-LAC-BUF",
+            "2026-W3-LV-NO",
+            "2026-W3-MIN-TB",
+            "2026-W3-NE-JAX",
+            "2026-W3-NYJ-DET",
+            "2026-W3-PHI-CHI",
+            "2026-W3-SEA-WAS",
+            "2026-W3-TEN-NYG"
+          ],
+          "numeric_authority": 0
+        },
+        "penalty_selection": [
+          {
+            "penalty": 100,
+            "validation": {
+              "n": 16,
+              "brier": 0.2536090591347125,
+              "log_loss": 0.7003460556157199,
+              "correct": 5,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 10,
+            "validation": {
+              "n": 16,
+              "brier": 0.27722594580233983,
+              "log_loss": 0.7501281986794843,
+              "correct": 7,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 1,
+            "validation": {
+              "n": 16,
+              "brier": 0.35861349263592807,
+              "log_loss": 1.0016735843026716,
+              "correct": 7,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 0.1,
+            "validation": {
+              "n": 16,
+              "brier": 0.3859981717246825,
+              "log_loss": 1.1302677228814062,
+              "correct": 7,
+              "decisive": 16,
+              "no_direction": 0
+            }
+          }
+        ],
+        "holdout_metrics": {
+          "sportsbook": {
+            "n": 15,
+            "brier": 0.25267800567963133,
+            "log_loss": 0.6985055556122447,
+            "correct": 6,
+            "decisive": 15,
+            "no_direction": 0
+          },
+          "football": {
+            "n": 15,
+            "brier": 0.20128053940597923,
+            "log_loss": 0.5919658808134419,
+            "correct": 11,
+            "decisive": 15,
+            "no_direction": 0
+          },
+          "combined": {
+            "n": 15,
+            "brier": 0.24915948686413714,
+            "log_loss": 0.6914699541200224,
+            "correct": 9,
+            "decisive": 15,
+            "no_direction": 0
+          }
+        },
+        "predictions": [
+          {
+            "game_id": "2026-W4-ARI-NYG",
+            "probability": 0.513935409633627,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-ATL-NO",
+            "probability": 0.5165655068118234,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DAL-HOU",
+            "probability": 0.519926122643538,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DEN-SF",
+            "probability": 0.5081850167479733,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-DET-CAR",
+            "probability": 0.5378491582508614,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-GB-TB",
+            "probability": 0.5262243045354547,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-IND-WAS",
+            "probability": 0.5385630204881129,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-JAX-CIN",
+            "probability": 0.5363183025989837,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-KC-LV",
+            "probability": 0.5325763986134214,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-LA-PHI",
+            "probability": 0.5264594078313303,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-MIA-MIN",
+            "probability": 0.4840720386602899,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-NE-BUF",
+            "probability": 0.5128044551361377,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-NYJ-CHI",
+            "probability": 0.5054523181379278,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-PIT-CLE",
+            "probability": 0.5250727177632911,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-TEN-BAL",
+            "probability": 0.49323662920574,
+            "outcome": 0
+          }
+        ],
+        "numeric_authority": 0,
+        "promotion_allowed": false,
+        "limitations": [
+          "Small four-week sample; existing 100-holdout and review requirements are not met",
+          "Historical Polymarket trade prices are not historical executable bid/ask quotes",
+          "Model versions changed during these four weeks",
+          "No ROI or closing-line-value claim without corresponding archived execution and closing data"
+        ]
+      },
+      "paired_calibrated_sportsbook_benchmark": {
+        "status": "RESEARCH_COMPLETE_NOT_PROMOTED",
+        "split": "Weeks 1–2 training; Week 3 penalty selection; Week 4 untouched evaluation",
+        "training": 27,
+        "validation": 12,
+        "holdout": 11,
+        "model": {
+          "formula": "sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))",
+          "emh_null": "All fitted corrections equal zero: the market benchmark remains the estimate",
+          "columns": [
+            "market_logit"
+          ],
+          "excluded_columns": [],
+          "mean": {
+            "market_logit": -0.0017710123538880163
+          },
+          "sd": {
+            "market_logit": 0.04570297452803088
+          },
+          "beta": [
+            -0.004398510028728208,
+            -0.028445569029228318
+          ],
+          "penalty": 100,
+          "training_game_ids": [
+            "2026-W1-ARI-LAC",
+            "2026-W1-ATL-PIT",
+            "2026-W1-BAL-IND",
+            "2026-W1-BUF-HOU",
+            "2026-W1-CHI-CAR",
+            "2026-W1-CLE-JAX",
+            "2026-W1-DAL-NYG",
+            "2026-W1-GB-MIN",
+            "2026-W1-MIA-LV",
+            "2026-W1-NE-SEA",
+            "2026-W1-NYJ-TEN",
+            "2026-W1-SF-LA",
+            "2026-W1-TB-CIN",
+            "2026-W1-WAS-PHI",
+            "2026-W2-CAR-ATL",
+            "2026-W2-CIN-HOU",
+            "2026-W2-CLE-TB",
+            "2026-W2-DET-BUF",
+            "2026-W2-GB-NYJ",
+            "2026-W2-IND-KC",
+            "2026-W2-LV-LAC",
+            "2026-W2-MIA-SF",
+            "2026-W2-MIN-CHI",
+            "2026-W2-NO-BAL",
+            "2026-W2-PIT-NE",
+            "2026-W2-SEA-ARI",
+            "2026-W2-WAS-DAL",
+            "2026-W3-ARI-SF",
+            "2026-W3-ATL-GB",
+            "2026-W3-BAL-DAL",
+            "2026-W3-CAR-CLE",
+            "2026-W3-CIN-PIT",
+            "2026-W3-HOU-IND",
+            "2026-W3-KC-MIA",
+            "2026-W3-LA-DEN",
+            "2026-W3-MIN-TB",
+            "2026-W3-NYJ-DET",
+            "2026-W3-PHI-CHI",
+            "2026-W3-TEN-NYG"
+          ],
+          "numeric_authority": 0
+        },
+        "penalty_selection": [
+          {
+            "penalty": 100,
+            "validation": {
+              "n": 12,
+              "brier": 0.2533827884985917,
+              "log_loss": 0.6999152756741435,
+              "correct": 5,
+              "decisive": 12,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 10,
+            "validation": {
+              "n": 12,
+              "brier": 0.2606187139582609,
+              "log_loss": 0.7144620582237092,
+              "correct": 4,
+              "decisive": 12,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 1,
+            "validation": {
+              "n": 12,
+              "brier": 0.27434715443125895,
+              "log_loss": 0.7433539505006278,
+              "correct": 5,
+              "decisive": 12,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 0.1,
+            "validation": {
+              "n": 12,
+              "brier": 0.27836827013068094,
+              "log_loss": 0.7523184125846308,
+              "correct": 5,
+              "decisive": 12,
+              "no_direction": 0
+            }
+          }
+        ],
+        "holdout_metrics": {
+          "sportsbook": {
+            "n": 11,
+            "brier": 0.25557354036373,
+            "log_loss": 0.7042987310802341,
+            "correct": 3,
+            "decisive": 11,
+            "no_direction": 0
+          },
+          "football": {
+            "n": 11,
+            "brier": 0.20192020344124598,
+            "log_loss": 0.5924102782539656,
+            "correct": 7,
+            "decisive": 11,
+            "no_direction": 0
+          },
+          "polymarket": {
+            "n": 11,
+            "brier": 0.24875454545454548,
+            "log_loss": 0.6905825015678076,
+            "correct": 3,
+            "decisive": 10,
+            "no_direction": 1
+          },
+          "combined": {
+            "n": 11,
+            "brier": 0.25217440646233125,
+            "log_loss": 0.6974962976015108,
+            "correct": 3,
+            "decisive": 11,
+            "no_direction": 0
+          }
+        },
+        "predictions": [
+          {
+            "game_id": "2026-W4-ARI-NYG",
+            "probability": 0.505183934208585,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-DAL-HOU",
+            "probability": 0.505183934208585,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DET-CAR",
+            "probability": 0.4969898865371565,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-GB-TB",
+            "probability": 0.49041212199764334,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-IND-WAS",
+            "probability": 0.5002597550165683,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-JAX-CIN",
+            "probability": 0.505183934208585,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-KC-LV",
+            "probability": 0.4945333813361748,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-LA-PHI",
+            "probability": 0.49041212199764334,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-MIA-MIN",
+            "probability": 0.5027164149830446,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-NYJ-CHI",
+            "probability": 0.5027164149830446,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-PIT-CLE",
+            "probability": 0.49041212199764334,
+            "outcome": 1
+          }
+        ],
+        "numeric_authority": 0,
+        "promotion_allowed": false,
+        "limitations": [
+          "Small four-week sample; existing 100-holdout and review requirements are not met",
+          "Historical Polymarket trade prices are not historical executable bid/ask quotes",
+          "Model versions changed during these four weeks",
+          "No ROI or closing-line-value claim without corresponding archived execution and closing data"
+        ]
+      },
+      "paired_calibrated_two_market_benchmark": {
+        "status": "RESEARCH_COMPLETE_NOT_PROMOTED",
+        "split": "Weeks 1–2 training; Week 3 penalty selection; Week 4 untouched evaluation",
+        "training": 27,
+        "validation": 12,
+        "holdout": 11,
+        "model": {
+          "formula": "sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))",
+          "emh_null": "All fitted corrections equal zero: the market benchmark remains the estimate",
+          "columns": [
+            "market_logit",
+            "polymarket_minus_market_logit"
+          ],
+          "excluded_columns": [],
+          "mean": {
+            "market_logit": -0.0017710123538880163,
+            "polymarket_minus_market_logit": -0.0048835289127918974
+          },
+          "sd": {
+            "market_logit": 0.04570297452803088,
+            "polymarket_minus_market_logit": 0.05717561830221782
+          },
+          "beta": [
+            -0.004398220435902298,
+            -0.028751189017358653,
+            0.045987978884948155
+          ],
+          "penalty": 100,
+          "training_game_ids": [
+            "2026-W1-ARI-LAC",
+            "2026-W1-ATL-PIT",
+            "2026-W1-BAL-IND",
+            "2026-W1-BUF-HOU",
+            "2026-W1-CHI-CAR",
+            "2026-W1-CLE-JAX",
+            "2026-W1-DAL-NYG",
+            "2026-W1-GB-MIN",
+            "2026-W1-MIA-LV",
+            "2026-W1-NE-SEA",
+            "2026-W1-NYJ-TEN",
+            "2026-W1-SF-LA",
+            "2026-W1-TB-CIN",
+            "2026-W1-WAS-PHI",
+            "2026-W2-CAR-ATL",
+            "2026-W2-CIN-HOU",
+            "2026-W2-CLE-TB",
+            "2026-W2-DET-BUF",
+            "2026-W2-GB-NYJ",
+            "2026-W2-IND-KC",
+            "2026-W2-LV-LAC",
+            "2026-W2-MIA-SF",
+            "2026-W2-MIN-CHI",
+            "2026-W2-NO-BAL",
+            "2026-W2-PIT-NE",
+            "2026-W2-SEA-ARI",
+            "2026-W2-WAS-DAL",
+            "2026-W3-ARI-SF",
+            "2026-W3-ATL-GB",
+            "2026-W3-BAL-DAL",
+            "2026-W3-CAR-CLE",
+            "2026-W3-CIN-PIT",
+            "2026-W3-HOU-IND",
+            "2026-W3-KC-MIA",
+            "2026-W3-LA-DEN",
+            "2026-W3-MIN-TB",
+            "2026-W3-NYJ-DET",
+            "2026-W3-PHI-CHI",
+            "2026-W3-TEN-NYG"
+          ],
+          "numeric_authority": 0
+        },
+        "penalty_selection": [
+          {
+            "penalty": 100,
+            "validation": {
+              "n": 12,
+              "brier": 0.2522486671363011,
+              "log_loss": 0.6976476744103906,
+              "correct": 6,
+              "decisive": 12,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 10,
+            "validation": {
+              "n": 12,
+              "brier": 0.2543609503601058,
+              "log_loss": 0.7024689600286348,
+              "correct": 7,
+              "decisive": 12,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 1,
+            "validation": {
+              "n": 12,
+              "brier": 0.2648604071003832,
+              "log_loss": 0.739922399684373,
+              "correct": 8,
+              "decisive": 12,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 0.1,
+            "validation": {
+              "n": 12,
+              "brier": 0.2693218907446502,
+              "log_loss": 0.7663501743490602,
+              "correct": 8,
+              "decisive": 12,
+              "no_direction": 0
+            }
+          }
+        ],
+        "holdout_metrics": {
+          "sportsbook": {
+            "n": 11,
+            "brier": 0.25557354036373,
+            "log_loss": 0.7042987310802341,
+            "correct": 3,
+            "decisive": 11,
+            "no_direction": 0
+          },
+          "football": {
+            "n": 11,
+            "brier": 0.20192020344124598,
+            "log_loss": 0.5924102782539656,
+            "correct": 7,
+            "decisive": 11,
+            "no_direction": 0
+          },
+          "polymarket": {
+            "n": 11,
+            "brier": 0.24875454545454548,
+            "log_loss": 0.6905825015678076,
+            "correct": 3,
+            "decisive": 10,
+            "no_direction": 1
+          },
+          "combined": {
+            "n": 11,
+            "brier": 0.24649983311112408,
+            "log_loss": 0.6861234450220709,
+            "correct": 5,
+            "decisive": 11,
+            "no_direction": 0
+          }
+        },
+        "predictions": [
+          {
+            "game_id": "2026-W4-ARI-NYG",
+            "probability": 0.5081694104165191,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-DAL-HOU",
+            "probability": 0.5041434338645865,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DET-CAR",
+            "probability": 0.4974587833601676,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-GB-TB",
+            "probability": 0.5090309620162592,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-IND-WAS",
+            "probability": 0.5017490406577341,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-JAX-CIN",
+            "probability": 0.5041434338645865,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-KC-LV",
+            "probability": 0.5083213836108726,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-LA-PHI",
+            "probability": 0.4525003872974771,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-MIA-MIN",
+            "probability": 0.4989292119309851,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-NYJ-CHI",
+            "probability": 0.48284562045693336,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-PIT-CLE",
+            "probability": 0.4969634327844989,
+            "outcome": 1
+          }
+        ],
+        "numeric_authority": 0,
+        "promotion_allowed": false,
+        "limitations": [
+          "Small four-week sample; existing 100-holdout and review requirements are not met",
+          "Historical Polymarket trade prices are not historical executable bid/ask quotes",
+          "Model versions changed during these four weeks",
+          "No ROI or closing-line-value claim without corresponding archived execution and closing data"
+        ]
+      },
+      "existing_variables_plus_market_and_polymarket": {
+        "status": "RESEARCH_COMPLETE_NOT_PROMOTED",
+        "split": "Weeks 1–2 training; Week 3 penalty selection; Week 4 untouched evaluation",
+        "training": 27,
+        "validation": 12,
+        "holdout": 11,
+        "model": {
+          "formula": "sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))",
+          "emh_null": "All fitted corrections equal zero: the market benchmark remains the estimate",
+          "columns": [
+            "market_logit",
+            "football_minus_market_logit",
+            "home_score_mean",
+            "away_score_mean",
+            "team_score_sd",
+            "polymarket_minus_market_logit"
+          ],
+          "excluded_columns": [
+            {
+              "column": "home_away_score_correlation",
+              "reason": "EXACTLY_COLLINEAR_WITH_team_score_sd"
+            }
+          ],
+          "mean": {
+            "market_logit": -0.0017710123538880163,
+            "football_minus_market_logit": 0.07134461473813906,
+            "home_score_mean": 23.95505128205129,
+            "away_score_mean": 21.405410256410253,
+            "team_score_sd": 9.74292307692308,
+            "home_away_score_correlation": -0.03673846153846156,
+            "polymarket_minus_market_logit": -0.0048835289127918974
+          },
+          "sd": {
+            "market_logit": 0.04570297452803088,
+            "football_minus_market_logit": 0.42311654142808575,
+            "home_score_mean": 2.0226332791649444,
+            "away_score_mean": 1.937836828858256,
+            "team_score_sd": 0.2806153846153849,
+            "home_away_score_correlation": 0.027692307692307693,
+            "polymarket_minus_market_logit": 0.05717561830221782
+          },
+          "beta": [
+            -0.004398441496637126,
+            -0.02747862558687491,
+            0.005742929907736293,
+            0.005665619714050507,
+            0.04032922796847959,
+            -0.04221905897643972,
+            0.04490785594703258
+          ],
+          "penalty": 100,
+          "training_game_ids": [
+            "2026-W1-ARI-LAC",
+            "2026-W1-ATL-PIT",
+            "2026-W1-BAL-IND",
+            "2026-W1-BUF-HOU",
+            "2026-W1-CHI-CAR",
+            "2026-W1-CLE-JAX",
+            "2026-W1-DAL-NYG",
+            "2026-W1-GB-MIN",
+            "2026-W1-MIA-LV",
+            "2026-W1-NE-SEA",
+            "2026-W1-NYJ-TEN",
+            "2026-W1-SF-LA",
+            "2026-W1-TB-CIN",
+            "2026-W1-WAS-PHI",
+            "2026-W2-CAR-ATL",
+            "2026-W2-CIN-HOU",
+            "2026-W2-CLE-TB",
+            "2026-W2-DET-BUF",
+            "2026-W2-GB-NYJ",
+            "2026-W2-IND-KC",
+            "2026-W2-LV-LAC",
+            "2026-W2-MIA-SF",
+            "2026-W2-MIN-CHI",
+            "2026-W2-NO-BAL",
+            "2026-W2-PIT-NE",
+            "2026-W2-SEA-ARI",
+            "2026-W2-WAS-DAL",
+            "2026-W3-ARI-SF",
+            "2026-W3-ATL-GB",
+            "2026-W3-BAL-DAL",
+            "2026-W3-CAR-CLE",
+            "2026-W3-CIN-PIT",
+            "2026-W3-HOU-IND",
+            "2026-W3-KC-MIA",
+            "2026-W3-LA-DEN",
+            "2026-W3-MIN-TB",
+            "2026-W3-NYJ-DET",
+            "2026-W3-PHI-CHI",
+            "2026-W3-TEN-NYG"
+          ],
+          "numeric_authority": 0
+        },
+        "penalty_selection": [
+          {
+            "penalty": 100,
+            "validation": {
+              "n": 12,
+              "brier": 0.25638043172735037,
+              "log_loss": 0.705893695347488,
+              "correct": 4,
+              "decisive": 12,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 10,
+            "validation": {
+              "n": 12,
+              "brier": 0.3060296289288528,
+              "log_loss": 0.8127250578426585,
+              "correct": 4,
+              "decisive": 12,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 1,
+            "validation": {
+              "n": 12,
+              "brier": 0.4449066922478624,
+              "log_loss": 1.3841790391005508,
+              "correct": 4,
+              "decisive": 12,
+              "no_direction": 0
+            }
+          },
+          {
+            "penalty": 0.1,
+            "validation": {
+              "n": 12,
+              "brier": 0.5207810654099917,
+              "log_loss": 2.194823540951807,
+              "correct": 4,
+              "decisive": 12,
+              "no_direction": 0
+            }
+          }
+        ],
+        "holdout_metrics": {
+          "sportsbook": {
+            "n": 11,
+            "brier": 0.25557354036373,
+            "log_loss": 0.7042987310802341,
+            "correct": 3,
+            "decisive": 11,
+            "no_direction": 0
+          },
+          "football": {
+            "n": 11,
+            "brier": 0.20192020344124598,
+            "log_loss": 0.5924102782539656,
+            "correct": 7,
+            "decisive": 11,
+            "no_direction": 0
+          },
+          "polymarket": {
+            "n": 11,
+            "brier": 0.24875454545454548,
+            "log_loss": 0.6905825015678076,
+            "correct": 3,
+            "decisive": 10,
+            "no_direction": 1
+          },
+          "combined": {
+            "n": 11,
+            "brier": 0.24563952290676958,
+            "log_loss": 0.684429114809895,
+            "correct": 7,
+            "decisive": 11,
+            "no_direction": 0
+          }
+        },
+        "predictions": [
+          {
+            "game_id": "2026-W4-ARI-NYG",
+            "probability": 0.5206610192591818,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-DAL-HOU",
+            "probability": 0.5253815187683926,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-DET-CAR",
+            "probability": 0.5316763674560493,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-GB-TB",
+            "probability": 0.5271702538039632,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-IND-WAS",
+            "probability": 0.5369447274249206,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-JAX-CIN",
+            "probability": 0.5363343036685572,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-KC-LV",
+            "probability": 0.5296058430531667,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-LA-PHI",
+            "probability": 0.4711628662643336,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-MIA-MIN",
+            "probability": 0.4862691912518085,
+            "outcome": 0
+          },
+          {
+            "game_id": "2026-W4-NYJ-CHI",
+            "probability": 0.4916542734486468,
+            "outcome": 1
+          },
+          {
+            "game_id": "2026-W4-PIT-CLE",
+            "probability": 0.5108723883631673,
+            "outcome": 1
+          }
+        ],
+        "numeric_authority": 0,
+        "promotion_allowed": false,
+        "limitations": [
+          "Small four-week sample; existing 100-holdout and review requirements are not met",
+          "Historical Polymarket trade prices are not historical executable bid/ask quotes",
+          "Model versions changed during these four weeks",
+          "No ROI or closing-line-value claim without corresponding archived execution and closing data"
+        ]
+      }
+    }
+  },
+  "excluded": [
+    {
+      "game_id": "2026-W4-LAC-SEA",
+      "market": "spread",
+      "reason": "PUSH_OR_TIE_EXCLUDED_FROM_CONDITIONAL_WIN_TEST"
+    }
+  ],
+  "existing_variable_policy": "Original football probabilities retain the combined influence of all variables actually used at the time. Archived score means, uncertainty and correlation also enter the penalized candidate. Scoring evidence is retained verbatim. Context-only personnel/matchup inputs and absent historical consensus/money-flow records are not misrepresented as validated numeric inputs.",
+  "emh": "Market prices are the null benchmark. Existing model and Polymarket variables must improve the same untouched-game probability scores beyond that benchmark.",
+  "polymarket_contract_limits": "Only exact game/team/kickoff/line matches. Integer spreads are not silently mapped to a different half-point market. Historical trade prices lack archived depth and fees; retrospective evidence is not executable-return evidence.",
+  "original_issued_picks_rewritten": false,
+  "production_numeric_authority": 0,
+  "promotion_allowed": false
+}
