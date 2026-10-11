@@ -39,6 +39,9 @@ catch(e){block('github_check_publication_retry',String(e.stderr||e.message));}
 try{execFileSync(process.execPath,['scripts/test-guardrail-failure-publication.mjs'],{cwd:root,stdio:'pipe'});pass('guardrail_failure_candidate_identity','Only failed runs for the current open PR head can block its synthetic merge');}
 catch(e){block('guardrail_failure_candidate_identity',String(e.stderr||e.message));}
 
+try{execFileSync(process.execPath,['scripts/test-published-feed-stream.mjs'],{cwd:root,stdio:'pipe'});pass('published_feed_stream','3 MB published envelopes and bundle endpoint parity passed without request-time JSON parsing');}
+catch(e){block('published_feed_stream',String(e.stderr||e.message));}
+
 pass('source_of_truth_count',String(authoritativePlayerCount));
 pass('source_of_truth_shards',String(authoritativePlayerShards));
 if(cfg.authoritative_player_count!=null&&Number(cfg.authoritative_player_count)!==authoritativePlayerCount) review('legacy_config_count',`non-authoritative guardrail config=${cfg.authoritative_player_count}, canonical=${authoritativePlayerCount}`);
