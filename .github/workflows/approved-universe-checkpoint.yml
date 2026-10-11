@@ -1,0 +1,47 @@
+name: Finalize Approved Player Universe
+on:
+  pull_request:
+    types: [closed]
+    paths:
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - 'players*.json'
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Already merged population PR
+        required: true
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+  actions: write
+concurrency:
+  group: production-main-writer
+  cancel-in-progress: false
+jobs:
+  finalize:
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged && github.event.pull_request.base.ref == 'main')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+      - name: Prove exact approved population and create checkpoint PR
+        id: checkpoint
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APPROVED_PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event.pull_request.number }}
+        run: node scripts/finalize-approved-universe-checkpoint.mjs
+      - name: Validate checkpoint candidate through unchanged protected checks
+        if: steps.checkpoint.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/merge-guarded-production-pr.sh '${{ steps.checkpoint.outputs.pr_number }}' '${{ steps.checkpoint.outputs.branch }}' merge

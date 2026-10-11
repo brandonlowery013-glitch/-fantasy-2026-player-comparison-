@@ -45,8 +45,9 @@ jobs:
         run: |
           node - <<'NODE'
           const c=require('./guardrails/guardrails-config.json');
-          if(c.authoritative_player_count!==166) throw new Error(`authoritative_player_count=${c.authoritative_player_count}`);
-          if(c.authoritative_player_shards!==14) throw new Error(`authoritative_player_shards=${c.authoritative_player_shards}`);
+          const source=require('./MODEL_SOURCE_OF_TRUTH.json');
+          if(c.authoritative_player_count!==source.active_player_model) throw new Error(`authoritative_player_count=${c.authoritative_player_count}, canonical=${source.active_player_model}`);
+          if(c.authoritative_player_shards!==source.runtime_player_shards) throw new Error(`authoritative_player_shards=${c.authoritative_player_shards}, canonical=${source.runtime_player_shards}`);
           console.log(JSON.stringify({players:c.authoritative_player_count,shards:c.authoritative_player_shards,status:'PASS'}));
           NODE
       - name: Build canonical matchup tidbits

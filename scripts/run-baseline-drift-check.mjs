@@ -133,7 +133,7 @@ function applyAdmissionRankLayout(field,manifestField){
   for(let i=0;i<slots.length;i++){
     if(slots[i])continue;
     while(j<orderedMain.length&&admittedNames.has(orderedMain[j]?.n))j++;
-    slots[i]=orderedMain[j++];
+    slots[i]=expected.get(orderedMain[j++].n);
   }
   if(slots.some(x=>!x)){populationDeclarationErrors.push({error:'ADMISSION_LAYOUT_INCOMPLETE',field});return;}
   slots.forEach((p,i)=>p[field]=i+1);

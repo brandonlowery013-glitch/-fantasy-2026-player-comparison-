@@ -62,6 +62,10 @@ jobs:
         if: steps.gate.outputs.ready == 'true'
         run: node scripts/build-in-season-ranking-layer.mjs
 
+      - name: Synchronize current ROS and weekly exports
+        if: steps.gate.outputs.ready == 'true'
+        run: node scripts/validate-canonical-consumers.mjs --write-exports
+
       - name: Run hard guardrail QA
         if: steps.gate.outputs.ready == 'true'
         run: node scripts/run-guardrail-qa.mjs
@@ -80,6 +84,7 @@ jobs:
             data/probability/weekly-football-context-inputs-2026.json
             data/probability/weekly-projection-inputs-2026.json
             data/weekly/in-season-ranking-layer-2026.json
+            exports/fantasy-2026-current.xlsx exports/fantasy-2026-current.docx
             guardrails/weekly-football-context-normalization-report.json
             guardrails/in-season-ranking-layer-report.json
             guardrails/week-rollover-readiness-report.json

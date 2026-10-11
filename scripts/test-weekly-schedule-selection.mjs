@@ -28,6 +28,7 @@ const root=process.cwd(),tmp=fs.mkdtempSync(path.join(os.tmpdir(),'weekly-select
 try{
   const copy=file=>{const target=path.join(tmp,file);fs.mkdirSync(path.dirname(target),{recursive:true});fs.copyFileSync(path.join(root,file),target);};
   for(const file of ['scripts/ingest-weekly-football-data.mjs','lib/complete-week-schedule.mjs','lib/weekly-schedule-selection.mjs','lib/injury-evidence.mjs','MODEL_SOURCE_OF_TRUTH.json','data/sources/weekly-football-ingestion-2026.json','data/ingestion/weekly-football-source-snapshots-2026.json'])copy(file);
+  const fixtureLedger=path.join(tmp,'data/ingestion/weekly-football-source-snapshots-2026.json');const evidence=JSON.parse(fs.readFileSync(fixtureLedger));evidence.snapshots=(evidence.snapshots||[]).filter(x=>Date.parse(x.captured_at)<=now);fs.writeFileSync(fixtureLedger,JSON.stringify(evidence));
   const truth=JSON.parse(fs.readFileSync(path.join(root,'MODEL_SOURCE_OF_TRUTH.json')));
   for(let i=0;i<Number(truth.runtime_player_shards);i++)copy(`players${i}.json`);
   const baseline=new Map(['MODEL_SOURCE_OF_TRUTH.json',...Array.from({length:Number(truth.runtime_player_shards)},(_,i)=>`players${i}.json`)].map(file=>[file,fs.readFileSync(path.join(tmp,file))]));

@@ -19,7 +19,7 @@ const iso=x=>new Date(x).toISOString();
 const id=s=>'MKT-'+crypto.createHash('sha1').update(String(s)).digest('hex').slice(0,20);
 const validAmerican=x=>Number.isInteger(Number(x))&&Math.abs(Number(x))>=100;
 const maxDate=(...xs)=>xs.map(ts).filter(Number.isFinite).sort((a,b)=>b-a)[0]??null;
-function loadPlayers(){const out=[];for(let i=0;i<13;i++)for(const p of read(`players${i}.json`))out.push({name:p.n,position:p.p,team:teamMap[p.t]});return out;}
+function loadPlayers(){const out=[];for(let i=0;i<Number(JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8')).runtime_player_shards);i++)for(const p of read(`players${i}.json`))out.push({name:p.n,position:p.p,team:teamMap[p.t]});return out;}
 function semantic(x){const y=structuredClone(x);delete y.generated_at;return JSON.stringify(y);}
 function writeStatus(next,prior,now){if(!prior||semantic(next)!==semantic(prior)){next.generated_at=now;write('data/market/live-market-ingestion-status-2026.json',next);return true;}return false;}
 function outcome(m,name){return (m?.outcomes||[]).find(x=>String(x.name).toLowerCase()===String(name).toLowerCase());}

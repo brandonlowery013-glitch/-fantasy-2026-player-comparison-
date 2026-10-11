@@ -1,13 +1,14 @@
 import fs from 'node:fs';
+import {loadCanonicalPlayers} from '../lib/canonical-player-source.mjs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const html=fs.readFileSync('index.html','utf8');
-const source=html.slice(html.indexOf('async function loadPlayers(){'),html.indexOf('\nloadPlayers();'));
+const source=html.slice(html.indexOf('async function loadPlayers(){'),html.indexOf("\ndocument.getElementById('exportExcel').addEventListener"));
 const elements=new Map();
-const ctx=vm.createContext({RAW:'fixture/',PLAYERS:[],PLAYER_SOURCE_READY:false,esc:String,Date,console,document:{getElementById:id=>{if(!elements.has(id))elements.set(id,{value:'',innerHTML:'',textContent:''});return elements.get(id);}},renderSeason(){},renderWeekly(){},renderCompare(){},fetch:async url=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(url.replace('fixture/','').split('?')[0],'utf8'))})});
+const ctx=vm.createContext({CANONICAL_MODULES:Promise.resolve([{loadCanonicalPlayers}]),CURRENT_CANONICAL:null,URL,location:{href:'http://fixture/'},RAW:'fixture/',PLAYERS:[],PLAYER_SOURCE_READY:false,esc:String,Date,console,document:{getElementById:id=>{if(!elements.has(id))elements.set(id,{value:'',innerHTML:'',textContent:''});return elements.get(id);}},renderSeason(){},renderWeekly(){},renderCompare(){},fetch:async url=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(url.replace('http://fixture/','').split('?')[0],'utf8'))})});
 vm.runInContext(source,ctx);
 await ctx.loadPlayers();
-assert.equal(ctx.PLAYER_SOURCE_READY,true);assert.equal(ctx.PLAYERS.length,167);
+assert.equal(ctx.PLAYER_SOURCE_READY,true);assert.equal(ctx.PLAYERS.length,JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json')).active_player_model);
 assert.ok(ctx.PLAYERS.some(p=>p.name==='Kaelon Black'&&p.pos&&p.team));
 assert.equal(ctx.PLAYERS.find(p=>p.name==='Bijan Robinson').score,9.645);
 assert.equal(ctx.PLAYERS.find(p=>p.name==='Bijan Robinson').adp,undefined);

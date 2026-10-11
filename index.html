@@ -226,9 +226,9 @@ border-radius:6px;overflow:hidden}
 <section class="page" id="playerPage">
   <div class="categoryWrap">
     <h2>PLAYER BOARD</h2>
-    <div class="categoryIntro" id="playerSourceState">Loading the authoritative player board…</div>
+    <button class="btn" id="exportExcel" disabled>Download Excel</button><button class="btn" id="exportWord" disabled>Download Word</button><div class="categoryIntro" id="playerSourceState">Loading the authoritative player board…</div>
     <div class="categoryTabs" id="seasonTabs">
-      <button class="active" data-season="board">FULL BOARD</button>
+      <button class="active" data-season="board">OVERALL / ACTIONABLE</button><button data-season="trueValue">TRUE VALUE</button>
       <button data-season="sleepers">SLEEPERS</button>
       <button data-season="breakouts">BREAKOUTS</button>
       <button data-season="values">ESTABLISHED ROLE</button>
@@ -826,6 +826,7 @@ const adpEdge=p=>(typeof p.adp==='number'&&typeof p.overall==='number')?p.adp-p.
 function seasonGroups(){
   return {
     board:[...PLAYERS].sort((a,b)=>a.overall-b.overall),
+    trueValue:[...PLAYERS].sort((a,b)=>a.trueRank-b.trueRank),
     sleepers:PLAYERS.filter(p=>healthy(p)&&(p.role||0)>=7&&(p.ceiling||0)>=7.8).sort((a,b)=>a.overall-b.overall),
     breakouts:PLAYERS.filter(p=>healthy(p)&&(p.ceiling||0)>=8.5&&(p.role||0)>=8&&(p.overall||999)>18).sort((a,b)=>(b.ceiling+b.role)-(a.ceiling+a.role)),
     values:PLAYERS.filter(p=>healthy(p)&&(p.role||0)>=8).sort((a,b)=>a.overall-b.overall),
@@ -835,13 +836,13 @@ function seasonGroups(){
   };
 }
 function renderPlayerRows(rows,limit=30){
- return `<div class="categoryGrid">${rows.slice(0,limit).map(p=>`<div class="categoryCard"><h3>#${p.overall} · ${esc(p.pos)} · ${esc(p.team)}</h3><div class="catPlayer"><b>${esc(p.name)}</b><span>${esc(marketRead(p))}</span></div><div class="catPlayer"><span>True Value</span><b>#${p.trueRank}</b></div><div class="catPlayer"><span>Ceiling / Role</span><b>${p.ceiling??'—'} / ${p.role??'—'}</b></div><details><summary>Consensus, news and model impact</summary>${playerDetails(p)}</details></div>`).join('')}</div>`;
+ return `<div class="categoryGrid">${rows.slice(0,limit).map(p=>`<div class="categoryCard"><h3>#${p.overall} · ${esc(p.pos)} · ${esc(p.team)}</h3><div class="catPlayer"><b>${esc(p.name)}</b><span>${esc(marketRead(p))}</span></div><div class="catPlayer"><span>True Value</span><b>#${p.trueRank}</b></div><div class="catPlayer"><span>Model score</span><b>${p.score??'—'}</b></div><div class="catPlayer"><span>Ceiling / Role</span><b>${p.ceiling??'—'} / ${p.role??'—'}</b></div><details><summary>Consensus, news and model impact</summary>${playerDetails(p)}</details></div>`).join('')}</div>`;
 }
 function statusText(x){return ({SHADOW_ONLY:'Preview — not approved',REVIEW_REQUIRED:'Needs review',CURRENT:'Current',STALE_REVIEW_REQUIRED:'Report needs an update',PROJECTION_ONLY:'Projection only'})[x]||String(x||'Needs review').replaceAll('_',' ').toLowerCase();}
 function numberText(x){return typeof x==='number'&&Number.isFinite(x)?x.toFixed(1):'Unavailable';}
 function playerDetails(p){
  const c=p.consensus||{},news=p.newsFeed||[],injury=currentInput('context')?.players?.[p.name]?.signals?.injury;
- return `<p><b>Season consensus (PPR)</b>: ${numberText(c.normalizedPPR)} points · Our season median: ${numberText(c.ourMedianPPR)}</p><p class="dataNote">${esc(c.source||'Consensus source unavailable')} · Captured ${esc(c.captured||'date unavailable')}. This is a season snapshot, not a live weekly consensus.</p><h4>News and availability</h4>${injury?`<p><b>Latest injury report:</b> ${esc(injury.evidence?.status||injury.evidence?.game_status||'Not confirmed')} · ${esc(statusText(injury.status))}</p><p class="dataNote">${esc(injury.source)} · Captured ${esc(injury.captured_at||'date unavailable')}. Report updated ${esc(injury.evidence?.source_updated_at||'date unavailable')}. The report date matters: an old update may no longer describe the player’s status.</p>`:''}${news.length?news.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,3).map(n=>`<p><b>${esc(String(n.headline||'').split('|')[0].trim())}</b><br>${esc(n.summary||'')}<br><span class="dataNote">${esc(n.source)} · ${esc(n.date)}</span></p>`).join(''):'<p>No recent news is available for this player. Check the latest injury report before setting your lineup.</p>'}<details><summary>How this affects the forecast</summary><p>Check the projection breakdown for changes supported by current reports. A news headline alone does not change the forecast.</p></details>`;
+ return `<p>${esc(p.overallWriteup||'')}</p><p>${esc(p.recommendation||'')}</p><p>Production ${p.production} · Ceiling ${p.ceiling} · Role ${p.role} · Environment ${p.environment} · Availability ${p.availability} · Reliability ${p.reliability} · Sustainability ${p.sustainability}</p><p><b>Season consensus (PPR)</b>: ${numberText(c.normalizedPPR)} points · Our season median: ${numberText(c.ourMedianPPR)}</p><p class="dataNote">${esc(c.source||'Consensus source unavailable')} · Captured ${esc(c.captured||'date unavailable')}. This is a season snapshot, not a live weekly consensus.</p><h4>News and availability</h4>${injury?`<p><b>Latest injury report:</b> ${esc(injury.evidence?.status||injury.evidence?.game_status||'Not confirmed')} · ${esc(statusText(injury.status))}</p><p class="dataNote">${esc(injury.source)} · Captured ${esc(injury.captured_at||'date unavailable')}. Report updated ${esc(injury.evidence?.source_updated_at||'date unavailable')}. The report date matters: an old update may no longer describe the player’s status.</p>`:''}${news.length?news.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,3).map(n=>`<p><b>${esc(String(n.headline||'').split('|')[0].trim())}</b><br>${esc(n.summary||'')}<br><span class="dataNote">${esc(n.source)} · ${esc(n.date)}</span></p>`).join(''):'<p>No recent news is available for this player. Check the latest injury report before setting your lineup.</p>'}<details><summary>How this affects the forecast</summary><p>Check the projection breakdown for changes supported by current reports. A news headline alone does not change the forecast.</p></details>`;
 }
 function projectionTable(p){
  const pp=currentInput('projections')?.players?.[p.name];
@@ -893,20 +894,21 @@ document.getElementById('weeklyTabs')?.addEventListener('click',e=>{
  document.querySelectorAll('[data-weekly]').forEach(x=>x.classList.toggle('active',x===b));renderWeekly();
 });
 renderSeason();renderWeekly();renderCompare();
+let CURRENT_CANONICAL=null;
+const CANONICAL_MODULES=Promise.all([import('./lib/canonical-player-source.mjs'),import('./lib/canonical-excel-export.mjs'),import('./lib/canonical-word-export.mjs')]);
 async function loadPlayers(){
  try{
- const get=async path=>{const r=await fetch(`${RAW}${path}?ts=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw Error('Player source unavailable');return r.json();};
- const truth=await get('MODEL_SOURCE_OF_TRUTH.json');
- if(truth.season!==2026||typeof truth.current_update_layer!=='string'||!/^[a-zA-Z0-9._-]+\.json$/.test(truth.current_update_layer))throw Error('Unverified player source');
- if(!Number.isInteger(truth.runtime_player_shards)||truth.runtime_player_shards<1||truth.runtime_player_shards>30)throw Error('Invalid player shard contract');const [patch,...shards]=await Promise.all([get(truth.current_update_layer),...Array.from({length:truth.runtime_player_shards},(_,i)=>get(`players${i}.json`))]);const canonical=new Map(shards.flat().map(x=>[x.n,x]));for(const [name,patchPlayer]of Object.entries(patch.players||{}))canonical.set(name,{...canonical.get(name),...patchPlayer});const entries=[...canonical];
- if(entries.length!==truth.active_player_model||entries.some(([name,x])=>!name||!x.p||!x.t||typeof x.o!=='number'))throw Error('Incomplete authoritative player board');
+ const [{loadCanonicalPlayers}]=await CANONICAL_MODULES;
+ const get=async path=>{const r=await fetch(`${new URL('./',location.href)}${path}?ts=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw Error('Player source unavailable');return r.json();};
+ const result=await loadCanonicalPlayers(get);CURRENT_CANONICAL=result;const entries=result.players.map(x=>[x.n,x]);
  const prior=new Map(PLAYERS.map(p=>[p.name,p]));
- PLAYERS.splice(0,PLAYERS.length,...entries.map(([name,x])=>{const old=prior.get(name),headlines=x.newsFeedState?.latest_headlines||[];return {name,pos:x.p,team:x.t,overall:x.o,posRank:x.pr,trueRank:x.tr,truePosRank:x.tp,score:x.s,production:x.pd,ceiling:x.ce,role:x.r,environment:x.e,availability:x.a,reliability:x.rl,sustainability:x.su,price:'MODEL REVIEW',currentModelImpact:x.currentModelImpact,newsFeed:headlines.map(h=>({headline:typeof h==='string'?h:h.headline||h.title,summary:typeof h==='string'?'':h.summary,source:typeof h==='string'?(x.newsFeedState?.sources||[]).join(', '):h.source,date:typeof h==='string'?x.newsFeedState?.updated_at:h.date||h.published_at})),consensus:{normalizedPPR:x.cp,ourMedianPPR:x.mp,source:old?.consensus?.normalizedPPR===x.cp?old.consensus.source:'Published season consensus snapshot',captured:old?.consensus?.normalizedPPR===x.cp?old.consensus.captured:null},injuryStatus:{active:null}};}));
- PLAYER_SOURCE_READY=true;document.getElementById('playerSourceState').textContent=`${entries.length} players · Authoritative model updated ${patch.updated||'date unavailable'} · Draft ADP is archival and excluded from weekly decisions.`;
+ PLAYERS.splice(0,PLAYERS.length,...entries.map(([name,x])=>{const old=prior.get(name),headlines=x.newsFeedState?.latest_headlines||[];return {name,pos:x.p,team:x.t,overall:x.o,posRank:x.pr,trueRank:x.tr,truePosRank:x.tp,score:x.s,production:x.pd,ceiling:x.ce,role:x.r,environment:x.e,availability:x.a,reliability:x.rl,sustainability:x.su,overallWriteup:x.nm||x.en||'',recommendation:x.current_recommendation||x.na||'',price:x.px==='PRICE PENDING'?'PRICE PENDING':'MODEL REVIEW',currentModelImpact:x.currentModelImpact,newsFeed:headlines.map(h=>({headline:typeof h==='string'?h:h.headline||h.title,summary:typeof h==='string'?'':h.summary,source:typeof h==='string'?(x.newsFeedState?.sources||[]).join(', '):h.source,date:typeof h==='string'?x.newsFeedState?.updated_at:h.date||h.published_at})),consensus:{normalizedPPR:x.cp,ourMedianPPR:x.mp,source:old?.consensus?.normalizedPPR===x.cp?old.consensus.source:'Published season consensus snapshot',captured:old?.consensus?.normalizedPPR===x.cp?old.consensus.captured:null},injuryStatus:{active:null}};}));
+ document.getElementById('exportExcel').disabled=false;document.getElementById('exportWord').disabled=false;PLAYER_SOURCE_READY=true;document.getElementById('playerSourceState').textContent=`${entries.length} players · Authoritative model updated ${result.truth.current_update_layer_effective_date||result.truth.effective_date||'date unavailable'} · Draft ADP is archival and excluded from weekly decisions.`;
  for(const id of ['compareOne','compareTwo']){const el=document.getElementById(id),selected=el.value;el.innerHTML=PLAYERS.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${esc(p.name)}">${esc(p.name)} · ${esc(p.pos)}</option>`).join('');if(PLAYERS.some(p=>p.name===selected))el.value=selected;}
- }catch(e){PLAYER_SOURCE_READY=false;document.getElementById('playerSourceState').textContent=e.message;}
+ }catch(e){PLAYER_SOURCE_READY=false;CURRENT_CANONICAL=null;PLAYERS.splice(0);document.getElementById('exportExcel').disabled=true;document.getElementById('exportWord').disabled=true;document.getElementById('playerSourceState').textContent=e.message;}
  renderSeason();renderWeekly();renderCompare();
 }
+document.getElementById('exportExcel').addEventListener('click',async()=>{if(!PLAYER_SOURCE_READY||!CURRENT_CANONICAL)return;const [,{buildExcelExport}]=await CANONICAL_MODULES;const url=URL.createObjectURL(new Blob([buildExcelExport(CURRENT_CANONICAL.players,CURRENT_CANONICAL.truth,await fetch('data/weekly/in-season-ranking-layer-2026.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Current weekly ranks unavailable');return r.json()}))],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));const a=document.createElement('a');a.href=url;a.download='fantasy-2026-current.xlsx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 loadPlayers();
 async function loadFeed(){
   try{
@@ -1014,5 +1016,7 @@ window.CTD_INTERFACE_LOCK = {
 <script src="runtime-news-dashboard-2026.js"></script>
 <script src="runtime-public-splits-2026.js"></script>
 <script type="module" src="runtime-matchup-facts-2026.mjs"></script>
+<script>document.getElementById('exportWord').addEventListener('click',async()=>{if(!PLAYER_SOURCE_READY||!CURRENT_CANONICAL)return;const [,,{buildWordExport}]=await CANONICAL_MODULES;const url=URL.createObjectURL(new Blob([buildWordExport(CURRENT_CANONICAL.players,CURRENT_CANONICAL.truth,await fetch('data/weekly/in-season-ranking-layer-2026.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Current weekly ranks unavailable');return r.json()}))],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}));const a=document.createElement('a');a.href=url;a.download='fantasy-2026-current.docx';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});</script>
 </body>
 </html>
+

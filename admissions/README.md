@@ -1,26 +1,21 @@
 # Canonical player admissions
 
-This directory is the fail-closed handoff between the full-universe discovery review and the canonical 2026 player model.
+The source-of-truth count is the current universe, never a ceiling. Each accepted admission advances the count read at runtime from N to N+1. Shards expand when the last current shard reaches the existing shard capacity.
 
-## Contract
+An ADMIT sweep runs `scripts/stage-admission-requests.mjs`, preserves prior evidence and decisions, and calls the package generator immediately. No manually prebuilt package is required. Reviewed inputs belong in `admissions/inputs/<candidate_id>.json`; preserved calibration records remain supported. `scripts/generate-admission-package.mjs` writes a staged dossier with the exact missing inputs or a complete calibrated package. `scripts/build-admission-package.mjs` is the compatible entrypoint for the same generator.
 
-1. The live review may identify an untracked player as `ADMIT`, but it may not mutate `players*.json`, ranks, projections, or `MODEL_SOURCE_OF_TRUTH.json`.
-2. `scripts/stage-admission-requests.mjs` creates or refreshes a deterministic entry in `admissions/queue.json`.
-3. A separate calibration/review step must create `admissions/packages/<candidate_id>.json`. The admission engine never invents component scores, projections, ranks, or board placement.
-4. `scripts/process-admissions.mjs <candidate_id>` validates the package and complete proposed post-state without writing anything.
-5. `scripts/process-admissions.mjs --apply <candidate_id>` writes only after every invariant passes. It then marks the queue entry complete and creates `admissions/completed/<candidate_id>.json`.
-6. Guardrail QA blocks a review that calls a player `ADMIT` while the corresponding onboarding request is incomplete.
+Required inputs are current sourced roster/role identity, reviewed calibration method and source run, sourced ROS PPR projection, reviewed component targets, Overall/Actionable insertion placement, comparison writeups, and sourced HOLD reviews for connected canonical teammates. Expected production can be derived from the existing nearest-12 same-position regression; the six other component targets require supported model inputs. The existing seven weights compute True Value. ECR and archival ADP never manufacture scores or determine placement.
 
-## Required package shape
+`node scripts/process-admissions.mjs <candidate_id>` generates a missing package and validates the proposed state. `--apply` applies only after validation, on a candidate branch through protected PR flow. The workflow rejects main-branch writes. Counts, ranks, positional ranks, all shards, current patch, both boards, locked ranks, source of truth, Guardrail configuration, manifest, completion ledger and deterministic Excel export synchronize together. Existing component scores, projections and relative ranking orders remain protected. A baseline hash rejects stale packages; regenerate each next candidate against the accepted current state. Writes roll back together on failure.
 
-A package must use `version: 1`, match the queue identity, and include reviewed calibration metadata (`method`, `generated_at`, `source_run`, `reviewed: true`). `integration` must declare the expected before/after player and shard counts and provide complete JSON replacements under `canonical_files`.
+New rows start with `PRICE PENDING` and inactive draft ADP. Weekly source and projection membership is staged as `REVIEW_REQUIRED`, nonactionable, with no invented weekly numbers. Current-week football calibration is a separate requirement before actionable weekly projections. The website reads its own deployed source of truth and all declared shards plus the current patch, with no shard-count ceiling. The True Value and Overall/Actionable views, comparisons and downloadable Excel use those rows. `scripts/validate-canonical-consumers.mjs` verifies the checked-in workbook exactly against the same rows; `--write-excel` regenerates it.
 
-The replacement set must include:
+Missing supported inputs remain explicit blockers in `admissions/staged`, rather than fabricated scores or a downgraded ADMIT decision. Guardrail QA blocks incomplete admissions. No protected-main or Guardrail requirement is bypassed. Historical draft market boards remain archival; their stale count is reported rather than silently repriced into season-long rankings.
 
-- `MODEL_SOURCE_OF_TRUTH.json`
-- at least one `playersN.json` shard
-- `guardrails/universe-change-manifest.json`
+The October 3 reconciliation preserves the earlier queue and review in `admissions/history` and records current evidence and decisions for all 30 named cases in `admissions/reconciliation-2026-10-03.json`.
 
-The engine treats those replacements as outputs of the calibrated model pipeline, not inputs to a new scoring formula. Before apply it reconstructs the proposed active universe and verifies exact player count, unique names, exactly one copy of the admitted player, contiguous `o` and `tr` ranks, required numeric fields, configured component bounds, and a sourced universe-change manifest entry.
+## Word profiles and rank changes
 
-This design deliberately makes a missing or incomplete model package a hard stop rather than silently assigning placeholder values.
+Each accepted admission regenerates the Excel workbook and Word profiles from the same proposed canonical players. Both exports are committed in the admission transaction and recorded by SHA-256 in the completion manifest. A failed export prevents completion. The website also builds both downloads from its loaded canonical roster.
+
+Current Overall, True Value and positional ranks reflow when a player is inserted. Completion records preserve every existing player's before and after Overall and True Value ranks. Original pregame predictions and settled results are not rewritten. Any historical reranking must be a separate, dated retrospective using evidence available at the requested historical cutoff.

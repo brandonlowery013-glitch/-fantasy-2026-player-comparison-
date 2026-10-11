@@ -140,6 +140,12 @@ jobs:
       - name: Stage 2 - build weekly probability distributions
         if: steps.context.outputs.ready == 'true'
         run: node scripts/build-weekly-probability-engine.mjs
+      - name: Synchronize current ROS and weekly ranks and exports
+        if: steps.source.outputs.ready == 'true'
+        run: |
+          node scripts/build-in-season-ranking-layer.mjs
+          node scripts/validate-canonical-consumers.mjs --write-exports
+
       - name: Stage 3 - freeze first valid pregame forecasts
         if: steps.context.outputs.ready == 'true'
         run: node scripts/capture-weekly-forecast-snapshots.mjs --preserve-existing

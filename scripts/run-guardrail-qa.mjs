@@ -28,6 +28,8 @@ catch(e){block('matchup_assessment_coverage',String(e.stderr||e.message));}
 try{execFileSync(process.execPath,['scripts/test-injury-evidence.mjs'],{cwd:root,stdio:'pipe'});pass('personnel_availability_evidence','Stable identities, source-age expiry and injury precedence passed');}
 catch(e){block('personnel_availability_evidence',String(e.stderr||e.message));}
 
+try{execFileSync(process.execPath,['scripts/validate-admission-state.mjs'],{cwd:root,stdio:'pipe'});pass('canonical_admission_state','Every accepted admission is complete and immutable package hashes match');}
+catch(e){block('canonical_admission_state',String(e.stdout||e.stderr||e.message));}
 try{execFileSync(process.execPath,['scripts/test-weekly-schedule-selection.mjs'],{cwd:root,stdio:'pipe'});pass('weekly_schedule_selection','Unfinished current-week retention and deployed schedule regression passed');}
 catch(e){block('weekly_schedule_selection',String(e.stderr||e.message));}
 
@@ -55,6 +57,13 @@ if(players.length!==authoritativePlayerCount) block('active_player_count',`${pla
 if(unique.size!==authoritativePlayerCount) block('unique_player_count',`${unique.size} unique != ${authoritativePlayerCount}`); else pass('unique_player_count',String(unique.size));
 const dup=[...new Set(names.filter((n,i)=>names.indexOf(n)!==i))];
 if(dup.length) block('duplicate_players',dup.join(', ')); else pass('duplicate_players','none');
+
+if(exists('data/weekly/in-season-ranking-layer-2026.json')){
+ const ranks=read('data/weekly/in-season-ranking-layer-2026.json'),rows=Object.values(ranks.players||{}),byName=new Map(players.map(p=>[p.n,p])),schedule=exists('data/calibration/weekly-event-schedule-2026.json')?read('data/calibration/weekly-event-schedule-2026.json'):null;
+ const mismatch=rows.filter(r=>!byName.has(r.player)||r.ros_overall_rank!==byName.get(r.player).o||r.ros_position_rank!==byName.get(r.player).pr);
+ if(ranks.universe!==authoritativePlayerCount||rows.length!==authoritativePlayerCount||new Set(rows.map(r=>r.player)).size!==authoritativePlayerCount||mismatch.length||ranks.mode!=='IN_SEASON_ROS_PLUS_WEEKLY'||Number(ranks.week)!==Number(schedule?.week))block('current_ros_weekly_roster_receipt',`Current roster/ranking mismatch: expected ${authoritativePlayerCount}, rows ${rows.length}, mismatched ${mismatch.length}, week ${ranks.week}/${schedule?.week}`);
+ else pass('current_ros_weekly_roster_receipt',`${rows.length} exact current-season players; separate Week ${ranks.week} rank view`);
+}
 
 const missing=[], badBounds=[];
 for(const p of players){
