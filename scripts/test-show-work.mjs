@@ -112,3 +112,37 @@ assert.match(withoutRest.reader.reconciliation,/Rest is excluded/);
 assert.doesNotMatch(withoutRest.reader.reconciliation,/matchup and rest/);
 assert.match(explained.reader.reconciliation,/matchup and rest/,'original rest-aware forecasts keep their original attribution');
 console.log('PASS: rest-free explanations match the versioned scoring policy without altering historical attribution');
+
+// Load the actual deployed module, independently of the legacy self-contained page.
+vm.runInThisContext(fs.readFileSync('frontend/cloudflare/show-work.js','utf8'));
+// Prediction direction survives betting holds, including a total whose value pick is withheld.
+const directionGame={home_team:'CLE',away_team:'BAL',football_projection:{home_win_probability:.42,away_win_probability:.55}};
+const heldSnapshot={market:{home_spread:3,total:39.5},markets:{spread:{side_a:{conditional_win_probability:.53},side_b:{conditional_win_probability:.47},recommendation:{decision:'WAIT'}},moneyline:{side_a:{conditional_win_probability:.42},side_b:{conditional_win_probability:.58},recommendation:{decision:'WAIT'}},total:{side_a:{conditional_win_probability:.67},side_b:{conditional_win_probability:.33},recommendation:{decision:'WAIT',reason:'Quarterback review'}}}};
+const heldBefore=JSON.stringify(heldSnapshot),predict=globalThis.CTD_SHOW_WORK.gameDirectionPrediction;
+assert.equal(predict(directionGame,heldSnapshot,'moneyline').selection,'BAL ML');
+assert.equal(predict(directionGame,heldSnapshot,'spread').selection,'CLE +3');
+assert.equal(predict(directionGame,heldSnapshot,'total').selection,'OVER 39.5');
+assert.equal(predict(directionGame,heldSnapshot,'total').betting_decision,'WAIT');
+const underSnapshot=structuredClone(heldSnapshot);underSnapshot.markets.total.side_a.conditional_win_probability=.49;underSnapshot.markets.total.side_b.conditional_win_probability=.51;underSnapshot.markets.total.recommendation={decision:'PASS'};
+assert.equal(predict(directionGame,underSnapshot,'total').selection,'UNDER 39.5');
+assert.equal(predict(directionGame,underSnapshot,'total').confidence,'LOW');
+const tiedSnapshot=structuredClone(heldSnapshot);for(const side of ['side_a','side_b'])tiedSnapshot.markets.total[side].conditional_win_probability=.5;
+assert.equal(predict(directionGame,tiedSnapshot,'total').exact_probability_tie,true);
+const missingTotal=structuredClone(heldSnapshot);delete missingTotal.market.total;assert.equal(predict(directionGame,missingTotal,'total').status,'UNAVAILABLE');
+assert.equal(JSON.stringify(heldSnapshot),heldBefore,'direction must not rewrite hold, price or probability');
+const heldWork=globalThis.CTD_SHOW_WORK.gameWork(directionGame,heldSnapshot,'total',now);
+assert.equal(heldWork.reader.modelPrediction.selection,'OVER 39.5');
+assert.equal(heldWork.decision,'WAIT');
+assert.match(globalThis.CTD_SHOW_WORK.renderWork(heldWork),/Model prediction: OVER 39.5/);
+console.log('PASS: all three directions survive WAIT; total PASS, low confidence, exact ties, missing lines and immutable held snapshots');
+
+// Execute the actual late renderer loop: it must not overwrite directions with On hold.
+const restoreSource=fs.readFileSync('frontend/cloudflare/restore-lock1.js','utf8');
+const restoreLoop=restoreSource.match(/    for\(const \[kind,id\] of \[\['spread','spreadPick'\],[\s\S]*?\n    \}/)[0];
+const elements=Object.fromEntries(['spreadPick','totalPick','mlPick'].map(id=>[id,{textContent:'',parentElement:{lastElementChild:{textContent:''}}}]));
+const selectedFixture={};
+vm.runInNewContext(restoreLoop,{raw:directionGame,s:heldSnapshot,g:selectedFixture,window:{CTD_SHOW_WORK:globalThis.CTD_SHOW_WORK},document:{getElementById:id=>elements[id]},pct:x=>(x*100).toFixed(1)+'%',pp:x=>String(x)});
+assert.equal(elements.spreadPick.textContent,'CLE +3');assert.equal(elements.totalPick.textContent,'OVER 39.5');assert.equal(elements.mlPick.textContent,'BAL ML');
+assert.match(elements.totalPick.parentElement.lastElementChild.textContent,/bet WAIT/);
+assert.equal(selectedFixture.total_pick,'OVER 39.5');
+console.log('PASS: late renderer preserves all directions and displays betting WAIT separately');

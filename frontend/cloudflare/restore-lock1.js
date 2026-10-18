@@ -156,8 +156,10 @@ function detailData(){
     document.getElementById('gameVenue').textContent=`${ended?'Archived':'Latest stored'} ${s.book} odds · ${new Date(s.captured_at).toLocaleString()} · venue not supplied by this feed`;
     for(const [kind,id] of [['spread','spreadPick'],['total','totalPick'],['moneyline','mlPick']]){
       const r=s.markets[kind]?.recommendation,el=document.getElementById(id),badge=el.parentElement.lastElementChild;
-      el.textContent=r?.decision==='PICK'?r.selection:r?.decision==='WAIT'?'On hold':'No bet';
-      badge.textContent=r?.decision==='PICK'?pp(r.probability_edge):'';
+      const direction=window.CTD_SHOW_WORK?.gameDirectionPrediction(raw,s,kind);
+      el.textContent=direction?.selection||(r?.decision==='PICK'?r.selection:r?.decision==='WAIT'?'On hold':'No bet');
+      el.title=direction?`Model prediction: ${direction.selection}. Betting decision: ${r?.decision||'WAIT'}. ${r?.reason||''}`:(r?.reason||'');
+      badge.textContent=direction?`${pct(direction.probability)} · bet ${r?.decision||'WAIT'}${s.markets[kind]?.context_validation?.status==='HOLD'?' · before QB review':''}`:r?.decision==='PICK'?pp(r.probability_edge):'';
       badge.title='Model probability minus the market probability after removing bookmaker margin. pp = percentage points.';
       if(kind==='spread')g.model_spread_pick=el.textContent;if(kind==='total')g.total_pick=el.textContent;if(kind==='moneyline')g.moneyline_pick=el.textContent;
     }
