@@ -14,3 +14,16 @@ assert.equal(gameDirectionPrediction(g,null,'spread').status,'UNAVAILABLE');
 const even=structuredClone(s);even.markets.moneyline.side_a.conditional_win_probability=.5;even.markets.moneyline.side_b.conditional_win_probability=.5;
 assert.equal(gameDirectionPrediction(g,even,'moneyline').exact_probability_tie,true);
 console.log('PASS: low-confidence prediction retained, PASS/WAIT unchanged, exact-tie disclosed, no-odds moneyline, missing-line rejection');
+
+const total=structuredClone(s);total.market.total=39.5;total.markets.total={side_a:{conditional_win_probability:.67},side_b:{conditional_win_probability:.33},recommendation:{decision:'WAIT',reason:'Quarterback review'}};
+const frozen=JSON.stringify(total);
+assert.equal(gameDirectionPrediction(g,total,'total').selection,'OVER 39.5');
+assert.equal(gameDirectionPrediction(g,total,'total').betting_decision,'WAIT');
+total.markets.total.side_a.conditional_win_probability=.49;total.markets.total.side_b.conditional_win_probability=.51;total.markets.total.recommendation.decision='PASS';
+assert.equal(gameDirectionPrediction(g,total,'total').selection,'UNDER 39.5');
+assert.equal(gameDirectionPrediction(g,total,'total').confidence,'LOW');
+for(const k of ['side_a','side_b'])total.markets.total[k].conditional_win_probability=.5;
+assert.equal(gameDirectionPrediction(g,total,'total').exact_probability_tie,true);
+delete total.market.total;assert.equal(gameDirectionPrediction(g,total,'total').status,'UNAVAILABLE');
+const original=JSON.parse(frozen);gameDirectionPrediction(g,original,'total');assert.equal(JSON.stringify(original),frozen);
+console.log('PASS: total directions survive WAIT/PASS; low confidence, exact ties, missing-line rejection and immutable evidence');

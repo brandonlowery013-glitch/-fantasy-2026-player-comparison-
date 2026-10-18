@@ -122,7 +122,7 @@ for(const [gameId,mg] of Object.entries(marketGames)){
       }
     }
   }
-  games[gameId].model_predictions=Object.fromEntries(['moneyline','spread'].map(kind=>[kind,gameDirectionPrediction(games[gameId],latest,kind)]));
+  games[gameId].model_predictions=Object.fromEntries(['moneyline','spread','total'].map(kind=>[kind,gameDirectionPrediction(games[gameId],latest,kind)]));
   const currentByBook=new Map();for(const snapshot of eligible)currentByBook.set(snapshot.book,snapshot.snapshot_id);
   for(const snapshot of games[gameId].snapshot_evaluations)for(const [kind,evaluation]of Object.entries(snapshot.markets)){
     const asOf=!rerun&&snapshot.eligible_for_current_recommendation&&currentByBook.get(snapshot.book)===snapshot.snapshot_id?decisionNow:snapshot.captured_at;
