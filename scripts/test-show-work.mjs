@@ -152,3 +152,9 @@ const tickerRow={};
 vm.runInNewContext(tickerFunction+';syncTicker()', {feed:{week:6,games:{fixture:directionGame}},BET_FEED:{week:6,games:[tickerRow]},sameMatchup:()=>true,selected:()=>heldSnapshot,window:{CTD_SHOW_WORK:globalThis.CTD_SHOW_WORK},renderTicker:()=>{},pp:x=>String(x)});
 assert.match(tickerRow.model_edge,/BAL ML/);assert.match(tickerRow.model_edge,/CLE \+3/);assert.match(tickerRow.model_edge,/OVER 39.5/);assert.match(tickerRow.model_edge,/bet WAIT/);
 console.log('PASS: game cards retain all predictions when every betting market is WAIT');
+
+const panels=fs.readFileSync('frontend/cloudflare/game-detail-panels.js','utf8'),helper=panels.slice(panels.indexOf('  function modelDirection('),panels.indexOf('  function predictionLabel('));
+const helperContext={window:{CTD_SHOW_WORK:globalThis.CTD_SHOW_WORK},raw:directionGame,s:heldSnapshot};
+vm.runInNewContext(helper+"; valid=modelDirection('total',s.markets.total,s,raw,raw); missing=modelDirection('spread',null,null,raw,raw)",helperContext);
+assert.equal(helperContext.valid.selection,'OVER 39.5');assert.equal(helperContext.missing,null);
+console.log('PASS: missing priced direction remains unavailable without breaking the display');

@@ -22,7 +22,8 @@
   function pregame(raw){return (raw?.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(raw.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at))}
   function snapshot(raw){const rows=pregame(raw);return rows.find(x=>x.book==='draftkings')||rows[0]}
   function modelDirection(kind,e,s,raw,g){
-    return window.CTD_SHOW_WORK?.gameDirectionPrediction(raw||g,s,kind)||e?.model_prediction||null;
+    const direction=window.CTD_SHOW_WORK?.gameDirectionPrediction(raw||g,s,kind)||e?.model_prediction;
+    return direction?.selection?direction:null;
   }
   function predictionLabel(kind,e,s,raw,g){
     const p=modelDirection(kind,e,s,raw,g);if(!p)return '';
