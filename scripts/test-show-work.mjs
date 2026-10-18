@@ -146,3 +146,9 @@ assert.equal(elements.spreadPick.textContent,'CLE +3');assert.equal(elements.tot
 assert.match(elements.totalPick.parentElement.lastElementChild.textContent,/bet WAIT/);
 assert.equal(selectedFixture.total_pick,'OVER 39.5');
 console.log('PASS: late renderer preserves all directions and displays betting WAIT separately');
+
+const tickerFunction=restoreSource.slice(restoreSource.indexOf('  function syncTicker(){'),restoreSource.indexOf("  document.addEventListener('ctd:games-ready',syncTicker)"));
+const tickerRow={};
+vm.runInNewContext(tickerFunction+';syncTicker()', {feed:{week:6,games:{fixture:directionGame}},BET_FEED:{week:6,games:[tickerRow]},sameMatchup:()=>true,selected:()=>heldSnapshot,window:{CTD_SHOW_WORK:globalThis.CTD_SHOW_WORK},renderTicker:()=>{},pp:x=>String(x)});
+assert.match(tickerRow.model_edge,/BAL ML/);assert.match(tickerRow.model_edge,/CLE \+3/);assert.match(tickerRow.model_edge,/OVER 39.5/);assert.match(tickerRow.model_edge,/bet WAIT/);
+console.log('PASS: game cards retain all predictions when every betting market is WAIT');
