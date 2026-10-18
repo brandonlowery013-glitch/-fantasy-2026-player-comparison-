@@ -293,3 +293,217 @@ export const noteSources = {
     }
   ]
 };
+
+// Week 6 review: no scoring weights or historical forecast records changed.
+Object.assign(notes, {
+  "CHI@ATL:2026-10-18": [
+    "Chicago and Atlanta are close in the independent scoring forecast, so a small Bears favorite price asks more than simply recognizing Caleb Williams’ expected return. Atlanta can keep this competitive by sustaining rushing possessions; Chicago’s route is to use its passing game to attack a secondary missing C.J. Henderson. That is a plausible game script, not an extra coefficient in the scoring calculation.",
+    "The baseline total is below the low-fifties market, but the Under needs both defenses to prevent explosive scores. Chicago’s Tyrique Stevenson absence weakens that case, as does uncertainty about how the returning quarterback changes the offense. Five games against different opponents are a limited sample. Prefer the exact saved total probability to a generic claim that either defense is good."
+  ],
+  "BAL@CLE:2026-10-18": [
+    "Baltimore is the narrow favorite in the independent forecast, rather than a projected runaway winner. Cleveland receiving a field goal has a route through keeping Baltimore in long drives and staying within one possession. The baseline total is above the market near forty, so the mathematical Over case asks for ordinary scoring from both teams rather than a shootout.",
+    "The strongest challenge is the actual protection and rushing personnel: Cleveland lists Teven Jenkins and Quinshon Judkins out, while Baltimore lists Cam Jurgens and Andrew Vorhees out. Those absences can turn sustained possessions into stalled drives. They are current descriptive reasons to question the Over and the small Cleveland spread edge; no unvalidated injury points are subtracted from the original forecast."
+  ],
+  "TEN@IND:2026-10-18": [
+    "Indianapolis has a credible separation case because Tennessee has struggled to sustain scoring, while the baseline expects the Colts to score in the upper twenties. At less than a touchdown, Indianapolis can cover by converting an early lead into repeated defensive possessions, without needing an exceptional offensive performance. That case is tied to the exact spread and price, not just the teams’ records.",
+    "The risk is Indianapolis failing to finish drives or allowing a late Tennessee touchdown after protecting a lead. Tyler Warren is listed out in the current report, removing an offensive option, while Tennessee has secondary absences that can help Indianapolis move the ball. Tennessee’s weak offensive average does not make every opponent a reliable large favorite; opponent mix and the small five-game sample still matter."
+  ],
+  "NYJ@NE:2026-10-18": [
+    "New England’s baseline advantage is larger than a touchdown, giving the favorite a route through building an early lead and forcing New York away from a balanced attack. The Jets list Breece Hall and Adonai Mitchell out, which adds a concrete concern about their ability to answer scores. Those reports support reviewing the Patriots side but do not supply an additional numerical model adjustment.",
+    "Covering more than seven still requires separation, not merely a New England win. A conservative second half or a short-field Jets touchdown can erase that cushion. New England also has named secondary absences, so treating every Jets possession as harmless would overstate the case. The baseline total is near the market, offering much less independent support for forcing a total bet."
+  ],
+  "NO@NYG:2026-10-18": [
+    "The scoring baseline favors New York, making Giants points interesting only if the selected sportsbook actually offers them. New York’s route is to exploit a Saints front listing Nathan Shepherd and John Ridgeway III out, sustain possessions and avoid needing to chase. A source or book with the Giants favored is a different wager; the displayed sign and price must be checked before calling this value.",
+    "New York lists tackle Jermaine Eluemunor and defensive backs Tyler Nubin and Colton Hood out. Protection problems can spoil the Giants’ offensive opportunity, while secondary absences give New Orleans a path to answer. That is the countercase to trusting the baseline margin. The projected total is close to the mid-forties market, so the model does not establish a clear total edge merely because the spread differs."
+  ],
+  "CAR@PHI:2026-10-18": [
+    "Philadelphia’s baseline edge is modest, leaving an important distinction between taking Eagles points and laying a field goal. The offense can win by sustaining drives and making Carolina repeatedly answer, but Lane Johnson is listed out, weakening the protection case. The exact offered spread sign must be verified across sources; a positive-number quote is not interchangeable with Philadelphia minus three.",
+    "The baseline total exceeds the market around forty, but Carolina must contribute to that Over case rather than leave Philadelphia to supply almost all the scoring. Carolina lists offensive linemen Albert Reese IV and Torricelli Simpkins III and tight end Ja’Tavion Sanders out. Those personnel concerns can reduce the reliability of long possessions. This is a reason to review the numerical disagreement, not invent an automatic backup or injury penalty."
+  ],
+  "PIT@TB:2026-10-18": [
+    "The unadjusted scoring baseline sits above the market in the high thirties, but Tampa Bay’s current quarterback situation is a material challenge to that Over. Baker Mayfield is listed out. The replacement must be assessed through actual performance and supporting personnel; the saved baseline does not by itself prove that Tampa can reproduce its longer-term offensive scoring level.",
+    "Tampa Bay also lists Antoine Winfield Jr. and Benjamin Morrison out, giving Pittsburgh a plausible route to create scoring chances against a depleted secondary. That supports an Over countercase to the quarterback concern, while Tampa’s missing guards can work the other way. A large numerical baseline edge therefore needs personnel review rather than being sold as a fully adjusted high-confidence recommendation."
+  ],
+  "ARI@LAR:2026-10-18": [
+    "The Rams have a substantial baseline scoring advantage, but a spread above twelve asks them to sustain separation through the finish. Arizona can cover while losing if it answers enough drives or adds late points against a defense managing a lead. The baseline total is below the low-fifties market, so an Under case can coexist with the Rams winning comfortably.",
+    "That Under case is vulnerable to secondary availability on both sides. Trent McDuffie and Kam Curl are listed questionable for Los Angeles, while Arizona has uncertainty around Budda Baker and Kitan Crawford and lists Andrew Wingard out. Explosive passing plays or short fields could defeat the Under without changing the likely winner. The current report must stay separate from an assumed confirmed lineup."
+  ],
+  "LAC@KC:2026-10-18": [
+    "Kansas City’s baseline margin exceeds the market around a touchdown, giving the favorite a route by forcing the Chargers into repeated passing situations while protecting its own scoring opportunities. Joe Alt is listed out for Los Angeles, which makes protection a concrete part of that game script. The favorite still has to cover the exact offered number; winning the rivalry game alone is insufficient.",
+    "Kansas City lists Rashee Rice and Josh Simmons out, limiting the assumption that its offense is intact. The Chargers also list Derwin James Jr. out, creating a competing defensive concern. Those opposing personnel effects are descriptive rather than new calibrated points. A modest baseline Over edge at a low total is less persuasive if the missing offensive personnel repeatedly stop drives."
+  ],
+  "BUF@LV:2026-10-18": [
+    "Buffalo is favored by the independent scoring baseline, but by less than the larger available sportsbook spreads. Las Vegas therefore has a route to covering without winning: extend drives, avoid a turnover-driven deficit and keep the game within one score. The baseline total is below the market in the low fifties, which favors an Under only if scoring efficiency stays moderate.",
+    "Buffalo’s current report includes uncertainty around Ed Oliver, T.J. Sanders, Dee Alford, DJ Moore and Joshua Palmer. Missing defensive personnel can challenge the Under while missing receivers can limit Buffalo’s separation; neither outcome should be assumed before final status. Longer-term offensive strength and different early opponents also caution against treating a five-game scoring average as a precise matchup forecast."
+  ],
+  "DAL@GB:2026-10-19": [
+    "Green Bay has a small baseline margin advantage at home, while the independent total is below the market in the low fifties. The Under case is that both teams sustain some drives but do not convert enough of them into touchdowns to justify such a high combined total. A close spread does not itself imply either a shootout or an Under.",
+    "Dallas lists DeMarvion Overshown and Cobie Durant out, and Joey Porter Jr. is questionable. Those defensive absences offer Green Bay a concrete path to exceed the baseline, challenging the Under. Green Bay’s Jacob Monk is also questionable. A high market total can already reflect these concerns, so the baseline disagreement needs current personnel review rather than an unsupported claim that the market ignored injuries."
+  ],
+  "WSH@SF:2026-10-20": [
+    "San Francisco has the larger independent scoring expectation, with a baseline margin beyond the market near a touchdown. The favorite can cover by building an early lead and making Washington sustain longer passing possessions. The baseline total is below the market, so the combination depends on San Francisco limiting Washington rather than both offenses trading quick touchdowns.",
+    "Nick Bosa is listed out, while Mykel Williams and Upton Stout are questionable for San Francisco. That weakens the assumption that Washington can be consistently held down. Washington also has pass-rush absences and uncertainty around Stefon Diggs and Nick Cross. These are competing descriptive risks, not new numerical weights, and Monday’s final availability must be checked again before treating Sunday’s report as settled."
+  ],
+  "HOU@JAX:2026-10-18": [
+    "This London game already kicked off before this editorial update. Preserve the original saved forecast and its original price; this explanation does not create a new pregame recommendation. Houston’s offensive-line absences reported before kickoff made protection an important risk, while Jacksonville’s route was to sustain drives and prevent Houston from getting easy possessions.",
+    "Only evidence dated before kickoff belongs in reviewing that saved forecast. The London venue must retain neutral-site treatment, and the different early-season opponents limit what either scoring average establishes. No current score, in-game injury update or eventual result is used here to justify a pregame side or total. A new live price requires a separate live model and cannot replace the original quote."
+  ]
+});
+Object.assign(noteSources, {
+  "CHI@ATL:2026-10-18": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872999"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ],
+  "BAL@CLE:2026-10-18": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872997"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ],
+  "TEN@IND:2026-10-18": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401873003"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ],
+  "NYJ@NE:2026-10-18": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401873001"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ],
+  "NO@NYG:2026-10-18": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401873000"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ],
+  "CAR@PHI:2026-10-18": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872998"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ],
+  "PIT@TB:2026-10-18": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401873002"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ],
+  "ARI@LAR:2026-10-18": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401873004"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ],
+  "LAC@KC:2026-10-18": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401873006"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ],
+  "BUF@LV:2026-10-18": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401873005"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ],
+  "DAL@GB:2026-10-19": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401873007"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ],
+  "WSH@SF:2026-10-20": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401873008"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ],
+  "HOU@JAX:2026-10-18": [
+    {
+      "label": "ESPN game-specific injury report; collected Oct 18, 2026; only pre-kickoff records used",
+      "at": "2026-10-18",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872996"
+    },
+    {
+      "label": "ESPN completed Week 5 results; scoring context, not a numerical injury adjustment",
+      "at": "2026-10-13",
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5"
+    }
+  ]
+});
