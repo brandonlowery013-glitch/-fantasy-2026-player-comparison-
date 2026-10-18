@@ -82,6 +82,28 @@
       }
     }return facts;
   }
+function gameDirectionPrediction(game,snapshot,kind){
+ if(!['moneyline','spread','total'].includes(kind))return null;
+ const e=snapshot?.markets?.[kind],a=e?.side_a?.conditional_win_probability,b=e?.side_b?.conditional_win_probability;
+ let home=a,away=b;
+ if(kind==='moneyline'&&(!Number.isFinite(home)||!Number.isFinite(away))){
+  const p=game.football_projection||{},sum=p.home_win_probability+p.away_win_probability;
+  if(sum>0){home=p.home_win_probability/sum;away=p.away_win_probability/sum;}
+ }
+ if(!Number.isFinite(home)||!Number.isFinite(away))return {status:'UNAVAILABLE',selection:null,reason:'Matching model probability or spread line unavailable; no invented pick',betting_decision:e?.recommendation?.decision||'WAIT'};
+ if(kind==='total'){
+  const line=snapshot?.market?.total;
+  if(!Number.isFinite(line))return {status:'UNAVAILABLE',selection:null,reason:'Total line unavailable',betting_decision:e?.recommendation?.decision||'WAIT'};
+  const tie=Math.abs(a-b)<1e-12,over=a>=b,p=over?a:b;
+  return {status:'MODEL_DIRECTION',side:over?'OVER':'UNDER',selection:`${over?'OVER':'UNDER'} ${line}`,probability:p,confidence:p<.52?'LOW':p<.6?'MODERATE':'HIGH',exact_probability_tie:tie,tie_break:tie?'Over before Under; no statistical preference':null,betting_decision:e?.recommendation?.decision||'WAIT',scope:'Prediction of the outcome; separate from value/availability-based betting recommendation'};
+ }
+ const tie=Math.abs(home-away)<1e-12,isHome=tie?game.home_team.localeCompare(game.away_team)<0:home>away;
+ const team=isHome?game.home_team:game.away_team,p=isHome?home:away,line=snapshot?.market?.home_spread;
+ if(kind==='spread'&&!Number.isFinite(line))return {status:'UNAVAILABLE',selection:null,reason:'Spread line unavailable',betting_decision:e?.recommendation?.decision||'WAIT'};
+ const sideLine=isHome?line:-line;
+ return {status:'MODEL_DIRECTION',team,selection:kind==='moneyline'?`${team} ML`:`${team} ${sideLine>0?'+':''}${sideLine}`,probability:p,confidence:p<.52?'LOW':p<.6?'MODERATE':'HIGH',exact_probability_tie:tie,tie_break:tie?'Alphabetical team code; no statistical preference':null,betting_decision:e?.recommendation?.decision||'WAIT',scope:'Prediction of the outcome; separate from value/availability-based betting recommendation'};
+}
+
   function verdictText(decision,selection,probability,confidence,complete){
     if(decision==='WAIT')return 'Wait. This is not a current recommendation.';
     if(decision!=='PICK')return 'No bet. Neither side meets the model’s requirements at this price.';
@@ -100,7 +122,7 @@
       const lead=availability||facts[0];
       return `<section class="showWork ctdFormattedWork"><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${lead?`<p>${escape(lead.text)}</p>`:''}${r.hideVerdict||!r.verdict?'':`<p><b>${escape(r.verdict)}</b></p>`}<details><summary>Numbers and sources</summary><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul>${r.reconciliation?`<p>${escape(r.reconciliation)}</p>`:''}${facts.length?`<h4>Matchup and workload</h4><ul>${facts.map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`:''}${sourceHtml?`<h4>Sources</h4><ul class="workSources">${sourceHtml}</ul>`:''}</details></section>`;
     }
-    return `<section class="showWork ctdFormattedWork">${r.hold?`<h4>No recommended bet · quarterback change</h4><p>${escape(r.hold)}</p>`:''}<h4>${r.hold?'Score before the quarterback review':'The forecast'}</h4><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${a?.sections?.length?(r.kind==='spread'?a.sections:[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join(''):`<h4>The matchup</h4><ul>${facts.slice(0,r.kind?facts.length:2).map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`}${r.publicBettingRead?`<h4>Consensus and Smart Money</h4><p>${escape(r.publicBettingRead)}</p>`:''}<h4>What this means for the pick</h4><p>${escape(a?.risk||r.reconciliation)}</p><p class="workVerdict"><b>${a?.risk?'Saved forecast: ':''}${escape(r.verdict)}</b></p><details><summary>Numbers and sources</summary><h4>The numbers</h4><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul>${a?`<p>${escape(r.reconciliation)}</p>${(a.comparisons||[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join('')}<h4>Recent form</h4><ul>${facts.map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`:''}<h4>Sources</h4><ul class="workSources">${sourceHtml}</ul></details></section>`;
+    return `<section class="showWork ctdFormattedWork">${r.hold?`<h4>No recommended bet · quarterback change</h4><p>${escape(r.hold)}</p>`:''}${r.modelPrediction?.selection?`<p><b>Model prediction: ${escape(r.modelPrediction.selection)}</b> · ${pct(r.modelPrediction.probability)}${r.hold?' · baseline before quarterback review':''}</p>`:''}<h4>${r.hold?'Score before the quarterback review':'The forecast'}</h4><p>${escape(r.summary)}</p>${r.distributionExplanation?`<p>${escape(r.distributionExplanation)}</p>`:''}${a?.sections?.length?(r.kind==='spread'?a.sections:[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join(''):`<h4>The matchup</h4><ul>${facts.slice(0,r.kind?facts.length:2).map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`}${r.publicBettingRead?`<h4>Consensus and Smart Money</h4><p>${escape(r.publicBettingRead)}</p>`:''}<h4>What this means for the pick</h4><p>${escape(a?.risk||r.reconciliation)}</p><p class="workVerdict"><b>${a?.risk?'Saved forecast: ':''}${escape(r.verdict)}</b></p><details><summary>Numbers and sources</summary><h4>The numbers</h4><ul>${(r.details||[]).map(x=>`<li>${escape(x)}</li>`).join('')}</ul>${a?`<p>${escape(r.reconciliation)}</p>${(a.comparisons||[]).map(s=>`<h4>${escape(s.title)}</h4><p>${escape(s.text)}</p>`).join('')}<h4>Recent form</h4><ul>${facts.map(f=>`<li>${escape(f.text)}</li>`).join('')}</ul>`:''}<h4>Sources</h4><ul class="workSources">${sourceHtml}</ul></details></section>`;
   }
   function quarterbackConcerns(game,now=Date.now()){
     const canon=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t),teams=[game.home_team,game.away_team].map(canon),concerns=new Map(),latestPersonnel=new Map();
@@ -172,9 +194,10 @@
     work.reader={summary,details:[`Our choice at this saved price: ${pick}.`, `Our estimated chance for the evaluated side: ${pct(s.conditional_win_probability)} when the bet does not end in a refund.`,plainPrice(s),`The spread and total imply ${game.home_team} ${total!=null&&spread!=null?fmt((total-spread)/2):'unknown'} points and ${game.away_team} ${total!=null&&spread!=null?fmt((total+spread)/2):'unknown'} points. These are the sportsbook’s scoring expectations.`, `Odds from ${snapshot?.book||'an unknown sportsbook'}, recorded ${humanTime(snapshot?.captured_at)}.`]};
     const learned=e.postgame_learning;
     if(learned)work.reader.details.push(`Postgame learning: ${learned.model.n} completed forecast results. Separate test probability for ${game.home_team}: ${pct(learned.candidate_probability)} versus ${pct(learned.base_probability)} from the current formula. This correction is being evaluated and has not changed the betting recommendation.`);
-    const direction=e.model_prediction;
-    if(direction?.selection&&kind!=='total'){
-      work.reader.details.unshift(`Model prediction: ${direction.selection}, ${pct(direction.probability)} (${direction.confidence.toLowerCase()} confidence). Betting recommendation: ${r.decision||'WAIT'}${r.selection?' '+r.selection:''}. ${r.reason||''}${direction.exact_probability_tie?' The probabilities are tied; the displayed team uses an alphabetical tie-break.':''}`);
+    const direction=gameDirectionPrediction(game,snapshot,kind);
+    if(direction?.selection){
+      work.reader.modelPrediction=direction;
+      work.reader.details.unshift(`Model prediction: ${direction.selection}, ${pct(direction.probability)} (${direction.confidence.toLowerCase()} confidence). Betting recommendation: ${r.decision||'WAIT'}${r.selection?' '+r.selection:''}. ${r.reason||''}${direction.exact_probability_tie?' The probabilities are tied; the displayed direction uses a disclosed deterministic tie-break.':''}`);
     }
     work.public_betting_context=betting;work.paragraphs.push(bettingRead);work.reader.publicBettingRead=bettingRead;work.reader.details.push(bettingRead);work.reader.sources=[{label:betting.source||'DraftKings public betting splits',url:betting.source_url,at:betting.observed_at}];
     const teamFacts=[];
@@ -256,5 +279,5 @@
     const median=key=>{const values=books.map(s=>num(s.market?.[key])).filter(x=>x!=null).sort((a,b)=>a-b);const n=values.length;return {count:n,value:n<2?null:n%2?values[(n-1)/2]:(values[n/2-1]+values[n/2])/2};};
     return {home_spread:median('home_spread'),total:median('total'),books:books.map(s=>({book:s.book,captured_at:s.captured_at,home_spread:num(s.market?.home_spread),total:num(s.market?.total)}))};
   }
-  root.CTD_SHOW_WORK={publicBettingContext,publicBettingRead,quarterbackConcerns,gameMarketView,propStatKey,propStat,renderWork,humanTime,propAvailability,contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
+  root.CTD_SHOW_WORK={gameDirectionPrediction,publicBettingContext,publicBettingRead,quarterbackConcerns,gameMarketView,propStatKey,propStat,renderWork,humanTime,propAvailability,contextCurrent,marketConsensus,teamEnvironment,num,contextReview,reconcile,gameWork,propWork,fantasyWork};
 })(globalThis);

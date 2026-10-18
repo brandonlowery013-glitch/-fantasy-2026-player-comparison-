@@ -126,7 +126,7 @@ function renderOutlookData(){
   const num=x=>x==null?'Unavailable':Number(x).toFixed(1);
   function latest(game){return (game.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(game.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));}
   function selected(game){const rows=latest(game);return rows.find(s=>s.book==='draftkings')||rows[0];}
-  function explain(game,s){const p=game.football_projection,lines=Object.entries(s.markets||{}).filter(([,m])=>m.recommendation?.decision==='PICK').map(([kind,m])=>`${kind}: ${m.recommendation.selection}, ${pp(m.recommendation.probability_edge)} probability advantage, ${pct(m.recommendation.expected_value)} expected return per unit risked.`);return `Projected score: ${game.away_team} ${num(p.away_score_mean)}, ${game.home_team} ${num(p.home_score_mean)}. `+(lines.length?lines.join(' '):'No market clears the model thresholds.');}
+  function explain(game,s){const p=game.football_projection,lines=Object.entries(s.markets||{}).filter(([,m])=>m.recommendation?.decision==='PICK').map(([kind,m])=>`${kind}: ${m.recommendation.selection}, ${pp(m.recommendation.probability_edge)} probability advantage, ${pct(m.recommendation.expected_value)} expected return per unit risked.`);const directions=['moneyline','spread','total'].map(kind=>window.CTD_SHOW_WORK?.gameDirectionPrediction(game,s,kind)?.selection).filter(Boolean);return `Projected score: ${game.away_team} ${num(p.away_score_mean)}, ${game.home_team} ${num(p.home_score_mean)}. Model predictions: ${directions.join('; ')||'unavailable'}. `+(lines.length?'Betting recommendations: '+lines.join(' '):'No betting recommendation clears the current checks.');}
   function detail(){return window.CTD_READING.preserve(document.getElementById('gamesPage'),detailData);}
 function detailData(){
     const g=BET_FEED.games[selectedGameIndex];clearMarketDetail(g);if(!g||!feed||Number(feed.week)!==Number(BET_FEED.week))return;
@@ -156,8 +156,10 @@ function detailData(){
     document.getElementById('gameVenue').textContent=`${ended?'Archived':'Latest stored'} ${s.book} odds · ${new Date(s.captured_at).toLocaleString()} · venue not supplied by this feed`;
     for(const [kind,id] of [['spread','spreadPick'],['total','totalPick'],['moneyline','mlPick']]){
       const r=s.markets[kind]?.recommendation,el=document.getElementById(id),badge=el.parentElement.lastElementChild;
-      el.textContent=r?.decision==='PICK'?r.selection:r?.decision==='WAIT'?'On hold':'No bet';
-      badge.textContent=r?.decision==='PICK'?pp(r.probability_edge):'';
+      const direction=window.CTD_SHOW_WORK?.gameDirectionPrediction(raw,s,kind);
+      el.textContent=direction?.selection||(r?.decision==='PICK'?r.selection:r?.decision==='WAIT'?'On hold':'No bet');
+      el.title=direction?`Model prediction: ${direction.selection}. Betting decision: ${r?.decision||'WAIT'}. ${r?.reason||''}`:(r?.reason||'');
+      badge.textContent=direction?`${pct(direction.probability)} · bet ${r?.decision||'WAIT'}${s.markets[kind]?.context_validation?.status==='HOLD'?' · before QB review':''}`:r?.decision==='PICK'?pp(r.probability_edge):'';
       badge.title='Model probability minus the market probability after removing bookmaker margin. pp = percentage points.';
       if(kind==='spread')g.model_spread_pick=el.textContent;if(kind==='total')g.total_pick=el.textContent;if(kind==='moneyline')g.moneyline_pick=el.textContent;
     }
@@ -179,7 +181,9 @@ function detailData(){
       const raw=Object.values(feed.games||{}).find(x=>sameMatchup(x,g)),s=raw&&selected(raw);if(!s)continue;
       const picks=Object.values(s.markets).map(x=>x.recommendation).filter(x=>x?.decision==='PICK').sort((a,b)=>b.probability_edge-a.probability_edge);
       g.spread=raw.home_team+' '+(s.market.home_spread>0?'+':'')+s.market.home_spread;g.total=s.market.total;
-      g.model_edge=picks.length?picks[0].selection+' · '+pp(picks[0].probability_edge):'No qualifying bet';
+      const directions=['moneyline','spread','total'].map(kind=>window.CTD_SHOW_WORK?.gameDirectionPrediction(raw,s,kind)?.selection).filter(Boolean);
+      const held=Object.values(s.markets).some(x=>x.recommendation?.decision==='WAIT');
+      g.model_edge=directions.length?directions.join(' · ')+` · bet ${picks.length?'PICK':held?'WAIT':'PASS'}`:'Prediction unavailable';
     }
     renderTicker();
   }
