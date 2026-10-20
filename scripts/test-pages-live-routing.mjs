@@ -15,7 +15,8 @@ try {
   if(String(url).includes('/scoreboard'))return Response.json({events:[{id:'401873008',status:{type:{state:'post',completed:true,shortDetail:'Final'}},competitions:[{competitors}]}]});
   return Response.json({header:{id:'401873008',competitions:[{id:'401873008',competitors,status:{type:{state:'post',completed:true,shortDetail:'Final'}}}]},boxscore:{players:[{team:{abbreviation:'SF'},statistics:[{name:'passing',labels:['YDS'],athletes:[{athlete:{id:'12345',displayName:'Test Player'},stats:['250']}]}]}]}});
  };
- for(const path of ['/api/live/scoreboard','/api/live/game'])assert(routes.include.includes(path));
+ assert(routes.include.includes('/api/live/*'));
+ assert(routes.include.includes('/api/live'));
  let response=await request('/api/live/scoreboard?week=6');
  assert.equal(response.status,200);
  let body=await response.json();
@@ -39,3 +40,38 @@ try {
  assert.equal((await request('/api/live/scoreboard?week=6')).status,502);
 } finally {globalThis.fetch=original;}
 console.log('PASS: Pages route inclusion, Worker dispatch, historical-week forwarding, final score/player IDs, invalid inputs, static forwarding and upstream failure');
+
+// Exercise every existing backend resource through the actual Pages Worker.
+const originalCaches=globalThis.caches;
+const savedAssets={schema_version:1,games:[],observed_at:new Date().toISOString()};
+const records=new Map();
+globalThis.caches={default:{match:async key=>records.get(key.url)?.clone(),put:async(key,response)=>{records.set(key.url,response.clone());}}};
+const waits=[];
+const context={waitUntil:promise=>waits.push(promise)};
+const assets={ASSETS:{fetch:async()=>Response.json(savedAssets)}};
+try {
+ globalThis.fetch=async url=>{
+  const value=String(url);
+  if(value.includes('/scoreboard'))return Response.json({events:[]});
+  if(value.includes('/live-news.json'))return Response.json({fetched_at:new Date().toISOString(),articles:[]});
+  if(value.includes('current-game-lines'))return Response.json({quote_type:'pregame',games:[]});
+  return Response.json({published:true,games:[]});
+ };
+ // Health and bundle require a real provider mapping, even with published feeds mocked.
+ const sourceFetch=globalThis.fetch;
+ globalThis.fetch=async(url,...args)=>String(url).includes('/scoreboard')?Response.json({events:[{id:'401873008',date:'2026-10-19T00:00Z',status:{type:{state:'post',completed:true}},competitions:[{competitors}]}]}):sourceFetch(url,...args);
+ for(const leaf of ['', 'health','news','odds','splits','bundle','model','betting','injuries','players']){
+  const response=await worker.fetch(new Request('https://ctd.test/api/live'+(leaf?'/'+leaf:'')),assets,context);
+  assert.equal(response.status,200,leaf||'root health');
+  const data=await response.json();
+  if(leaf==='news')assert.equal(data.status,'CURRENT');
+  if(leaf==='odds')assert.equal(data.quote_type,'pregame');
+  if(leaf==='splits')assert.equal(data.schema_version,1);
+  if(['model','betting','injuries','players'].includes(leaf))assert.equal(data.data.published,true);
+  if(leaf==='bundle')assert.equal(data.betting.published,true);
+ }
+ assert.equal((await request('/api/live/not-a-resource')).status,404);
+ assert.equal((await request('/api/live/news','POST')).status,405);
+ await Promise.all(waits);
+} finally {globalThis.fetch=original;globalThis.caches=originalCaches;}
+console.log('PASS: complete live API inventory including news, odds, splits, health, bundle and published feeds dispatches through Pages');

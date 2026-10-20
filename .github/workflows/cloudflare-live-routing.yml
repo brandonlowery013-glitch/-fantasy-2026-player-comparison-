@@ -1,0 +1,49 @@
+name: Cloudflare Live API Routing
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/_worker.js'
+      - 'frontend/_routes.json'
+      - 'functions/**'
+      - 'frontend/cloudflare/lib/**'
+      - 'frontend/cloudflare/runtime-league-refresh-2026.js'
+      - 'scripts/test-pages-live-routing.mjs'
+      - 'scripts/test-same-origin-game-feed.mjs'
+      - 'scripts/test-news-route.mjs'
+      - 'scripts/test-public-splits-api.mjs'
+      - 'scripts/test-published-feed-stream.mjs'
+      - '.github/workflows/cloudflare-live-routing.yml'
+  push:
+    branches: ['frontend/ctd-cloudflare-work']
+    paths:
+      - 'frontend/_worker.js'
+      - 'frontend/_routes.json'
+      - 'functions/**'
+      - 'frontend/cloudflare/lib/**'
+      - 'frontend/cloudflare/runtime-league-refresh-2026.js'
+      - 'scripts/test-pages-live-routing.mjs'
+      - 'scripts/test-same-origin-game-feed.mjs'
+      - 'scripts/test-news-route.mjs'
+      - 'scripts/test-public-splits-api.mjs'
+      - 'scripts/test-published-feed-stream.mjs'
+      - '.github/workflows/cloudflare-live-routing.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  pages-api-routing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Pages dispatch and backend response contracts
+        run: |
+          node scripts/test-pages-live-routing.mjs
+          node scripts/test-same-origin-game-feed.mjs
+          node scripts/test-news-route.mjs
+          node scripts/test-public-splits-api.mjs
+          node scripts/test-published-feed-stream.mjs
