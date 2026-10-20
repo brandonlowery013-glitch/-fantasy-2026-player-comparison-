@@ -1,5 +1,5 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';
-const code=fs.readFileSync('frontend/_worker.js','utf8'),worker=(await import('data:text/javascript;base64,'+Buffer.from(code).toString('base64'))).default;
+const worker=(await import('../frontend/_worker.js')).default;
 const original=globalThis.fetch;let calls=[];
 globalThis.fetch=async(url)=>{calls.push(url);return new Response('{"games":{"g":{"probability":0.51}}}',{headers:{etag:'fixture'}});};
 const env={ASSETS:{fetch:async()=>new Response('static untouched')}},ctx={waitUntil:p=>p};

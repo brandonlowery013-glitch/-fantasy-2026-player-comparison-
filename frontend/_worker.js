@@ -1,9 +1,17 @@
+import {onRequest as liveRequest} from '../functions/api/live/[[path]].js';
+
 const REPO='brandonlowery013-glitch/-fantasy-2026-player-comparison-';
 const PATHS={recommendations:'data/market/game-model-consumer-2026.json',projections:'data/probability/generated/weekly-game-projections-2026.json',schedule:'data/calibration/weekly-event-schedule-2026.json',lines:'data/market/current-game-lines-2026.json'};
 
 export default {
  async fetch(request,env,ctx){
   const url=new URL(request.url),prefix='/cloudflare/api/game-model/';
+  // Advanced-mode Pages ignores the Functions directory. Dispatch the existing
+  // scoreboard/game handlers here instead of forwarding these URLs to assets.
+  if(['/api/live/scoreboard','/api/live/game'].includes(url.pathname)){
+   if(request.method!=='GET')return new Response('Read-only endpoint',{status:405,headers:{Allow:'GET'}});
+   return liveRequest({request,env,waitUntil:ctx.waitUntil.bind(ctx),params:{path:[url.pathname.split('/').pop()]}});
+  }
   if(!url.pathname.startsWith(prefix))return env.ASSETS.fetch(request);
   if(!['GET','HEAD'].includes(request.method))return new Response('Read-only endpoint',{status:405,headers:{Allow:'GET, HEAD'}});
   const kind=url.pathname.slice(prefix.length),ref=url.searchParams.get('ref')||'main';
