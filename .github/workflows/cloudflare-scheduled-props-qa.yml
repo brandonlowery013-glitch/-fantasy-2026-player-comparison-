@@ -1,0 +1,34 @@
+name: Cloudflare Scheduled Props QA
+on:
+  pull_request:
+    paths:
+      - 'workers/betting-splits/**'
+      - 'functions/api/live/prop-quotes.js'
+      - 'frontend/_worker.js'
+      - 'frontend/cloudflare/prop-board.js'
+      - 'frontend/cloudflare/lib/live-prop-board.mjs'
+      - 'scripts/test-prop-relay-api.mjs'
+      - 'scripts/test-live-prop-board.mjs'
+      - '.github/workflows/cloudflare-scheduled-props-qa.yml'
+  push:
+    branches: [frontend/ctd-cloudflare-work]
+    paths:
+      - 'workers/betting-splits/**'
+      - 'functions/api/live/prop-quotes.js'
+      - 'frontend/cloudflare/prop-board.js'
+permissions:
+  contents: read
+jobs:
+  signed-props-and-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          node workers/betting-splits/cloudflare/test-worker.mjs
+          node workers/betting-splits/cloudflare/test-props-relay.mjs
+          node scripts/test-prop-relay-api.mjs
+          node scripts/test-live-prop-board.mjs

@@ -1,3 +1,4 @@
+import {PropsRelay} from './props-relay.mjs';
 import {collectSplits} from '../lib/background-splits.mjs';
 import {preservePublished} from '../lib/splits-history.mjs';
 const json=(body,status=200)=>Response.json(body,{status,headers:{'cache-control':'no-store','access-control-allow-origin':'*'}});
@@ -8,9 +9,11 @@ export default {
   const response=await store(env).fetch('https://store/collect',{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});
   if(!response.ok)throw Error('Scheduled splits collection failed: '+await response.text());
   console.log('splits-scheduled-publication',await response.text());
+  if(env.PROPS_RELAY_URL){const props=await store(env).fetch('https://store/props/collect',{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});if(!props.ok)throw Error('Scheduled props failed: '+await props.text());console.log('props-scheduled-publication',await props.text());}
  },
  async fetch(request,env){
   const path=new URL(request.url).pathname;
+  if(path.startsWith('/props/')&&(request.method==='GET'||path==='/props/claim'&&request.method==='POST'))return store(env).fetch(new Request('https://store'+path,request));
   if(request.method!=='GET')return json({error:'Method not allowed'},405);
   if(!validPath(path))return json({error:'Not found'},404);
   return store(env).fetch('https://store'+path);
@@ -18,9 +21,10 @@ export default {
 };
 // Collection is reachable only through the bound object, never through public HTTP.
 export class SplitsStore {
- constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;}
+ constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.props=new PropsRelay(ctx.storage,env);}
  async fetch(request){
   const path=new URL(request.url).pathname;
+  if(path.startsWith('/props/'))return this.props.handle(request);
   if(path==='/collect'&&request.method==='POST'){
    const event=await request.json();
    const operation=(this.pending||Promise.resolve()).catch(()=>{}).then(()=>this.collect(event));
