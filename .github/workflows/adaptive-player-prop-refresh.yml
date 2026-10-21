@@ -21,6 +21,12 @@ on:
   schedule:
     - cron: '*/15 * * * *'
   workflow_dispatch:
+    inputs:
+      recovery_run_id:
+        description: Optional run ID containing captured-player-prop-state; reuse valid quotes without another provider request
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: write
@@ -46,6 +52,8 @@ jobs:
         run: |
           node scripts/adaptive-player-prop-refresh.mjs --self-test
           node scripts/test-prop-player-identity.mjs
+          node scripts/test-issued-history-storage.mjs
+          node scripts/test-market-ingestion-settings.mjs
       - name: Validate live market ingestion contract
         run: node scripts/validate-live-market-ingestion-contract.mjs
       - name: Validate player prop snapshot contract
@@ -65,7 +73,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Restore previously captured quotes for a publication recovery
+        if: github.event_name == 'workflow_dispatch' && inputs.recovery_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: captured-player-prop-state
+          path: data/market
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.recovery_run_id }}
+      - name: Validate restored quote identity and original timestamps
+        if: github.event_name == 'workflow_dispatch' && inputs.recovery_run_id != ''
+        run: node scripts/validate-prop-artifact-recovery.mjs
       - name: Discover or refresh player props when due
+        if: github.event_name != 'workflow_dispatch' || inputs.recovery_run_id == ''
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: node scripts/adaptive-player-prop-refresh.mjs
@@ -100,7 +121,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          paths=(data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
+          paths=(data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${paths[@]}"

@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {encodeIssuedHistory,decodeIssuedHistory} from '../lib/issued-history-storage.mjs';
+const history={schema_version:'1.0.0',records:[{record_id:'original',revision:1,decision:'PICK',source_provenance:{evidence:{text:'Original football evidence '.repeat(5000),probability:.62}}},{record_id:'revision',previous_record_id:'original',revision:2,decision:'WAIT',line:null}],metadata:{original_capture:'2026-10-20T12:00:00Z'}};
+const before=JSON.stringify(history),stored=encodeIssuedHistory(history);
+assert.equal(JSON.stringify(history),before);assert.equal(JSON.stringify(decodeIssuedHistory(stored)),before);
+assert.equal(decodeIssuedHistory(history),history);assert.equal(stored.record_count,2);
+assert(JSON.stringify(stored).length<before.length/10);
+assert.throws(()=>decodeIssuedHistory({...stored,uncompressed_sha256:'bad'}),/integrity/);
+assert.throws(()=>decodeIssuedHistory({...stored,record_count:3}),/record count/);
+assert.throws(()=>decodeIssuedHistory({...stored,encoding:'unknown'}),/Unsupported/);
+assert.throws(()=>decodeIssuedHistory({...stored,data:'broken'}));
+console.log('PASS: lossless audit compression, legacy compatibility, immutable revisions, full evidence preservation and corrupt payload rejection');
