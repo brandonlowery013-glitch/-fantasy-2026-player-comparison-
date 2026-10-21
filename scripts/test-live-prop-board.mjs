@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {livePropSnapshots,propEvaluationKey,evaluatedQuoteKey} from '../frontend/cloudflare/lib/live-prop-board.mjs';
+const now=Date.now(),kickoff=new Date(now+86400000).toISOString(),at=new Date(now).toISOString();
+const quote={event_id:'provider',home_team:'Buffalo Bills',away_team:'New England Patriots',kickoff,observed_at:at,provider_updated_at:'2026-10-20T10:00:00Z',player:'Player One Jr.',market:'player_reception_yds',book:'draftkings',line:50.5,over:-110,under:-115};
+const context={now,week:7,schedule:{games:{'2026-W7-NE-BUF':{home_team:'BUF',away_team:'NE',event_start:kickoff,week:7}}},personnel:{teams:{BUF:{team:'BUF',players:[{name:'Player One',team:'BUF',position:'WR',athlete_id:'123'}]}}},recs:{players:{'Player One':{position:'WR'}}}};
+const result=livePropSnapshots({quotes:[quote]},context);assert.equal(result.snapshots.length,1);const row=result.snapshots[0];assert.equal(row.game_id,'2026-W7-NE-BUF');assert.equal(row.player,'Player One');assert.equal(row.captured_at,at);assert.equal(row.provider_updated_at,quote.provider_updated_at);
+const e={player:'Player One',stat:'receiving_yards',book:'draftkings',line:50.5,sides:[{side:'OVER',offered_odds:-110},{side:'UNDER',offered_odds:-115}]};assert.equal(propEvaluationKey(row),evaluatedQuoteKey(e));assert.notEqual(propEvaluationKey({...row,line:51.5}),evaluatedQuoteKey(e));assert.notEqual(propEvaluationKey({...row,over_price:-120}),evaluatedQuoteKey(e));
+assert.equal(livePropSnapshots({quotes:[{...quote,observed_at:new Date(now-151*60000).toISOString()}]},context).snapshots.length,0);
+assert.equal(livePropSnapshots({quotes:[quote]},{...context,week:8}).snapshots.length,0);
+assert.equal(livePropSnapshots({quotes:[{...quote,kickoff:new Date(now-1000).toISOString()}]},context).snapshots.length,0);
+console.log('PASS: scheduled quotes bind to exact game/week/roster, preserve source and observation times, and cannot borrow model evaluations for different lines or prices');

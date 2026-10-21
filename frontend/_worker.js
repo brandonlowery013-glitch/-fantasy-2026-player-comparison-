@@ -1,10 +1,11 @@
+import {onRequestGet as propQuotesRequest,refreshProps} from '../functions/api/live/prop-quotes.js';
 import {onRequest as liveRequest} from '../functions/api/live/[[path]].js';
 import {onRequestGet as newsRequest} from '../functions/api/live/news.js';
 import {onRequestGet as oddsRequest} from '../functions/api/live/odds.js';
 import {onRequestGet as splitsRequest} from '../functions/api/live/splits.js';
 import {onRequestGet as historyRequest} from '../functions/api/live/history.js';
 
-const LIVE_HANDLERS={news:newsRequest,odds:oddsRequest,splits:splitsRequest,history:historyRequest};
+const LIVE_HANDLERS={'prop-quotes':propQuotesRequest,news:newsRequest,odds:oddsRequest,splits:splitsRequest,history:historyRequest};
 const LIVE_RESOURCES=new Set(['','health','scoreboard','game','bundle','model','betting','injuries','players',...Object.keys(LIVE_HANDLERS)]);
 
 const REPO='brandonlowery013-glitch/-fantasy-2026-player-comparison-';
@@ -13,6 +14,7 @@ const PATHS={recommendations:'data/market/game-model-consumer-2026.json',project
 export default {
  async fetch(request,env,ctx){
   const url=new URL(request.url),prefix='/cloudflare/api/game-model/';
+  if(url.pathname==='/api/internal/props-refresh')return refreshProps({request,env});
   // Advanced-mode Pages ignores the Functions directory. Keep every supported
   // live API resource connected to its existing handler here.
   if(url.pathname==='/api/live'||url.pathname.startsWith('/api/live/')){
@@ -42,3 +44,4 @@ export default {
   }catch{return new Response(JSON.stringify({status:'MODEL_SOURCE_TIMEOUT'}),{status:504,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});}
  }
 };
+
