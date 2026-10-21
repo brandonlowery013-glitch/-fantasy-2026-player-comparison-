@@ -18,5 +18,9 @@ for(const p of ['.github/workflows/step8-weekly-forecast-capture.yml','.github/w
 const orchestration=fs.readFileSync('.github/workflows/step24-weekly-production-orchestration.yml','utf8');
 if(!/\n\s*schedule:\s*\n/.test(orchestration))blocked.push('Step 24 missing autonomous schedule');
 if(!orchestration.includes('group: production-main-writer'))blocked.push('Step 24 missing global concurrency group');
+const workflowPreamble=orchestration.split('jobs:')[0];
+if(workflowPreamble.includes('group: production-main-writer'))blocked.push('Step 24 QA must not enter the production writer lock');
+const writerJob=orchestration.split('  weekly-production-cycle:')[1]||'';
+if(!writerJob.includes('concurrency:\n      group: production-main-writer\n      cancel-in-progress: false'))blocked.push('Step 24 publishing job must hold the global writer lock');
 if(!orchestration.includes('git commit -m "Run ordered weekly production lifecycle"'))blocked.push('Step 24 missing atomic lifecycle commit');
 const report={generated_at:new Date().toISOString(),result:blocked.length?'BLOCKED':'PASS',legacy_schedules_checked:legacy.length,blocked};fs.mkdirSync('guardrails',{recursive:true});fs.writeFileSync('guardrails/production-schedule-ownership-report.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);

@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {browserPickHistory} from '../lib/browser-pick-history.mjs';
+const record={record_id:'a',stream_id:'s',game_id:'g',season:2026,week:7,revision:1,decision:'PICK',selection:'OVER',player:'Player',market:'yards',line:50.5,odds:-110,book:'draftkings',captured_at:'2026-10-20T12:00:00Z',source_provenance:{large_distribution:[1,2,3]},actionable:false};
+const revision={...record,record_id:'b',revision:2,decision:'WITHDRAWN'};
+const history={records:[record,revision]},results={events:{g:{home_team:'A',away_team:'B'}},settlements:[{record_id:'a',outcome:'WIN',actual:60,profit_units:100/110,audit:{large:true}}],football_learning:{large:true}};
+const before=JSON.stringify({history,results}),compact=browserPickHistory(history,results);
+assert.equal(JSON.stringify({history,results}),before);
+assert.deepEqual(compact.history.records.map(r=>[r.record_id,r.revision,r.decision]),[['a',1,'PICK'],['b',2,'WITHDRAWN']]);
+assert.equal(compact.history.records[0].odds,-110);assert.equal(compact.history.records[0].line,50.5);
+assert.deepEqual(compact.results.settlements,[{record_id:'a',outcome:'WIN',actual:60,profit_units:100/110}]);
+assert.deepEqual(compact.results.events,results.events);assert.equal('source_provenance' in compact.history.records[0],false);assert.equal('football_learning' in compact.results,false);
+assert.deepEqual(browserPickHistory({},{}).history.records,[]);
+console.log('PASS: browser history retains every decision, revision, quote and settlement without copying audit payloads or changing the ledger');

@@ -68,6 +68,7 @@ jobs:
         run: |
           node scripts/build-final-betting-ui-feed.mjs --self-test
           node scripts/test-issued-pick-history.mjs
+          node scripts/test-browser-pick-history.mjs
       - name: Validate Step 4 contract
         run: node scripts/validate-final-betting-pipeline-step4.mjs
 
@@ -97,7 +98,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json
+          git add data/market/browser-pick-history-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json
           if git diff --cached --quiet; then echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
           branch="production/betting-ui-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git switch -c "$branch"

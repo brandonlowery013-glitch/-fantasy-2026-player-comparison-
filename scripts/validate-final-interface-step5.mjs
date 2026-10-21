@@ -1,3 +1,4 @@
+import {currentPlatformInterface} from './lib/current-platform-interface.mjs';
 import fs from 'node:fs';
 
 const read=p=>fs.readFileSync(p,'utf8');
@@ -23,7 +24,7 @@ need(betting.includes("setInterval(load,60000)"),'score/feed browser refresh rem
 need(builder.includes('eligible_legs:eligibleLegs'),'final betting UI feed must expose only validated eligible legs');
 need(builder.includes("standalone_approved===true")&&builder.includes("label==='PICK'"),'eligible legs must independently pass standalone PICK gate');
 need(builder.includes("same_game_correlation_runtime:'BLOCK_UNTIL_VERIFIED_PAIR_CORRELATION_AVAILABLE'"),'same-game correlation blocking provenance missing');
-need(index.includes('step5-controls-v1'),'index runtime cache key must point to Step 5 controls');
+const current=currentPlatformInterface();for(const check of current.checks)need(check.passed,check.name);
 for(const forbidden of ['automatic_wagering": true','stake_sizing": true'])need(!JSON.stringify(contract).includes(forbidden),`forbidden authority ${forbidden}`);
 
 const report={result:failures.length?'BLOCKED':'PASS',step:5,checks:29,failures};
