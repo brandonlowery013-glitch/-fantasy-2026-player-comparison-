@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+const read=path=>JSON.parse(fs.readFileSync(path,'utf8'));
+const schedule=read('data/calibration/weekly-event-schedule-2026.json'),ledger=read('data/market/player-prop-market-snapshots-2026.json');
+const now=Date.now(),games=schedule.games||{};
+const rows=(ledger.snapshots||[]).filter(s=>s.horizon==='WEEKLY'&&Number(s.week)===Number(schedule.week)&&games[s.game_id]&&Date.parse(s.kickoff)>now);
+if(!rows.length)throw Error('Recovery artifact has no upcoming quotes for the current published week');
+if(rows.some(s=>!Number.isFinite(Date.parse(s.captured_at))||Date.parse(s.captured_at)>now+300000||Date.parse(s.captured_at)>Date.parse(s.kickoff)))throw Error('Recovery quote timestamps are invalid');
+const latest=Math.max(...rows.map(s=>Date.parse(s.captured_at)));
+if(now-latest>180*60000)throw Error('Recovered quotes are too old; run normal collection instead');
+console.log(JSON.stringify({result:'PASS',week:schedule.week,upcoming_quotes:rows.length,original_latest_capture:new Date(latest).toISOString(),timestamps_preserved:true}));

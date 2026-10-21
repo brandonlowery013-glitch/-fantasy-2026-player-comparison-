@@ -1,9 +1,10 @@
+import {decodeIssuedHistory} from '../lib/issued-history-storage.mjs';
 import {browserPickHistory} from '../lib/browser-pick-history.mjs';
 import fs from 'node:fs';
 import {finalResult,settlePicks,historyFeed} from '../lib/pick-settlement.mjs';
 import {finalBehavior,appendBehavior,behaviorState,predictionLearning} from '../lib/football-learning.mjs';
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8')),save=(p,d)=>{const s=JSON.stringify(d,null,2)+'\n';if(!fs.existsSync(p)||fs.readFileSync(p,'utf8')!==s)fs.writeFileSync(p,s);};
-const base='data/market/',history=read(base+'issued-pick-history-2026.json'),schedule=read('data/calibration/weekly-event-schedule-2026.json');
+const base='data/market/',history=decodeIssuedHistory(read(base+'issued-pick-history-2026.json')),schedule=read('data/calibration/weekly-event-schedule-2026.json');
 const path=base+'issued-pick-results-2026.json',ledger=fs.existsSync(path)?read(path):{schema_version:'1.0.0',events:{},settlements:[]};
 const now=new Date().toISOString(),events={...ledger.events},results={},errors=[],behavior=[];
 for(const p of history.records){const g=p.source_event_id?{event_id:p.source_event_id,home_team:p.home_team,away_team:p.away_team}:schedule.games[p.game_id];if(g?.event_id)events[p.game_id]={event_id:String(g.event_id),home_team:g.home_team,away_team:g.away_team};}
