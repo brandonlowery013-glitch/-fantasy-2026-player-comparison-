@@ -10,7 +10,7 @@
   if(!host){host=document.createElement('div');host.id='ctdSplitsControls';host.innerHTML='<span>Consensus &amp; Smart Money</span><div role="group" aria-label="Betting percentage market">'+Object.entries(markets).map(([key,label])=>`<button type="button" data-splits-market="${key}" aria-pressed="${key===market}">${label}</button>`).join('')+'</div>';ticker.before(host);
    host.addEventListener('click',event=>{const button=event.target.closest('[data-splits-market]');if(!button)return;market=button.dataset.splitsMarket;render();});
   }
-  let state=document.getElementById('ctdSplitsCollection');if(!state){state=document.createElement('div');state.id='ctdSplitsCollection';host.after(state);}const health=data?.health;state.textContent=health?'Background collection: '+health.status+' · Every 15 minutes · Last successful collection '+(health.last_success_at?new Date(health.last_success_at).toLocaleString():'unavailable'):'Loading background collection status…';if(data?.history?.date){const link=document.createElement('a');link.href='/api/live/splits?history='+encodeURIComponent(data.history.date);link.target='_blank';link.rel='noopener';link.textContent=' · Saved observations';state.append(link);}
+  let state=document.getElementById('ctdSplitsCollection');if(!state){state=document.createElement('div');state.id='ctdSplitsCollection';host.after(state);}const health=data?.background_health||data?.health;state.textContent=health?(data?.health?.source==='live-request-fallback'?'Live quote backup active · ':'')+'Background collection: '+health.status+' · Scheduled every 15 minutes · Last successful collection '+(health.last_success_at?new Date(health.last_success_at).toLocaleString():'unavailable'):'Loading background collection status…';if(data?.history?.date){const link=document.createElement('a');link.href='/api/live/splits?history='+encodeURIComponent(data.history.date);link.target='_blank';link.rel='noopener';link.textContent=' · Saved background observations';state.append(link);}
   host.querySelectorAll('[data-splits-market]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.splitsMarket===market)));
  }
  function render(){
@@ -31,7 +31,7 @@
    for(const [key,label] of [['bets','Consensus'],['money','Smart Money']]){
     block.innerHTML+=`<div class="ctdSplitMetric"><div class="ctdSplitValues"><b>${pair[0][key]}<small>%</small></b><span>${label}</span><b>${pair[1][key]}<small>%</small></b></div><div class="ctdSplitBar" role="img" aria-label="${esc(label+': '+labels[0]+' '+pair[0][key]+'%, '+labels[1]+' '+pair[1][key]+'%')}"><span class="ctdSideA" style="width:${pair[0][key]}%"></span><span class="ctdSideB" style="width:${pair[1][key]}%"></span></div></div>`;
    }
-   block.innerHTML+=`<div class="ctdSplitChecked">${Date.now()>=start?'Archived':Date.now()-Date.parse(m.market_observed_at?.[market]||m.observed_at)>35*60000?'Stale · Checked':'Checked'} ${esc(new Date(m.market_observed_at?.[market]||m.observed_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</div>`;
+   block.innerHTML+=`<div class="ctdSplitChecked">${Date.now()>=start?'Archived':Date.now()-Date.parse(m.market_observed_at?.[market]||m.observed_at)>15*60000?'Stale · Checked':'Checked'} ${esc(new Date(m.market_observed_at?.[market]||m.observed_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</div>`;
    card.append(block);
   });
  }
