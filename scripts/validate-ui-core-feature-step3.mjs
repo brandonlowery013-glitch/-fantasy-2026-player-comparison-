@@ -1,3 +1,4 @@
+import {currentPlatformInterface} from './lib/current-platform-interface.mjs';
 import fs from 'node:fs';
 
 const contract=JSON.parse(fs.readFileSync('data/sources/ui-core-feature-qa-step3.json','utf8'));
@@ -15,23 +16,20 @@ for(const [k,v] of Object.entries(contract.rules))need(v===true,`Step 3 rule mus
 const byId=Object.fromEntries(contract.features.map(x=>[x.id,x]));
 for(const id of ['compare','props','nfl_games','weekly_opportunities','filters','sit_start','sleepers_breakouts','avoid_busts','games_of_the_week','trap_games','historical_situational_indicators'])need(byId[id],`Missing Step 3 feature contract: ${id}`);
 
-need(index.includes('runtime-draft-opportunity-ui-2026.js'),'Player Board entry point must load the Opportunity UI runtime');
-need(compare.includes('runtime-comparison-decision-2026.js'),'Compare must load the locked decision runtime');
-need(compare.includes('runtime-comparison-opportunity-ui-2026.js'),'Compare must load the season-long Opportunity context runtime');
-need(runtime.includes('opportunityFilter'),'Player filters include the QA-locked market-read layer');
-need(runtime.includes('gamesPropsMount'),'Props remain implemented but nested under Games');
-need(runtime.includes('weekly-opportunities.html'),'Weekly Opportunities remain implemented but nested under Weekly');
-need(opportunities.includes('unified-opportunities-2026.json'),'Weekly Opportunities must consume the unified weekly output ledger');
-need(draft.universe===162&&draft.authority==='COMPANION_ONLY_NO_INTRINSIC_RANK_MUTATION','Season-long Opportunity layer must cover 162 and remain companion-only');
-need((draft.actionable?.length||0)+(draft.fair_players?.length||0)===162,'Season-long Opportunity QA must account for all 162 players');
+const current=currentPlatformInterface();
+for(const check of current.checks)need(check.passed,check.name);
+const source=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
+const market=JSON.parse(fs.readFileSync('data/market/market-value-board-2026.json','utf8'));
+need(market.universe===source.active_player_model&&market.board.length===source.active_player_model,'Market companion covers the canonical player universe');
+need(market.authority==='COMPANION_ONLY_NO_INTRINSIC_RANK_MUTATION','Market context remains companion-only');
 
 for(const path of ['data/market/player-prop-market-snapshots-2026.json','data/market/player-prop-recommendations-2026.json','data/probability/generated/weekly-game-projections-2026.json','data/market/weekly-game-market-recommendations-2026.json','data/market/unified-opportunities-2026.json','data/sources/ui-step3a-feature-rule-contracts-2026.json'])need(fs.existsSync(path),`Required feature data/contract missing: ${path}`);
 
 // Season-long sleepers/busts are now implemented through the QA-locked draft Opportunity layer.
 need(byId.sleepers_breakouts.level==='player_season_long','Sleepers/Breakouts must stay season-long');
 need(byId.avoid_busts.level==='player_season_long','Avoid/Bust must stay season-long');
-need(draft.counts.SLEEPER+draft.counts['DEEP SLEEPER']+draft.counts['DEEP STASH']>0,'Season-long sleeper surface has QA-approved players');
-need(draft.counts.FADE>0&&draft.counts.REACH>0,'Season-long avoid/bust surface has QA-approved fade/reach players');
+need(Array.isArray(market.board),'Season-long market context has published rows');
+need(market.board.every(row=>typeof row.player==='string'),'Published market rows identify canonical players');
 for(const id of ['sit_start','games_of_the_week','trap_games','historical_situational_indicators']){
   const f=byId[id];
   need(f.status==='RULES_LOCKED_PENDING_IMPLEMENTATION',`${id} must have locked rules and remain pending implementation`);

@@ -23,7 +23,7 @@ need(cadence.includes("reason:'INJURY_STATE_CHANGED'"),'cadence does not force o
 need(poll.includes("data/ingestion/live-injury-poll-2026.json"),'live injury poll state missing');
 need(poll.includes("designation:'Q'")||poll.includes("designation==='Q'"),'poll Q behavior self-test missing');
 need(poll.includes("designation:'SSPD'")||poll.includes("designation==='SSPD'"),'poll SSPD behavior self-test missing');
-need(projection.includes("if(p.expected_active===false)"),'weekly projection generator no-play gate missing');
+need(projection.includes("if(p.expected_active===false||fantasyInjuryStatus(p,evaluationTime).expected_absence)")&&projection.includes("reason:'Player not expected active; no playing-time projection generated',projections:{}"),'weekly projection generator no-play gate missing');
 need(adapter.adapters?.injury?.max_capture_age_hours===12,'injury adapter must remain <=12h freshness');
 need(adapter.availability_contract?.injury_out_ir_pup_suspended_overrides_active===true,'inactive override missing');
 need(policy.freeze_rule.includes('immutable'),'pregame/game-start freeze rule missing');
