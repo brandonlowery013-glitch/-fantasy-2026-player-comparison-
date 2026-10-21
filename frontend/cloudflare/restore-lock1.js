@@ -287,7 +287,7 @@ async function refreshPlayerContext(){
  if(profileOpenName&&document.getElementById('ctdPlayerProfile')?.open)profile(profileOpenName);
 }
 // The published outlook supplies dated usage only; reject old games in Role Watch.
-read('https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/frontend/ctd-cloudflare-work/data/weekly/weekly-player-outlook-2026.json').then(x=>{roleUsage=x;document.dispatchEvent(new CustomEvent('ctd:player-context-ready'))}).catch(()=>{});
+read('/api/live/players').then(x=>{roleUsage=x.data;document.dispatchEvent(new CustomEvent('ctd:player-context-ready'))}).catch(()=>{});
 const playerContextReady=refreshPlayerContext();
 setInterval(()=>{if(!document.hidden)void refreshPlayerContext()},60000);
 
