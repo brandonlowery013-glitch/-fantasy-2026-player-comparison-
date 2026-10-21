@@ -60,7 +60,7 @@ try {
  // Health and bundle require a real provider mapping, even with published feeds mocked.
  const sourceFetch=globalThis.fetch;
  globalThis.fetch=async(url,...args)=>String(url).includes('/scoreboard')?Response.json({events:[{id:'401873008',date:'2026-10-19T00:00Z',status:{type:{state:'post',completed:true}},competitions:[{competitors}]}]}):sourceFetch(url,...args);
- for(const leaf of ['', 'health','news','odds','splits','bundle','model','betting','injuries','players']){
+ for(const leaf of ['', 'health','news','odds','splits','bundle','model','betting','injuries','players','history']){
   const response=await worker.fetch(new Request('https://ctd.test/api/live'+(leaf?'/'+leaf:'')),assets,context);
   assert.equal(response.status,200,leaf||'root health');
   const data=await response.json();
@@ -69,6 +69,7 @@ try {
   if(leaf==='splits')assert.equal(data.schema_version,1);
   if(['model','betting','injuries','players'].includes(leaf))assert.equal(data.data.published,true);
   if(leaf==='bundle')assert.equal(data.betting.published,true);
+  if(leaf==='history')assert.equal(data.published,true);
  }
  assert.equal((await request('/api/live/not-a-resource')).status,404);
  assert.equal((await request('/api/live/news','POST')).status,405);

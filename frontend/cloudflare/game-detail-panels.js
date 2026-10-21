@@ -185,11 +185,10 @@ function renderData(){
   document.addEventListener('ctd:live-scores-updated',()=>{render();void refresh()});
   document.addEventListener('input',e=>{if(e.target.id!=='ctdFlowRange')return;const g=selected(),p=games.get(key(g))?.data?.win_probability?.[Number(e.target.value)];const label=document.getElementById('ctdFlowReadout');if(label)label.textContent=flowLabel(g,p)});
   async function loadFeeds(){
-    const results=await Promise.allSettled([window.CTD_GAME_MODEL.load(),get(RAW+'data/probability/generated/matchup-tidbits-2026.json'),get(RAW+'data/market/issued-pick-history-2026.json'),get(RAW+'data/market/issued-pick-results-2026.json')]);
+    const results=await Promise.allSettled([window.CTD_GAME_MODEL.load(),get(RAW+'data/probability/generated/matchup-tidbits-2026.json'),get('/api/live/history')]);
     if(results[0].status==='fulfilled')markets=results[0].value;
     if(results[1].status==='fulfilled')history=results[1].value;
-    if(results[2].status==='fulfilled')issuedHistory=results[2].value;
-    if(results[3].status==='fulfilled')pickResults=results[3].value;
+    if(results[2].status==='fulfilled'){issuedHistory=results[2].value.history;pickResults=results[2].value.results;}
     historyError=results.slice(2).some(r=>r.status==='rejected')?'History refresh unavailable; showing any last loaded records.':'';
     feedError=results.filter(x=>x.status==='rejected').map(x=>x.reason?.message||'Published data unavailable').join('; ');
     if(feedError)console.warn('Game reference feeds:',feedError);
