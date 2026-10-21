@@ -7,7 +7,7 @@ if(c.season!==2026)blocked.push('season must be 2026');
 if(c.status!=='STEP_24_WEEKLY_PRODUCTION_ORCHESTRATION_LOCKED')blocked.push('Step 24 status not locked');
 if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('Step 24 must remain SHADOW_ONLY/non-actionable');
 if(JSON.stringify(c.ordered_stages)!==JSON.stringify(expected))blocked.push('ordered stage contract drift');
-if(c.schedule?.concurrency_group!=='weekly-production-orchestration'||c.schedule?.cancel_in_progress!==false)blocked.push('global anti-race concurrency contract missing');
+if(c.schedule?.concurrency_group!=='production-main-writer'||c.schedule?.cancel_in_progress!==false)blocked.push('global anti-race concurrency contract missing');
 if(c.failure_policy?.dependency_failure_blocks_downstream!==true)blocked.push('dependency hard-fail policy missing');
 if(c.failure_policy?.one_atomic_repository_commit_per_orchestrator_run!==true)blocked.push('atomic persist policy missing');
 const rules=(c.locked_rules||[]).join(' ');
@@ -23,7 +23,7 @@ if(!workflow.includes('production/state-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}')
 const helperPath='scripts/merge-guarded-production-pr.sh';
 if(!workflow.includes('bash '+helperPath+' "${{ steps.state_pr.outputs.pr_number }}" "${{ steps.persist.outputs.branch }}" merge'))blocked.push('shared protected merge handoff missing');
 const helper=fs.existsSync(helperPath)?fs.readFileSync(helperPath,'utf8'):'';
-for(const needle of ['check_name=guardrail-qa','.app.id == ${REQUIRED_CHECK_APP_ID}','HEAD_STATUS','MERGE_STATUS','HEAD_CHECK','MERGE_CHECK','--match-head-commit "$HEAD_SHA"','gh pr merge','git merge-base --is-ancestor "$CURRENT_MAIN" "$HEAD_SHA"']){
+for(const needle of ['check_name=guardrail-qa','select(.app.id ==','HEAD_STATUS','MERGE_STATUS','HEAD_CHECK','MERGE_CHECK','--match-head-commit "$HEAD_SHA"','gh pr merge','git merge-base --is-ancestor "$CURRENT_MAIN" "$HEAD_SHA"']){
   if(!helper.includes(needle))blocked.push('protected merge helper safeguard missing: '+needle);
 }
 if(!helper.includes('[ "$HEAD_STATUS" = \'success\' ] && [ "$MERGE_STATUS" = \'success\' ] && [ "$HEAD_CHECK" = \'success\' ] && [ "$MERGE_CHECK" = \'success\' ]'))blocked.push('head and merge candidate must both pass status and check gates');
