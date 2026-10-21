@@ -3,7 +3,7 @@ import {browserPickHistory} from '../lib/browser-pick-history.mjs';
 import fs from 'node:fs';
 import {finalResult,settlePicks,historyFeed} from '../lib/pick-settlement.mjs';
 import {finalBehavior,appendBehavior,behaviorState,predictionLearning} from '../lib/football-learning.mjs';
-const read=p=>JSON.parse(fs.readFileSync(p,'utf8')),save=(p,d)=>{const s=JSON.stringify(d,null,2)+'\n';if(!fs.existsSync(p)||fs.readFileSync(p,'utf8')!==s)fs.writeFileSync(p,s);};
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8')),save=(p,d,compact=false)=>{const s=JSON.stringify(d,null,compact?0:2)+'\n';if(!fs.existsSync(p)||fs.readFileSync(p,'utf8')!==s)fs.writeFileSync(p,s);};
 const base='data/market/',history=decodeIssuedHistory(read(base+'issued-pick-history-2026.json')),schedule=read('data/calibration/weekly-event-schedule-2026.json');
 const path=base+'issued-pick-results-2026.json',ledger=fs.existsSync(path)?read(path):{schema_version:'1.0.0',events:{},settlements:[]};
 const now=new Date().toISOString(),events={...ledger.events},results={},errors=[],behavior=[];
@@ -33,5 +33,5 @@ const regimePath='data/ingestion/nfl-event-ledger-2026.json',regimeEvents=fs.exi
 settled.football_learning={schema_version:1,numeric_authority:0,observations,state:behaviorState(observations,{season:schedule.season,week:schedule.week,asOf:now,regimeEvents}),regime_events:regimeEvents.filter(e=>Number.isFinite(Date.parse(e.captured_at))&&Date.parse(e.captured_at)<=Date.parse(now)),half_life_games:4,policy:'Dated verified finals; prior weeks only; gradual descriptive learning; no unvalidated score adjustments; corrections append revisions'};
 settled.prediction_reason_learning=predictionLearning(history,settled);
 save(base+'browser-pick-history-2026.json',browserPickHistory(history,settled));
-save(path,settled);save(base+'betting-history-ui-2026.json',historyFeed(history,settled,events));
+save(path,settled);save(base+'betting-history-ui-2026.json',historyFeed(history,settled,events),true);
 console.log(JSON.stringify({games_checked:due.size,settlements:settled.settlements.length,streams:new Set(history.records.map(r=>r.stream_id)).size}));
