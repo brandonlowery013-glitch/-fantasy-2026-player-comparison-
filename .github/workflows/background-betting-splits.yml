@@ -1,0 +1,50 @@
+name: Background Betting Splits
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/background-betting-splits.yml'
+      - 'scripts/refresh-background-splits.mjs'
+      - 'scripts/test-background-splits.mjs'
+      - 'lib/background-splits.mjs'
+      - 'lib/splits-history.mjs'
+      - 'lib/public-splits.mjs'
+permissions:
+  contents: read
+concurrency:
+  group: background-betting-splits-${{ github.event_name == 'pull_request' && github.ref || 'publisher' }}
+  cancel-in-progress: false
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/test-background-splits.mjs
+  collect:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Collect and atomically publish splits and history
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/refresh-background-splits.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: background-splits-verification-${{ github.run_id }}
+          path: work/background-splits-result.json
+          if-no-files-found: ignore
