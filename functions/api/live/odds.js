@@ -3,6 +3,11 @@ const SOURCE='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'public, max-age=60'}});
 const american=value=>{const n=Number(String(value||'').replace(/−/g,'-').replace(/,/g,''));return Number.isInteger(n)&&Math.abs(n)>=100?n:null;};
 const point=label=>{const m=String(label||'').match(/([+-]?\d+(?:\.\d+)?)\s*$/);return m?Number(m[1]):null;};
+const team=value=>({LA:'LAR',WAS:'WSH',JAC:'JAX'}[String(value||'').toUpperCase()]||String(value||'').toUpperCase());
+export function mergeQuotes(published,fresh){
+ const same=(a,b)=>Boolean(a.id&&b.id&&a.id===b.id)||(Boolean(team(a.home_team)&&team(a.away_team))&&team(a.home_team)===team(b.home_team)&&team(a.away_team)===team(b.away_team)&&Number.isFinite(Date.parse(a.start_at))&&Date.parse(a.start_at)===Date.parse(b.start_at));
+ return [...published.filter(game=>!fresh.some(next=>same(next,game))),...fresh].slice(-300);
+}
 export function publicQuotes(feed,now=Date.now()){
  if(feed.health?.status!=='CURRENT')return [];
  return (feed.games||[]).flatMap(game=>{
@@ -42,8 +47,7 @@ export async function onRequestGet(context){
  try{
   const splits=await(await publicSplits(context)).json(),fresh=publicQuotes(splits);
   if(fresh.length){
-   const prior=(published?.games||[]).filter(game=>!fresh.some(next=>next.id===game.id||(next.home_team===game.home_team&&next.away_team===game.away_team&&next.start_at===game.start_at)));
-   return json({schema_version:'1.0.0',status:'ok',quote_type:'pregame',source:'DraftKings public table with saved provider history',fetched_at:splits.health.checked_at,games:[...prior,...fresh].slice(-300),health:{status:'CURRENT',source:'draftkings-public',fresh_games:fresh.length}});
+   return json({schema_version:'1.0.0',status:'ok',quote_type:'pregame',source:'DraftKings public table with saved provider history',fetched_at:splits.health.checked_at,games:mergeQuotes(published?.games||[],fresh),health:{status:'CURRENT',source:'draftkings-public',fresh_games:fresh.length}});
   }
  }catch{}
  if(published)return json({...published,status:'stale',health:{status:'STALE'},message:'Current odds refresh is unavailable. Saved quotes retain their original collection times.'});
