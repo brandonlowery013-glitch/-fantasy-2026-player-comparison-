@@ -22,9 +22,10 @@ export class SplitsStore {
  async fetch(request){
   const path=new URL(request.url).pathname;
   if(path==='/collect'&&request.method==='POST'){
-   if(this.pending)return this.pending.then(r=>r.clone());
-   this.pending=this.collect(await request.json());
-   try{return (await this.pending).clone();}finally{this.pending=null;}
+   const event=await request.json();
+   const operation=(this.pending||Promise.resolve()).catch(()=>{}).then(()=>this.collect(event));
+   this.pending=operation;
+   try{return (await operation).clone();}finally{if(this.pending===operation)this.pending=null;}
   }
   if(request.method!=='GET'||!validPath(path))return json({error:'Not found'},404);
   if(path.startsWith('/history/')){
