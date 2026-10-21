@@ -6,10 +6,14 @@ const validPath=p=>['/latest.json','/status.json','/index.json'].includes(p)||/^
 const store=env=>env.SPLITS_STORE.get(env.SPLITS_STORE.idFromName('production'));
 export default {
  async scheduled(controller,env){
-  const response=await store(env).fetch('https://store/collect',{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});
-  if(!response.ok)throw Error('Scheduled splits collection failed: '+await response.text());
-  console.log('splits-scheduled-publication',await response.text());
-  if(env.PROPS_RELAY_URL){const props=await store(env).fetch('https://store/props/collect',{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});if(!props.ok)throw Error('Scheduled props failed: '+await props.text());console.log('props-scheduled-publication',await props.text());}
+  const jobs=[['splits','/collect'],...(env.PROPS_RELAY_URL?[['props','/props/collect']]:[])];
+  const results=await Promise.allSettled(jobs.map(async([name,path])=>{
+   const response=await store(env).fetch('https://store'+path,{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});
+   const body=await response.text();if(!response.ok)throw Error('Scheduled '+name+' collection failed: '+body);
+   console.log(name+'-scheduled-publication',body);
+  }));
+  const errors=results.filter(r=>r.status==='rejected').map(r=>r.reason);
+  if(errors.length)throw new AggregateError(errors,errors.map(e=>e.message).join('; '));
  },
  async fetch(request,env){
   const path=new URL(request.url).pathname;
