@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {publicQuotes} from '../functions/api/live/odds.js';
+import {publicQuotes,mergeQuotes} from '../functions/api/live/odds.js';
 const now=Date.parse('2026-10-20T18:00Z'),observed_at=new Date(now).toISOString();
 const game={event_id:'401',away:'NE',home:'CHI',start_at:'2026-10-23T00:15Z',observed_at,moneyline:[{side:'NE',odds:'+135'},{side:'CHI',odds:'−155'}],spread:[{side:'NE',label:'NE Patriots +3.5',odds:'-110'},{side:'CHI',label:'CHI Bears -3.5',odds:'-110'}],total:[{side:'Over',label:'Over 44.5',odds:'-105'},{side:'Under',label:'Under 44.5',odds:'-115'}]};
 const feed={health:{status:'CURRENT'},games:[game]};
@@ -8,3 +8,12 @@ for(const changed of [{observed_at:'invalid'},{observed_at:new Date(now-16*60000
 assert.equal(publicQuotes({...feed,health:{status:'STALE'}},now).length,0);
 const partial=publicQuotes({...feed,games:[{...game,moneyline:[{side:'NE',odds:'--'},{side:'CHI',odds:'-155'}],spread:[{side:'NE',label:'NE +3.5',odds:'-110'},{side:'CHI',label:'CHI -2.5',odds:'-110'}]}]},now)[0];assert.deepEqual(partial.bookmakers[0].markets.map(m=>m.key),['totals']);
 console.log('PASS: exact public prices and collection times; invalid, stale, future-dated, completed and inconsistent markets excluded');
+const saved={id:'2026-W7-NE-CHI',away_team:'NE',home_team:'CHI',start_at:'2026-10-23T00:15:00.000Z',bookmakers:[{key:'saved-stale'}]};
+assert.deepEqual(mergeQuotes([saved],[quote]),[quote]);
+const aliases={...saved,id:'saved-alias',away_team:'WAS',home_team:'LA'};
+const freshAlias={...quote,id:'provider-alias',away_team:'WSH',home_team:'LAR'};
+assert.deepEqual(mergeQuotes([aliases],[freshAlias]),[freshAlias]);
+const historical={...saved,id:'prior-game',start_at:'2026-09-01T00:15:00.000Z'};
+assert.deepEqual(mergeQuotes([historical,saved],[quote]),[historical,quote]);
+assert.equal(mergeQuotes([{...saved,start_at:'invalid'}],[quote]).length,2);
+console.log('PASS: fresh quotes replace stale rows across provider IDs, team aliases and equivalent ISO timestamps without deleting different-date history');
