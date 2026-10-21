@@ -13,10 +13,6 @@ permissions:
   statuses: read
   actions: write
 
-concurrency:
-  group: production-main-writer
-  cancel-in-progress: false
-
 jobs:
   step24-contract-qa:
     if: github.event_name != 'schedule'
@@ -73,6 +69,9 @@ jobs:
           if-no-files-found: error
 
   weekly-production-cycle:
+    concurrency:
+      group: production-main-writer
+      cancel-in-progress: false
     if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && (needs.step24-contract-qa.result == 'success' || needs.step24-contract-qa.result == 'skipped')
     needs: step24-contract-qa
     runs-on: ubuntu-latest
