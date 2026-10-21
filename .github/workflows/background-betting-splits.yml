@@ -1,17 +1,6 @@
-name: Background Betting Splits
+name: Betting Splits Archive (manual)
 on:
-  schedule:
-    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/background-betting-splits.yml'
-      - 'scripts/refresh-background-splits.mjs'
-      - 'scripts/test-background-splits.mjs'
-      - 'lib/background-splits.mjs'
-      - 'lib/splits-history.mjs'
-      - 'lib/public-splits.mjs'
   pull_request:
     paths:
       - '.github/workflows/background-betting-splits.yml'
@@ -36,7 +25,7 @@ jobs:
           node-version: '22'
       - run: node scripts/test-background-splits.mjs
   collect:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 4
