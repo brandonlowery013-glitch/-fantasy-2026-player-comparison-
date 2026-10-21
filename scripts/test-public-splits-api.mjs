@@ -18,5 +18,20 @@ try{
  for(const value of ['../status','2026-02-31','not-a-date']){ctx.request=new Request('https://site.test/api/live/splits?history='+value);assert.equal((await onRequestGet(ctx)).status,400);}
  ctx.request=new Request('https://site.test/api/live/splits?history=index');assert.deepEqual((await(await onRequestGet(ctx)).json()).days,[at.slice(0,10)]);
  ctx.request=new Request('https://site.test/api/live/splits?history='+at.slice(0,10));assert.equal((await(await onRequestGet(ctx)).json()).snapshots.length,1);
+ // A delayed or failed timer must not disable the previously working live
+ // quote path. Its observations must not be presented as archived job data.
+ saved.clear();calls=[];ctx.request=new Request('https://site.test/api/live/splits');
+ const staleAt=new Date(now-3600000).toISOString();feed={...feed,collection:{last_success_at:staleAt,event:'schedule'},games:[{...game,observed_at:staleAt}]};
+ const md=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',month:'numeric',day:'numeric'}).format(new Date(start));
+ const row=(name,m,b)=>`<div class="tb-sodd"><div>${name}</div><div>-110</div><div>${m}%</div><div>${b}%</div></div>`;
+ const market=(name,a,b)=>`<div><div class="tb-se-head"><div>${name}</div><div>Odds</div><div>% Handle</div><div>% Bets</div></div>${row(a,75,45)}${row(b,25,55)}</div>`;
+ const html=`<div class="tb-se"><div class="tb-se-title"><img src="https://x/teams/nfl/NE.png"><img src="https://x/teams/nfl/BUF.png">${md}, 01:00PM</div><div class="tb-market-wrap">${market('Moneyline','NE Patriots','BUF Bills')}${market('Spread','NE +3','BUF -3')}${market('Total','Over 40','Under 40')}</div></div>`;
+ const event={id:'one',date:start,status:{type:{completed:false}},competitions:[{competitors:[{homeAway:'away',team:{abbreviation:'NE'}},{homeAway:'home',team:{abbreviation:'BUF'}}]}]};
+ globalThis.fetch=async url=>{calls.push(url);return url.includes('espn.com')?Response.json({events:[event]}):url.includes('draftkings.com')?new Response(html):Response.json(url.includes('status.json')?status:feed);};
+ const backed=await(await onRequestGet(ctx)).json();await Promise.all(jobs);
+ assert.equal(backed.health.status,'CURRENT');assert.equal(backed.health.source,'live-request-fallback');assert.equal(backed.background_health.status,'STALE');assert.equal(backed.background_health.last_success_at,staleAt);assert.equal(backed.collection.event,'schedule');assert.equal(backed.games.find(g=>g.event_id==='one').moneyline[0].bets,45);
+ assert.equal(calls.filter(u=>u.includes('draftkings.com')).length,2,'backup collection remains bounded');
+ feed={...feed,collection:{last_success_at:new Date(now-20*60000).toISOString(),event:'schedule'},games:[{...game,observed_at:new Date(now-20*60000).toISOString()}]};
+ const delayed=await(await onRequestGet(ctx)).json();assert.equal(delayed.background_health.status,'DELAYED');assert.equal(delayed.health.status,'CURRENT');assert.equal(calls.filter(u=>u.includes('draftkings.com')).length,2,'same-slot backup reuses its verified cache');
 }finally{globalThis.fetch=originalFetch;}
-console.log('PASS: background publication delivery, failed/stale status, last-good preservation, no request-triggered collection, history access and path validation');
+console.log('PASS: background delivery, fresh-source request suppression, failed/stale status, last-good preservation, dated history, path validation and bounded live backup without relabeling background history');
