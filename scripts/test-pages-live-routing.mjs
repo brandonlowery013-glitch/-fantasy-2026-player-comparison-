@@ -51,7 +51,7 @@ const context={waitUntil:promise=>waits.push(promise)};
 const assets={ASSETS:{fetch:async()=>Response.json(savedAssets)}};
 try {
  globalThis.fetch=async url=>{
-  const value=String(url);
+  const value=String(url);calls.push(value);
   if(value.includes('/scoreboard'))return Response.json({events:[]});
   if(value.includes('/live-news.json'))return Response.json({fetched_at:new Date().toISOString(),articles:[]});
   if(value.includes('current-game-lines'))return Response.json({quote_type:'pregame',games:[]});
@@ -70,6 +70,7 @@ try {
   if(['model','betting','injuries','players'].includes(leaf))assert.equal(data.data.published,true);
   if(leaf==='bundle')assert.equal(data.betting.published,true);
   if(leaf==='history')assert.equal(data.published,true);
+  if(leaf==='players')assert(calls.some(url=>url.includes('/frontend/ctd-cloudflare-work/data/weekly/weekly-player-outlook-2026.json')),'outlook must use the branch that publishes it');
  }
  assert.equal((await request('/api/live/not-a-resource')).status,404);
  assert.equal((await request('/api/live/news','POST')).status,405);
