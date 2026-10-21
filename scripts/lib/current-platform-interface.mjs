@@ -4,7 +4,7 @@ import path from 'node:path';
 export function currentPlatformInterface(){
  const checks=[];
  const need=(ok,name)=>checks.push({name,passed:Boolean(ok)});
- for(const file of ['index.html','frontend/cloudflare/index.html']){
+ for(const file of ['index.html',...(fs.existsSync('frontend/cloudflare/index.html')?['frontend/cloudflare/index.html']:[])]){
   const html=fs.readFileSync(file,'utf8');
   need(html.includes('CTD_INTERFACE_LOCK_1'),`${file}: current interface lock`);
   const nav=html.match(/<nav\b[\s\S]*?<\/nav>/)?.[0]||'';
@@ -23,9 +23,14 @@ export function currentPlatformInterface(){
    if(!/^(?:https?:|data:)/.test(src))need(fs.existsSync(path.resolve(path.dirname(file),src)),`${file}: script ${src} exists`);
   }
  }
- const cloud=fs.readFileSync('frontend/cloudflare/restore-lock1.js','utf8');
- need(cloud.includes("addEventListener('change',compare)"),'Cloudflare comparison changes are wired');
- for(const module of ['prop-board.js','game-detail-panels.js','news-updates.js','runtime-public-splits-2026.js','current-rank-views.js'])need(cloud.includes(`load('./${module}')`),`Cloudflare ${module} bootstrap`);
+ if(fs.existsSync('frontend/cloudflare/index.html')){
+  const cloud=fs.readFileSync('frontend/cloudflare/restore-lock1.js','utf8');
+  need(cloud.includes("addEventListener('change',compare)"),'Cloudflare comparison changes are wired');
+  for(const module of ['prop-board.js','game-detail-panels.js','news-updates.js','runtime-public-splits-2026.js','current-rank-views.js'])need(cloud.includes(`load('./${module}')`),`Cloudflare ${module} bootstrap`);
+ }else{
+  const html=fs.readFileSync('index.html','utf8');
+  need(html.includes('function renderCompare(')&&html.includes("el.addEventListener('change',renderCompare)"),'primary comparison changes are wired');
+ }
  const source=JSON.parse(fs.readFileSync('MODEL_SOURCE_OF_TRUTH.json','utf8'));
  const board=JSON.parse(fs.readFileSync('data/market/market-value-board-2026.json','utf8'));
  need(board.universe===source.active_player_model&&board.board?.length===source.active_player_model,'market board matches canonical universe');
