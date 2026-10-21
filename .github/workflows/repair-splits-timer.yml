@@ -1,0 +1,49 @@
+name: Repair Splits Timer Registration
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/repair-splits-timer.yml'
+      - 'scripts/repair-splits-timer.mjs'
+      - 'scripts/test-splits-timer-repair.mjs'
+  pull_request:
+    paths:
+      - '.github/workflows/repair-splits-timer.yml'
+      - 'scripts/repair-splits-timer.mjs'
+      - 'scripts/test-splits-timer-repair.mjs'
+permissions:
+  contents: read
+concurrency:
+  group: repair-splits-timer-registration
+  cancel-in-progress: false
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/test-splits-timer-repair.mjs
+  repair:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Re-register only the background splits timer
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/repair-splits-timer.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: splits-timer-registration-${{ github.run_id }}
+          path: work/splits-timer-registration.json
