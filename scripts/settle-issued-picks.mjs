@@ -1,3 +1,4 @@
+import {browserPickHistory} from '../lib/browser-pick-history.mjs';
 import fs from 'node:fs';
 import {finalResult,settlePicks,historyFeed} from '../lib/pick-settlement.mjs';
 import {finalBehavior,appendBehavior,behaviorState,predictionLearning} from '../lib/football-learning.mjs';
@@ -30,5 +31,6 @@ const observations=appendBehavior(ledger.football_learning?.observations,behavio
 const regimePath='data/ingestion/nfl-event-ledger-2026.json',regimeEvents=fs.existsSync(regimePath)?read(regimePath).events||[]:[];
 settled.football_learning={schema_version:1,numeric_authority:0,observations,state:behaviorState(observations,{season:schedule.season,week:schedule.week,asOf:now,regimeEvents}),regime_events:regimeEvents.filter(e=>Number.isFinite(Date.parse(e.captured_at))&&Date.parse(e.captured_at)<=Date.parse(now)),half_life_games:4,policy:'Dated verified finals; prior weeks only; gradual descriptive learning; no unvalidated score adjustments; corrections append revisions'};
 settled.prediction_reason_learning=predictionLearning(history,settled);
+save(base+'browser-pick-history-2026.json',browserPickHistory(history,settled));
 save(path,settled);save(base+'betting-history-ui-2026.json',historyFeed(history,settled,events));
 console.log(JSON.stringify({games_checked:due.size,settlements:settled.settlements.length,streams:new Set(history.records.map(r=>r.stream_id)).size}));
