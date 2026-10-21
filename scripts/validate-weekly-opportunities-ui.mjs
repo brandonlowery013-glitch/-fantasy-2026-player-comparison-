@@ -1,3 +1,4 @@
+import {currentPlatformInterface} from './lib/current-platform-interface.mjs';
 import fs from 'node:fs';
 const index=fs.readFileSync('index.html','utf8');
 const runtime=fs.readFileSync('runtime-draft-opportunity-ui-2026.js','utf8');
@@ -6,7 +7,7 @@ const page=fs.readFileSync('weekly-opportunities.html','utf8');
 const ledger=JSON.parse(fs.readFileSync('data/market/unified-opportunities-2026.json','utf8'));
 const blocked=[];
 const need=(ok,msg)=>{if(!ok)blocked.push(msg)};
-need(index.includes('083fca6edf212334c3a2bc8ef48f141cef94fe26/index.html'),'main entry must preserve the pinned verified platform shell');
+need(currentPlatformInterface().result==='PASS','current interface navigation, source contracts and feature bootstraps must pass');
 need(runtime.includes("a.href='index.html#weekly'"),'Weekly Opportunities control must use the shell hash router');
 need(runtime.includes("document.getElementById('weekly')"),'Weekly Opportunities control must be mounted inside Weekly rather than top-level navigation');
 need(compare.includes('runtime-comparison-ui-step3.js'),'dedicated Compare surface must remain preserved');

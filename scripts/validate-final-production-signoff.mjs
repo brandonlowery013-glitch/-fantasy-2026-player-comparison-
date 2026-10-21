@@ -37,7 +37,7 @@ const ops=fs.readFileSync(path.join(root,'operations-dashboard.html'),'utf8');
 
 const checks=[
   [/schedule:\s*\n\s*- cron:/,orchestrator,'Step 24 must retain the sole autonomous production schedule'],
-  [/concurrency:\s*\n\s*group:\s*weekly-production-orchestration\s*\n\s*cancel-in-progress:\s*false/,orchestrator,'shared anti-race lock missing'],
+  [/concurrency:\s*\n\s*group:\s*production-main-writer\s*\n\s*cancel-in-progress:\s*false/,orchestrator,'shared anti-race lock missing'],
   [/Stage 3 - freeze first valid pregame forecasts/,orchestrator,'forecast freeze missing from lifecycle'],
   [/Stage 8 - settle any newly final frozen forecasts/,orchestrator,'settlement missing from lifecycle'],
   [/frozen:true/,freeze,'freeze rows must be frozen'],
