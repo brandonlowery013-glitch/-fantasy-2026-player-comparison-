@@ -9,13 +9,13 @@ assert.equal(resolve('Justin Jefferson',game,'receiving_yards').athlete_id,'3');
 assert.equal(resolve('Unmapped Rookie',game,'rushing_yards').name,'Unmapped Rookie');
 assert.equal(resolve('Unmapped Rookie',game,'rushing_yards').market_only,true);
 assert.equal(resolve('James Cook',{home_team:'CLE',away_team:'MIN'},'rushing_yards').identity_status,'UNRESOLVED');
-const now=Date.parse('2026-09-17T12:00:00Z'),state={coverage_version:2,last_prop_fetch_at:new Date(now-6*3600000).toISOString(),last_fetched_markets:['player_rush_yds']};
+const now=Date.parse('2026-09-17T12:00:00Z'),state={coverage_version:3,last_prop_fetch_at:new Date(now-119*60000).toISOString(),last_fetched_markets:['player_rush_yds']};
 assert.equal(earlyPropRefreshNeeded(state,['player_rush_yds'],now),false);
 assert.equal(earlyPropRefreshNeeded(state,['player_rush_yds','player_receptions'],now),true);
-assert.equal(earlyPropRefreshNeeded(state,['player_rush_yds'],now+18*3600000),true);
+assert.equal(earlyPropRefreshNeeded(state,['player_rush_yds'],now+60000),true);
 assert.equal(earlyPropRefreshNeeded({...state,coverage_version:1},['player_rush_yds'],now),true);
 assert.equal(earlyPropRefreshNeeded(state,[],now),false);
-console.log('PASS: roster expansion, suffixes, team/position identity, retained unknown offers, discovery and daily refresh gates');
+console.log('PASS: roster expansion, suffixes, team/position identity, retained unknown offers, discovery and two-hour refresh gates');
 
 import {currentGameLines} from '../lib/current-game-lines.mjs';
 const quote={book:'book',home_spread:-3.5,home_spread_price:-110,away_spread_price:-110,total:44.5,over_price:-110,under_price:-110,snapshot_kind:'CURRENT',captured_at:'2026-09-17T10:00:00Z'};
@@ -24,3 +24,4 @@ assert.equal(compact.games[0].bookmakers.length,1);
 assert.equal(compact.games[0].bookmakers[0].markets[0].outcomes[1].point,3.5);
 assert.equal(compact.games[0].bookmakers[0].markets[1].outcomes[0].point,45.5);
 console.log('PASS: compact lines preserve latest per-book quotes, spread signs, and exclude derived closes');
+
