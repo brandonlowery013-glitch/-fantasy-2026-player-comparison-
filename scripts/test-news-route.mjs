@@ -5,7 +5,7 @@ const {onRequestGet}=await import('data:text/javascript;base64,'+Buffer.from(sou
 let cached=null,calls=0,fail=false;
 const now=Date.now(),story={headline:'Player ruled out for Sunday',published:new Date(now-3600000).toISOString(),links:{web:{href:'https://www.espn.com/nfl/story/1'}},description:'Confirmed report'};
 globalThis.caches={default:{match:async()=>cached?new Response(JSON.stringify(cached)):null,put:async(_,response)=>{cached=await response.json();}}};
-globalThis.fetch=async url=>{calls++;assert.match(url,/data\/live-news\/data\/live-news.json$/);if(fail)throw Error('offline');return new Response(JSON.stringify({fetched_at:new Date(now).toISOString(),articles:[story,story,{...story,headline:'Other injury',links:{web:{href:'https://unrelated.example/story'}}}]}));};
+globalThis.fetch=async url=>{calls++;assert.match(url,/espn.com.*\/news\?limit=50|data\/live-news\/data\/live-news.json$/);if(fail)throw Error('offline');return new Response(JSON.stringify({fetched_at:new Date(now).toISOString(),articles:[story,story,{...story,headline:'Other injury',links:{web:{href:'https://unrelated.example/story'}}}]}));};
 let r=await onRequestGet(),d=await r.json();assert.equal(r.status,200);assert.equal(d.status,'CURRENT');assert.equal(d.items.length,1);assert.equal(d.model_reviewed_at,null);
 await onRequestGet();assert.equal(calls,1,'warm requests must use the five-minute cache');
 cached.checked_at=new Date(now-301000).toISOString();fail=true;
@@ -13,4 +13,7 @@ d=await(await onRequestGet()).json();assert.equal(d.status,'STALE');assert.equal
 cached.items[0].published_at=new Date(now-2*86400000).toISOString();d=await(await onRequestGet()).json();assert.equal(d.items.length,0,'old game-day inactive reports cannot return as current news');
 cached=null;r=await onRequestGet();assert.equal(r.status,502);assert.equal((await r.json()).status,'UNAVAILABLE');
 assert(!source.includes('current-football-review.json'));
-console.log('PASS: compact snapshot only, cache reuse, deduplication, source validation and stale fallback');
+cached=null;globalThis.fetch=async url=>{if(url.includes('espn.com'))throw Error('live provider offline');return new Response(JSON.stringify({fetched_at:new Date(now).toISOString(),articles:[story]}));};
+d=await(await onRequestGet()).json();assert.equal(d.status,'CURRENT');assert.equal(d.source_branch,'data/live-news');assert.equal(d.items.length,1);
+
+console.log('PASS: compact live headlines, published snapshot fallback, cache reuse, deduplication, source validation and stale fallback');
