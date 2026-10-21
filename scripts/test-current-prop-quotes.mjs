@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {currentPropQuotes} from '../lib/current-prop-quotes.mjs';
+import {earlyPropRefreshNeeded} from '../lib/prop-player-identity.mjs';
+const now=Date.parse('2026-10-21T23:30:00Z'),quote={snapshot_id:'old',week:7,game_id:'game',kickoff:'2026-10-25T17:00:00Z',stat:'receiving_yards',snapshot_kind:'CURRENT',book:'old-book',captured_at:new Date(now-6*3600000).toISOString(),recommendation:{decision:'PICK',expected_value:.9}};
+const fresh={...quote,snapshot_id:'new',book:'new-book',captured_at:new Date(now-600000).toISOString(),recommendation:{decision:'PASS',expected_value:-.01}};
+const history=[quote,fresh],before=JSON.stringify(history);
+assert.equal(currentPropQuotes(history,{week:7,now}).receiving_yards.snapshot_id,'new');
+assert.deepEqual(currentPropQuotes([quote],{week:7,now}),{});
+assert.deepEqual(currentPropQuotes([{...fresh,kickoff:new Date(now-1).toISOString()}],{week:7,now}),{});
+assert.deepEqual(currentPropQuotes([{...fresh,captured_at:new Date(now+600000).toISOString()}],{week:7,now}),{});
+assert.deepEqual(currentPropQuotes([fresh],{week:8,now}),{});
+assert.equal(JSON.stringify(history),before,'selection preserves original archived observations');
+const state={coverage_version:3,last_prop_fetch_at:new Date(now-119*60000).toISOString(),last_fetched_markets:['player_pass_yds']};
+assert.equal(earlyPropRefreshNeeded(state,['player_pass_yds'],now),false);
+assert.equal(earlyPropRefreshNeeded(state,['player_pass_yds'],now+60000),true);
+assert.equal(earlyPropRefreshNeeded({...state,last_prop_fetch_at:'invalid'},['player_pass_yds'],now),true);
+assert.equal(earlyPropRefreshNeeded({...state,coverage_version:2},['player_pass_yds'],now),true);
+console.log('PASS: stale favorable quotes cannot displace fresh quotes; original history preserved; kickoff/week/future gates; two-hour refresh and coverage migration');
