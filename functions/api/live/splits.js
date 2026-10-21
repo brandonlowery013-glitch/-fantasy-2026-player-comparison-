@@ -1,45 +1,33 @@
-import {parseSplits,SOURCE} from '../../../frontend/cloudflare/lib/public-splits.mjs';
-import '../../../frontend/cloudflare/runtime-league-refresh-2026.js';
 import {preservePublished} from '../../../frontend/cloudflare/lib/splits-history.mjs';
 export {preservePublished};
-const headers={'content-type':'application/json; charset=utf-8','cache-control':'public, max-age=300','access-control-allow-origin':'*'};
-// Keep published game snapshots when the provider removes a game after kickoff.
-// The game's original observed_at remains unchanged.
-const response=(data,health)=>new Response(JSON.stringify(health?{...data,health}:data),{headers});
-async function read(url){const r=await fetch(url,{signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('Source unavailable');const text=await r.text();if(text.length>1500000)throw Error('Source too large');return text;}
+const RAW='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/data/betting-splits/data/betting-splits/';
+const headers={'content-type':'application/json; charset=utf-8','cache-control':'public, max-age=60','access-control-allow-origin':'*'};
+const response=(data,status=200)=>new Response(JSON.stringify(data),{status,headers});
+async function read(path){
+ const r=await fetch(`${RAW}${path}?v=${Math.floor(Date.now()/60000)}`,{signal:AbortSignal.timeout(12000),headers:{accept:'application/json'},cf:{cacheTtl:60,cacheEverything:true}});
+ if(!r.ok)throw Error('Background publication HTTP '+r.status);
+ const text=await r.text();if(text.length>12000000)throw Error('Background publication too large');return JSON.parse(text);
+}
 export async function onRequestGet({request,env,waitUntil}){
- const cache=caches.default,key=new Request(new URL('/api/live/splits-cache',request.url)),stored=await cache.match(key);
- let fallback=stored?await stored.json():null;
- {try{const r=await env.ASSETS.fetch(new URL('/cloudflare/market-percentages.json',request.url));if(r.ok){const saved=await r.json();fallback=preservePublished(fallback||saved,saved);}}catch{}}
+ const url=new URL(request.url),history=url.searchParams.get('history');
+ if(history!==null){
+  if(history!=='index'&&(!/^\d{4}-\d{2}-\d{2}$/.test(history)||!Number.isFinite(Date.parse(history))||new Date(history).toISOString().slice(0,10)!==history))return response({error:'history must be index or a valid YYYY-MM-DD date'},400);
+  try{return response(await read(history==='index'?'index.json':`history/${history}.json`));}catch{return response({status:'UNAVAILABLE',error:'Saved splits history unavailable'},502);}
+ }
+ const cache=globalThis.caches?.default,key=new Request(new URL('/api/live/background-splits-last-good',request.url));
+ let previous=null;
+ try{const r=await cache?.match(key);if(r)previous=await r.json();}catch{}
+ try{const r=await env.ASSETS.fetch(new URL('/cloudflare/market-percentages.json',request.url));if(r.ok)previous=preservePublished(previous||{games:[]},await r.json());}catch{}
  try{
-  const scheduleKey=new Request(new URL('/api/live/splits-schedule-cache',request.url));let scheduleResponse=await cache.match(scheduleKey),schedule;
-  if(scheduleResponse)schedule=await scheduleResponse.json();else{
-   const scoreboard='https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
-   schedule=JSON.parse(await read(scoreboard));
-   // ESPN can keep the completed week as its default until midweek. Move to
-   // the upcoming slate only after every default-week game is explicitly final.
-   const week=Number(schedule.week?.number),events=schedule.events||[];
-   if(events.length&&events.every(event=>event.status?.type?.completed===true)&&Number.isInteger(week)&&week<18){
-    schedule=JSON.parse(await read(`${scoreboard}?dates=${schedule.season?.year||2026}&seasontype=2&week=${week+1}&limit=100`));
-   }
-   waitUntil(cache.put(scheduleKey,response(schedule)));
-  }
-  const events=schedule.events||[],plan=globalThis.CTD_LEAGUE_REFRESH.plan(events);
-  const centralDay=date=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(date));
-  const today=centralDay(Date.now()),offDay=!events.some(event=>centralDay(event.date)===today);
-  // Upcoming markets are published before game day. Refresh them on off days
-  // too, while retaining the game-day kickoff cutoff and saved-game history.
-  const previewSlot=offDay&&events.some(event=>Date.parse(event.date)>Date.now())?`preview:${Math.floor(Date.now()/900000)}`:null;
-  const slot=plan.keys.at(-1)||previewSlot;
-  if(!slot||fallback?.refresh_slot===slot){
-   const age=Date.now()-Date.parse(fallback?.observed_at);
-   const current=slot&&fallback?.refresh_slot===slot&&Number.isFinite(age)&&age>=0&&age<=900000;
-   return response(fallback||{schema_version:1,games:[]},{status:current?'CURRENT':'SAVED',checked_at:new Date().toISOString(),refresh_slot:slot});
-  }
-  // At most two public pages per scheduled slot; no paid collectors or model jobs.
-  const first=await read(SOURCE),firstAt=new Date().toISOString(),second=await read(SOURCE.replace('tb_page=1','tb_page=2')),secondAt=new Date().toISOString();
-  const a=parseSplits(first,schedule.events||[],firstAt),b=parseSplits(second,schedule.events||[],secondAt);
-  a.games.push(...b.games.filter(g=>!a.games.some(x=>x.event_id===g.event_id)));if(!a.games.length)throw Error('No matched public splits');
-  const combined=preservePublished(a,fallback);combined.refresh_slot=slot;waitUntil(cache.put(key,new Response(JSON.stringify(combined),{headers:{...headers,'cache-control':'public, max-age=604800'}})));return response(combined,{status:'CURRENT',checked_at:secondAt,refresh_slot:slot});
- }catch(error){return response(fallback||{schema_version:1,games:[]},{status:'STALE',checked_at:new Date().toISOString(),error:String(error?.message||error)});}
+  const [published,status]=await Promise.all([read('latest.json'),read('status.json').catch(()=>null)]);
+  if(published.schema_version!==1||!Array.isArray(published.games)||!published.collection?.last_success_at)throw Error('Invalid background publication');
+  const combined=preservePublished(published,previous),now=Date.now();
+  const pending=combined.games.filter(g=>Date.parse(g.start_at)>now);
+  const at=published.collection.last_success_at,age=now-Date.parse(at);
+  const allFresh=pending.length>0&&pending.every(g=>['moneyline','spread','total'].every(m=>g[m]?.length===2&&now-Date.parse(g.market_observed_at?.[m]||g.observed_at)<=35*60000));
+  const state=status?.status==='FAILED'?'STALE':published.status==='IDLE'?'IDLE':Number.isFinite(age)&&age>=-300000&&age<=35*60000&&allFresh&&published.status==='CURRENT'?'CURRENT':Number.isFinite(age)&&age<=35*60000&&published.status==='PARTIAL'?'PARTIAL':'STALE';
+  const result={...combined,health:{status:state,source:'background-scheduler',checked_at:new Date().toISOString(),last_success_at:at,last_attempt_at:status?.last_attempt_at||at,collection_event:published.collection.event,run_url:status?.run_url||published.collection.run_url,cadence_minutes:15,upcoming_games:pending.length,...(status?.error?{error:status.error}:{})}};
+  if(cache)waitUntil(cache.put(key,new Response(JSON.stringify(result),{headers:{...headers,'cache-control':'public, max-age=604800'}})));
+  return response(result);
+ }catch(error){return response({...previous,schema_version:1,games:previous?.games||[],health:{status:'STALE',source:'saved-fallback',checked_at:new Date().toISOString(),last_success_at:previous?.collection?.last_success_at||previous?.observed_at||null,error:error.message}});}
 }

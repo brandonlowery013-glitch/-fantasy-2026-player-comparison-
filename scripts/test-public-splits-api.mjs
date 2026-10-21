@@ -1,58 +1,22 @@
 import assert from 'node:assert/strict';
-import {onRequestGet,preservePublished} from '../functions/api/live/splits.js';
-const originalFetch=globalThis.fetch,RealDate=Date;let now=Date.parse('2026-10-04T13:00Z');globalThis.Date=class extends RealDate{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}};
-const records=new Map();globalThis.caches={default:{async match(k){return records.get(k.url)?.clone();},async put(k,r){records.set(k.url,r.clone());}}};
-const row=(name,m,b)=>`<div class="tb-sodd"><div>${name}</div><div>100</div><div>${m}%</div><div>${b}%</div></div>`;
-const html=`<div class="tb-se"><div class="tb-se-title"><img src="https://x/teams/nfl/NE.png"><img src="https://x/teams/nfl/BUF.png">10/4, 01:00PM</div><div class="tb-market-wrap"><div><div class="tb-se-head"><div>Moneyline</div><div>Odds</div><div>% Handle</div><div>% Bets</div></div>${row('NE Patriots',30,20)}${row('BUF Bills',70,80)}</div></div></div>`;
-const events=[{id:'game',date:'2026-10-04T17:00Z',status:{type:{completed:false}},competitions:[{competitors:[{homeAway:'home',team:{abbreviation:'BUF'}},{homeAway:'away',team:{abbreviation:'NE'}}]}]}];let upstream=[];
-globalThis.fetch=async url=>{upstream.push(url);return new Response(url.includes('espn.com')?JSON.stringify({events}):html);};
-const jobs=[],ctx={request:new Request('https://site.test/api/live/splits'),env:{ASSETS:{fetch:async()=>new Response(JSON.stringify({schema_version:1,games:[],observed_at:'2026-10-04T05:00Z'}))}},waitUntil:p=>jobs.push(p)};
-let r=await onRequestGet(ctx);assert.equal((await r.json()).games.length,0);assert.equal(upstream.filter(u=>u.includes('draftkings')).length,0,'no collection before 10:30 Central');await Promise.all(jobs);
-now=Date.parse('2026-10-04T16:00Z');r=await onRequestGet(ctx);const data=await r.json();assert.equal(data.games.length,1);assert.equal(data.games[0].moneyline[0].money,30);assert.equal(upstream.filter(u=>u.includes('draftkings')).length,2);await Promise.all(jobs);
-await onRequestGet(ctx);assert.equal(upstream.filter(u=>u.includes('draftkings')).length,2,'same slot uses cache');
-now=Date.parse('2026-10-04T17:01Z');await onRequestGet(ctx);assert.equal(upstream.filter(u=>u.includes('draftkings')).length,2,'no collection while games run');
-globalThis.fetch=originalFetch;globalThis.Date=RealDate;
-console.log('PASS: before-window suppression, two-page bounded collection, ticket/money parsing, same-slot cache, kickoff cutoff');
-
-const oldGame={away:'IND',home:'WSH',start_at:'2026-10-04T13:30Z',observed_at:'2026-10-04T05:44Z',moneyline:[{side:'IND',bets:68,money:52},{side:'WSH',bets:32,money:48}]};
-const restored=preservePublished(data,{games:[oldGame]});
-assert.deepEqual(restored.games.find(g=>g.away==='IND'),oldGame,'started game retains published values and original observation time');
-const updated={...oldGame,observed_at:'2026-10-04T12:00Z',moneyline:[{side:'IND',bets:69,money:53},{side:'WSH',bets:31,money:47}]};
-assert.deepEqual(preservePublished({games:[updated]},{games:[oldGame]}).games[0].moneyline,updated.moneyline);
-assert.equal(preservePublished({games:[]},{games:[oldGame,{...oldGame,start_at:'2026-10-11T13:30Z'}]}).games.length,2,'different weeks do not collide');
-// A populated live cache that has already lost IND must still be repaired from the bundled snapshot.
-ctx.env.ASSETS.fetch=async()=>new Response(JSON.stringify({schema_version:1,games:[oldGame]}));
-const healed=await (await onRequestGet(ctx)).json();
-assert.deepEqual(healed.games.find(g=>g.away==='IND'),oldGame);
-console.log('PASS: missing started games restored even with existing cache, timestamps preserved, newer snapshots win, separate event dates');
-const complete={...oldGame,spread:[{side:'IND',bets:45,money:68},{side:'WSH',bets:55,money:32}],total:[{side:'Over',bets:55,money:60},{side:'Under',bets:45,money:40}]};
-const partial={...updated,spread:[],total:[{side:'Over',bets:null,money:60},{side:'Under',bets:45,money:40}]};
-const retained=preservePublished({games:[partial]},{games:[complete]}).games[0];
-assert.deepEqual(retained.spread,complete.spread);
-assert.deepEqual(retained.total,complete.total);
-assert.deepEqual(retained.moneyline,updated.moneyline);
-assert.equal(retained.market_observed_at.spread,oldGame.observed_at);
-assert.equal(retained.market_observed_at.moneyline,updated.observed_at);
-const persisted=JSON.parse(JSON.stringify({games:[retained]}));
-assert.deepEqual(preservePublished({games:[]},persisted).games[0],retained,'a browser reload/empty server reply retains every saved market');
-assert.equal(preservePublished({games:[]},{games:{invalid:true}}).games.length,0);
-console.log('PASS: partial or invalid markets cannot erase published pairs; each market retains its own timestamp; persisted history survives empty refreshes');
-
-// On Tuesday the provider may still default to the completed Monday slate.
-// The real endpoint must select next week and refresh newly available markets.
-try {
- now=Date.parse('2026-10-20T18:00Z');
- globalThis.Date=class extends RealDate{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}};
- records.clear();upstream=[];
- globalThis.caches={default:{async match(k){return records.get(k.url)?.clone();},async put(k,r){records.set(k.url,r.clone());}}};
- const nextEvents=[{...events[0],id:'next',date:'2026-10-25T17:00Z'}];
- globalThis.fetch=async url=>{upstream.push(url);return new Response(url.includes('espn.com')?JSON.stringify(url.includes('week=7')?{events:nextEvents}:{week:{number:6},season:{year:2026},events:[{...events[0],date:'2026-10-19T00:15Z',status:{type:{completed:true}}}]}):html.replace('10/4,','10/25,'));};
- const fresh=await(await onRequestGet(ctx)).json();
- assert.equal(fresh.health.status,'CURRENT');assert.equal(fresh.games.find(g=>g.event_id==='next')?.observed_at,new RealDate(now).toISOString());
- assert.equal(upstream.filter(u=>u.includes('draftkings')).length,2);
- await Promise.all(jobs);
- await onRequestGet(ctx);assert.equal(upstream.filter(u=>u.includes('draftkings')).length,2,'off-day preview slot must be cached');
- now+=16*60000;globalThis.fetch=async()=>{throw Error('offline');};
- const stale=await(await onRequestGet(ctx)).json();assert.equal(stale.health.status,'STALE');assert(stale.games.some(g=>g.event_id==='next'),'upstream failure must retain real saved percentages');
-} finally {globalThis.fetch=originalFetch;globalThis.Date=RealDate;}
-console.log('PASS: completed-week rollover, fresh off-day upcoming splits, bounded preview cache and explicit stale fallback');
+import {onRequestGet} from '../functions/api/live/splits.js';
+const now=Date.now(),at=new Date(now).toISOString(),start=new Date(now+86400000).toISOString();
+const pair=[{side:'NE',bets:40,money:70},{side:'BUF',bets:60,money:30}];
+const game={event_id:'one',home:'BUF',away:'NE',start_at:start,observed_at:at,moneyline:pair,spread:pair,total:[{...pair[0],side:'Over'},{...pair[1],side:'Under'}]};
+let feed={schema_version:1,status:'CURRENT',observed_at:at,games:[game],collection:{last_success_at:at,event:'schedule'},history:{date:at.slice(0,10)}},status={status:'CURRENT',last_attempt_at:at},offline=false,calls=[];
+const originalFetch=globalThis.fetch;
+const saved=new Map(),jobs=[];
+globalThis.caches={default:{async match(k){return saved.get(k.url)?.clone();},async put(k,r){saved.set(k.url,r.clone());}}};
+globalThis.fetch=async url=>{calls.push(url);if(offline)throw Error('offline');return Response.json(url.includes('status.json')?status:url.includes('index.json')?{days:[at.slice(0,10)]}:url.includes('/history/')?{snapshots:[{games:[game]}]}:feed);};
+const ctx={request:new Request('https://site.test/api/live/splits'),env:{ASSETS:{fetch:async()=>Response.json({games:[]})}},waitUntil:p=>jobs.push(p)};
+try{
+ let data=await(await onRequestGet(ctx)).json();await Promise.all(jobs);
+ assert.equal(data.health.status,'CURRENT');assert.equal(data.health.collection_event,'schedule');assert.deepEqual(data.games[0].moneyline,pair);assert(calls.every(u=>u.includes('raw.githubusercontent.com')),'read-only endpoint must not collect from provider');
+ status={status:'FAILED',error:'provider unavailable',last_attempt_at:at};data=await(await onRequestGet(ctx)).json();await Promise.all(jobs);assert.equal(data.health.status,'STALE');assert.equal(data.games.length,1);assert.equal(data.health.last_success_at,at);
+ offline=true;data=await(await onRequestGet(ctx)).json();assert.equal(data.health.status,'STALE');assert.equal(data.games.length,1);assert.equal(data.games[0].observed_at,at);
+ offline=false;status={status:'CURRENT'};feed={...feed,collection:{last_success_at:new Date(now-3600000).toISOString()}};data=await(await onRequestGet(ctx)).json();assert.equal(data.health.status,'STALE');
+ for(const value of ['../status','2026-02-31','not-a-date']){ctx.request=new Request('https://site.test/api/live/splits?history='+value);assert.equal((await onRequestGet(ctx)).status,400);}
+ ctx.request=new Request('https://site.test/api/live/splits?history=index');assert.deepEqual((await(await onRequestGet(ctx)).json()).days,[at.slice(0,10)]);
+ ctx.request=new Request('https://site.test/api/live/splits?history='+at.slice(0,10));assert.equal((await(await onRequestGet(ctx)).json()).snapshots.length,1);
+}finally{globalThis.fetch=originalFetch;}
+console.log('PASS: background publication delivery, failed/stale status, last-good preservation, no request-triggered collection, history access and path validation');

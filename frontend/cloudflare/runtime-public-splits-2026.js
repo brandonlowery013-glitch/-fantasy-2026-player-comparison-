@@ -10,6 +10,7 @@
   if(!host){host=document.createElement('div');host.id='ctdSplitsControls';host.innerHTML='<span>Consensus &amp; Smart Money</span><div role="group" aria-label="Betting percentage market">'+Object.entries(markets).map(([key,label])=>`<button type="button" data-splits-market="${key}" aria-pressed="${key===market}">${label}</button>`).join('')+'</div>';ticker.before(host);
    host.addEventListener('click',event=>{const button=event.target.closest('[data-splits-market]');if(!button)return;market=button.dataset.splitsMarket;render();});
   }
+  let state=document.getElementById('ctdSplitsCollection');if(!state){state=document.createElement('div');state.id='ctdSplitsCollection';host.after(state);}const health=data?.health;state.textContent=health?'Background collection: '+health.status+' · Every 15 minutes · Last successful collection '+(health.last_success_at?new Date(health.last_success_at).toLocaleString():'unavailable'):'Loading background collection status…';if(data?.history?.date){const link=document.createElement('a');link.href='/api/live/splits?history='+encodeURIComponent(data.history.date);link.target='_blank';link.rel='noopener';link.textContent=' · Saved observations';state.append(link);}
   host.querySelectorAll('[data-splits-market]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.splitsMarket===market)));
  }
  function render(){
@@ -30,7 +31,7 @@
    for(const [key,label] of [['bets','Consensus'],['money','Smart Money']]){
     block.innerHTML+=`<div class="ctdSplitMetric"><div class="ctdSplitValues"><b>${pair[0][key]}<small>%</small></b><span>${label}</span><b>${pair[1][key]}<small>%</small></b></div><div class="ctdSplitBar" role="img" aria-label="${esc(label+': '+labels[0]+' '+pair[0][key]+'%, '+labels[1]+' '+pair[1][key]+'%')}"><span class="ctdSideA" style="width:${pair[0][key]}%"></span><span class="ctdSideB" style="width:${pair[1][key]}%"></span></div></div>`;
    }
-   block.innerHTML+=`<div class="ctdSplitChecked">Checked ${esc(new Date(m.market_observed_at?.[market]||m.observed_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</div>`;
+   block.innerHTML+=`<div class="ctdSplitChecked">${Date.now()>=start?'Archived':Date.now()-Date.parse(m.market_observed_at?.[market]||m.observed_at)>35*60000?'Stale · Checked':'Checked'} ${esc(new Date(m.market_observed_at?.[market]||m.observed_at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))}</div>`;
    card.append(block);
   });
  }
@@ -38,6 +39,7 @@
  const originalTicker=renderTicker;renderTicker=function(){originalTicker();render();};
  const originalSelection=renderSelectedGame;renderSelectedGame=function(){originalSelection();render();};
  const style=document.createElement('style');style.textContent=`
+ #ctdSplitsCollection{font-size:11px;color:#9db5cd;margin:0 0 12px}#ctdSplitsCollection a{color:#9ac7fb}
  #ctdSplitsControls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:12px 0 10px;color:#c6d8eb;font-size:12px;font-weight:650}
  #ctdSplitsControls [role=group]{display:flex;padding:3px;border:1px solid #273c55;border-radius:8px;background:#091321;gap:3px}
  #ctdSplitsControls button{appearance:none;border:0;border-radius:5px;background:transparent;color:#9fb2c9;padding:7px 14px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer}
