@@ -97,7 +97,7 @@ function main(){
   const players=loadPlayers();
   const self=process.argv.includes('--self-test');
   const ledger=self?{events:syntheticEvents(players)}:read('data/ingestion/nfl-event-ledger-2026.json');
-  const prior=fs.existsSync(path.join(root,outputPath))?read(outputPath):{cases:[]};
+  const prior=!self&&fs.existsSync(path.join(root,outputPath))?read(outputPath):{cases:[]};
   const existing=new Map((prior.cases||[]).map(c=>[c.source_event_id,c]));
   const sourceEvents=(ledger.events||[]).filter(e=>e.requires_connected_impact_review===true&&e.materiality!=='LOW');
   for(const e of sourceEvents)if(!existing.has(e.event_id))existing.set(e.event_id,buildCase(e,players));
