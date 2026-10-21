@@ -8,6 +8,7 @@ const event={id:'next',date:'2099-10-25T17:00:00Z',status:{type:{completed:false
 let requests=[],offline=false;
 const provider=async url=>{requests.push(url);if(offline)throw Error('provider offline');return new Response(url.includes('espn.com')?JSON.stringify(url.includes('week=7')?{events:[event]}:{week:{number:6},season:{year:2099},events:[{...event,status:{type:{completed:true}}}]}):html);};
 const capture=await collectSplits({fetcher:provider});
+await assert.rejects(collectSplits({fetcher:async()=>Response.json({error:'provider schema changed'})}),/Invalid provider schedule/);
 assert.equal(capture.status,'CURRENT');assert.equal(capture.games.length,1);assert.equal(capture.games[0].moneyline[0].bets,40);assert.equal(capture.games[0].moneyline[0].money,70);assert.equal(requests.filter(u=>u.includes('draftkings')).length,2);assert(requests.some(u=>u.includes('week=7')));
 const malformed=await collectSplits({fetcher:async u=>new Response(u.includes('espn.com')?JSON.stringify({events:[event]}):html.replaceAll('70%','120%'))}).then(()=>false,()=>true);assert(malformed,'invalid percentages rejected');
 const p=publication(null,null,null,capture,{id:'one',event:'schedule',url:'https://github.com/run/one'});
