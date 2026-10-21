@@ -9,6 +9,9 @@ on:
       - 'frontend/cloudflare/lib/**'
       - 'frontend/cloudflare/runtime-league-refresh-2026.js'
       - 'scripts/test-pages-live-routing.mjs'
+      - 'scripts/test-canonical-model-state.mjs'
+      - 'scripts/test-public-odds.mjs'
+      - 'frontend/runtime-model-state-semantics-2026.js'
       - 'scripts/test-same-origin-game-feed.mjs'
       - 'scripts/test-news-route.mjs'
       - 'scripts/test-public-splits-api.mjs'
@@ -23,6 +26,9 @@ on:
       - 'frontend/cloudflare/lib/**'
       - 'frontend/cloudflare/runtime-league-refresh-2026.js'
       - 'scripts/test-pages-live-routing.mjs'
+      - 'scripts/test-canonical-model-state.mjs'
+      - 'scripts/test-public-odds.mjs'
+      - 'frontend/runtime-model-state-semantics-2026.js'
       - 'scripts/test-same-origin-game-feed.mjs'
       - 'scripts/test-news-route.mjs'
       - 'scripts/test-public-splits-api.mjs'
@@ -43,6 +49,8 @@ jobs:
       - name: Verify Pages dispatch and backend response contracts
         run: |
           node scripts/test-pages-live-routing.mjs
+          node scripts/test-canonical-model-state.mjs
+          node scripts/test-public-odds.mjs
           node scripts/test-same-origin-game-feed.mjs
           node scripts/test-news-route.mjs
           node scripts/test-public-splits-api.mjs

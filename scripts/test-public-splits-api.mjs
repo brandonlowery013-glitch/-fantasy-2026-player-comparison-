@@ -37,3 +37,22 @@ const persisted=JSON.parse(JSON.stringify({games:[retained]}));
 assert.deepEqual(preservePublished({games:[]},persisted).games[0],retained,'a browser reload/empty server reply retains every saved market');
 assert.equal(preservePublished({games:[]},{games:{invalid:true}}).games.length,0);
 console.log('PASS: partial or invalid markets cannot erase published pairs; each market retains its own timestamp; persisted history survives empty refreshes');
+
+// On Tuesday the provider may still default to the completed Monday slate.
+// The real endpoint must select next week and refresh newly available markets.
+try {
+ now=Date.parse('2026-10-20T18:00Z');
+ globalThis.Date=class extends RealDate{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}};
+ records.clear();upstream=[];
+ globalThis.caches={default:{async match(k){return records.get(k.url)?.clone();},async put(k,r){records.set(k.url,r.clone());}}};
+ const nextEvents=[{...events[0],id:'next',date:'2026-10-25T17:00Z'}];
+ globalThis.fetch=async url=>{upstream.push(url);return new Response(url.includes('espn.com')?JSON.stringify(url.includes('week=7')?{events:nextEvents}:{week:{number:6},season:{year:2026},events:[{...events[0],date:'2026-10-19T00:15Z',status:{type:{completed:true}}}]}):html.replace('10/4,','10/25,'));};
+ const fresh=await(await onRequestGet(ctx)).json();
+ assert.equal(fresh.health.status,'CURRENT');assert.equal(fresh.games.find(g=>g.event_id==='next')?.observed_at,new RealDate(now).toISOString());
+ assert.equal(upstream.filter(u=>u.includes('draftkings')).length,2);
+ await Promise.all(jobs);
+ await onRequestGet(ctx);assert.equal(upstream.filter(u=>u.includes('draftkings')).length,2,'off-day preview slot must be cached');
+ now+=16*60000;globalThis.fetch=async()=>{throw Error('offline');};
+ const stale=await(await onRequestGet(ctx)).json();assert.equal(stale.health.status,'STALE');assert(stale.games.some(g=>g.event_id==='next'),'upstream failure must retain real saved percentages');
+} finally {globalThis.fetch=originalFetch;globalThis.Date=RealDate;}
+console.log('PASS: completed-week rollover, fresh off-day upcoming splits, bounded preview cache and explicit stale fallback');
