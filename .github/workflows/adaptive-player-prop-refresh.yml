@@ -6,6 +6,9 @@ on:
       - 'data/sources/live-market-ingestion-2026.json'
       - 'scripts/adaptive-player-prop-refresh.mjs'
       - 'lib/prop-player-identity.mjs'
+      - 'lib/current-prop-quotes.mjs'
+      - 'scripts/test-current-prop-quotes.mjs'
+      - 'scripts/build-player-prop-recommendations.mjs'
       - 'scripts/test-prop-player-identity.mjs'
       - 'scripts/merge-guarded-production-pr.sh'
       - '.github/workflows/adaptive-player-prop-refresh.yml'
@@ -15,6 +18,9 @@ on:
       - 'data/sources/live-market-ingestion-2026.json'
       - 'scripts/adaptive-player-prop-refresh.mjs'
       - 'lib/prop-player-identity.mjs'
+      - 'lib/current-prop-quotes.mjs'
+      - 'scripts/test-current-prop-quotes.mjs'
+      - 'scripts/build-player-prop-recommendations.mjs'
       - 'scripts/test-prop-player-identity.mjs'
       - 'scripts/merge-guarded-production-pr.sh'
       - '.github/workflows/adaptive-player-prop-refresh.yml'
@@ -52,6 +58,8 @@ jobs:
         run: |
           node scripts/adaptive-player-prop-refresh.mjs --self-test
           node scripts/test-prop-player-identity.mjs
+          node scripts/test-current-prop-quotes.mjs
+          node scripts/build-player-prop-recommendations.mjs --self-test
           node scripts/test-issued-history-storage.mjs
           node scripts/test-market-ingestion-settings.mjs
       - name: Validate live market ingestion contract
