@@ -136,6 +136,9 @@ jobs:
       - name: Stage 2 - build weekly probability distributions
         if: steps.context.outputs.ready == 'true'
         run: node scripts/build-weekly-probability-engine.mjs
+      - name: Stage 2 - rebuild matching-week rankings
+        if: steps.context.outputs.ready == 'true'
+        run: node scripts/build-in-season-ranking-layer.mjs
       - name: Stage 3 - freeze first valid pregame forecasts
         if: steps.context.outputs.ready == 'true'
         run: node scripts/capture-weekly-forecast-snapshots.mjs

@@ -15,7 +15,7 @@
   window.CTD_CANONICAL_PLAYER_SOURCE={status:'READY',rows:raw.length,unique:names.size,source:RAW+'MODEL_SOURCE_OF_TRUTH.json',effective_date:manifest.effective_date};
   document.documentElement.dataset.ctdCanonicalPlayerSource='READY';
   document.dispatchEvent(new CustomEvent('ctd:canonical-players-ready',{detail:window.CTD_CANONICAL_PLAYER_SOURCE}));
- }catch(e){window.CTD_CANONICAL_PLAYER_SOURCE={status:'FAIL',message:String(e)};document.documentElement.dataset.ctdCanonicalPlayerSource='FAIL';document.dispatchEvent(new Event('ctd:canonical-players-failed'));console.error('Canonical data failed',e)}})();
+ }catch(e){window.CTD_CANONICAL_PLAYERS_2026=[];for(const id of ['seasonCategoryMount','weeklyCategoryMount','comparison']){const mount=document.getElementById(id);if(mount)mount.textContent='Current player data is unavailable. Please try again shortly.';}const rows=document.getElementById('boardRows');if(rows)rows.innerHTML='<tr><td colspan="7">Current player data is unavailable.</td></tr>';window.CTD_CANONICAL_PLAYER_SOURCE={status:'FAIL',message:String(e)};document.documentElement.dataset.ctdCanonicalPlayerSource='FAIL';document.dispatchEvent(new Event('ctd:canonical-players-failed'));console.error('Canonical data failed',e)}})();
 })();
 
 // The Cloudflare LOCK1 entrypoint already loads this runtime. Use that stable

@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {publicQuotes} from '../functions/api/live/odds.js';
+const now=Date.parse('2026-10-20T18:00Z'),observed_at=new Date(now).toISOString();
+const game={event_id:'401',away:'NE',home:'CHI',start_at:'2026-10-23T00:15Z',observed_at,moneyline:[{side:'NE',odds:'+135'},{side:'CHI',odds:'−155'}],spread:[{side:'NE',label:'NE Patriots +3.5',odds:'-110'},{side:'CHI',label:'CHI Bears -3.5',odds:'-110'}],total:[{side:'Over',label:'Over 44.5',odds:'-105'},{side:'Under',label:'Under 44.5',odds:'-115'}]};
+const feed={health:{status:'CURRENT'},games:[game]};
+const quote=publicQuotes(feed,now)[0];assert.equal(quote.bookmakers[0].markets.length,3);assert.equal(quote.bookmakers[0].markets[0].outcomes[1].price,-155);assert.equal(quote.bookmakers[0].markets[1].outcomes[0].point,3.5);assert.equal(quote.bookmakers[0].last_update,observed_at);
+for(const changed of [{observed_at:'invalid'},{observed_at:new Date(now-16*60000).toISOString()},{observed_at:new Date(now+6*60000).toISOString()},{start_at:new Date(now-1).toISOString()}])assert.equal(publicQuotes({...feed,games:[{...game,...changed}]},now).length,0);
+assert.equal(publicQuotes({...feed,health:{status:'STALE'}},now).length,0);
+const partial=publicQuotes({...feed,games:[{...game,moneyline:[{side:'NE',odds:'--'},{side:'CHI',odds:'-155'}],spread:[{side:'NE',label:'NE +3.5',odds:'-110'},{side:'CHI',label:'CHI -2.5',odds:'-110'}]}]},now)[0];assert.deepEqual(partial.bookmakers[0].markets.map(m=>m.key),['totals']);
+console.log('PASS: exact public prices and collection times; invalid, stale, future-dated, completed and inconsistent markets excluded');

@@ -7,7 +7,7 @@ if(c.season!==2026)blocked.push('season must be 2026');
 if(c.status!=='STEP_24_WEEKLY_PRODUCTION_ORCHESTRATION_LOCKED')blocked.push('Step 24 status not locked');
 if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('Step 24 must remain SHADOW_ONLY/non-actionable');
 if(JSON.stringify(c.ordered_stages)!==JSON.stringify(expected))blocked.push('ordered stage contract drift');
-if(c.schedule?.concurrency_group!=='weekly-production-orchestration'||c.schedule?.cancel_in_progress!==false)blocked.push('global anti-race concurrency contract missing');
+if(c.schedule?.concurrency_group!=='production-main-writer'||c.schedule?.cancel_in_progress!==false)blocked.push('global anti-race concurrency contract missing');
 if(c.failure_policy?.dependency_failure_blocks_downstream!==true)blocked.push('dependency hard-fail policy missing');
 if(c.failure_policy?.one_atomic_repository_commit_per_orchestrator_run!==true)blocked.push('atomic persist policy missing');
 const rules=(c.locked_rules||[]).join(' ');

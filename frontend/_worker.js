@@ -1,9 +1,26 @@
+import {onRequest as liveRequest} from '../functions/api/live/[[path]].js';
+import {onRequestGet as newsRequest} from '../functions/api/live/news.js';
+import {onRequestGet as oddsRequest} from '../functions/api/live/odds.js';
+import {onRequestGet as splitsRequest} from '../functions/api/live/splits.js';
+
+const LIVE_HANDLERS={news:newsRequest,odds:oddsRequest,splits:splitsRequest};
+const LIVE_RESOURCES=new Set(['','health','scoreboard','game','bundle','model','betting','injuries','players',...Object.keys(LIVE_HANDLERS)]);
+
 const REPO='brandonlowery013-glitch/-fantasy-2026-player-comparison-';
 const PATHS={recommendations:'data/market/game-model-consumer-2026.json',projections:'data/probability/generated/weekly-game-projections-2026.json',schedule:'data/calibration/weekly-event-schedule-2026.json',lines:'data/market/current-game-lines-2026.json'};
 
 export default {
  async fetch(request,env,ctx){
   const url=new URL(request.url),prefix='/cloudflare/api/game-model/';
+  // Advanced-mode Pages ignores the Functions directory. Keep every supported
+  // live API resource connected to its existing handler here.
+  if(url.pathname==='/api/live'||url.pathname.startsWith('/api/live/')){
+   const leaf=url.pathname==='/api/live'?'':url.pathname.slice('/api/live/'.length);
+   if(!LIVE_RESOURCES.has(leaf))return new Response('Unknown live resource',{status:404});
+   if(request.method!=='GET')return new Response('Read-only endpoint',{status:405,headers:{Allow:'GET'}});
+   const context={request,env,waitUntil:ctx.waitUntil.bind(ctx),params:{path:leaf?[leaf]:[]}};
+   return (LIVE_HANDLERS[leaf]||liveRequest)(context);
+  }
   if(!url.pathname.startsWith(prefix))return env.ASSETS.fetch(request);
   if(!['GET','HEAD'].includes(request.method))return new Response('Read-only endpoint',{status:405,headers:{Allow:'GET, HEAD'}});
   const kind=url.pathname.slice(prefix.length),ref=url.searchParams.get('ref')||'main';

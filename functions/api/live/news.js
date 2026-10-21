@@ -24,21 +24,29 @@ function liveItems(payload,now=Date.now()){
  });
 }
 export async function onRequestGet(){
- const key=new Request('https://ctd.internal/live-news-v6');
+ const key=new Request('https://ctd.internal/live-news-v7');
  let saved=null;
  try{const cached=await caches.default.match(key);if(cached)saved=await cached.json();}catch{}
  const age=Date.now()-Date.parse(saved?.checked_at);
  if(saved?.status==='CURRENT'&&age>=0&&age<300000)return new Response(JSON.stringify(saved),{headers});
  try{
-  // The existing headline collector already publishes a compact snapshot.
-  // Parsing the 14 MB player review on every request exceeded Worker CPU limits.
-  const r=await fetch('https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/data/live-news/data/live-news.json',{headers:{accept:'application/json','user-agent':'ChuckTheDuke/2026'},signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}});
-  if(!r.ok)throw Error('News snapshot unavailable');
-  const data=await r.json(),fetched=Date.parse(data.fetched_at),now=Date.now();
+  // Read the compact live news feed; the six-hour published collector remains
+  // a fallback. Neither path parses the multi-megabyte player review dataset.
+  let data,sourceBranch=null;
+  try{
+   const live=await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=50',{headers:{accept:'application/json'},signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}});
+   if(!live.ok)throw Error('Live headlines unavailable');
+   const body=await live.json();if(!Array.isArray(body.articles))throw Error('Invalid live headlines');
+   data={articles:body.articles,fetched_at:new Date().toISOString()};
+  }catch{
+   const r=await fetch('https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/data/live-news/data/live-news.json',{headers:{accept:'application/json','user-agent':'ChuckTheDuke/2026'},signal:AbortSignal.timeout(12000),cf:{cacheTtl:300,cacheEverything:true}});
+   if(!r.ok)throw Error('News snapshot unavailable');data=await r.json();sourceBranch='data/live-news';
+  }
+  const fetched=Date.parse(data.fetched_at),now=Date.now();
   if(!Number.isFinite(fetched)||now-fetched>7*3600000||fetched>now+300000)throw Error('Headline snapshot is stale');
   const items=new Map(),titles=new Set();
   for(const item of liveItems(data,now).sort((a,b)=>b.priority-a.priority||Date.parse(b.published_at)-Date.parse(a.published_at))){const title=item.title.toLowerCase().replace(/[^a-z0-9]/g,'');if(items.has(item.url)||titles.has(title))continue;items.set(item.url,item);titles.add(title);}
-  const result={items:[...items.values()].slice(0,20),reviewed_at:data.fetched_at,checked_at:new Date(now).toISOString(),model_reviewed_at:null,status:'CURRENT',refresh_seconds:300,collection_interval_seconds:21600,source_branch:'data/live-news',live_source:'ESPN',live_error:null};
+  const result={items:[...items.values()].slice(0,20),reviewed_at:data.fetched_at,checked_at:new Date(now).toISOString(),model_reviewed_at:null,status:'CURRENT',refresh_seconds:300,collection_interval_seconds:sourceBranch?21600:300,source_branch:sourceBranch,live_source:'ESPN',live_error:null};
   try{await caches.default.put(key,new Response(JSON.stringify(result),{headers:{'cache-control':'public,max-age=86400'}}))}catch{}
   return new Response(JSON.stringify(result),{headers});
  }catch{
