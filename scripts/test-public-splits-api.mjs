@@ -18,6 +18,15 @@ try{
  for(const value of ['../status','2026-02-31','not-a-date']){ctx.request=new Request('https://site.test/api/live/splits?history='+value);assert.equal((await onRequestGet(ctx)).status,400);}
  ctx.request=new Request('https://site.test/api/live/splits?history=index');assert.deepEqual((await(await onRequestGet(ctx)).json()).days,[at.slice(0,10)]);
  ctx.request=new Request('https://site.test/api/live/splits?history='+at.slice(0,10));assert.equal((await(await onRequestGet(ctx)).json()).snapshots.length,1);
+ // Cloudflare is authoritative when bound; retain all earlier GitHub archives.
+ ctx.env.SPLITS_SCHEDULER={fetch:async request=>Response.json(request.url.includes('index.json')?{days:['2099-01-01']}:request.url.includes('/history/')?{snapshots:[{capture_id:'cloudflare:one',observed_at:at,games:[game]}]}:request.url.includes('status.json')?{status:'CURRENT'}:{...feed,status:'CURRENT',games:[game],collection:{last_success_at:at,event:'cloudflare-cron'}})};
+ ctx.request=new Request('https://site.test/api/live/splits');
+ assert.equal((await(await onRequestGet(ctx)).json()).health.collection_event,'cloudflare-cron');
+ ctx.request=new Request('https://site.test/api/live/splits?history=index');
+ assert.deepEqual((await(await onRequestGet(ctx)).json()).days,[at.slice(0,10),'2099-01-01']);
+ ctx.request=new Request('https://site.test/api/live/splits?history='+at.slice(0,10));
+ assert.equal((await(await onRequestGet(ctx)).json()).snapshots.length,2,'Cloudflare and GitHub history both retained');
+ delete ctx.env.SPLITS_SCHEDULER;
  // A delayed or failed timer must not disable the previously working live
  // quote path. Its observations must not be presented as archived job data.
  saved.clear();calls=[];ctx.request=new Request('https://site.test/api/live/splits');
