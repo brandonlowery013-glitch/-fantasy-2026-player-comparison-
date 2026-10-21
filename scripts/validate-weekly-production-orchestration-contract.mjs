@@ -23,7 +23,7 @@ if(!workflow.includes('production/state-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}')
 const helperPath='scripts/merge-guarded-production-pr.sh';
 if(!workflow.includes('bash '+helperPath+' "${{ steps.state_pr.outputs.pr_number }}" "${{ steps.persist.outputs.branch }}" merge'))blocked.push('shared protected merge handoff missing');
 const helper=fs.existsSync(helperPath)?fs.readFileSync(helperPath,'utf8'):'';
-for(const needle of ['check_name=guardrail-qa','select(.app.id ==','HEAD_STATUS','MERGE_STATUS','HEAD_CHECK','MERGE_CHECK','--match-head-commit "$HEAD_SHA"','gh pr merge','git merge-base --is-ancestor "$CURRENT_MAIN" "$HEAD_SHA"']){
+for(const needle of ['check_name=guardrail-qa','.app.id == ${REQUIRED_CHECK_APP_ID}','HEAD_STATUS','MERGE_STATUS','HEAD_CHECK','MERGE_CHECK','--match-head-commit "$HEAD_SHA"','gh pr merge','git merge-base --is-ancestor "$CURRENT_MAIN" "$HEAD_SHA"']){
   if(!helper.includes(needle))blocked.push('protected merge helper safeguard missing: '+needle);
 }
 if(!helper.includes('[ "$HEAD_STATUS" = \'success\' ] && [ "$MERGE_STATUS" = \'success\' ] && [ "$HEAD_CHECK" = \'success\' ] && [ "$MERGE_CHECK" = \'success\' ]'))blocked.push('head and merge candidate must both pass status and check gates');
