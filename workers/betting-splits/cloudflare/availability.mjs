@@ -30,7 +30,7 @@ export function parseOfficialInactives(html,url,events,observed_at){
  return found;
 }
 export function parseLiveInjuries(data,observed_at){
- return (data.injuries||[]).flatMap(t=>(t.injuries||[]).filter(x=>x.athlete?.displayName&&typeof x.status==='string').map(x=>({name:x.athlete.displayName,athlete_id:String(x.athlete.id||''),team:TEAMS[t.displayName]||({LAR:'LA',WSH:'WAS',JAC:'JAX'}[t.abbreviation]||t.abbreviation||t.team?.abbreviation),status:x.status,source_updated_at:x.date||null,practice_status:x.details?.practiceStatus||null,observed_at,source_url:'https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries'})));
+ return (data.injuries||[]).flatMap(t=>(t.injuries||[]).filter(x=>x.athlete?.displayName&&typeof x.status==='string').map(x=>({name:x.athlete.displayName,athlete_id:String(x.athlete.id||''),team:TEAMS[t.displayName]||({LAR:'LA',WSH:'WAS',JAC:'JAX'}[t.abbreviation]||t.abbreviation||t.team?.abbreviation),status:/^suspension$/i.test(x.status)?'Suspended':x.status,provider_designation:x.status,source_updated_at:x.date||null,practice_status:x.details?.practiceStatus||null,observed_at,source_url:'https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries'})));
 }
 export class AvailabilityStore{
  constructor(storage){this.storage=storage;this.pending=null;}
