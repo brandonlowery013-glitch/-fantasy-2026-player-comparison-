@@ -54,7 +54,9 @@
  };
  function verdict(s){
   const e=s.evaluation,r=e?.recommendation,q=e?.model;
-  if(!e)return ['Model update pending','Current sportsbook quote. The model has not evaluated this exact line and price yet.'];
+  const availability=window.CTD_PROP_AVAILABILITY?.(s.player,s.week);
+  if(availability?.state==='UNAVAILABLE')return ['Unavailable',availability.label+' · '+availability.reason];
+  if(!e)return ['Model update pending',(availability?.label?availability.label+'. ':'')+'Current sportsbook quote. The model has not evaluated this exact line and price yet.'];
   let pick=e?.model_pick;
   if(!pick&&[q?.over_probability,q?.under_probability,q?.push_probability].every(x=>typeof x==='number'&&Number.isFinite(x)&&x>=0&&x<=1)&&Math.abs(q.over_probability+q.under_probability+q.push_probability-1)<1e-5){
    pick={side:q.over_probability>q.under_probability?'OVER':q.under_probability>q.over_probability?'UNDER':null,status:q.over_probability===q.under_probability?'EVEN':'AVAILABLE'};
@@ -65,8 +67,6 @@
   if(Date.parse(s.kickoff)<=Date.now())return [model,direction+'Betting: closed. This is the forecast saved before kickoff.'];
   const age=Date.now()-Date.parse(s.captured_at);
   if(!Number.isFinite(age)||age<0||age>150*60000)return [model,direction+'Betting: wait for a fresh quote.'];
-  const availability=window.CTD_PROP_AVAILABILITY?.(s.player,s.week);
-  if(availability?.state==='UNAVAILABLE')return ['Unavailable',availability.label+' · '+availability.reason];
   if(!availability?.can_project)return [model,availability?.reason||'Availability evidence needs review.'];
   const note=availability.label+'. ';
   if(availability.state==='INJURY_CONCERN')return [model,note+direction+'Conditional projection; injury concern remains.'];

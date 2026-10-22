@@ -9,7 +9,7 @@ const context=vm.createContext({Date,window:{CTD_PROP_AVAILABILITY:()=>availabil
 vm.runInContext(code.slice(code.indexOf(' function verdict('),code.indexOf(' function explanation(')),context);
 const quote={player:'Player One',week:7,kickoff,captured_at:new Date(now).toISOString(),line:50.5,evaluation:{eligibility:{eligible_for_pick:false},recommendation:{decision:'WAIT'},model_pick:{side:'UNDER'}}};
 assert.equal(context.verdict(quote)[0],'MODEL UNDER');assert.match(context.verdict(quote)[1],/Assumes player starts/);assert.doesNotMatch(context.verdict(quote)[1],/Waiting for player status/);
-availability=projectionAvailability({...base,injury:{status:'Questionable',source_updated_at:new Date(now).toISOString()}});assert.match(context.verdict(quote)[1],/Questionable/);assert.match(context.verdict(quote)[1],/injury concern/);
+availability=projectionAvailability({...base,injury:{status:'Questionable',source_updated_at:new Date(now).toISOString()}});assert.match(context.verdict(quote)[1],/Questionable/);assert.match(context.verdict(quote)[1],/injury concern/);assert.match(context.verdict({...quote,evaluation:null})[1],/Questionable/);
 const official={team:'CHI',event_id:'1',kickoff,complete:true,observed_at:new Date(now).toISOString(),inactive_names:['Player One']};
 availability=projectionAvailability({...base,official});assert.equal(context.verdict(quote)[0],'Unavailable');assert.match(context.verdict(quote)[1],/Officially inactive/);
 availability=projectionAvailability({...base,official:{...official,inactive_names:['Someone Else']}});assert.match(context.verdict(quote)[1],/Available · game-day list checked/);assert.doesNotMatch(context.verdict(quote)[1],/Questionable|injury concern|Assumes player starts/);
