@@ -1,0 +1,83 @@
+name: Publish requested Week 6 settlement repair
+on:
+  push:
+    branches: ['fix/week6-learning-settlement']
+    paths: ['.github/workflows/publish-week6-learning-repair.yml']
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  checks: read
+  statuses: read
+concurrency:
+  group: production-player-prop-writer
+  cancel-in-progress: false
+  queue: max
+jobs:
+  repair:
+    if: github.ref == 'refs/heads/fix/week6-learning-settlement'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: production-main-writer
+      cancel-in-progress: false
+      queue: max
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/week6-learning-settlement
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify requested repair PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api repos/${GITHUB_REPOSITORY}/pulls/2498 --jq '.head.ref + "|" + .base.ref + "|" + .head.repo.full_name')" = "fix/week6-learning-settlement|main|${GITHUB_REPOSITORY}"
+      - name: Merge latest production under existing writer locks
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git merge --no-edit origin/main
+          cp data/market/postgame-model-learning-2026.json /tmp/learning-before.json
+          sha256sum data/market/issued-pick-history-2026.json > /tmp/original-picks.sha256
+      - name: Verify settlement and injury-policy regressions
+        run: |
+          node scripts/test-pick-settlement.mjs
+          node scripts/test-postgame-model-learning.mjs
+          node scripts/test-game-direction-prediction.mjs
+          node scripts/test-injury-ranking-policy.mjs
+      - name: Catch up verified final results using free sources
+        run: |
+          node scripts/settle-issued-picks.mjs
+          node scripts/refresh-postgame-model-learning.mjs --settle
+      - name: Verify immutable forecasts and publishable derived feeds
+        run: |
+          sha256sum --check /tmp/original-picks.sha256
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';import assert from 'node:assert/strict';
+          const before=JSON.parse(fs.readFileSync('/tmp/learning-before.json'));
+          const after=JSON.parse(fs.readFileSync('data/market/postgame-model-learning-2026.json'));
+          assert.deepEqual(after.forecasts,before.forecasts);
+          assert.deepEqual(after.settlements.slice(0,before.settlements.length),before.settlements);
+          const ids=new Set(after.forecasts.filter(f=>f.week===6).map(f=>f.forecast_id));
+          assert.equal(ids.size,24);
+          assert.equal(new Set(after.settlements.filter(s=>ids.has(s.forecast_id)).map(s=>s.forecast_id)).size,24);
+          for(const file of ['browser-pick-history-2026.json','issued-pick-results-2026.json','betting-history-ui-2026.json','postgame-model-learning-2026.json']){
+            const bytes=fs.statSync('data/market/'+file).size;
+            assert(bytes<95*1024*1024,file+' exceeds publication budget');
+            console.log(file,bytes);
+          }
+          console.log('PASS: all 24 existing Week 6 forecasts settled; original picks and forecast snapshots unchanged');
+          JS
+      - name: Commit only repaired settlement artifacts
+        run: |
+          git add data/market/browser-pick-history-2026.json data/market/issued-pick-results-2026.json data/market/betting-history-ui-2026.json data/market/postgame-model-learning-2026.json
+          git diff --cached --quiet || git commit -m "Catch up verified Week 6 learning settlements without rewriting original predictions"
+          git push origin HEAD:fix/week6-learning-settlement
+      - name: Merge exact protected candidate through existing guardrails
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/merge-guarded-production-pr.sh 2498 fix/week6-learning-settlement merge
