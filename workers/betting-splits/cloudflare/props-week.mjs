@@ -1,0 +1,7 @@
+export const TEAMS={"Arizona Cardinals": "ARI", "Atlanta Falcons": "ATL", "Baltimore Ravens": "BAL", "Buffalo Bills": "BUF", "Carolina Panthers": "CAR", "Chicago Bears": "CHI", "Cincinnati Bengals": "CIN", "Cleveland Browns": "CLE", "Dallas Cowboys": "DAL", "Denver Broncos": "DEN", "Detroit Lions": "DET", "Green Bay Packers": "GB", "Houston Texans": "HOU", "Indianapolis Colts": "IND", "Jacksonville Jaguars": "JAX", "Kansas City Chiefs": "KC", "Las Vegas Raiders": "LV", "Los Angeles Chargers": "LAC", "Los Angeles Rams": "LA", "Miami Dolphins": "MIA", "Minnesota Vikings": "MIN", "New England Patriots": "NE", "New Orleans Saints": "NO", "New York Giants": "NYG", "New York Jets": "NYJ", "Philadelphia Eagles": "PHI", "Pittsburgh Steelers": "PIT", "San Francisco 49ers": "SF", "Seattle Seahawks": "SEA", "Tampa Bay Buccaneers": "TB", "Tennessee Titans": "TEN", "Washington Commanders": "WAS"};
+export function currentWeekEvents(events,schedule,now=Date.now()){
+ const future=Object.values(schedule?.games||{}).filter(g=>Date.parse(g.event_start||g.kickoff)>now).sort((a,b)=>Date.parse(a.event_start||a.kickoff)-Date.parse(b.event_start||b.kickoff));
+ const week=Number(future[0]?.week);if(!Number.isInteger(week))throw Error('No verified upcoming NFL week');
+ const games=future.filter(g=>Number(g.week)===week),keys=new Set(games.map(g=>[g.home_team,g.away_team,Date.parse(g.event_start||g.kickoff)].join('|')));
+ return {week,expected_games:games.length,events:events.filter(e=>keys.has([TEAMS[e.home_team],TEAMS[e.away_team],Date.parse(e.commence_time)].join('|')))};
+}

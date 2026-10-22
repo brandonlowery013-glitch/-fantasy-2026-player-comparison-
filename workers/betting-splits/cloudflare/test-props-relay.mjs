@@ -3,14 +3,15 @@ import {PropsRelay} from './props-relay.mjs';
 const files=new Map(),storage={get:async k=>structuredClone(files.get(k)),put:async(k,v)=>{for(const [key,value] of typeof k==='string'?[[k,v]]:Object.entries(k))files.set(key,structuredClone(value));},transaction:async fn=>fn(storage),list:async({prefix,reverse,limit})=>new Map([...files].filter(([k])=>k.startsWith(prefix)).sort((a,b)=>reverse?b[0].localeCompare(a[0]):a[0].localeCompare(b[0])).slice(0,limit))};
 const relay=new PropsRelay(storage,{PROPS_RELAY_URL:'https://site.test/api/internal/props-refresh'}),keys=await relay.keys();assert(!keys.public.d);let priced=0,line=40.5,offline=false;
 globalThis.fetch=async(url,options)=>{
+ if(String(url).includes('raw.githubusercontent.com'))return Response.json({games:{current:{week:7,home_team:'BUF',away_team:'NE',event_start:'2099-10-25T17:00:00Z'},later:{week:8,home_team:'BUF',away_team:'NE',event_start:'2099-11-01T17:00:00Z'}}});
  const body=options.body,signature=options.headers['x-ctd-signature'];
  assert(await crypto.subtle.verify('Ed25519',keys.verify,Uint8Array.from(atob(signature),c=>c.charCodeAt(0)),new TextEncoder().encode(body)));
  const claim=await relay.handle(new Request('https://store/props/claim',{method:'POST',body,headers:{'x-ctd-signature':signature}}));assert.equal(claim.status,200);
  const event=JSON.parse(body);if(offline)return new Response('',{status:503});
- if(event.path.endsWith('/events'))return Response.json([{id:'event1',commence_time:'2099-10-25T17:00:00Z',home_team:'Buffalo Bills',away_team:'New England Patriots'}],{headers:{'x-requests-last':'0','x-requests-remaining':'17000'}});
+ if(event.path.endsWith('/events'))return Response.json([{id:'event1',commence_time:'2099-10-25T17:00:00Z',home_team:'Buffalo Bills',away_team:'New England Patriots'},{id:'later',commence_time:'2099-11-01T17:00:00Z',home_team:'Buffalo Bills',away_team:'New England Patriots'}],{headers:{'x-requests-last':'0','x-requests-remaining':'17000'}});
  priced++;return Response.json({id:'event1',bookmakers:[{key:'draftkings',markets:[{key:'player_reception_yds',last_update:'2026-10-21T10:00:00Z',outcomes:[{description:'Player One',point:line,name:'Over',price:-110},{description:'Player One',point:line,name:'Under',price:-110}]}]}]},{headers:{'x-requests-last':'7','x-requests-remaining':'16993'}});
 };
-const time=Date.now();let r=await relay.collect({scheduled_time:time});assert.equal(r.status,200);assert.equal(priced,1);
+const time=Date.now();let r=await relay.collect({scheduled_time:time});assert.equal(r.status,200);assert.equal(priced,1,'later-week events do not spend prop credits');
 const original=structuredClone(files.get('props:capture:'+time+':event1'));assert.equal(original.quotes[0].provider_updated_at,'2026-10-21T10:00:00Z');assert(Date.now()-Date.parse(original.quotes[0].observed_at)<1000,'a current observation is distinct from the source price-change time');
 await relay.collect({scheduled_time:time});assert.equal(priced,1,'same scheduled event is idempotent');
 await relay.collect({scheduled_time:time+1});assert.equal(priced,1,'quarter-hour heartbeat does not spend credits before two-hour due time');
@@ -21,3 +22,7 @@ const claim=()=>relay.handle(new Request('https://store/props/claim',{method:'PO
 assert.equal((await relay.handle(new Request('https://store/props/claim',{method:'POST',body:body.replace('events','other'),headers:{'x-ctd-signature':signature}}))).status,401);
 offline=true;const before=structuredClone(files.get('props:latest'));assert.equal((await relay.collect({scheduled_time:time+3})).status,502);assert.deepEqual(files.get('props:latest'),before);
 console.log('PASS: signed provider requests, replay/tamper rejection, real quote normalization, adaptive credit-saving cadence, durable unchanged history and failed-provider preservation');
+
+assert.equal(files.get('props:latest').expected_games,1);assert.equal(files.get('props:latest').game_ids.length,1);console.log('PASS: official schedule scopes paid captures to the current NFL week');
+
+const missingHeaders={remaining:null,last_cost:5,used_this_run:0};await assert.rejects(relay.provider('/v4/sports/americanfootball_nfl/events',{}, {scheduled_time:Date.now()},missingHeaders),/HTTP 503/);assert.equal(missingHeaders.used_this_run,0,'a failed request without quota headers must not reuse the previous successful cost');console.log('PASS: missing quota headers never invent provider spend');

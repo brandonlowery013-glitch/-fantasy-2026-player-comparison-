@@ -1,3 +1,4 @@
+import {currentWeekEvents} from './props-week.mjs';
 const json=(body,status=200)=>Response.json(body,{status,headers:{'cache-control':'no-store','access-control-allow-origin':'*'}});
 const encode=bytes=>btoa(String.fromCharCode(...new Uint8Array(bytes)));
 const decode=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -28,7 +29,7 @@ export class PropsRelay {
    const latest=await this.storage.get('props:latest');if(!latest)return json({error:'No successful scheduled prop collection yet'},404);
    const games=await Promise.all(latest.game_ids.map(id=>this.storage.get('props:game:'+id)));const future=games.filter(g=>g&&Date.parse(g.kickoff)>Date.now());
    const current=future.filter(g=>Date.now()-Date.parse(g.observed_at)<=150*60000),status=await this.storage.get('props:status');
-   return json({...latest,games:current,quotes:current.flatMap(g=>g.quotes),health:{status:status?.status==='FAILED'?'STALE':current.length===latest.game_ids.length&&current.length>0?'CURRENT':current.length?'PARTIAL':'STALE',last_checked_at:status?.last_checked_at,last_success_at:latest.last_success_at,stale_games:latest.game_ids.length-current.length,...(status?.error?{error:status.error}:{})}});
+   return json({...latest,games:current,quotes:current.flatMap(g=>g.quotes),health:{status:status?.status==='FAILED'?'STALE':current.length===latest.game_ids.length&&current.length===(latest.expected_games??latest.game_ids.length)&&current.length>0?'CURRENT':current.length?'PARTIAL':'STALE',last_checked_at:status?.last_checked_at,last_success_at:latest.last_success_at,stale_games:(latest.expected_games??latest.game_ids.length)-current.length,...(status?.error?{error:status.error}:{})}});
   }
   if(path==='/props/status.json')return json(await this.storage.get('props:status')||{status:'WAITING_FOR_FIRST_CRON'});
   if(path==='/props/index.json'){const entries=await this.storage.list({prefix:'props:manifest:',reverse:true,limit:96});return json({captures:[...entries.values()]});}
@@ -38,8 +39,8 @@ export class PropsRelay {
  async provider(path,params,event,quota){
   const body=JSON.stringify({scheduled_time:event.scheduled_time,nonce:crypto.randomUUID(),path,params});const signature=encode(await crypto.subtle.sign('Ed25519',(await this.keys()).sign,new TextEncoder().encode(body)));
   const response=await fetch(this.env.PROPS_RELAY_URL,{method:'POST',headers:{'content-type':'application/json','x-ctd-signature':signature},body,signal:AbortSignal.timeout(25000)});
-  for(const [header,key] of [['x-requests-remaining','remaining'],['x-requests-last','last_cost']]){const value=response.headers.get(header);if(value!==null)quota[key]=Number(value);}quota.used_this_run+=quota.last_cost||0;
-  if(!response.ok)throw Error('Prop provider relay HTTP '+response.status);return response.json();
+  quota.last_cost=0;for(const [header,key] of [['x-requests-remaining','remaining'],['x-requests-last','last_cost']]){const value=response.headers.get(header);if(value!==null)quota[key]=Number(value);}quota.used_this_run+=quota.last_cost||0;
+  if(!response.ok){const text=await response.text();let detail;try{detail=JSON.parse(text);}catch{}const reason=detail?.provider_status?' (provider '+detail.provider_status+')':text.includes('Too many subrequests')?' (subrequest limit)':text.includes('1102')?' (runtime resource limit)':'';throw Error('Prop provider relay HTTP '+response.status+reason);}return response.json();
  }
  async collect(event){
   if(!this.env.PROPS_RELAY_URL)return json({status:'DISABLED'});
@@ -47,7 +48,7 @@ export class PropsRelay {
   const last_checked_at=new Date().toISOString(),quota={remaining:null,last_cost:0,used_this_run:0};
   try{
    const events=await this.provider('/v4/sports/americanfootball_nfl/events',{dateFormat:'iso'},event,quota);if(!Array.isArray(events))throw Error('Invalid prop event schedule');
-   const upcoming=events.filter(e=>e.id&&Date.parse(e.commence_time)>Date.now());const games=[],failures=[];
+   const scheduleResponse=await fetch(this.env.PROPS_SCHEDULE_URL||'https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/data/calibration/weekly-event-schedule-2026.json',{signal:AbortSignal.timeout(20000)});if(!scheduleResponse.ok)throw Error('NFL schedule HTTP '+scheduleResponse.status);const scope=currentWeekEvents(events,await scheduleResponse.json());const upcoming=scope.events;const games=[],failures=[];
    for(const e of upcoming){
     const previous=await this.storage.get('props:game:'+e.id),minutes=(Date.parse(e.commence_time)-Date.now())/60000,refresh=minutes<=60?15:minutes<=360?30:minutes<=1440?90:120;
     if(previous&&Date.now()-Date.parse(previous.observed_at)<refresh*60000)continue;
@@ -63,7 +64,7 @@ export class PropsRelay {
    await this.storage.transaction(async tx=>{
     const writes={};for(const game of games){writes['props:game:'+game.event_id]=game;writes['props:capture:'+event.scheduled_time+':'+game.event_id]=game;}
     const previous=await tx.get('props:latest'),manifest={capture_id,event:'cloudflare-cron',scheduled_at:new Date(event.scheduled_time).toISOString(),observed_at:new Date().toISOString(),game_ids:games.map(g=>g.event_id),quote_count:games.reduce((n,g)=>n+g.quotes.length,0),failures,credits_used:quota.used_this_run};
-    if(games.length){writes['props:manifest:'+event.scheduled_time]=manifest;writes['props:latest']={schema_version:1,source:'The Odds API',capture_id,event:'cloudflare-cron',scheduled_at:manifest.scheduled_at,last_success_at:manifest.observed_at,game_ids:upcoming.map(e=>e.id),history:'/api/live/prop-quotes?history=index'};}
+    if(games.length){writes['props:manifest:'+event.scheduled_time]=manifest;writes['props:latest']={schema_version:1,source:'The Odds API',capture_id,event:'cloudflare-cron',scheduled_at:manifest.scheduled_at,last_success_at:manifest.observed_at,game_ids:upcoming.map(e=>e.id),week:scope.week,expected_games:scope.expected_games,history:'/api/live/prop-quotes?history=index'};}
     writes['props:status']={status:failures.length?'PARTIAL':'CURRENT',last_checked_at,capture_id,last_success_at:games.length?manifest.observed_at:previous?.last_success_at,refreshed_games:games.length,quotes_captured:manifest.quote_count,credits_used:quota.used_this_run,failures};await tx.put(writes);
    });
    return json(await this.storage.get('props:status'));

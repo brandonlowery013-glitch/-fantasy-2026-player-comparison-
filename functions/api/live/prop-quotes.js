@@ -13,7 +13,7 @@ export async function refreshProps({request,env},publicKey=PUBLIC_KEY){
  const events=data.path==='/v4/sports/americanfootball_nfl/events',odds=/^\/v4\/sports\/americanfootball_nfl\/events\/[a-f0-9]{32}\/odds$/.test(data.path||'');
  if(!events&&!odds)return deny(400);
  const params=data.params||{};if(Object.keys(params).some(k=>!['dateFormat','oddsFormat','regions','markets'].includes(k))||params.dateFormat!=='iso'||odds&&(params.regions!=='us'||params.oddsFormat!=='american'||!String(params.markets).split(',').every(k=>MARKETS.has(k))))return deny(400);
- const claim=await env.SPLITS_SCHEDULER.fetch(new Request('https://collector/props/claim',{method:'POST',headers:{'x-ctd-signature':signature},body}));if(!claim.ok)return deny(claim.status);
+ const claim=await env.SPLITS_SCHEDULER.fetch(new Request('https://collector/props/claim',{method:'POST',headers:{'x-ctd-signature':signature},body}));await claim.arrayBuffer();if(!claim.ok)return deny(claim.status);
  const url=new URL('https://api.the-odds-api.com'+data.path);for(const [k,v]of Object.entries(params))url.searchParams.set(k,v);url.searchParams.set('apiKey',env.ODDS_API_KEY);
  try{const provider=await fetch(url,{signal:AbortSignal.timeout(20000),headers:{accept:'application/json'}});const headers=new Headers({'content-type':'application/json','cache-control':'no-store'});for(const h of ['x-requests-remaining','x-requests-last','x-requests-used'])if(provider.headers.has(h))headers.set(h,provider.headers.get(h));if(!provider.ok)return Response.json({error:'Prop provider unavailable',provider_status:provider.status},{status:provider.status,headers});return new Response(provider.body,{status:provider.status,headers});}catch{return Response.json({error:'Prop provider timed out'},{status:502});}
 }
