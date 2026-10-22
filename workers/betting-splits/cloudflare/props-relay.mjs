@@ -36,11 +36,11 @@ export class PropsRelay {
   const match=path.match(/^\/props\/history\/(\d{13})\.json$/);if(match){const manifest=await this.storage.get('props:manifest:'+match[1]);if(!manifest)return json({error:'Not found'},404);const games=await Promise.all(manifest.game_ids.map(id=>this.storage.get('props:capture:'+match[1]+':'+id)));return json({...manifest,games});}
   return json({error:'Not found'},404);
  }
- async provider(path,params,event,quota){
-  const body=JSON.stringify({scheduled_time:event.scheduled_time,nonce:crypto.randomUUID(),path,params});const signature=encode(await crypto.subtle.sign('Ed25519',(await this.keys()).sign,new TextEncoder().encode(body)));
+ async provider(path,params,event,quota,eventIds){
+  const body=JSON.stringify({scheduled_time:event.scheduled_time,nonce:crypto.randomUUID(),path,params,...(eventIds?{event_ids:eventIds}:{})});const signature=encode(await crypto.subtle.sign('Ed25519',(await this.keys()).sign,new TextEncoder().encode(body)));
   const response=await fetch(this.env.PROPS_RELAY_URL,{method:'POST',headers:{'content-type':'application/json','x-ctd-signature':signature},body,signal:AbortSignal.timeout(25000)});
   quota.last_cost=0;for(const [header,key] of [['x-requests-remaining','remaining'],['x-requests-last','last_cost']]){const value=response.headers.get(header);if(value!==null)quota[key]=Number(value);}quota.used_this_run+=quota.last_cost||0;
-  if(!response.ok){const text=await response.text();let detail;try{detail=JSON.parse(text);}catch{}const reason=detail?.provider_status?' (provider '+detail.provider_status+')':text.includes('Too many subrequests')?' (subrequest limit)':text.includes('1102')?' (runtime resource limit)':'';throw Error('Prop provider relay HTTP '+response.status+reason);}return response.json();
+  if(!response.ok){const text=await response.text();let detail;try{detail=JSON.parse(text);}catch{}const reason=detail?.provider_status?' (provider '+detail.provider_status+')':text.includes('Too many subrequests')?' (subrequest limit)':text.includes('1102')?' (runtime resource limit)':'';throw Error('Prop provider relay HTTP '+response.status+reason);}const data=await response.json();if(eventIds){if(!Array.isArray(data.responses))throw Error('Invalid batched prop response');for(const result of data.responses){if(Number.isFinite(result.remaining))quota.remaining=result.remaining;quota.used_this_run+=Number.isFinite(result.last_cost)?result.last_cost:0;}return data.responses;}return data;
  }
  async collect(event){
   if(!this.env.PROPS_RELAY_URL)return json({status:'DISABLED'});
@@ -49,16 +49,29 @@ export class PropsRelay {
   try{
    const events=await this.provider('/v4/sports/americanfootball_nfl/events',{dateFormat:'iso'},event,quota);if(!Array.isArray(events))throw Error('Invalid prop event schedule');
    const scheduleResponse=await fetch(this.env.PROPS_SCHEDULE_URL||'https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/data/calibration/weekly-event-schedule-2026.json',{signal:AbortSignal.timeout(20000)});if(!scheduleResponse.ok)throw Error('NFL schedule HTTP '+scheduleResponse.status);const scope=currentWeekEvents(events,await scheduleResponse.json());const upcoming=scope.events;const games=[],failures=[];
-   for(const e of upcoming){
+   const due=[];for(const e of upcoming){
     const previous=await this.storage.get('props:game:'+e.id),minutes=(Date.parse(e.commence_time)-Date.now())/60000,refresh=minutes<=60?15:minutes<=360?30:minutes<=1440?90:120;
-    if(previous&&Date.now()-Date.parse(previous.observed_at)<refresh*60000)continue;
-    if(quota.used_this_run+MARKETS.length>128||Number.isFinite(quota.remaining)&&(quota.remaining<=1000&&minutes>60||quota.remaining<=2000&&minutes>360||quota.remaining<=4000&&minutes>1440)){failures.push({event_id:e.id,reason:'QUOTA_RESERVE'});continue;}
+    if(previous?.coverage_version===2&&Date.now()-Date.parse(previous.observed_at)<refresh*60000)continue;
+    due.push(e);
+   }
+   const responses=new Map();
+   for(let offset=0;offset<due.length;offset+=4){
+    const batch=[];for(const e of due.slice(offset,offset+4)){
+     const minutes=(Date.parse(e.commence_time)-Date.now())/60000;
+     if(quota.used_this_run+(batch.length+1)*MARKETS.length>128||Number.isFinite(quota.remaining)&&(quota.remaining<=1000&&minutes>60||quota.remaining<=2000&&minutes>360||quota.remaining<=4000&&minutes>1440)){failures.push({event_id:e.id,reason:'QUOTA_RESERVE'});continue;}batch.push(e);
+    }
+    if(!batch.length)continue;
+    try{const result=await this.provider('/v4/sports/americanfootball_nfl/events/batch/odds',{regions:'us',markets:MARKETS.join(','),dateFormat:'iso',oddsFormat:'american'},event,quota,batch.map(e=>e.id));for(const item of result)responses.set(item.event_id,item);}
+    catch(error){for(const e of batch)failures.push({event_id:e.id,reason:error.message});}
+   }
+   for(const e of due){
+    const result=responses.get(e.id);if(!result)continue;
     try{
-     const odds=await this.provider('/v4/sports/americanfootball_nfl/events/'+e.id+'/odds',{regions:'us',markets:MARKETS.join(','),dateFormat:'iso',oddsFormat:'american'},event,quota);
+     if(result.status!==200)throw Error('Prop provider HTTP '+result.status);const odds=result.data;
      const observed_at=new Date().toISOString(),quotes=[];
      if(odds.id!==e.id||!Array.isArray(odds.bookmakers))throw Error('Invalid prop response');
      for(const book of odds.bookmakers)for(const market of book.markets||[]){if(!MARKETS.includes(market.key))continue;const pairs=new Map();for(const o of market.outcomes||[]){if(!o.description||!Number.isFinite(Number(o.point))||!['Over','Under'].includes(o.name)||!Number.isInteger(Number(o.price))||Math.abs(Number(o.price))<100)continue;const k=JSON.stringify([o.description,Number(o.point)]);const pair=pairs.get(k)||{player:o.description,line:Number(o.point)};pair[o.name.toLowerCase()]=Number(o.price);pairs.set(k,pair);}for(const pair of pairs.values())if(pair.over!=null&&pair.under!=null)quotes.push({...pair,market:market.key,book:book.key,provider_updated_at:market.last_update||book.last_update||null,observed_at,event_id:e.id,kickoff:e.commence_time,home_team:e.home_team,away_team:e.away_team});}
-     const game={event_id:e.id,kickoff:e.commence_time,home_team:e.home_team,away_team:e.away_team,observed_at,quotes};if(JSON.stringify(game).length>1900000)throw Error('Prop event response exceeds storage bound');games.push(game);
+     const game={coverage_version:2,event_id:e.id,kickoff:e.commence_time,home_team:e.home_team,away_team:e.away_team,observed_at,quotes};if(JSON.stringify(game).length>1900000)throw Error('Prop event response exceeds storage bound');games.push(game);
     }catch(error){failures.push({event_id:e.id,reason:error.message});}
    }
    await this.storage.transaction(async tx=>{
