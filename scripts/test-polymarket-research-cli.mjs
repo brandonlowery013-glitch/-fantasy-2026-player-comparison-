@@ -11,7 +11,7 @@ try{
  git('init','-q');git('config','user.name','CTD test fixture');git('config','user.email','fixture@example.invalid');git('add','.');git('commit','-qm','Fixture source');
  run(['--capture','--settle']);const file='data/research/weekly-polymarket/predictions-2026.json',read=()=>JSON.parse(fs.readFileSync(path.join(dir,file)));const first=read();assert.equal(first.predictions.length,2);assert.equal(first.settlements.length,0);assert.equal(first.predictions.find(p=>p.market==='moneyline').recorded_hold,true);
  git('add',file);git('commit','-qm','Fixture freeze');const sha=git('rev-parse','HEAD');run(['--record-publication','--commit='+sha],t+1000);run(['--settle'],t+86400000+4*3600000);const graded=read();assert.equal(graded.publications.filter(p=>p.pregame).length,2);assert.equal(graded.settlements.length,2);assert.deepEqual(graded.predictions,first.predictions);
- run(['--settle'],t+86400000+4*3600000+1000);assert.deepEqual(read().settlements,graded.settlements);
+ run(['--settle'],t+86400000+11*3600000);assert.deepEqual(read(),graded);
  const report=JSON.parse(fs.readFileSync(path.join(dir,'data/research/weekly-polymarket/results-2026.json')));assert.equal(report.scored,2);assert.equal(report.groups['7|moneyline|primary'].metrics.blend.price_qualified.holds,1);assert.equal(report.groups['7|spread|primary'].metrics.football.n,1);assert.equal(report.groups['7|moneyline|time_aligned'].metrics.aligned_blend.n,1);
  console.log('PASS: isolated CLI capture → committed pregame publication receipt → verified final scoring → idempotent rerun; original predictions/holds and time-aligned controls preserved');
 }finally{fs.rmSync(dir,{recursive:true,force:true});}
