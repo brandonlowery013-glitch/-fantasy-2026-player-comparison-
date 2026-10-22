@@ -1,5 +1,6 @@
 import {onRequestGet as propQuotesRequest,refreshProps} from '../functions/api/live/prop-quotes.js';
 import {onRequestGet as availabilityRequest} from '../functions/api/live/availability.js';
+import {onRequestGet as gameProjectionRequest} from '../functions/api/live/game-projections.js';
 import {onRequestGet as qbRequest} from '../functions/api/live/qb-projections.js';
 import {onRequest as liveRequest} from '../functions/api/live/[[path]].js';
 import {onRequestGet as newsRequest} from '../functions/api/live/news.js';
@@ -7,7 +8,7 @@ import {onRequestGet as oddsRequest} from '../functions/api/live/odds.js';
 import {onRequestGet as splitsRequest} from '../functions/api/live/splits.js';
 import {onRequestGet as historyRequest} from '../functions/api/live/history.js';
 
-const LIVE_HANDLERS={'prop-quotes':propQuotesRequest,availability:availabilityRequest,'qb-projections':qbRequest,news:newsRequest,odds:oddsRequest,splits:splitsRequest,history:historyRequest};
+const LIVE_HANDLERS={'game-projections':gameProjectionRequest,'prop-quotes':propQuotesRequest,availability:availabilityRequest,'qb-projections':qbRequest,news:newsRequest,odds:oddsRequest,splits:splitsRequest,history:historyRequest};
 const LIVE_RESOURCES=new Set(['','health','scoreboard','game','bundle','model','betting','injuries','players',...Object.keys(LIVE_HANDLERS)]);
 
 const REPO='brandonlowery013-glitch/-fantasy-2026-player-comparison-';
@@ -46,4 +47,5 @@ export default {
   }catch{return new Response(JSON.stringify({status:'MODEL_SOURCE_TIMEOUT'}),{status:504,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});}
  }
 };
+
 

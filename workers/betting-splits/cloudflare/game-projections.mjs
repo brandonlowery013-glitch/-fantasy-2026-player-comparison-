@@ -1,0 +1,45 @@
+import model from './personnel-model.json' with {type:'json'};
+import prior from './personnel-priors.json' with {type:'json'};
+import {parseCSV,buildCurrentInputs} from '../lib/personnel-inputs.mjs';
+import {buildPersonnelGame} from '../lib/personnel-game-forecast.mjs';
+import {code,playerKey} from '../lib/personnel-matchup.mjs';
+const REPO='brandonlowery013-glitch/-fantasy-2026-player-comparison-';
+const json=(x,status=200)=>Response.json(x,{status,headers:{'cache-control':'no-store','access-control-allow-origin':'*'}}),digest=async x=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(x))))].map(x=>x.toString(16).padStart(2,'0')).join('');
+export class PersonnelGameStore{
+ constructor(storage,qbs){this.storage=storage;this.qbs=qbs;this.pending=null;}
+ build(input){const games={},held={};for(const [id,event] of Object.entries(input.schedule.games||{})){if(Date.parse(event.event_start)<=Date.now())continue;try{games[id]=buildPersonnelGame({gameId:id,game:input.baseline.games[id],event,inputs:input.inputs,availability:input.availability,quarterbacks:input.quarterbacks,model});}catch(e){held[id]={status:'REVIEW_REQUIRED',reason:e.message};}}return {schema_version:1,season:2026,week:input.schedule.week,model_version:model.version,model_status:model.status,sportsbook_inputs_used:false,actionable:false,margin_residuals:model.margin_residuals,games,held,validation:model.validation,source_ref:input.source_ref,baseline_generated_at:input.baseline.generated_at,profile_sources:input.profile_sources,profile_checked_at:input.profile_checked_at};}
+ async handle(request){const u=new URL(request.url);if(u.pathname==='/game-projections/collect'&&request.method==='POST'){const event=await request.json(),p=(this.pending||Promise.resolve()).catch(()=>{}).then(()=>this.collect(event));this.pending=p;try{return await p;}finally{if(this.pending===p)this.pending=null;}}
+ if(request.method!=='GET')return json({error:'Read only'},405);
+ if(u.pathname==='/game-projections/status.json')return json(await this.storage.get('games:status')||{status:'WAITING_FOR_FIRST_CRON'});
+ if(u.pathname==='/game-projections/index.json')return json({captures:[...(await this.storage.list({prefix:'games:manifest:',reverse:true,limit:96})).values()]});
+ const h=u.pathname.match(/^\/game-projections\/history\/([a-f0-9]{64})\.json$/);if(h){const d=await this.storage.get('games:revision:'+h[1]);return d?json(d):json({error:'Not found'},404);}
+ if(u.pathname==='/game-projections/latest.json'){const d=await this.storage.get('games:latest');if(!d)return json({status:'WAITING_FOR_FIRST_CRON'},503);const s=await this.storage.get('games:status');return json({...d,health:{status:s?.status==='FAILED'||Date.now()-Date.parse(d.checked_at)>30*60000?'STALE':d.status,error:s?.error||null}});}
+ if(u.pathname==='/game-projections/verify.json'){
+  const saved=await this.storage.get('games:inputs');if(!saved||Date.now()-Date.parse(saved.availability.observed_at)>30*60000)return json({error:'Fresh native background inputs required'},503);
+  const team=u.searchParams.get('team'),scenario=u.searchParams.get('scenario')||'qb-out';if(!/^[A-Z]{2,3}$/.test(team||'')||!['qb-out','injury','matchup'].includes(scenario))return json({error:'Invalid test scenario'},400);
+  const input=structuredClone(saved),event=Object.values(input.schedule.games).find(g=>[g.home_team,g.away_team].includes(team)&&Date.parse(g.event_start)>Date.now());if(!event)return json({error:'No upcoming game'},404);
+  let subject=null;
+  if(scenario==='qb-out'){const r=await this.qbs.handle(new Request('https://store/quarterbacks/verify.json?team='+team));if(!r.ok)return r;const test=await r.json();input.quarterbacks.scenarios=test.scenarios;subject=test.simulation_starter;}
+  if(scenario==='injury'){const weights=input.inputs.teams[code(team)]?.weights||{},unit=u.searchParams.get('unit')||'WR';if(!['WR','OL','CB','RB','DL'].includes(unit))return json({error:'Invalid injury unit'},400);const regex={WR:/^(WR|TE)$/,OL:/^(T|G|C|OT|OG)$/,CB:/^(CB|S|FS|SS|DB)$/,RB:/^(RB|FB)$/,DL:/^(DE|DT|NT|DL|LB|OLB|ILB)$/}[unit];const existing=new Set(input.availability.injuries.filter(r=>r.team===team&&/^out$|^ir$|injured reserve/i.test(r.status)).map(r=>playerKey(r.name)));const p=Object.values(weights).filter(p=>regex.test(p.position)&&!existing.has(playerKey(p.name))).sort((a,b)=>(b.offense_share+b.defense_share)-(a.offense_share+a.defense_share))[0];if(!p)return json({error:'No documented player in unit'},404);subject=p.name;input.availability.injuries.push({name:p.name,team,status:'Out',source_updated_at:new Date().toISOString(),source_url:'TEST_ONLY_NOT_OFFICIAL'});for(const g of input.availability.games.filter(g=>g.team===team&&g.event_id===event.event_id))g.inactive_names.push(p.name);}
+  if(scenario==='matchup'){const opp=event.home_team===team?event.away_team:event.home_team;input.inputs.teams[code(opp)].defense.passEPA-=.15;subject=opp+' pass defense (TEST ONLY)';}
+  const test=this.build(input);for(const g of Object.values(test.games))g.simulation=true;return json({...test,checked_at:new Date().toISOString(),health:{status:'CURRENT'},simulation:true,persisted:false,simulation_label:'TEST SCENARIO — not an official injury or matchup report. Nothing is saved.',test_scenario:scenario,subject,baseline_revision:saved.revision_id});
+ }
+ return json({error:'Not found'},404);
+ }
+ async collect({scheduled_time,cron}){
+  if(!Number.isFinite(scheduled_time)||cron!=='*/15 * * * *')return json({error:'Invalid schedule'},400);const attempt='games:manifest:'+scheduled_time;if(await this.storage.get(attempt))return json({duplicate:true});
+  const checked_at=new Date().toISOString(),read=async u=>{const r=await fetch(u,{headers:{'user-agent':'CTD-personnel-game-scheduler/1.0'},signal:AbortSignal.timeout(40000)});if(!r.ok)throw Error('Game input HTTP '+r.status+' '+u);return r;};
+  try{
+   const quarterbacks=await this.storage.get('qb:latest'),availability=await this.storage.get('availability:latest');if(!quarterbacks||!availability||Date.now()-Date.parse(quarterbacks.checked_at)>30*60000||Date.now()-Date.parse(availability.observed_at)>30*60000||quarterbacks.availability_capture_id!==availability.capture_id)throw Error('Fresh matching scheduled QB and injury inputs required');
+   const source_ref=quarterbacks.source_ref,root='https://raw.githubusercontent.com/'+REPO+'/'+source_ref+'/',[baseline,schedule]=await Promise.all(['data/probability/generated/weekly-game-projections-2026.json','data/calibration/weekly-event-schedule-2026.json'].map(async p=>(await read(root+p)).json()));
+   if(baseline.week!==schedule.week||quarterbacks.week!==schedule.week||availability.week!==schedule.week)throw Error('Game model week mismatch');
+   let profile=await this.storage.get('games:profiles');if(!profile||profile.week!==schedule.week||Date.now()-Date.parse(profile.checked_at)>6*3600000){
+    const urls=[['stats_team','stats_team_week_2026.csv'],['stats_player','stats_player_week_2026.csv'],['snap_counts','snap_counts_2026.csv'],['schedules','games.csv']].map(([tag,f])=>'https://github.com/nflverse/nflverse-data/releases/download/'+tag+'/'+f),texts=await Promise.all(urls.map(async u=>(await read(u)).text()));const [teams,players,snaps,scheduleRows]=texts.map(parseCSV),inputs=buildCurrentInputs({prior,teams,players,snaps,scheduleRows,week:schedule.week});profile={week:schedule.week,checked_at,inputs,sources:await Promise.all(texts.map(async(t,i)=>({url:urls[i],sha256:await digest(t)})))};await this.storage.put('games:profiles',profile);
+   }
+   const input={source_ref,baseline,schedule,quarterbacks,availability,inputs:profile.inputs,profile_sources:profile.sources,profile_checked_at:profile.checked_at},data=this.build(input),previous=await this.storage.get('games:latest');
+   for(const [id,event] of Object.entries(schedule.games))if(Date.parse(event.event_start)<=Date.now()&&previous?.games?.[id])data.games[id]={...previous.games[id],locked_at:event.event_start};
+   const status=Object.keys(data.held).length?'PARTIAL':'CURRENT',revision_id=await digest({week:data.week,games:data.games,held:data.held,source_ref,model_version:model.version}),saved={...data,checked_at,status,revision_id,collection_event:'cloudflare-cron',availability_capture_id:availability.capture_id,quarterback_revision_id:quarterbacks.revision_id,paid_provider_requests:0},manifest={scheduled_time,checked_at,revision_id,status,game_count:Object.keys(data.games).length,held:Object.keys(data.held).length,paid_provider_requests:0};
+   const writes={'games:latest':saved,'games:inputs':{...input,revision_id},'games:status':{status,last_success_at:checked_at,revision_id},[attempt]:manifest};if(!await this.storage.get('games:revision:'+revision_id))writes['games:revision:'+revision_id]=saved;await this.storage.put(writes);return json(manifest);
+  }catch(e){await this.storage.put('games:status',{status:'FAILED',checked_at,error:e.message});return json({status:'FAILED',error:e.message},502);}
+ }
+}

@@ -1,3 +1,4 @@
+import {PersonnelGameStore} from './game-projections.mjs';
 import {PropsRelay} from './props-relay.mjs';
 import {AvailabilityStore} from './availability.mjs';
 import {QuarterbackProjections} from './qb-projections.mjs';
@@ -17,6 +18,7 @@ export default {
     const qbResponse=await store(env).fetch('https://store/quarterbacks/collect',{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});
     const qbBody=await qbResponse.text();if(!qbResponse.ok)throw Error('Scheduled quarterback projection update failed: '+qbBody);
     console.log('quarterbacks-scheduled-publication',qbBody);
+    if(env.PERSONNEL_GAME_ENABLED==='true'){const r=await store(env).fetch('https://store/game-projections/collect',{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});const b=await r.text();if(!r.ok)throw Error('Personnel game publication failed: '+b);console.log('personnel-games-scheduled-publication',b);}
    }
   }));
   const errors=results.filter(r=>r.status==='rejected').map(r=>r.reason);
@@ -24,6 +26,7 @@ export default {
  },
  async fetch(request,env){
   const path=new URL(request.url).pathname;
+  if(path.startsWith('/game-projections/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
   if(path.startsWith('/quarterbacks/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
   if(path.startsWith('/availability/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path,request));
   if(path.startsWith('/props/')&&(request.method==='GET'||path==='/props/claim'&&request.method==='POST'))return store(env).fetch(new Request('https://store'+path,request));
@@ -34,9 +37,10 @@ export default {
 };
 // Collection is reachable only through the bound object, never through public HTTP.
 export class SplitsStore {
- constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.props=new PropsRelay(ctx.storage,env);this.availability=new AvailabilityStore(ctx.storage);this.quarterbacks=new QuarterbackProjections(ctx.storage);}
+ constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.props=new PropsRelay(ctx.storage,env);this.availability=new AvailabilityStore(ctx.storage);this.quarterbacks=new QuarterbackProjections(ctx.storage);this.games=new PersonnelGameStore(ctx.storage,this.quarterbacks);}
  async fetch(request){
   const path=new URL(request.url).pathname;
+  if(path.startsWith('/game-projections/'))return this.games.handle(request);
   if(path.startsWith('/quarterbacks/'))return this.quarterbacks.handle(request);
   if(path.startsWith('/availability/'))return this.availability.handle(request);
   if(path.startsWith('/props/'))return this.props.handle(request);

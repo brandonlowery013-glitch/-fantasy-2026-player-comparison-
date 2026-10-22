@@ -1,3 +1,4 @@
+import {producerRef} from '../lib/producer-ref.mjs';
 import model from './qb-receiver-model.json' with {type:'json'};
 import {resolveQuarterbacks,applyQuarterbackRevisions,reviseReceiverDistributions} from '../lib/qb-receiver-projections.mjs';
 import {playerKey} from '../lib/player-prop-availability.mjs';
@@ -53,7 +54,7 @@ export class QuarterbackProjections{
   const read=async url=>{const r=await fetch(url,{headers:{accept:'application/json','user-agent':'CTD-QB-projection-scheduler/1.0'},signal:AbortSignal.timeout(25000)});if(!r.ok)throw Error('QB input HTTP '+r.status);return r.json();};
   try{
    const availability=await this.storage.get('availability:latest');if(!availability||Date.now()-Date.parse(availability.observed_at)>30*60000)throw Error('Fresh scheduled player status is required');
-   const ref=(await read('https://api.github.com/repos/'+REPO+'/git/ref/heads/main')).object?.sha;if(!/^[a-f0-9]{40}$/.test(ref||''))throw Error('Invalid producer reference');
+   const ref=await producerRef(REPO);
    const root='https://raw.githubusercontent.com/'+REPO+'/'+ref+'/';
    const [rawProjection,distributions,rawContext,rawPersonnel,schedule]=await Promise.all(['data/probability/weekly-projection-inputs-2026.json','data/probability/generated/weekly-probability-distributions-2026.json','data/probability/weekly-football-context-inputs-2026.json','data/ingestion/team-personnel-2026.json','data/calibration/weekly-event-schedule-2026.json'].map(p=>read(root+p)));
    const projection=compactProjection(rawProjection),personnel=compactPersonnel(rawPersonnel),context={...rawContext,players:Object.fromEntries(Object.entries(rawContext.players||{}).map(([n,p])=>[n,{position:p.position,signals:{role:p.signals?.role,qb_context:p.signals?.qb_context}}]))};

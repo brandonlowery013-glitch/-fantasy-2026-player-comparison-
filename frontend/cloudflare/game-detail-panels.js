@@ -30,7 +30,12 @@
     return `<p><b>Model prediction: ${esc(p.selection)}</b> · ${pct(p.probability)} · ${esc(p.confidence.toLowerCase())} confidence${p.exact_probability_tie?' · Even probabilities; deterministic tie-break, no statistical preference':''}</p>`;
   }
   function pickWhy(kind,e,s,raw,g){
-    const rec=e?.recommendation;if(!rec)return '';const prediction=predictionLabel(kind,e,s,raw,g);if(rec.decision!=='PICK'){const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);return `<div class="ctdWhyPick">${prediction}<b>${esc(kind.toUpperCase())} · ${rec.decision==='WAIT'?'On hold':'No bet'}</b>${window.CTD_FORMATTED_WORK?.(work)||''}</div>`;}
+    const rec=e?.recommendation;if(!rec)return '';const prediction=predictionLabel(kind,e,s,raw,g);
+    if(raw.personnel_matchup&&kind!=='total'){
+      const p=raw.personnel_matchup,a=e.side_a,b=e.side_b,home=a?.conditional_win_probability>=b?.conditional_win_probability,side=home?a:b,team=home?raw.home_team:raw.away_team,prob=side?.conditional_win_probability;
+      return '<div class="ctdWhyPick">'+prediction+'<b>'+esc(kind.toUpperCase())+' · Conditional model · Bet on hold</b><p>Expected quarterbacks: '+esc(p.contexts.home.qb.name)+' and '+esc(p.contexts.away.qb.name)+'. Injuries are weighted by earlier snap usage; offensive efficiency is compared with the opposing defense.</p><p>Scoring-only home margin '+p.baseline_home_margin.toFixed(2)+' → personnel-aware '+p.margin.toFixed(2)+'. '+esc(team)+' '+(kind==='moneyline'?'win':'cover')+' chance, excluding refunds: '+pct(prob)+'. These probabilities were recalculated for this saved line and price.</p><p>This is an experimental conditional forecast. The 2024 comparison is exploratory, and it does not establish a profitable betting edge.</p><details><summary>Numbers and sources</summary><p>Quote: '+esc(s.book)+' · '+esc(date(s.captured_at))+'. Odds '+esc(side?.offered_odds)+'. Home spread '+esc(s.market?.home_spread)+'.</p><p>Earlier NFLverse team/player statistics and snap counts; current ESPN injuries and NFL.com inactives. Availability and current QB assumptions appear in the personnel forecast panel.</p></details></div>';
+    }
+if(rec.decision!=='PICK'){const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);return `<div class="ctdWhyPick">${prediction}<b>${esc(kind.toUpperCase())} · ${rec.decision==='WAIT'?'On hold':'No bet'}</b>${window.CTD_FORMATTED_WORK?.(work)||''}</div>`;}
     let side=null,marketLabel='';
     if(kind==='spread'){
       const home=norm(String(rec.selection||'').split(' ')[0])===norm(g.home_team);side=home?e.side_a:e.side_b;
@@ -199,3 +204,4 @@ function renderData(){
   setInterval(()=>{if(!document.hidden)void refresh()},20000);
   setInterval(()=>{if(!document.hidden)void loadFeeds()},60000);
 })();
+
