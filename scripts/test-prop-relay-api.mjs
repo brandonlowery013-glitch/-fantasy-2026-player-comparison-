@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {refreshProps,onRequestGet} from '../functions/api/live/prop-quotes.js';
 const pair=await crypto.subtle.generateKey('Ed25519',true,['sign','verify']),publicKey=await crypto.subtle.exportKey('jwk',pair.publicKey);
@@ -12,3 +13,5 @@ const response=await refreshProps({request:req(),env},publicKey);assert.equal(re
 assert.equal((await refreshProps({request:req(),env},publicKey)).status,409);assert.equal(providerCalls,1,'replays cannot spend provider credits');
 assert.equal((await onRequestGet({request:new Request('https://site/api/live/prop-quotes?history=../key'),env})).status,400);await onRequestGet({request:new Request('https://site/api/live/prop-quotes'),env});assert.equal(providerCalls,1,'reading current quotes never calls paid provider');
 console.log('PASS: signature and replay enforcement, credential confinement, provider quota headers, invalid history paths, and read-only public quotes');
+
+const routes=JSON.parse(fs.readFileSync(new URL('../frontend/_routes.json',import.meta.url),'utf8'));assert(routes.include.includes('/api/internal/props-refresh'),'Pages must invoke the Worker for the signed relay path');assert(routes.include.includes('/api/live/*'),'Pages must invoke the Worker for public prop reads');console.log('PASS: deployed Pages route manifest includes the signed relay and public feed');

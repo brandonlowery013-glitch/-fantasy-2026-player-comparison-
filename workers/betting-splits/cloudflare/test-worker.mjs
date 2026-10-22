@@ -23,3 +23,10 @@ offline=true;await assert.rejects(worker.scheduled({scheduledTime:time+1800000,c
 assert.deepEqual(await(await get('/history/2026-10-21.json')).json(),history);assert.equal((await(await get('/status.json')).json()).status,'FAILED');assert.equal((await(await get('/latest.json')).json()).collection.capture_id,'cloudflare:'+(time+900000));
 assert.equal((await get('/history/../../secret')).status,404);
 console.log('PASS: Cloudflare scheduled handler, private collection, immutable history, idempotency, failed-provider preservation, public reads never collect');
+
+for(const failed of ['/collect','/props/collect']){
+ const attempted=[];const isolated={PROPS_RELAY_URL:'https://site.test/relay',SPLITS_STORE:{idFromName:()=>0,get:()=>({fetch:async url=>{const path=new URL(url).pathname;attempted.push(path);return Response.json({status:path===failed?'FAILED':'CURRENT'},{status:path===failed?502:200});}})}};
+ await assert.rejects(worker.scheduled({scheduledTime:Date.now(),cron:'*/15 * * * *'},isolated),/collection failed/);
+ assert.deepEqual(attempted.sort(),['/collect','/props/collect'],'one provider failure must not prevent the other scheduled collection');
+}
+console.log('PASS: split and prop collections run independently when either provider fails');
