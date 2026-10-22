@@ -26,7 +26,7 @@
     return direction?.selection?direction:null;
   }
   function predictionLabel(kind,e,s,raw,g){
-    const p=modelDirection(kind,e,s,raw,g);if(!p)return '';
+    const p=modelDirection(kind,e,s,raw,g);if(!p)return '';if(raw.personnel_matchup&&kind!=='total')return `<p><b>Conditional model prediction: ${esc(p.selection)}</b> · ${pct(p.probability)} · experimental estimate</p>`;
     return `<p><b>Model prediction: ${esc(p.selection)}</b> · ${pct(p.probability)} · ${esc(p.confidence.toLowerCase())} confidence${p.exact_probability_tie?' · Even probabilities; deterministic tie-break, no statistical preference':''}</p>`;
   }
   function pickWhy(kind,e,s,raw,g){
@@ -72,7 +72,7 @@ if(rec.decision!=='PICK'){const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);
       el.textContent=direction?.selection||value;g[field]=direction?.selection||value;
       el.title=r?.decision==='PASS'?(r.reason||'No side clears the model thresholds'):r?.decision==='PICK'?`Stored pregame model pick · ${date(s.captured_at)}`:'No stored decision';
       if(direction)el.title=`Model prediction: ${direction.selection}, ${pct(direction.probability)}, ${direction.confidence.toLowerCase()} confidence. Betting decision: ${r?.decision||'WAIT'}${r?.selection?' '+r.selection:''}. ${r?.reason||''}`;
-      const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent=direction?`${pct(direction.probability)} · ${direction.confidence.toLowerCase()} · bet ${r?.decision||'WAIT'}${s.markets?.[kind]?.context_validation?.status==='HOLD'?' · before QB review':''}`:r?.decision==='PICK'&&typeof r.probability_edge==='number'?`${(r.probability_edge*100).toFixed(1)} percentage points`:'';
+      const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent=direction&&raw.personnel_matchup&&kind!=='total'?`${pct(direction.probability)} · conditional · bet WAIT`:direction?`${pct(direction.probability)} · ${direction.confidence.toLowerCase()} · bet ${r?.decision||'WAIT'}${s.markets?.[kind]?.context_validation?.status==='HOLD'?' · before QB review':''}`:r?.decision==='PICK'&&typeof r.probability_edge==='number'?`${(r.probability_edge*100).toFixed(1)} percentage points`:'';
     }
     const edge=document.getElementById('mlEdge');if(edge&&!modelDirection('moneyline',s.markets?.moneyline,s,raw,g))edge.textContent=s.markets?.moneyline?.recommendation?.decision==='PICK'?pct(s.markets.moneyline.recommendation.probability_edge):'—';
     let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('section');note.id='ctdPickContext';note.className='ctdPickContext panel';note.style.maxWidth='none';document.getElementById('spreadPick')?.closest('.grid3')?.insertAdjacentElement('afterend',note)}

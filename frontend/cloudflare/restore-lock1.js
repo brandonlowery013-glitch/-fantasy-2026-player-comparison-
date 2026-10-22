@@ -145,7 +145,7 @@ function detailData(){
     const summary=explain(raw,s);g.model_summary=summary;
     if(activeGameTab==='OVERVIEW')document.getElementById('gameSummary').textContent=(feed.rerun?(ended?'Updated model calculation after kickoff. ':'Updated model calculation. '):(ended?'Pregame analysis (archived). ':''))+summary;
     const p=raw.football_projection;
-    let impact=document.getElementById('ctdPersonnelForecast');if(!impact){impact=document.createElement('div');impact.id='ctdPersonnelForecast';document.getElementById('gameSummary').insertAdjacentElement('beforebegin',impact);}
+    let impact=document.getElementById('ctdPersonnelForecast');if(!impact){impact=document.createElement('div');impact.id='ctdPersonnelForecast';impact.className='panel';document.querySelector('#gamesPage .grid3').insertAdjacentElement('beforebegin',impact);}
     const change=raw.personnel_matchup;
     impact.innerHTML=change?`<h3>${change.simulation?'TEST SCENARIO — not an official report':'PERSONNEL & MATCHUP FORECAST · CONDITIONAL'}</h3><p class="copy">Experimental model; a betting advantage has not been established. Moneyline and spread probabilities use this forecast. The total retains its existing model.</p><p class="copy">Scoring-only home margin: ${num(change.baseline_home_margin)}. Personnel-aware home margin: ${num(change.margin)} (${num(change.margin_change)} points). Expected quarterbacks: ${e(change.contexts.home.team)} — ${e(change.contexts.home.qb.name)}; ${e(change.contexts.away.team)} — ${e(change.contexts.away.qb.name)}.</p><details><summary>Availability, matchup inputs and sources</summary>${['home','away'].map(side=>{const c=change.contexts[side];return `<p class="copy">${e(c.team)}: ${e(c.qb.source)}. Injured/inactive players with observed usage: ${e(c.losses.players.map(p=>p.name+' ('+p.position+')').join(', ')||'None')}. Not quantified because usage is unavailable: ${e(c.losses.unknown.join(', ')||'None')}.</p><p class="copy">Offense passing EPA/dropback ${num(c.matchup.offense.passEPA)} versus opponent allowed ${num(c.matchup.opponent_defense.passEPA)}; opponent sack rate ${pct(c.matchup.opponent_defense.sackRate)}. Earlier completed games only.</p>`;}).join('')}<p class="copy">NFLverse completed-game statistics and snap counts; current ESPN injury reports and NFL.com official inactives. Historical evaluation is exploratory; betting recommendations stay on hold for this model.</p></details>`:'<p class="copy">Personnel-aware forecast is unavailable for this game. The scoring-only model is shown.</p>';
     window.ctdScoreComparison?.render(raw,s,feed.week);
@@ -163,7 +163,7 @@ function detailData(){
       const direction=window.CTD_SHOW_WORK?.gameDirectionPrediction(raw,s,kind);
       el.textContent=direction?.selection||(r?.decision==='PICK'?r.selection:r?.decision==='WAIT'?'On hold':'No bet');
       el.title=direction?`Model prediction: ${direction.selection}. Betting decision: ${r?.decision||'WAIT'}. ${r?.reason||''}`:(r?.reason||'');
-      badge.textContent=direction?`${pct(direction.probability)} · bet ${r?.decision||'WAIT'}${s.markets[kind]?.context_validation?.status==='HOLD'?' · before QB review':''}`:r?.decision==='PICK'?pp(r.probability_edge):'';
+      badge.textContent=direction&&raw.personnel_matchup&&kind!=='total'?`${pct(direction.probability)} · conditional · bet WAIT`:direction?`${pct(direction.probability)} · bet ${r?.decision||'WAIT'}${s.markets[kind]?.context_validation?.status==='HOLD'?' · before QB review':''}`:r?.decision==='PICK'?pp(r.probability_edge):'';
       badge.title='Model probability minus the market probability after removing bookmaker margin. pp = percentage points.';
       if(kind==='spread')g.model_spread_pick=el.textContent;if(kind==='total')g.total_pick=el.textContent;if(kind==='moneyline')g.moneyline_pick=el.textContent;
     }
@@ -187,7 +187,7 @@ function detailData(){
       g.spread=raw.home_team+' '+(s.market.home_spread>0?'+':'')+s.market.home_spread;g.total=s.market.total;
       const directions=['moneyline','spread','total'].map(kind=>window.CTD_SHOW_WORK?.gameDirectionPrediction(raw,s,kind)?.selection).filter(Boolean);
       const held=Object.values(s.markets).some(x=>x.recommendation?.decision==='WAIT');
-      g.model_edge=directions.length?directions.join(' · ')+` · bet ${picks.length?'PICK':held?'WAIT':'PASS'}`:'Prediction unavailable';
+      g.model_edge=directions.length?directions.join(' · ')+(raw.personnel_matchup?` · ML/spread conditional · total ${s.markets.total?.recommendation?.decision||'WAIT'}`:` · bet ${picks.length?'PICK':held?'WAIT':'PASS'}`):'Prediction unavailable';
     }
     renderTicker();
   }
