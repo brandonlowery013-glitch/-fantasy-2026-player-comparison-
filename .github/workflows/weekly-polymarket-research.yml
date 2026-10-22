@@ -3,6 +3,9 @@ on:
   schedule:
     - cron: '20 * * * *'
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Adaptive Pregame Market Refresh', 'Step 24 Weekly Production Orchestration']
+    types: [completed]
   push:
     branches: [main]
     paths: ['lib/polymarket-research.mjs', 'scripts/*polymarket-research*.mjs', '.github/workflows/weekly-polymarket-research.yml', 'data/market/weekly-game-market-recommendations-2026.json']
@@ -28,7 +31,7 @@ jobs:
       - run: node scripts/test-polymarket-research.mjs
       - run: node scripts/test-polymarket-research-cli.mjs
   capture-and-score:
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository))
     needs: qa
     runs-on: ubuntu-latest
     timeout-minutes: 45
