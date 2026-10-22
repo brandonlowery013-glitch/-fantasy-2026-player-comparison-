@@ -1,0 +1,32 @@
+name: Publish research summary isolation
+on:
+  push:
+    branches: ['fix/isolate-polymarket-test-output']
+    paths: ['.github/workflows/publish-polymarket-summary-isolation.yml']
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  checks: read
+  statuses: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/isolate-polymarket-test-output
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test fixture summary isolation and guarded merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api repos/${GITHUB_REPOSITORY}/pulls/2500 --jq '.head.ref + "|" + .base.ref + "|" + .head.repo.full_name')" = "fix/isolate-polymarket-test-output|main|${GITHUB_REPOSITORY}"
+          node scripts/test-polymarket-research-cli.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          bash scripts/merge-guarded-production-pr.sh 2500 fix/isolate-polymarket-test-output merge
