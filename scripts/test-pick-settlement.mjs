@@ -21,6 +21,13 @@ assert.deepEqual(settlePicks({history,ledger:first,results:{g:result},now}),firs
 const correction=settlePicks({history,ledger:first,results:{g:{...result,home_score:25}},now});
 assert.equal(correction.settlements.length,2);assert.equal(correction.settlements[1].outcome,'WIN');assert.deepEqual(correction.settlements[0],first.settlements[0]);
 assert.equal(historyFeed(history,correction,{}).records[0].primary_record_id,'p');
+const withSource={...p,source_provenance:{large_source_payload:'original evidence'}};
+const compactRevision=historyFeed({records:[withSource]},correction,{}).records[0].revisions[0];
+assert.equal(withSource.source_provenance.large_source_payload,'original evidence');
+assert.equal(compactRevision.source_provenance,undefined);
+assert.deepEqual(compactRevision.source_provenance_ref,{artifact:'data/market/issued-pick-history-2026.json',record_id:'p'});
+for(const [key,value] of Object.entries(p))assert.deepEqual(compactRevision[key],value);
+assert.deepEqual(compactRevision.result,correction.settlements.at(-1));
 assert.equal(settlePicks({history:{records:[{...p,captured_at:p.kickoff}]},ledger:empty,results:{g:result},now}).settlements.length,0);
 assert.equal(settlePicks({history,ledger:empty,results:{g:result},now:p.kickoff}).settlements.length,0);
 console.log('PASS: settlement sides, payouts, missing stats, event identity, cutoff, immutable corrections and first-pick accounting');
