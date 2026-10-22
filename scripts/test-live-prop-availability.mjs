@@ -5,7 +5,7 @@ import {projectionAvailability} from '../lib/player-prop-availability.mjs';
 const code=fs.readFileSync('frontend/cloudflare/prop-board.js','utf8'),now=Date.now(),kickoff=new Date(now+3600000).toISOString();
 const base={name:'Player One',now,roster:{name:'Player One',team:'CHI',roster_status:'Active',captured_at:new Date(now).toISOString(),depth_roles:[{rank:1}]},game:{event_id:'1',home_team:'CHI',away_team:'NE',event_start:kickoff}};
 let availability=projectionAvailability(base);
-const context=vm.createContext({Date,window:{CTD_PROP_AVAILABILITY:()=>availability}});
+const context=vm.createContext({Date,qbFeed:null,qbState:{holds:new Set()},window:{CTD_PROP_AVAILABILITY:()=>availability}});
 vm.runInContext(code.slice(code.indexOf(' function verdict('),code.indexOf(' function explanation(')),context);
 const quote={player:'Player One',week:7,kickoff,captured_at:new Date(now).toISOString(),line:50.5,evaluation:{eligibility:{eligible_for_pick:false},recommendation:{decision:'WAIT'},model_pick:{side:'UNDER'}}};
 assert.equal(context.verdict(quote)[0],'MODEL UNDER');assert.match(context.verdict(quote)[1],/Assumes player starts/);assert.doesNotMatch(context.verdict(quote)[1],/Waiting for player status/);

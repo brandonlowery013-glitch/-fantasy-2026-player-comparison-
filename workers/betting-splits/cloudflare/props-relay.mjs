@@ -51,7 +51,8 @@ export class PropsRelay {
    const scheduleResponse=await fetch(this.env.PROPS_SCHEDULE_URL||'https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/data/calibration/weekly-event-schedule-2026.json',{signal:AbortSignal.timeout(20000)});if(!scheduleResponse.ok)throw Error('NFL schedule HTTP '+scheduleResponse.status);const scope=currentWeekEvents(events,await scheduleResponse.json());const upcoming=scope.events;const games=[],failures=[];
    const due=[];for(const e of upcoming){
     const previous=await this.storage.get('props:game:'+e.id),minutes=(Date.parse(e.commence_time)-Date.now())/60000,refresh=minutes<=60?15:minutes<=360?30:minutes<=1440?90:120;
-    if(previous?.coverage_version===2&&Date.now()-Date.parse(previous.observed_at)<refresh*60000)continue;
+    const qbChange=await this.storage.get('props:qb-invalidation:'+e.id);
+    if(previous?.coverage_version===2&&Date.now()-Date.parse(previous.observed_at)<refresh*60000&&(!qbChange||previous.qb_revision_id===qbChange.revision_id))continue;
     due.push(e);
    }
    const responses=new Map();
@@ -71,7 +72,8 @@ export class PropsRelay {
      const observed_at=new Date().toISOString(),quotes=[];
      if(odds.id!==e.id||!Array.isArray(odds.bookmakers))throw Error('Invalid prop response');
      for(const book of odds.bookmakers)for(const market of book.markets||[]){if(!MARKETS.includes(market.key))continue;const pairs=new Map();for(const o of market.outcomes||[]){if(!o.description||!Number.isFinite(Number(o.point))||!['Over','Under'].includes(o.name)||!Number.isInteger(Number(o.price))||Math.abs(Number(o.price))<100)continue;const k=JSON.stringify([o.description,Number(o.point)]);const pair=pairs.get(k)||{player:o.description,line:Number(o.point)};pair[o.name.toLowerCase()]=Number(o.price);pairs.set(k,pair);}for(const pair of pairs.values())if(pair.over!=null&&pair.under!=null)quotes.push({...pair,market:market.key,book:book.key,provider_updated_at:market.last_update||book.last_update||null,observed_at,event_id:e.id,kickoff:e.commence_time,home_team:e.home_team,away_team:e.away_team});}
-     const game={coverage_version:2,event_id:e.id,kickoff:e.commence_time,home_team:e.home_team,away_team:e.away_team,observed_at,quotes};if(JSON.stringify(game).length>1900000)throw Error('Prop event response exceeds storage bound');games.push(game);
+     const qbChange=await this.storage.get('props:qb-invalidation:'+e.id);
+     const game={coverage_version:2,event_id:e.id,kickoff:e.commence_time,home_team:e.home_team,away_team:e.away_team,observed_at,quotes,...(qbChange?{qb_revision_id:qbChange.revision_id}:{})};if(JSON.stringify(game).length>1900000)throw Error('Prop event response exceeds storage bound');games.push(game);
     }catch(error){failures.push({event_id:e.id,reason:error.message});}
    }
    await this.storage.transaction(async tx=>{

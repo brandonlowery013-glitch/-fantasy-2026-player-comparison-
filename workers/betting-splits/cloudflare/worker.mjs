@@ -1,5 +1,6 @@
 import {PropsRelay} from './props-relay.mjs';
 import {AvailabilityStore} from './availability.mjs';
+import {QuarterbackProjections} from './qb-projections.mjs';
 import {collectSplits} from '../lib/background-splits.mjs';
 import {preservePublished} from '../lib/splits-history.mjs';
 const json=(body,status=200)=>Response.json(body,{status,headers:{'cache-control':'no-store','access-control-allow-origin':'*'}});
@@ -12,12 +13,18 @@ export default {
    const response=await store(env).fetch('https://store'+path,{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});
    const body=await response.text();if(!response.ok)throw Error('Scheduled '+name+' collection failed: '+body);
    console.log(name+'-scheduled-publication',body);
+   if(name==='availability'&&env.QB_PROJECTIONS_ENABLED==='true'){
+    const qbResponse=await store(env).fetch('https://store/quarterbacks/collect',{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});
+    const qbBody=await qbResponse.text();if(!qbResponse.ok)throw Error('Scheduled quarterback projection update failed: '+qbBody);
+    console.log('quarterbacks-scheduled-publication',qbBody);
+   }
   }));
   const errors=results.filter(r=>r.status==='rejected').map(r=>r.reason);
   if(errors.length)throw new AggregateError(errors,errors.map(e=>e.message).join('; '));
  },
  async fetch(request,env){
   const path=new URL(request.url).pathname;
+  if(path.startsWith('/quarterbacks/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
   if(path.startsWith('/availability/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path,request));
   if(path.startsWith('/props/')&&(request.method==='GET'||path==='/props/claim'&&request.method==='POST'))return store(env).fetch(new Request('https://store'+path,request));
   if(request.method!=='GET')return json({error:'Method not allowed'},405);
@@ -27,9 +34,10 @@ export default {
 };
 // Collection is reachable only through the bound object, never through public HTTP.
 export class SplitsStore {
- constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.props=new PropsRelay(ctx.storage,env);this.availability=new AvailabilityStore(ctx.storage);}
+ constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.props=new PropsRelay(ctx.storage,env);this.availability=new AvailabilityStore(ctx.storage);this.quarterbacks=new QuarterbackProjections(ctx.storage);}
  async fetch(request){
   const path=new URL(request.url).pathname;
+  if(path.startsWith('/quarterbacks/'))return this.quarterbacks.handle(request);
   if(path.startsWith('/availability/'))return this.availability.handle(request);
   if(path.startsWith('/props/'))return this.props.handle(request);
   if(path==='/collect'&&request.method==='POST'){

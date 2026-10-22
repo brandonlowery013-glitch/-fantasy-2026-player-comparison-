@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {applyLiveQBFeed,liveQBQuote} from '../frontend/cloudflare/lib-qb-live-board.mjs';
+const now=Date.now(),at=new Date(now).toISOString(),kickoff=new Date(now+3600000).toISOString();
+const projection={week:7,generated_at:'base',players:{Receiver:{position:'WR',projections:{receiving_yards:{mean:75,sd:30}}}}},distribution={week:7,generated_at:'dist',distributions:{Receiver:{distributions:{receiving_yards:{status:'SHADOW_ONLY',family:'normal',parameters:{mu:75,sigma:30}}}}}};
+const scenario={game_id:'g',team:'CHI',kickoff,status:'BACKUP_EXPECTED',starter:'Caleb Williams',expected_qb:'Tyson Bagent'};
+const feed={season:2026,week:7,model_version:'qb-receiver-effects-2026-v1',sportsbook_inputs_used:false,checked_at:at,base_generated_at:'base',distribution_generated_at:'dist',health:{status:'CURRENT'},scenarios:{s:scenario},players:{Receiver:{position:'WR',projections:{receiving_yards:{mean:60,sd:35}}}},distributions:{Receiver:{distributions:{receiving_yards:{status:'SHADOW_ONLY',family:'normal',parameters:{mu:60,sigma:35}}}}}};
+const state=applyLiveQBFeed({projection,distribution,feed,now});assert(state.valid);assert.equal(state.projection.players.Receiver.projections.receiving_yards.mean,60);assert.equal(projection.players.Receiver.projections.receiving_yards.mean,75);
+const s={player:'Receiver',stat:'receiving_yards',team:'CHI',game_id:'g',line:65.5,over_price:-110,under_price:-115},e=liveQBQuote(s,{old:true},state);assert.equal(e.qb_scenario.expected_qb,'Tyson Bagent');assert.equal(e.recommendation.decision,'WAIT');assert(e.model.under_probability>.5);
+assert.equal(liveQBQuote({...s,team:'NE'},{old:true},state).old,true);
+const stale=applyLiveQBFeed({projection,distribution,feed:{...feed,checked_at:new Date(now-31*60000).toISOString()},now});assert(!stale.valid);assert.equal(liveQBQuote(s,{old:true},stale),null);
+assert(!applyLiveQBFeed({projection,distribution,feed:{...feed,base_generated_at:'different'},now}).valid);
+const already={...projection,quarterback_revision_id:'r'},alreadyDist={...distribution,quarterback_revision_id:'r'};const same=applyLiveQBFeed({projection:already,distribution:alreadyDist,feed:{...feed,revision_id:'r',base_generated_at:'different'},now});assert(same.valid);assert.equal(same.projection,already,'already published revision must not be applied twice');
+const review={...state,feed:{...feed,scenarios:{s:{...scenario,status:'REVIEW_REQUIRED',reason:'Ambiguous backup'}}}};assert.equal(liveQBQuote(s,{old:true},review),null);
+console.log('PASS: live QB revision overlays matching source generations, re-evaluates exact quotes, leaves opponent untouched, rejects stale/mismatched inputs, suppresses ambiguous forecasts and never double-applies published revisions');
