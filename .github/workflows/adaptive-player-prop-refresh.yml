@@ -7,6 +7,8 @@ on:
       - 'scripts/adaptive-player-prop-refresh.mjs'
       - 'lib/prop-player-identity.mjs'
       - 'lib/current-prop-quotes.mjs'
+      - 'lib/player-prop-availability.mjs'
+      - 'scripts/test-player-prop-availability.mjs'
       - 'lib/cloudflare-prop-import.mjs'
       - 'scripts/test-cloudflare-prop-import.mjs'
       - 'scripts/test-current-prop-quotes.mjs'
@@ -21,6 +23,8 @@ on:
       - 'scripts/adaptive-player-prop-refresh.mjs'
       - 'lib/prop-player-identity.mjs'
       - 'lib/current-prop-quotes.mjs'
+      - 'lib/player-prop-availability.mjs'
+      - 'scripts/test-player-prop-availability.mjs'
       - 'lib/cloudflare-prop-import.mjs'
       - 'scripts/test-cloudflare-prop-import.mjs'
       - 'scripts/test-current-prop-quotes.mjs'
@@ -63,6 +67,7 @@ jobs:
           node scripts/adaptive-player-prop-refresh.mjs --self-test
           node scripts/test-prop-player-identity.mjs
           node scripts/test-current-prop-quotes.mjs
+          node scripts/test-player-prop-availability.mjs
           node scripts/test-cloudflare-prop-import.mjs
           node scripts/build-player-prop-recommendations.mjs --self-test
           node scripts/test-issued-history-storage.mjs
@@ -119,7 +124,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- data/market/player-prop-market-snapshots-2026.json && git diff --quiet -- data/market/cloudflare-player-prop-current-2026.json && [ -z "$(git ls-files --others --exclude-standard -- data/market/cloudflare-player-prop-current-2026.json)" ]; then
+          if [ "${GITHUB_EVENT_NAME}" != "push" ] && git diff --quiet -- data/market/player-prop-market-snapshots-2026.json && git diff --quiet -- data/market/cloudflare-player-prop-current-2026.json && [ -z "$(git ls-files --others --exclude-standard -- data/market/cloudflare-player-prop-current-2026.json)" ]; then
             echo 'No prop quote changes; retaining validated website outputs.'
             exit 0
           fi
@@ -156,3 +161,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: bash scripts/merge-guarded-production-pr.sh "${{ steps.persist.outputs.pr_number }}" "${{ steps.persist.outputs.branch }}" squash
+
