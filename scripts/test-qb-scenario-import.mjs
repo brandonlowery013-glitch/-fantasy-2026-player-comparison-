@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {validatedQuarterbackSnapshot} from './import-cloudflare-qb-scenarios.mjs';
+const now=Date.now(),kickoff=new Date(now+3600000).toISOString(),schedule={week:7,games:{g:{event_id:'e',event_start:kickoff,home_team:'CHI',away_team:'NE'}}};
+const feed={season:2026,week:7,collection_event:'cloudflare-cron',sportsbook_inputs_used:false,model_version:'qb-receiver-effects-2026-v1',checked_at:new Date(now).toISOString(),revision_id:'a'.repeat(64),health:{status:'CURRENT'},scenarios:{s:{game_id:'g',event_id:'e',kickoff,team:'CHI',status:'BACKUP_EXPECTED',starter:'Caleb Williams',expected_qb:'Tyson Bagent',report:{out:true}}}};
+assert.equal(validatedQuarterbackSnapshot(feed,schedule,now).scenarios.s.expected_qb,'Tyson Bagent');
+assert.throws(()=>validatedQuarterbackSnapshot({...feed,simulation:true},schedule,now),/real scheduled/);
+assert.throws(()=>validatedQuarterbackSnapshot({...feed,checked_at:new Date(now-31*60000).toISOString()},schedule,now),/Fresh/);
+assert.throws(()=>validatedQuarterbackSnapshot({...feed,week:8},schedule,now),/week/);
+assert.throws(()=>validatedQuarterbackSnapshot({...feed,scenarios:{s:{...feed.scenarios.s,event_id:'wrong'}}},schedule,now),/event/);
+assert.throws(()=>validatedQuarterbackSnapshot({...feed,scenarios:{s:{...feed.scenarios.s,report:{out:false}}}},schedule,now),/unavailable/);
+console.log('PASS: only fresh real scheduled QB scenarios import; isolated simulations, stale data, wrong games/weeks and unsupported replacements are rejected');

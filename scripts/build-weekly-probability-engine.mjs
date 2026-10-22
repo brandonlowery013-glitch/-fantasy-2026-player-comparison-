@@ -48,14 +48,15 @@ function catchPriorFor(name,p,position){
   return null;
 }
 
-function receptionSpec(name,p,position,targetSpec){
+function receptionSpec(name,p,position,targetSpec,baselineOnly=false){
   const projection=p.projections?.receptions,targetProjection=p.projections?.targets,selected=calibration.selected_families?.[position]?.receptions;
   if(!projection||!selected)return {status:'INSUFFICIENT_DATA',reason:'Missing reception projection or calibrated reception family'};
   if(!targetProjection||targetSpec?.status!=='SHADOW_ONLY')return {status:'REVIEW_REQUIRED',reason:'Pregame target distribution is required before receptions can be marginalized',family:selected.family};
   if(!['beta_binomial','binomial_conditional_on_targets'].includes(selected.family))return baseSpec(position,'receptions',projection);
   const prior=catchPriorFor(name,p,position);if(!prior)return {status:'REVIEW_REQUIRED',reason:'No historical player or position catch-rate prior available',family:selected.family};
   if(!['poisson','negative_binomial'].includes(targetSpec.family))return {status:'REVIEW_REQUIRED',reason:`Exact compound reception PMF requires a discrete target distribution; got ${targetSpec.family}`,family:selected.family};
-  const cp=Math.max(1e-5,Math.min(1-1e-5,prior.catch_rate)),rho=selected.family==='beta_binomial'?Math.max(.001,Math.min(.5,prior.rho)):0;
+  const qbMultiplier=baselineOnly?1:(p.projections?.receptions?.qb_adjustment?.multiplier||1)/(p.projections?.targets?.qb_adjustment?.multiplier||1);
+  const cp=Math.max(1e-5,Math.min(1-1e-5,prior.catch_rate*qbMultiplier)),rho=selected.family==='beta_binomial'?Math.max(.001,Math.min(.5,prior.rho)):0;
   const compound=compoundReceptionPmf(targetSpec,{catch_rate:cp,rho,conditional_family:selected.family,tailTolerance:Number(tailContract.compound_reception_contract.pmf_truncation_tail_tolerance),maxSupport:Number(tailContract.compound_reception_contract.maximum_target_support)});
   const standaloneMean=Number(projection.mean),meanGapPct=finite(standaloneMean)&&standaloneMean>0?(compound.mean-standaloneMean)/standaloneMean:null;
   return {status:'SHADOW_ONLY',actionable:false,position,stat:'receptions',family:'compound_receptions',conditional_family:selected.family,mean:compound.mean,sd:compound.sd,market_price_used_in_probability:false,source:'pregame target distribution + 2021-2025 football-only catch-rate prior',tail_math:'EXACT_COMPOUND_TARGET_CATCH_PMF',parameters:{catch_rate:cp,rho,target_distribution:targetSpec,pmf:compound.pmf,support_max:compound.support_max,target_truncated_tail:compound.target_truncated_tail,normalized_mass:compound.normalized_mass,marginal_mean:compound.mean,marginal_variance:compound.variance,marginal_sd:compound.sd},catch_rate_prior:prior,standalone_reception_projection:{mean:finite(standaloneMean)?standaloneMean:null,sd:finite(projection.sd)?Number(projection.sd):null,mean_gap_pct:meanGapPct},note:'Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.'};
@@ -72,6 +73,14 @@ for(const [name,p] of Object.entries(src.players||{})){
   const position=String(p.position||'').toUpperCase(),rec={position,distributions:{}},targetProjection=p.projections?.targets,targetSpec=targetProjection?baseSpec(position,'targets',targetProjection):null;
   if(targetProjection)rec.distributions.targets=targetSpec;
   for(const [stat,projection] of Object.entries(p.projections||{})){if(stat==='targets')continue;rec.distributions[stat]=stat==='receptions'?receptionSpec(name,p,position,targetSpec):baseSpec(position,stat,projection);}
+  if(p.qb_scenario&&Date.parse(p.qb_scenario.kickoff)>Date.now())for(const [stat,projection] of Object.entries(p.projections||{})){
+   const base=projection.qb_adjustment?.baseline_before_qb;if(!base||!rec.distributions[stat])continue;
+   if(stat==='receptions'){
+    const original={...p,projections:Object.fromEntries(Object.entries(p.projections).map(([k,v])=>[k,{...v,...(v.qb_adjustment?.baseline_before_qb||{})}]))};
+    rec.distributions[stat].qb_baseline_spec=receptionSpec(name,original,position,baseSpec(position,'targets',original.projections.targets),true);
+   }else rec.distributions[stat].qb_baseline_spec=baseSpec(position,stat,{...projection,...base});
+   rec.distributions[stat].qb_adjustment=projection.qb_adjustment;
+  }
   for(const [stat,spec] of Object.entries(rec.distributions)){
     if(spec.status==='SHADOW_ONLY'){
       built++;if(stat==='receptions')receptionBuilt++;
@@ -91,6 +100,6 @@ for(const [name,p] of Object.entries(src.players||{})){
 if(process.argv.includes('--self-test')){if(built<15)blocked.push(`self-test built too few deployable distributions: ${built}`);if(receptionBuilt<3)blocked.push(`self-test built too few reception distributions: ${receptionBuilt}`);if(tailChecks<15)blocked.push(`self-test performed too few exact tail checks: ${tailChecks}`);}
 
 const generatedAt=new Date().toISOString();
-const output={schema_version:'1.2.0',season:2026,week:src.week,generated_at:generatedAt,mode:'SHADOW_ONLY',actionable:false,input_status:src.status,sportsbook_inputs_used:false,calibration_source:'distribution-family-calibration-2021-2025.json',catch_rate_source:'catch-rate-priors-2021-2025.json',tail_math_contract:'exact-tail-math-2026.json',distributions};
+const output={quarterback_revision_id:src.quarterback_revision_id??null,schema_version:'1.2.0',season:2026,week:src.week,generated_at:generatedAt,mode:'SHADOW_ONLY',actionable:false,input_status:src.status,sportsbook_inputs_used:false,calibration_source:'distribution-family-calibration-2021-2025.json',catch_rate_source:'catch-rate-priors-2021-2025.json',tail_math_contract:'exact-tail-math-2026.json',distributions};
 const report={generated_at:generatedAt,result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,input_status:src.status,built_distributions:built,reception_distributions:receptionBuilt,exact_tail_checks:tailChecks,review_required:review,insufficient_data:insufficient,sportsbook_inputs_used:false,blocked,notes:['Weekly probabilities now use the selected family CDF/PMF rather than a universal Normal tail approximation.','Discrete integer lines preserve explicit push probability; half-point lines have zero push.','RB/WR/TE receptions use an exact compound PMF over the pregame target distribution and conditional catch process.','Same-game observed targets and sportsbook prices are excluded from football probability construction.','This remains SHADOW_ONLY until live weekly projections/markets and betting validation gates are satisfied.']};
 fs.writeFileSync(path.join(outDir,'weekly-probability-distributions-2026.json'),JSON.stringify(output,null,2)+'\n');fs.writeFileSync(path.join(root,'guardrails/weekly-probability-engine-report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);

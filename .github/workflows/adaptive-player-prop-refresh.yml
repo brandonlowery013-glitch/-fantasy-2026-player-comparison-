@@ -8,6 +8,15 @@ on:
       - 'lib/prop-player-identity.mjs'
       - 'lib/current-prop-quotes.mjs'
       - 'lib/player-prop-availability.mjs'
+      - 'lib/qb-receiver-projections.mjs'
+      - 'lib/distribution-tail-math.mjs'
+      - 'scripts/import-cloudflare-qb-scenarios.mjs'
+      - 'scripts/test-qb-receiver-projections.mjs'
+      - 'scripts/test-qb-scenario-import.mjs'
+      - 'scripts/test-qb-publisher-integration.mjs'
+      - 'scripts/build-weekly-projection-generator.mjs'
+      - 'scripts/build-weekly-probability-engine.mjs'
+      - 'data/probability/generated/qb-receiver-effects-2026.json'
       - 'scripts/test-player-prop-availability.mjs'
       - 'lib/cloudflare-prop-import.mjs'
       - 'scripts/test-cloudflare-prop-import.mjs'
@@ -24,6 +33,15 @@ on:
       - 'lib/prop-player-identity.mjs'
       - 'lib/current-prop-quotes.mjs'
       - 'lib/player-prop-availability.mjs'
+      - 'lib/qb-receiver-projections.mjs'
+      - 'lib/distribution-tail-math.mjs'
+      - 'scripts/import-cloudflare-qb-scenarios.mjs'
+      - 'scripts/test-qb-receiver-projections.mjs'
+      - 'scripts/test-qb-scenario-import.mjs'
+      - 'scripts/test-qb-publisher-integration.mjs'
+      - 'scripts/build-weekly-projection-generator.mjs'
+      - 'scripts/build-weekly-probability-engine.mjs'
+      - 'data/probability/generated/qb-receiver-effects-2026.json'
       - 'scripts/test-player-prop-availability.mjs'
       - 'lib/cloudflare-prop-import.mjs'
       - 'scripts/test-cloudflare-prop-import.mjs'
@@ -68,6 +86,9 @@ jobs:
           node scripts/test-prop-player-identity.mjs
           node scripts/test-current-prop-quotes.mjs
           node scripts/test-player-prop-availability.mjs
+          node scripts/test-qb-receiver-projections.mjs
+          node scripts/test-qb-scenario-import.mjs
+          node scripts/test-qb-publisher-integration.mjs
           node scripts/test-cloudflare-prop-import.mjs
           node scripts/build-player-prop-recommendations.mjs --self-test
           node scripts/test-issued-history-storage.mjs
@@ -108,6 +129,8 @@ jobs:
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: node scripts/adaptive-player-prop-refresh.mjs
+      - name: Import scheduled QB replacement scenarios
+        run: node scripts/import-cloudflare-qb-scenarios.mjs
       - name: Preserve original scheduled quotes for publication recovery
         uses: actions/upload-artifact@v4
         if: always()
@@ -124,10 +147,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ "${GITHUB_EVENT_NAME}" != "push" ] && git diff --quiet -- data/market/player-prop-market-snapshots-2026.json && git diff --quiet -- data/market/cloudflare-player-prop-current-2026.json && [ -z "$(git ls-files --others --exclude-standard -- data/market/cloudflare-player-prop-current-2026.json)" ]; then
+          if [ "${GITHUB_EVENT_NAME}" != "push" ] && git diff --quiet -- data/market/player-prop-market-snapshots-2026.json && git diff --quiet -- data/market/cloudflare-player-prop-current-2026.json data/ingestion/current-quarterback-scenarios-2026.json && [ -z "$(git ls-files --others --exclude-standard -- data/market/cloudflare-player-prop-current-2026.json data/ingestion/current-quarterback-scenarios-2026.json)" ]; then
             echo 'No prop quote changes; retaining validated website outputs.'
             exit 0
           fi
+          node scripts/build-weekly-projection-generator.mjs
+          node scripts/build-weekly-probability-engine.mjs
           node scripts/build-player-prop-recommendations.mjs
           node scripts/build-unified-opportunity-engine.mjs
           node scripts/build-weekly-parlay-recommendations.mjs
@@ -140,7 +165,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          paths=(data/market/cloudflare-player-prop-current-2026.json data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
+          paths=(data/ingestion/current-quarterback-scenarios-2026.json data/probability/weekly-projection-inputs-2026.json data/probability/generated/weekly-probability-distributions-2026.json data/market/cloudflare-player-prop-current-2026.json data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${paths[@]}"

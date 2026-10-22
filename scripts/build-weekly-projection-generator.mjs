@@ -1,3 +1,4 @@
+import {applyQuarterbackRevisions} from '../lib/qb-receiver-projections.mjs';
 import {fantasyInjuryStatus} from '../lib/weekly-ranking-availability.mjs';
 import {numericInjuryAdjustmentAllowed} from '../lib/injury-ranking-policy.mjs';
 import {fantasyWork,contextCurrent} from '../lib/show-work.mjs';
@@ -114,4 +115,17 @@ for(const [name,p] of Object.entries(players))for(const [stat,x] of Object.entri
 const generatedAt=new Date().toISOString();
 const output={schema_version:'1.5.0',season:2026,week:src.week,generated_at:generatedAt,status:src.status==='SELF_TEST'?'SELF_TEST':'SHADOW_ONLY',sportsbook_inputs_used:false,baseline_priority:baselinePriority,projection_error_model:'historical-projection-error-model-2021-2025.json',players};
 const report={generated_at:generatedAt,result:blocked.length?'BLOCKED':'PASS',mode:'SHADOW_ONLY',actionable:false,input_status:src.status,projected_stats:projected,target_projections:targetProjected,review_required:review,insufficient_data:insufficient,context_adjustments_applied:adjustmentCount,excluded_noncurrent_adjustments:excludedStaleAdjustments,projections_with_positive_projection_error_sd:uncertaintyApplied,baseline_source_counts:baselineSourceCounts,sportsbook_inputs_used:false,blocked,safeguards:['Baseline priority remains player-specific history, then verified rookie prior, then current role cohort, then generic position fallback.','Weekly mean is unchanged by Step 2H projection-error calibration; historical bias remains diagnostic only.','Performance SD is preserved separately from projection-error SD.','Final weekly SD is combined by quadrature: sqrt(performance_sd^2 + projection_error_sd^2).','Projection-error SD is frozen from 2023-2024 walk-forward reconstruction and 2025 remains holdout evaluation.','Reconstructed historical projections are not mislabeled as exact archived model outputs.','No sportsbook input is used in the uncertainty model or weekly projection generator.','This remains SHADOW_ONLY pending live 2026 operation and betting validation.']};
+if(!process.argv.includes('--self-test')&&fs.existsSync(path.join(root,'data/ingestion/current-quarterback-scenarios-2026.json'))){
+ const snapshot=read('data/ingestion/current-quarterback-scenarios-2026.json'),model=read('data/probability/generated/qb-receiver-effects-2026.json');
+ if(Number(snapshot.week)===Number(output.week)&&snapshot.sportsbook_inputs_used===false){
+  if(snapshot.model_version!==model.version)throw Error('QB scenario model version mismatch');
+  const revised=applyQuarterbackRevisions({projection:output,context:src,scenarios:structuredClone(snapshot.scenarios),model});
+  output.players=revised.projection.players;output.quarterback_scenarios=revised.projection.quarterback_scenarios;output.qb_baseline_players=revised.projection.qb_baseline_players;output.quarterback_revision_id=snapshot.revision_id;
+  report.quarterback_revision_id=snapshot.revision_id;report.quarterback_changed_players=Object.keys(revised.changes).length;
+  for(const [name,p] of Object.entries(output.players))if(revised.changes[name])for(const stat of Object.values(p.projections||{}))if(stat.qb_adjustment){
+   const factor=stat.qb_adjustment.multiplier;stat.adjustments={...(stat.adjustments||{}),mean_multiplier:round((stat.adjustments?.mean_multiplier||1)*factor),applied:[...(stat.adjustments?.applied||[]),{signal:'quarterback_replacement',mean_pct:factor-1,source:model.version,captured_at:snapshot.observed_at,status:'CURRENT'}]};
+   stat.show_work=fantasyWork(stat,[]);
+  }
+ }
+}
 fs.writeFileSync(path.join(root,outputPath),JSON.stringify(output,null,2)+'\n');fs.writeFileSync(path.join(root,'guardrails/weekly-projection-generator-report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));if(blocked.length)process.exit(1);
