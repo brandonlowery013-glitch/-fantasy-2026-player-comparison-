@@ -1,0 +1,64 @@
+name: Publish requested automatic market research
+on:
+  push:
+    branches: ['fix/automatic-polymarket-research']
+    paths: ['.github/workflows/publish-automatic-polymarket-research.yml']
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  checks: read
+  statuses: read
+concurrency:
+  group: publish-automatic-polymarket-research
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/automatic-polymarket-research
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify requested PR identity and latest production
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api repos/${GITHUB_REPOSITORY}/pulls/2499 --jq '.head.ref + "|" + .base.ref + "|" + .head.repo.full_name')" = "fix/automatic-polymarket-research|main|${GITHUB_REPOSITORY}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin main
+          git merge --no-edit origin/main
+      - name: Test immutable research, holds and verified scoring
+        run: node scripts/test-polymarket-research.mjs
+      - name: Capture using free sources and existing cached sportsbook quotes
+        run: |
+          sha256sum data/market/issued-pick-history-2026.json data/market/postgame-model-learning-2026.json data/probability/generated/weekly-game-projections-2026.json data/market/weekly-game-market-recommendations-2026.json > /tmp/football-originals.sha256
+          node scripts/refresh-polymarket-research.mjs --capture --settle
+          sha256sum --check /tmp/football-originals.sha256
+          git add data/research/weekly-polymarket/
+          git diff --cached --quiet || git commit -m 'Initialize append-only weekly market research with explicit capture exclusions'
+          git push origin HEAD:fix/automatic-polymarket-research
+          node scripts/refresh-polymarket-research.mjs --record-publication --commit="$(git rev-parse HEAD)"
+          git add data/research/weekly-polymarket/
+          git diff --cached --quiet || git commit -m 'Record verified pregame publication receipts'
+          git push origin HEAD:fix/automatic-polymarket-research
+      - name: Merge only the exact validated protected candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/merge-guarded-production-pr.sh 2499 fix/automatic-polymarket-research merge
+      - name: Start installed free research workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run weekly-polymarket-research.yml --ref main
+      - name: Preserve capture and scoring artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: automatic-polymarket-installation
+          path: data/research/weekly-polymarket/
+          if-no-files-found: warn
