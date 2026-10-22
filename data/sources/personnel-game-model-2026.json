@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "season": 2026,
+  "model_version": "personnel-matchup-conditional-v2",
+  "status": "EXPERIMENTAL_CONDITIONAL",
+  "live_authority": "Conditional game projections; no betting recommendation release",
+  "artifact": "data/probability/generated/personnel-game-model-2026.json",
+  "validation": "data/probability/generated/personnel-game-validation-2026.json",
+  "history_endpoint": "https://ctd-background-splits.brandonlowery013.workers.dev/game-projections/index.json",
+  "update_interval_minutes": 15,
+  "team_profile_refresh_hours": 6,
+  "sources": [
+    "NFLverse completed earlier-game team and QB statistics",
+    "NFLverse earlier snap usage",
+    "ESPN current injuries and depth charts",
+    "NFL.com complete official inactive reports"
+  ],
+  "total_policy": "Existing total remains unchanged; recompute margin, moneyline and spread only",
+  "missing_data_policy": "Ambiguous QB holds that game; unknown injured-player usage is disclosed and not assigned an invented coefficient",
+  "release_limitations": [
+    "2024 evaluation is exploratory after research refinements",
+    "Actual historical QB identity was conditional input, not an archived pregame starter feed",
+    "Historical injury archive ends in 2024",
+    "No proven superiority to competitors or profitable betting edge"
+  ],
+  "reproduction": "PERSONNEL_MODEL_CACHE=.cache/personnel-game-model node scripts/calibrate-personnel-game-model.mjs",
+  "future_evaluation": "Immutable pregame revisions are saved for prospective margin and moneyline scoring; no automatic promotion from retrospective metrics"
+}
