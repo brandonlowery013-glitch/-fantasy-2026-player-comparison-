@@ -6,6 +6,11 @@ on:
       - 'data/sources/live-market-ingestion-2026.json'
       - 'scripts/adaptive-player-prop-refresh.mjs'
       - 'lib/prop-player-identity.mjs'
+      - 'lib/current-prop-quotes.mjs'
+      - 'lib/cloudflare-prop-import.mjs'
+      - 'scripts/test-cloudflare-prop-import.mjs'
+      - 'scripts/test-current-prop-quotes.mjs'
+      - 'scripts/build-player-prop-recommendations.mjs'
       - 'scripts/test-prop-player-identity.mjs'
       - 'scripts/merge-guarded-production-pr.sh'
       - '.github/workflows/adaptive-player-prop-refresh.yml'
@@ -15,6 +20,11 @@ on:
       - 'data/sources/live-market-ingestion-2026.json'
       - 'scripts/adaptive-player-prop-refresh.mjs'
       - 'lib/prop-player-identity.mjs'
+      - 'lib/current-prop-quotes.mjs'
+      - 'lib/cloudflare-prop-import.mjs'
+      - 'scripts/test-cloudflare-prop-import.mjs'
+      - 'scripts/test-current-prop-quotes.mjs'
+      - 'scripts/build-player-prop-recommendations.mjs'
       - 'scripts/test-prop-player-identity.mjs'
       - 'scripts/merge-guarded-production-pr.sh'
       - '.github/workflows/adaptive-player-prop-refresh.yml'
@@ -52,6 +62,9 @@ jobs:
         run: |
           node scripts/adaptive-player-prop-refresh.mjs --self-test
           node scripts/test-prop-player-identity.mjs
+          node scripts/test-current-prop-quotes.mjs
+          node scripts/test-cloudflare-prop-import.mjs
+          node scripts/build-player-prop-recommendations.mjs --self-test
           node scripts/test-issued-history-storage.mjs
           node scripts/test-market-ingestion-settings.mjs
       - name: Validate live market ingestion contract
@@ -85,12 +98,12 @@ jobs:
       - name: Validate restored quote identity and original timestamps
         if: github.event_name == 'workflow_dispatch' && inputs.recovery_run_id != ''
         run: node scripts/validate-prop-artifact-recovery.mjs
-      - name: Discover or refresh player props when due
+      - name: Import Cloudflare scheduled quotes for model evaluation
         if: github.event_name != 'workflow_dispatch' || inputs.recovery_run_id == ''
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: node scripts/adaptive-player-prop-refresh.mjs
-      - name: Preserve captured API quotes for diagnosis without another paid capture
+      - name: Preserve original scheduled quotes for publication recovery
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -99,13 +112,14 @@ jobs:
           path: |
             data/market/player-prop-market-snapshots-2026.json
             data/market/adaptive-player-prop-refresh-status-2026.json
+            data/market/cloudflare-player-prop-current-2026.json
       - name: Validate player prop snapshots
         run: node scripts/validate-player-prop-market-snapshots.mjs
       - name: Rebuild website outputs when prop quotes change
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- data/market/player-prop-market-snapshots-2026.json; then
+          if git diff --quiet -- data/market/player-prop-market-snapshots-2026.json && git diff --quiet -- data/market/cloudflare-player-prop-current-2026.json && [ -z "$(git ls-files --others --exclude-standard -- data/market/cloudflare-player-prop-current-2026.json)" ]; then
             echo 'No prop quote changes; retaining validated website outputs.'
             exit 0
           fi
@@ -121,7 +135,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          paths=(data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
+          paths=(data/market/cloudflare-player-prop-current-2026.json data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${paths[@]}"

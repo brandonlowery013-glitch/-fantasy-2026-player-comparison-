@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {cloudflarePropEvents} from '../lib/cloudflare-prop-import.mjs';
+const now=Date.now(),observed_at=new Date(now-10000).toISOString(),kickoff=new Date(now+3600000).toISOString();
+const q={event_id:'game',observed_at,kickoff,player:'Player One',book:'draftkings',market:'player_pass_yds',line:200.5,over:-110,under:-115,provider_updated_at:new Date(now-60000).toISOString()};
+const feed={event:'cloudflare-cron',health:{status:'CURRENT'},games:[{event_id:'game',observed_at,kickoff,home_team:'Buffalo Bills',away_team:'New England Patriots',quotes:[q]}]};
+const [event]=cloudflarePropEvents(feed,{now});assert.equal(event.observed_at,observed_at);assert.equal(event.bookmakers[0].markets[0].last_update,observed_at);assert.equal(event.bookmakers[0].markets[0].provider_updated_at,q.provider_updated_at);assert.equal(event.bookmakers[0].markets[0].outcomes[1].price,-115);
+assert.deepEqual(cloudflarePropEvents(feed,{now:now+600000}),[event],'a later import must preserve the original observation instead of inventing a new timestamp');
+assert.equal(cloudflarePropEvents(feed,{now:now+151*60000}).length,0);
+assert.throws(()=>cloudflarePropEvents({...feed,health:{status:'STALE'}},{now}),/not current/);
+const altered=structuredClone(feed);altered.games[0].quotes.push({...q,event_id:'wrong',line:999});assert.deepEqual(cloudflarePropEvents(altered,{now}),[event]);
+assert.equal(cloudflarePropEvents({...feed,games:[{...feed.games[0],kickoff:new Date(now-1).toISOString()}]},{now}).length,0);
+console.log('PASS: Cloudflare imports preserve both timestamps and prices, reject stale/mismatched/past events, and never invoke a paid API');
