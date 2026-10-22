@@ -31,10 +31,6 @@ jobs:
     needs: qa
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    concurrency:
-      group: production-main-writer
-      cancel-in-progress: false
-      queue: max
     steps:
       - uses: actions/checkout@v4
         with:
