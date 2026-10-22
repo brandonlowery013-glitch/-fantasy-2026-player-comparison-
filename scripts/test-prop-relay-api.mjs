@@ -15,3 +15,13 @@ assert.equal((await onRequestGet({request:new Request('https://site/api/live/pro
 console.log('PASS: signature and replay enforcement, credential confinement, provider quota headers, invalid history paths, and read-only public quotes');
 
 const routes=JSON.parse(fs.readFileSync(new URL('../frontend/_routes.json',import.meta.url),'utf8'));assert(routes.include.includes('/api/internal/props-refresh'),'Pages must invoke the Worker for the signed relay path');assert(routes.include.includes('/api/live/*'),'Pages must invoke the Worker for public prop reads');console.log('PASS: deployed Pages route manifest includes the signed relay and public feed');
+
+claimed=false;let claims=0;
+const oldBinding=env.SPLITS_SCHEDULER.fetch;env.SPLITS_SCHEDULER.fetch=async request=>{claims++;return oldBinding(request);};
+globalThis.fetch=async url=>{assert(claimResponse.bodyUsed);providerCalls++;const id=new URL(url).pathname.split('/').at(-2);return Response.json({id,bookmakers:[]},{headers:{'x-requests-last':'5','x-requests-remaining':'16000'}});};
+const ids=[1,2,3,4].map(n=>String(n).padStart(32,'0'));
+const batchBody=JSON.stringify({scheduled_time:Date.now(),nonce:crypto.randomUUID(),path:'/v4/sports/americanfootball_nfl/events/batch/odds',event_ids:ids,params:{dateFormat:'iso',oddsFormat:'american',regions:'us',markets:'player_pass_yds'}});
+const sign=async text=>btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.sign('Ed25519',pair.privateKey,new TextEncoder().encode(text)))));
+const batchResponse=await refreshProps({request:req(batchBody,await sign(batchBody)),env},publicKey);assert.equal(batchResponse.status,200);const batch=await batchResponse.json();assert.equal(claims,1);assert.equal(batch.responses.length,4);assert.deepEqual(batch.responses.map(r=>r.data.id),ids);assert(batch.responses.every(r=>r.last_cost===5&&r.remaining===16000));
+const oversized=batchBody.replace(JSON.stringify(ids),JSON.stringify([...ids,'5'.padStart(32,'0')]));assert.equal((await refreshProps({request:req(oversized,await sign(oversized)),env},publicKey)).status,400);assert.equal(claims,1,'oversized batches cannot claim a nonce or fetch prices');
+console.log('PASS: four real provider bodies stream through one signed claim with separate quota metadata; oversized batches are rejected');

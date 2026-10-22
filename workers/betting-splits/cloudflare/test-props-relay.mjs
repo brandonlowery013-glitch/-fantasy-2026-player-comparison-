@@ -9,7 +9,7 @@ globalThis.fetch=async(url,options)=>{
  const claim=await relay.handle(new Request('https://store/props/claim',{method:'POST',body,headers:{'x-ctd-signature':signature}}));assert.equal(claim.status,200);
  const event=JSON.parse(body);if(offline)return new Response('',{status:503});
  if(event.path.endsWith('/events'))return Response.json([{id:'event1',commence_time:'2099-10-25T17:00:00Z',home_team:'Buffalo Bills',away_team:'New England Patriots'},{id:'later',commence_time:'2099-11-01T17:00:00Z',home_team:'Buffalo Bills',away_team:'New England Patriots'}],{headers:{'x-requests-last':'0','x-requests-remaining':'17000'}});
- priced++;return Response.json({id:'event1',bookmakers:[{key:'draftkings',markets:[{key:'player_reception_yds',last_update:'2026-10-21T10:00:00Z',outcomes:[{description:'Player One',point:line,name:'Over',price:-110},{description:'Player One',point:line,name:'Under',price:-110}]}]}]},{headers:{'x-requests-last':'7','x-requests-remaining':'16993'}});
+ priced++;const data={id:'event1',bookmakers:[{key:'draftkings',markets:[{key:'player_reception_yds',last_update:'2026-10-21T10:00:00Z',outcomes:[{description:'Player One',point:line,name:'Over',price:-110},{description:'Player One',point:line,name:'Under',price:-110}]}]}]};return Response.json({responses:[{event_id:'event1',status:200,data,last_cost:7,remaining:16993}]});
 };
 const time=Date.now();let r=await relay.collect({scheduled_time:time});assert.equal(r.status,200);assert.equal(priced,1,'later-week events do not spend prop credits');
 const original=structuredClone(files.get('props:capture:'+time+':event1'));assert.equal(original.quotes[0].provider_updated_at,'2026-10-21T10:00:00Z');assert(Date.now()-Date.parse(original.quotes[0].observed_at)<1000,'a current observation is distinct from the source price-change time');
@@ -26,3 +26,16 @@ console.log('PASS: signed provider requests, replay/tamper rejection, real quote
 assert.equal(files.get('props:latest').expected_games,1);assert.equal(files.get('props:latest').game_ids.length,1);console.log('PASS: official schedule scopes paid captures to the current NFL week');
 
 const missingHeaders={remaining:null,last_cost:5,used_this_run:0};await assert.rejects(relay.provider('/v4/sports/americanfootball_nfl/events',{}, {scheduled_time:Date.now()},missingHeaders),/HTTP 503/);assert.equal(missingHeaders.used_this_run,0,'a failed request without quota headers must not reuse the previous successful cost');console.log('PASS: missing quota headers never invent provider spend');
+
+const {TEAMS}=await import('./props-week.mjs'),teams=Object.entries(TEAMS),batchSizes=[],schedule={games:{}},providerEvents=[];
+for(let i=0;i<8;i++){const id=String(i+1).padStart(32,'0'),home=teams[i*2],away=teams[i*2+1],commence_time='2099-10-25T17:00:00Z';providerEvents.push({id,home_team:home[0],away_team:away[0],commence_time});schedule.games[id]={week:7,home_team:home[1],away_team:away[1],event_start:commence_time};}
+let relayRequests=0;
+globalThis.fetch=async(url,options)=>{
+ if(String(url).includes('raw.githubusercontent.com'))return Response.json(schedule);
+ relayRequests++;assert(relayRequests<=6,'collection must remain below the repeated relay call limit');
+ const body=options.body,signature=options.headers['x-ctd-signature'];assert.equal((await relay.handle(new Request('https://store/props/claim',{method:'POST',body,headers:{'x-ctd-signature':signature}}))).status,200);
+ const request=JSON.parse(body);if(request.path.endsWith('/events'))return Response.json(providerEvents,{headers:{'x-requests-last':'0','x-requests-remaining':'17000'}});
+ batchSizes.push(request.event_ids.length);return Response.json({responses:request.event_ids.map(id=>({event_id:id,status:200,last_cost:5,remaining:16900,data:{id,bookmakers:[{key:'draftkings',markets:[{key:'player_pass_yds',last_update:'2026-10-21T10:00:00Z',outcomes:[{description:'Player One',point:200.5,name:'Over',price:-110},{description:'Player One',point:200.5,name:'Under',price:-110}]}]}]}}))});
+};
+await relay.collect({scheduled_time:Date.now()+40});assert.deepEqual(batchSizes,[4,4]);assert.equal(relayRequests,3);const complete=await(await relay.handle(new Request('https://store/props/latest.json'))).json();assert.equal(complete.health.status,'CURRENT');assert.equal(complete.quotes.length,8);assert.deepEqual(files.get('props:capture:'+time+':event1'),original);
+console.log('PASS: eight games collect in two bounded batches, below six relay calls, while original saved history stays unchanged');
