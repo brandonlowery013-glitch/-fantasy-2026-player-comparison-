@@ -1,0 +1,138 @@
+{
+  "moneyline_brier": {
+    "baseline": 0.21905297687576314,
+    "candidate": 0.21161923524005202
+  },
+  "generated_at": "2026-10-22T03:47:39.162Z",
+  "candidate": "joint-personnel-matchup-v2",
+  "selection": "2020-22 fit; 2023 selects ridge from fixed 10/100/1000 grid; 2024 exploratory evaluation (v1 inspected before sign/feature corrections; forward validation still required)",
+  "lambda": 100,
+  "features": [
+    "qb_epa_relative_to_team",
+    "qb_experience",
+    "qb_no_history",
+    "pass_efficiency_matchup",
+    "rush_efficiency_matchup",
+    "protection_vs_pressure",
+    "pass_explosive_matchup",
+    "pace",
+    "lost_OL",
+    "lost_receiving",
+    "lost_rushing",
+    "lost_front",
+    "lost_secondary",
+    "OL_loss_x_pressure",
+    "secondary_loss_x_explosives"
+  ],
+  "baseline": {
+    "games": 272,
+    "margin_mae": 10.230410957728973,
+    "total_mae": 9.971126211336852,
+    "team_score_mae": 7.346713717242082
+  },
+  "candidate_metrics": {
+    "games": 272,
+    "margin_mae": 9.97155997003321,
+    "total_mae": 10.035417923664925,
+    "team_score_mae": 7.280735715125416
+  },
+  "limitations": [
+    "QB historical evaluation is conditional on actual starter identity, not proof of archived pregame starter identification.",
+    "Public historical injury reports end in 2024; a full 2025 injury holdout is unavailable.",
+    "Injury data is final weekly Out status; snap weights use only earlier weeks, and matchup statistics use earlier games.",
+    "No market prices or future box scores are predictors.",
+    "Historical accuracy does not establish a profitable betting edge."
+  ],
+  "source_hashes": [
+    {
+      "file": "stats_player_week_2024.csv",
+      "sha256": "3ddc45a84f759aa348ce465ae001752c530575455717657cdfe1f8abfcdb4759"
+    },
+    {
+      "file": "stats_player_week_2022.csv",
+      "sha256": "ad426c3fe5bf1cc30c3f137fdfe96d054e19d400879ee4413129da49fa7b54be"
+    },
+    {
+      "file": "stats_player_week_2023.csv",
+      "sha256": "f19cb71a5de0dce7fd09376026237c9ee9d5a93fe13815a2ea3ec2d37204cb17"
+    },
+    {
+      "file": "stats_player_week_2021.csv",
+      "sha256": "41915fb49238902ad1f129ebf0405b11a1e710454ae0fe8f7b3e4f9145875f48"
+    },
+    {
+      "file": "stats_player_week_2020.csv",
+      "sha256": "05b992676faccc8940efbf6242cb76358069372d31d7c2e02c1a4acdcd3cbe18"
+    },
+    {
+      "file": "stats_team_week_2022.csv",
+      "sha256": "9803875bd0b74aa49230288d45359c75e45910f1cf1953ea0f07b9d3db35e4d1"
+    },
+    {
+      "file": "injuries_2020.csv",
+      "sha256": "706cca82824214f6b73ba0c6e537d3ee39766a50c644b8974b9fc28d7518de90"
+    },
+    {
+      "file": "snap_counts_2020.csv",
+      "sha256": "512e35f17d076eb5d99b933c4a144eb95dcddf40c0320dbb397cae3c35683716"
+    },
+    {
+      "file": "snap_counts_2021.csv",
+      "sha256": "8e4dae054a4749cf2d4919508d9161a6068fd67509979aefa385bfb3803d0ee5"
+    },
+    {
+      "file": "injuries_2021.csv",
+      "sha256": "1049fb9ff0fe7cfcf3ba8bfe1f5a35d3aba985c461c8fb7bf5201735b6d34254"
+    },
+    {
+      "file": "stats_team_week_2023.csv",
+      "sha256": "dc5a387daabe8663deaddac492ad7020d47fb1a66048690b355b406cd8e4c454"
+    },
+    {
+      "file": "stats_team_week_2021.csv",
+      "sha256": "a094523217f7f351a79f5e667dbe67267e0861a3b76a7a3b62a1cfe49f289673"
+    },
+    {
+      "file": "injuries_2023.csv",
+      "sha256": "16b04e21da5aa3944cfa9c22cafcc84ed7e6d9866eaddf0344e9b8cbf2f63afe"
+    },
+    {
+      "file": "players.csv",
+      "sha256": "f4250d7406be7690d14bfc666e83b3fe6b4d325272b8859ffd0dbfa856c83b55"
+    },
+    {
+      "file": "snap_counts_2023.csv",
+      "sha256": "303b61aa5c33ffda863f93a750fc14483f397f9187ad502b1ce71e9b516a64c0"
+    },
+    {
+      "file": "snap_counts_2022.csv",
+      "sha256": "0018a4833fbf0f825286c1c27450c6254391b548d6c55bcde728e93e4816815a"
+    },
+    {
+      "file": "injuries_2022.csv",
+      "sha256": "5f0d60324e597edd1a2ced8540b04e40b51dd440591dd1df11b8d96343387c9e"
+    },
+    {
+      "file": "games.csv",
+      "sha256": "07bc1ceeb8afea0c97db8c6810aee5a4b1aaecff47ace352656620f9a33c415a"
+    },
+    {
+      "file": "stats_team_week_2020.csv",
+      "sha256": "a8f2cc2055404fc293105af25f14ff28593c32961912e752e2e50f4a6ba461ad"
+    },
+    {
+      "file": "stats_team_week_2024.csv",
+      "sha256": "b207a1430c2715d03bbf1844c4eae98695f364851ff6025f422febc2c13f5255"
+    },
+    {
+      "file": "snap_counts_2024.csv",
+      "sha256": "a2aa58efe093f8aa0ad5aadf09f81d8ec690a1183bd2dde68d20e7f109a9c335"
+    },
+    {
+      "file": "injuries_2024.csv",
+      "sha256": "498bce8e13cb64b2ab9bb0ad6cb81d0a63c2ddb24016c9fc90c2de2126fae449"
+    }
+  ],
+  "numeric_release": "Experimental conditional forecast only; no validated betting authority",
+  "total_policy": "Keep the existing total model; the candidate total did not improve this evaluation"
+}

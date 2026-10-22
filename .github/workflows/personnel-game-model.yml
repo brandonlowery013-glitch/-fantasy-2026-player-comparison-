@@ -1,0 +1,23 @@
+name: Conditional personnel game model
+on:
+  pull_request:
+    paths:
+      - 'lib/personnel-*.mjs'
+      - 'scripts/*personnel-game-model.mjs'
+      - 'data/probability/generated/personnel-game-*.json'
+      - '.github/workflows/personnel-game-model.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'lib/personnel-*.mjs'
+      - 'scripts/*personnel-game-model.mjs'
+      - 'data/probability/generated/personnel-game-*.json'
+jobs:
+  conditional-personnel-game-model:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/test-personnel-game-model.mjs
