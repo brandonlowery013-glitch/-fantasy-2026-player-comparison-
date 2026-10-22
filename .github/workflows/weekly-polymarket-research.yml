@@ -5,9 +5,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['lib/polymarket-research.mjs', 'scripts/*polymarket-research.mjs', '.github/workflows/weekly-polymarket-research.yml', 'data/market/weekly-game-market-recommendations-2026.json']
+    paths: ['lib/polymarket-research.mjs', 'scripts/*polymarket-research*.mjs', '.github/workflows/weekly-polymarket-research.yml', 'data/market/weekly-game-market-recommendations-2026.json']
   pull_request:
-    paths: ['lib/polymarket-research.mjs', 'scripts/*polymarket-research.mjs', '.github/workflows/weekly-polymarket-research.yml']
+    paths: ['lib/polymarket-research.mjs', 'scripts/*polymarket-research*.mjs', '.github/workflows/weekly-polymarket-research.yml']
 permissions:
   contents: write
   pull-requests: write
@@ -26,6 +26,7 @@ jobs:
         with:
           node-version: '20'
       - run: node scripts/test-polymarket-research.mjs
+      - run: node scripts/test-polymarket-research-cli.mjs
   capture-and-score:
     if: github.event_name != 'pull_request'
     needs: qa
