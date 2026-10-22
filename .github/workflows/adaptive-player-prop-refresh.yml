@@ -124,7 +124,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- data/market/player-prop-market-snapshots-2026.json && git diff --quiet -- data/market/cloudflare-player-prop-current-2026.json && [ -z "$(git ls-files --others --exclude-standard -- data/market/cloudflare-player-prop-current-2026.json)" ]; then
+          if [ "${GITHUB_EVENT_NAME}" != "push" ] && git diff --quiet -- data/market/player-prop-market-snapshots-2026.json && git diff --quiet -- data/market/cloudflare-player-prop-current-2026.json && [ -z "$(git ls-files --others --exclude-standard -- data/market/cloudflare-player-prop-current-2026.json)" ]; then
             echo 'No prop quote changes; retaining validated website outputs.'
             exit 0
           fi
