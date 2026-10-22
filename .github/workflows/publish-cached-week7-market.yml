@@ -1,0 +1,47 @@
+name: Publish already-collected Week 7 market snapshot
+on:
+  push:
+    branches: ['fix/publish-cached-week7-market']
+    paths: ['.github/workflows/publish-cached-week7-market.yml']
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  checks: read
+  statuses: read
+concurrency:
+  group: publish-cached-week7-market
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Verify cached producer identity and freshness
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api repos/${GITHUB_REPOSITORY}/pulls/2497 --jq '.head.ref + "|" + .base.ref + "|" + .head.repo.full_name')" = "production/adaptive-market-39802028170-1|main|${GITHUB_REPOSITORY}"
+          git fetch origin production/adaptive-market-39802028170-1
+          git show FETCH_HEAD:data/market/weekly-game-market-recommendations-2026.json > /tmp/cached-games.json
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';import assert from 'node:assert/strict';
+          const d=JSON.parse(fs.readFileSync('/tmp/cached-games.json'));assert.equal(d.week,7);
+          const times=Object.values(d.games).map(g=>Date.parse(g.current_recommendations.captured_at));
+          assert(times.every(t=>Number.isFinite(t)&&t<=Date.now()&&Date.now()-t<6*3600000));
+          console.log('PASS: cached Week 7 quotes remain fresh; no odds collection invoked');
+          JS
+      - name: Merge only the exact validated cached producer candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          bash scripts/merge-guarded-production-pr.sh 2497 production/adaptive-market-39802028170-1 merge
