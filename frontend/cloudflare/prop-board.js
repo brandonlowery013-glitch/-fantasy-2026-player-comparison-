@@ -55,7 +55,7 @@
  function verdict(s){
   const e=s.evaluation,r=e?.recommendation,q=e?.model;
   const availability=window.CTD_PROP_AVAILABILITY?.(s.player,s.week);
-  if(availability?.state==='UNAVAILABLE')return ['Unavailable',availability.label+' · '+availability.reason];
+  if(availability?.state==='UNAVAILABLE'&&Date.parse(s.kickoff)>Date.now())return ['Unavailable',availability.label+' · '+availability.reason];
   if(!e)return ['Model update pending',(availability?.label?availability.label+'. ':'')+'Current sportsbook quote. The model has not evaluated this exact line and price yet.'];
   let pick=e?.model_pick;
   if(!pick&&[q?.over_probability,q?.under_probability,q?.push_probability].every(x=>typeof x==='number'&&Number.isFinite(x)&&x>=0&&x<=1)&&Math.abs(q.over_probability+q.under_probability+q.push_probability-1)<1e-5){

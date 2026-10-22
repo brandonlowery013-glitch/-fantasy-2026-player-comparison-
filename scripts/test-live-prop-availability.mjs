@@ -11,7 +11,7 @@ const quote={player:'Player One',week:7,kickoff,captured_at:new Date(now).toISOS
 assert.equal(context.verdict(quote)[0],'MODEL UNDER');assert.match(context.verdict(quote)[1],/Assumes player starts/);assert.doesNotMatch(context.verdict(quote)[1],/Waiting for player status/);
 availability=projectionAvailability({...base,injury:{status:'Questionable',source_updated_at:new Date(now).toISOString()}});assert.match(context.verdict(quote)[1],/Questionable/);assert.match(context.verdict(quote)[1],/injury concern/);assert.match(context.verdict({...quote,evaluation:null})[1],/Questionable/);
 const official={team:'CHI',event_id:'1',kickoff,complete:true,observed_at:new Date(now).toISOString(),inactive_names:['Player One']};
-availability=projectionAvailability({...base,official});assert.equal(context.verdict(quote)[0],'Unavailable');assert.match(context.verdict(quote)[1],/Officially inactive/);
+availability=projectionAvailability({...base,official});assert.equal(context.verdict(quote)[0],'Unavailable');assert.match(context.verdict(quote)[1],/Officially inactive/);assert.match(context.verdict({...quote,kickoff:new Date(now-1000).toISOString()})[1],/closed/);
 availability=projectionAvailability({...base,official:{...official,inactive_names:['Someone Else']}});assert.match(context.verdict(quote)[1],/Available · game-day list checked/);assert.doesNotMatch(context.verdict(quote)[1],/Questionable|injury concern|Assumes player starts/);
 assert.match(context.verdict({...quote,kickoff:new Date(now-1000).toISOString()})[1],/closed/);
 assert.match(context.verdict({...quote,captured_at:new Date(now-151*60000).toISOString()})[1],/fresh quote/);
