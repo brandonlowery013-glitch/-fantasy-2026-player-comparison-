@@ -1,0 +1,87 @@
+name: Weekly fixed-weight Polymarket research
+on:
+  schedule:
+    - cron: '20 * * * *'
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Adaptive Pregame Market Refresh', 'Step 24 Weekly Production Orchestration']
+    types: [completed]
+  push:
+    branches: [main]
+    paths: ['lib/polymarket-research.mjs', 'scripts/*polymarket-research*.mjs', '.github/workflows/weekly-polymarket-research.yml', 'data/market/weekly-game-market-recommendations-2026.json']
+  pull_request:
+    paths: ['lib/polymarket-research.mjs', 'scripts/*polymarket-research*.mjs', '.github/workflows/weekly-polymarket-research.yml']
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+  actions: write
+concurrency:
+  group: weekly-polymarket-research
+  cancel-in-progress: false
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/test-polymarket-research.mjs
+      - run: node scripts/test-polymarket-research-cli.mjs
+  capture-and-score:
+    if: github.event_name != 'pull_request' && (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository))
+    needs: qa
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Capture free public books and score verified finals
+        run: |
+          sha256sum data/market/issued-pick-history-2026.json data/market/postgame-model-learning-2026.json data/probability/generated/weekly-game-projections-2026.json data/market/weekly-game-market-recommendations-2026.json > /tmp/original-football.sha256
+          node scripts/refresh-polymarket-research.mjs --capture --settle
+          sha256sum --check /tmp/original-football.sha256
+      - name: Publish immutable research branch before kickoff
+        id: persist
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/research/weekly-polymarket/
+          if git diff --cached --quiet; then echo 'changed=false' >> "$GITHUB_OUTPUT"; exit 0; fi
+          branch="production/polymarket-research-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "$branch"
+          git commit -m 'Freeze and score fixed-weight weekly market research'
+          git push origin "HEAD:$branch"
+          node scripts/refresh-polymarket-research.mjs --record-publication --commit="$(git rev-parse HEAD)"
+          git add data/research/weekly-polymarket/
+          git diff --cached --quiet || git commit -m 'Record verified pregame publication receipts'
+          git push origin "HEAD:$branch"
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+      - name: Open research-only guarded PR
+        id: pr
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          url=$(gh pr create --base main --head '${{ steps.persist.outputs.branch }}' --title 'Production: fixed-weight market research capture and scoring' --body 'Append-only pregame research predictions and verified final scoring. Fixed Week 5 weights; no live pick changes, refitting, promotion or wagers. Required protected-candidate Guardrail QA must pass.')
+          echo "number=${url##*/}" >> "$GITHUB_OUTPUT"
+      - name: Validate exact protected candidate and merge research data
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/merge-guarded-production-pr.sh '${{ steps.pr.outputs.number }}' '${{ steps.persist.outputs.branch }}' merge
+      - name: Preserve research artifacts and concrete exclusions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-polymarket-research-${{ github.run_id }}
+          path: data/research/weekly-polymarket/
+          if-no-files-found: warn
