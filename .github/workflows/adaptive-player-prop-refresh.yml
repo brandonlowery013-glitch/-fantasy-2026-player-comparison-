@@ -7,6 +7,8 @@ on:
       - 'scripts/adaptive-player-prop-refresh.mjs'
       - 'lib/prop-player-identity.mjs'
       - 'lib/current-prop-quotes.mjs'
+      - 'lib/cloudflare-prop-import.mjs'
+      - 'scripts/test-cloudflare-prop-import.mjs'
       - 'scripts/test-current-prop-quotes.mjs'
       - 'scripts/build-player-prop-recommendations.mjs'
       - 'scripts/test-prop-player-identity.mjs'
@@ -19,6 +21,8 @@ on:
       - 'scripts/adaptive-player-prop-refresh.mjs'
       - 'lib/prop-player-identity.mjs'
       - 'lib/current-prop-quotes.mjs'
+      - 'lib/cloudflare-prop-import.mjs'
+      - 'scripts/test-cloudflare-prop-import.mjs'
       - 'scripts/test-current-prop-quotes.mjs'
       - 'scripts/build-player-prop-recommendations.mjs'
       - 'scripts/test-prop-player-identity.mjs'
@@ -59,6 +63,7 @@ jobs:
           node scripts/adaptive-player-prop-refresh.mjs --self-test
           node scripts/test-prop-player-identity.mjs
           node scripts/test-current-prop-quotes.mjs
+          node scripts/test-cloudflare-prop-import.mjs
           node scripts/build-player-prop-recommendations.mjs --self-test
           node scripts/test-issued-history-storage.mjs
           node scripts/test-market-ingestion-settings.mjs
@@ -93,12 +98,12 @@ jobs:
       - name: Validate restored quote identity and original timestamps
         if: github.event_name == 'workflow_dispatch' && inputs.recovery_run_id != ''
         run: node scripts/validate-prop-artifact-recovery.mjs
-      - name: Discover or refresh player props when due
+      - name: Import Cloudflare scheduled quotes for model evaluation
         if: github.event_name != 'workflow_dispatch' || inputs.recovery_run_id == ''
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: node scripts/adaptive-player-prop-refresh.mjs
-      - name: Preserve captured API quotes for diagnosis without another paid capture
+      - name: Preserve original scheduled quotes for publication recovery
         uses: actions/upload-artifact@v4
         if: always()
         with:
