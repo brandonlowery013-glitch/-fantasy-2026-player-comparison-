@@ -1,0 +1,22 @@
+name: Player availability and background reports
+on:
+  push:
+    branches: [frontend/ctd-cloudflare-work]
+  pull_request:
+    paths:
+      - 'frontend/cloudflare/prop-board.js'
+      - 'frontend/cloudflare/lib-player-prop-availability.mjs'
+      - 'workers/betting-splits/cloudflare/**'
+      - 'lib/player-prop-availability.mjs'
+jobs:
+  availability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/test-player-prop-availability.mjs
+      - run: node workers/betting-splits/cloudflare/test-availability.mjs
+      - run: node workers/betting-splits/cloudflare/test-worker.mjs
+      - run: node workers/betting-splits/cloudflare/test-props-relay.mjs

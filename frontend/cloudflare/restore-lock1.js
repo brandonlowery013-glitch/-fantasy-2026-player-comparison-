@@ -229,6 +229,9 @@ function sharedPlayer(name){
 }
 
 function weeklyEligibility(name,week){
+ const live=window.CTD_PROP_AVAILABILITY?.(name,week);
+ if(live?.state==='UNAVAILABLE')return {...live,state:'UNAVAILABLE',player:name};
+ if(live?.can_project)return {...live,state:live.state==='AVAILABLE'?'ELIGIBLE':'CONDITIONAL',player:name};
  const v=sharedPlayer(name),r=v.roster,status=String(v.report?.status||'').toLowerCase();
  if(!r||Number(personnel?.week)!==Number(week)||!v.game)return {state:'WAIT',reason:'Current-week availability not supplied',player:name};
  if(/^(out|inactive|injured reserve|ir|pup|physically unable to perform|suspended)$/.test(status))return {state:'UNAVAILABLE',reason:'Reported '+v.report.status,player:name,report:v.report,roster:r};
@@ -322,3 +325,4 @@ document.addEventListener('click',ev=>{const p=ev.target.closest('[data-profile]
     .catch(err=>console.error('CTD news updates failed',err))
     .then(()=>{const render=renderSelectedGame;renderSelectedGame=function(){return window.CTD_READING.preserve(document.getElementById('gamesPage'),render);};});
 })();
+

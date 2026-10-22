@@ -1,4 +1,5 @@
 import {PropsRelay} from './props-relay.mjs';
+import {AvailabilityStore} from './availability.mjs';
 import {collectSplits} from '../lib/background-splits.mjs';
 import {preservePublished} from '../lib/splits-history.mjs';
 const json=(body,status=200)=>Response.json(body,{status,headers:{'cache-control':'no-store','access-control-allow-origin':'*'}});
@@ -6,7 +7,7 @@ const validPath=p=>['/latest.json','/status.json','/index.json'].includes(p)||/^
 const store=env=>env.SPLITS_STORE.get(env.SPLITS_STORE.idFromName('production'));
 export default {
  async scheduled(controller,env){
-  const jobs=[['splits','/collect'],...(env.PROPS_RELAY_URL?[['props','/props/collect']]:[])];
+  const jobs=[['splits','/collect'],...(env.PROPS_RELAY_URL?[['props','/props/collect']]:[]),...(env.AVAILABILITY_ENABLED==='true'?[['availability','/availability/collect']]:[])];
   const results=await Promise.allSettled(jobs.map(async([name,path])=>{
    const response=await store(env).fetch('https://store'+path,{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});
    const body=await response.text();if(!response.ok)throw Error('Scheduled '+name+' collection failed: '+body);
@@ -17,6 +18,7 @@ export default {
  },
  async fetch(request,env){
   const path=new URL(request.url).pathname;
+  if(path.startsWith('/availability/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path,request));
   if(path.startsWith('/props/')&&(request.method==='GET'||path==='/props/claim'&&request.method==='POST'))return store(env).fetch(new Request('https://store'+path,request));
   if(request.method!=='GET')return json({error:'Method not allowed'},405);
   if(!validPath(path))return json({error:'Not found'},404);
@@ -25,9 +27,10 @@ export default {
 };
 // Collection is reachable only through the bound object, never through public HTTP.
 export class SplitsStore {
- constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.props=new PropsRelay(ctx.storage,env);}
+ constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.props=new PropsRelay(ctx.storage,env);this.availability=new AvailabilityStore(ctx.storage);}
  async fetch(request){
   const path=new URL(request.url).pathname;
+  if(path.startsWith('/availability/'))return this.availability.handle(request);
   if(path.startsWith('/props/'))return this.props.handle(request);
   if(path==='/collect'&&request.method==='POST'){
    const event=await request.json();
