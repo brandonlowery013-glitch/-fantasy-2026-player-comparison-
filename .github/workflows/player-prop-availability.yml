@@ -17,6 +17,7 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/test-player-prop-availability.mjs
+      - run: node scripts/test-live-prop-availability.mjs
       - run: node workers/betting-splits/cloudflare/test-availability.mjs
       - run: node workers/betting-splits/cloudflare/test-worker.mjs
       - run: node workers/betting-splits/cloudflare/test-props-relay.mjs

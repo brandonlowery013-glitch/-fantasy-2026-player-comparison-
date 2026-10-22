@@ -54,10 +54,10 @@ export class AvailabilityStore{
    if(!injuries.length||injuries.some(x=>!x.team))throw Error('Invalid public injury feed');
    const links=officialArticles(index),near=events.some(e=>Date.parse(e.date)-Date.now()<=2*3600000&&Date.parse(e.date)>Date.now()-6*3600000);
    if(near){try{links.push(...officialArticles(await read('https://www.nfl.com/news/series/around-the-nfl-news')));}catch{}}
-   const week=Number(schedule.week?.number),candidates=[...new Set(links)].filter(u=>new RegExp('week[-/ ]?'+week+'(?:-|/)','i').test(u)).slice(0,8);
+   const week=Number(schedule.week?.number),candidates=[...new Set(links)].slice(0,8);
    const games=(previous?.games||[]).filter(g=>events.some(e=>String(e.id)===g.event_id&&Date.parse(e.date)===Date.parse(g.kickoff)));
    const errors=[];
-   for(const url of candidates){try{for(const game of parseOfficialInactives(await read(url),url,events,observed_at)){const i=games.findIndex(g=>g.event_id===game.event_id&&g.team===game.team);if(i>=0)games[i]=game;else games.push(game);}}catch(e){errors.push({source_url:url,error:e.message});}}
+   for(const url of candidates){try{for(const game of parseOfficialInactives(await read(url),url,events.map(e=>({...e,week:e.week||{number:week}})),observed_at)){const i=games.findIndex(g=>g.event_id===game.event_id&&g.team===game.team);if(i>=0)games[i]=game;else games.push(game);}}catch(e){errors.push({source_url:url,error:e.message});}}
    const data={schema_version:1,capture_id:'cloudflare-availability:'+scheduled_time,event:'cloudflare-cron',scheduled_at:new Date(scheduled_time).toISOString(),observed_at,week,status:errors.length?'PARTIAL':'CURRENT',games,injuries,errors,official_reports_status:games.length?'PUBLISHED':'NOT_YET_PUBLISHED',paid_provider_requests:0,cadence_minutes:15};
    await this.storage.put({[key]:data,'availability:latest':data,'availability:status':{capture_id:data.capture_id,status:data.status,last_success_at:observed_at,official_team_reports:games.length,injuries:injuries.length,paid_provider_requests:0}});
    return json({capture_id:data.capture_id,status:data.status,official_team_reports:games.length,injuries:injuries.length,paid_provider_requests:0});
