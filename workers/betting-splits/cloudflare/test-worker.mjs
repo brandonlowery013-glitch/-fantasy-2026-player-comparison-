@@ -30,3 +30,8 @@ for(const failed of ['/collect','/props/collect']){
  assert.deepEqual(attempted.sort(),['/collect','/props/collect'],'one provider failure must not prevent the other scheduled collection');
 }
 console.log('PASS: split and prop collections run independently when either provider fails');
+for(const failed of ['/collect','/moneyline-projections/collect']){
+ const attempted=[];let splitsSettled=false;const isolated={MONEYLINE_MODEL_ENABLED:'true',SPLITS_STORE:{idFromName:()=>0,get:()=>({fetch:async url=>{const path=new URL(url).pathname;if(path==='/collect'){await Promise.resolve();splitsSettled=true;}if(path==='/moneyline-projections/collect')assert(splitsSettled,'moneyline must read the completed split collection or its retained last-good snapshot');attempted.push(path);return Response.json({status:path===failed?'FAILED':'CURRENT'},{status:path===failed?502:200});}})}};
+ await assert.rejects(worker.scheduled({scheduledTime:Date.now(),cron:'*/15 * * * *'},isolated),/collection failed/);assert.deepEqual(attempted,['/collect','/moneyline-projections/collect']);
+}
+console.log('PASS: moneyline reads freshly saved sportsbook prices and still runs after split-provider failure');

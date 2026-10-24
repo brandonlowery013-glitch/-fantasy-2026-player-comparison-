@@ -12,7 +12,8 @@ const store=env=>env.SPLITS_STORE.get(env.SPLITS_STORE.idFromName('production'))
 export default {
  async scheduled(controller,env){
   const jobs=controller.cron==='* * * * *'?(env.MONEYLINE_MODEL_ENABLED==='true'?[['moneyline','/moneyline-projections/collect']]:[]):[['splits','/collect'],...(env.PROPS_RELAY_URL?[['props','/props/collect']]:[]),...(env.AVAILABILITY_ENABLED==='true'?[['availability','/availability/collect']]:[]),...(env.SPREAD_MODEL_ENABLED==='true'?[['spread','/spread-projections/collect']]:[]),...(env.MONEYLINE_MODEL_ENABLED==='true'?[['moneyline','/moneyline-projections/collect']]:[])];
-  const results=await Promise.allSettled(jobs.map(async([name,path])=>{
+  let splitsComplete=Promise.resolve();
+  const operations=jobs.map(([name,path])=>{const run=(async()=>{if(name==='moneyline')await splitsComplete.catch(()=>{});
    const response=await store(env).fetch('https://store'+path,{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});
    const body=await response.text();if(!response.ok)throw Error('Scheduled '+name+' collection failed: '+body);
    console.log(name+'-scheduled-publication',body);
@@ -22,7 +23,8 @@ export default {
     console.log('quarterbacks-scheduled-publication',qbBody);
     if(env.PERSONNEL_GAME_ENABLED==='true'){const r=await store(env).fetch('https://store/game-projections/collect',{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});const b=await r.text();if(!r.ok)throw Error('Personnel game publication failed: '+b);console.log('personnel-games-scheduled-publication',b);}
    }
-  }));
+  })();if(name==='splits')splitsComplete=run;return run;});
+  const results=await Promise.allSettled(operations);
   const errors=results.filter(r=>r.status==='rejected').map(r=>r.reason);
   if(errors.length)throw new AggregateError(errors,errors.map(e=>e.message).join('; '));
  },
