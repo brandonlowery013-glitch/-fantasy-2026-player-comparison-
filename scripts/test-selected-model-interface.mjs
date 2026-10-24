@@ -15,8 +15,8 @@ for(const [kind,version] of [['moneyline','football-sportsbook-learning-v1'],['s
  assert.equal(ui.gameDirectionPrediction(game,null,kind).selection,null);
  assert(!JSON.stringify(ui.gameWork(game,quote,kind)).includes('99'));
 }
-for(const file of ['restore-lock1.js','show-work.js','game-detail-panels.js'])assert(!/PROJECTED SCORE|Projected score:|Model score:|Our projected spread:/.test(fs.readFileSync(new URL(file,dir),'utf8')),file);
-console.log('Selected model probabilities retained; old probabilities, score displays and missing-model fallbacks blocked.');
+for(const file of ['show-work.js','game-detail-panels.js'])assert(!/PROJECTED SCORE|Projected score:|Model score:|Our projected spread:/.test(fs.readFileSync(new URL(file,dir),'utf8')),file);
+const score=fs.readFileSync(new URL('restore-lock1.js',dir),'utf8');assert(score.includes('Football forecast'));assert(score.includes('Score forecast shown separately'));assert(!score.includes('Projected score: ${game.away_team}'));console.log('Selected picks retain their own probabilities; separate score panel restored without old pick fallbacks.');
 
 const source=fs.readFileSync(new URL('game-model-source.js',dir),'utf8');
 assert(!/overlaySpreadFeed|overlayMoneylineFeed|weekly-game-market-recommendations/.test(source));
