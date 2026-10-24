@@ -19,3 +19,5 @@ for(const failed of ['/collect','/availability/collect','/matchup-previews/colle
  await assert.rejects(worker.scheduled({scheduledTime:now,cron:'*/15 * * * *'},env));assert(attempted.includes('/matchup-previews/collect'));assert(attempted.includes('/collect'));assert(attempted.includes('/availability/collect'));
 }
 console.log('PASS: deployed cron path schedules previews after availability; preview and market-provider failures are isolated.');
+
+const tough=structuredClone(ledger);for(const r of tough.observations)if(r.team==='DET')r.metrics.rush_yards=50;assert(buildPreview(game,tough,availability,now).sections[0].text.includes('held opponents below'));const soft=structuredClone(ledger);for(const r of soft.observations)if(r.team==='DET')r.metrics.rush_yards=200;assert(buildPreview(game,soft,availability,now).sections[0].text.includes('possible opening'));
