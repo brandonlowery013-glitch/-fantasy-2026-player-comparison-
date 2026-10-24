@@ -308,7 +308,7 @@ document.addEventListener('click',ev=>{const p=ev.target.closest('[data-profile]
 ;(()=>{
   const load=src=>new Promise((resolve,reject)=>{
     const script=document.createElement('script');
-    script.src=src;if(src.endsWith('.mjs'))script.type='module';script.onload=resolve;
+    script.src=src;if(src.split('?')[0].endsWith('.mjs'))script.type='module';script.onload=resolve;
     script.onerror=()=>reject(new Error('Failed to load '+src));
     document.head.appendChild(script);
   });
@@ -319,12 +319,12 @@ document.addEventListener('click',ev=>{const p=ev.target.closest('[data-profile]
     .then(()=>load('./live-score-poller.js'))
     .catch(err=>console.error('CTD live score bootstrap failed',err))
     .then(()=>load('./pick-history.js'))
-    .then(()=>load('./game-detail-panels.js?v=weekly-previews-20261024'))
+    .then(()=>load('./game-detail-panels.js?v=weekly-previews-20261024b'))
     .catch(err=>console.error('CTD game detail panels failed',err))
     .then(()=>load('./live-odds.js'))
     .catch(err=>console.error('CTD live odds failed',err))
     .then(()=>load('./runtime-public-splits-2026.js'))
-    .then(()=>load('./runtime-matchup-facts-2026.mjs?v=weekly-previews-20261024'))
+    .then(()=>load('./runtime-matchup-facts-2026.mjs?v=weekly-previews-20261024b'))
     .then(()=>load('./news-updates.js'))
     .then(()=>load('./current-rank-views.js'))
     .catch(err=>console.error('CTD news updates failed',err))
