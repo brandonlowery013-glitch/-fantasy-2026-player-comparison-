@@ -22,7 +22,7 @@
   function pregame(raw){return (raw?.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(raw.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at))}
   function snapshot(raw){const rows=pregame(raw);return rows.find(x=>x.book==='draftkings')||rows[0]}
   function modelDirection(kind,e,s,raw,g){
-    const direction=window.CTD_SHOW_WORK?.gameDirectionPrediction(raw||g,s,kind)||e?.model_prediction;
+    const direction=window.CTD_SHOW_WORK?.gameDirectionPrediction(raw||g,s,kind);
     return direction?.selection?direction:null;
   }
   function predictionLabel(kind,e,s,raw,g){
@@ -31,42 +31,13 @@
   }
   function pickWhy(kind,e,s,raw,g){
     const rec=e?.recommendation;if(!rec)return '';const prediction=predictionLabel(kind,e,s,raw,g);
-    if((kind==='moneyline'&&raw.moneyline_model)||(kind==='spread'&&raw.spread_model)){const quote=e.quote||s;return '<div class="ctdWhyPick">'+prediction+'<b>'+ (kind==='spread'?'Spread':'Moneyline') +'</b><p>Betting decision: '+esc(rec.decision)+'.</p><details><summary>Price and source</summary><p>'+esc(quote.book||s.book)+' · '+esc(date(quote.captured_at||s.captured_at))+(kind==='spread'?'. Home spread '+esc(s.market?.home_spread):'')+'.</p></details></div>';}
-    if(raw.personnel_matchup&&!raw.moneyline_model&&kind==='moneyline'){
-      const p=raw.personnel_matchup,a=e.side_a,b=e.side_b,home=a?.conditional_win_probability>=b?.conditional_win_probability,side=home?a:b,team=home?raw.home_team:raw.away_team,prob=side?.conditional_win_probability;
-      return '<div class="ctdWhyPick">'+prediction+'<b>'+esc(kind.toUpperCase())+' · No bet available</b><p>Expected quarterbacks: '+esc(p.contexts.home.qb.name)+' and '+esc(p.contexts.away.qb.name)+'.</p><details><summary>Price and source</summary><p>'+esc(s.book)+' · '+esc(date(s.captured_at))+'. Odds '+esc(side?.offered_odds)+'.</p></details></div>';
-
-    }
-if(rec.decision!=='PICK'){const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);return `<div class="ctdWhyPick">${prediction}<b>${esc(kind.toUpperCase())} · ${rec.decision==='WAIT'?'On hold':'No bet'}</b>${window.CTD_FORMATTED_WORK?.(work)||''}</div>`;}
-    let side=null,marketLabel='';
-    if(kind==='spread'){
-      const home=norm(String(rec.selection||'').split(' ')[0])===norm(g.home_team);side=home?e.side_a:e.side_b;
-      marketLabel=`${rec.selection} · ${side?.offered_odds>0?'+':''}${side?.offered_odds??'odds unavailable'}`;
-    }else if(kind==='total'){
-      const over=String(rec.selection||'').startsWith('OVER ');side=over?e.side_a:e.side_b;
-      marketLabel=`${rec.selection} · ${side?.offered_odds>0?'+':''}${side?.offered_odds??'odds unavailable'}`;
-    }else{
-      const home=norm(String(rec.selection||'').split(' ')[0])===norm(g.home_team);side=home?e.side_a:e.side_b;
-      marketLabel=`${rec.selection} · ${side?.offered_odds>0?'+':''}${side?.offered_odds??'odds unavailable'}`;
-    }
-    if(!side)return '';
-    const fair=kind==='spread'||kind==='total'||kind==='moneyline'?e.fair_market:null;
-    const fairP=(side===e.side_a?fair?.side_a_probability:fair?.side_b_probability);
-    const edge=Number(side.probability_edge),ev=Number(side.expected_value),modelP=Number(side.conditional_win_probability);
-    const fp=raw?.football_projection||{};
-    let projection='';
-    if(kind==='spread'&&Number.isFinite(Number(fp.model_home_spread)))projection=`Our projected spread: ${g.home_team} ${Number(fp.model_home_spread)>0?'+':''}${Number(fp.model_home_spread).toFixed(1)}.`;
-    if(kind==='total'&&Number.isFinite(Number(fp.model_total)))projection=`We expect this many combined points: ${Number(fp.model_total).toFixed(1)}.`;
-    if(kind==='moneyline'&&Number.isFinite(Number(fp.home_win_probability)))projection=`Our estimated chance of winning: ${g.home_team} ${pct(Number(fp.home_win_probability))}, ${g.away_team} ${pct(Number(fp.away_win_probability))}.`;
-    const pieces=[];
-    if(Number.isFinite(modelP)&&Number.isFinite(Number(fairP)))pieces.push(`We estimate a ${pct(modelP)} chance. The sportsbook price suggests ${pct(Number(fairP))} after removing its built-in margin.`);
-    if(Number.isFinite(edge))pieces.push(`Our estimate is ${Math.abs(edge*100).toFixed(1)} percentage points ${edge>=0?'higher':'lower'}.`);
-    if(Number.isFinite(ev))pieces.push(`At this price, the estimated average result is ${ev>=0?'+':'−'}$${Math.abs(ev*100).toFixed(2)} per $100 bet over many similar bets. This is not a guaranteed return.`);
-    const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);
-    return `<div class="ctdWhyPick">${prediction}<b>${esc(kind.toUpperCase())} · ${esc(marketLabel)}</b>${window.CTD_FORMATTED_WORK?.(work)||`<p>${esc(projection)} ${esc(pieces.join(' · '))}</p>`}<small>${esc(s.book)} · ${esc(date(s.captured_at))}</small></div>`;
+    const direction=modelDirection(kind,e,s,raw,g),quote=e.quote||s;
+    if(!direction)return '<p>Waiting for current picks and odds.</p>';
+    return '<div class="ctdWhyPick">'+prediction+'<p>Betting decision: '+esc(rec.decision)+'.</p><details><summary>Price and source</summary><p>'+esc(quote.book||s.book)+' · '+esc(date(quote.captured_at||s.captured_at))+'.</p></details></div>';
   }
+
   function modelPicks(g){
-    const raw=marketGame(g),s=snapshot(raw);if(!s){let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('section');note.id='ctdPickContext';note.className='ctdPickContext panel';document.getElementById('spreadPick')?.closest('.grid3')?.insertAdjacentElement('afterend',note)}if(note)note.textContent=raw?.football_projection?'The football forecast is published below. Matching sportsbook prices have not been published; no priced recommendation is available.':'No original pregame forecast has been published for this week and matchup.';if(note&&raw?.football_projection){const facts=window.CTD_MATCHUP_REPORTS?.get(`${norm(raw.away_team)}@${norm(raw.home_team)}:${Date.parse(raw.kickoff)}`),review=facts&&window.CTD_MATCHUP_ASSESSMENT?.({kind:'moneyline'},facts);if(review?.sections?.length)note.innerHTML='<h3>OUR MATCHUP ASSESSMENT</h3><p>The football forecast is published below. Matching sportsbook prices have not been published; no priced recommendation is available.</p>'+review.sections.map(x=>`<h4>${esc(x.title)}</h4><p>${esc(x.text)}</p>`).join('')+'<details><summary>Sources</summary>'+review.sources.map(x=>`<p><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label)}</a> ${esc(x.at||'')}</p>`).join('')+'</details>';}for(const id of ['spreadPick','totalPick','mlPick']){const el=document.getElementById(id);if(el){el.textContent='Not published';el.title='Waiting for a matching pregame model snapshot';const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent='';}}const edge=document.getElementById('mlEdge'),direction=modelDirection('moneyline',null,null,raw,g);if(direction){const el=document.getElementById('mlPick');if(el){el.textContent=direction.selection;el.title='Football prediction; matching betting prices unavailable';}if(edge)edge.textContent=`${pct(direction.probability)} · ${direction.confidence.toLowerCase()} · bet WAIT`;}else if(edge)edge.textContent='—';return;}
+    const raw=marketGame(g),s=snapshot(raw);if(!s){let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('section');note.id='ctdPickContext';note.className='ctdPickContext panel';document.getElementById('spreadPick')?.closest('.grid3')?.insertAdjacentElement('afterend',note)}if(note)note.textContent=raw?.football_projection?'Waiting for current picks and matching sportsbook prices.':'Current picks are unavailable for this matchup.';if(note&&raw?.football_projection){const facts=window.CTD_MATCHUP_REPORTS?.get(`${norm(raw.away_team)}@${norm(raw.home_team)}:${Date.parse(raw.kickoff)}`),review=facts&&window.CTD_MATCHUP_ASSESSMENT?.({kind:'moneyline'},facts);if(review?.sections?.length)note.innerHTML='<h3>OUR MATCHUP ASSESSMENT</h3><p>Waiting for current picks and matching sportsbook prices.</p>'+review.sections.map(x=>`<h4>${esc(x.title)}</h4><p>${esc(x.text)}</p>`).join('')+'<details><summary>Sources</summary>'+review.sources.map(x=>`<p><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label)}</a> ${esc(x.at||'')}</p>`).join('')+'</details>';}for(const id of ['spreadPick','totalPick','mlPick']){const el=document.getElementById(id);if(el){el.textContent='Not published';el.title='Waiting for a matching pregame model snapshot';const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent='';}}const edge=document.getElementById('mlEdge'),direction=modelDirection('moneyline',null,null,raw,g);if(direction){const el=document.getElementById('mlPick');if(el){el.textContent=direction.selection;el.title='Football prediction; matching betting prices unavailable';}if(edge)edge.textContent=`${pct(direction.probability)} · ${direction.confidence.toLowerCase()} · bet WAIT`;}else if(edge)edge.textContent='—';return;}
     for(const [kind,id,field] of [['spread','spreadPick','model_spread_pick'],['total','totalPick','total_pick'],['moneyline','mlPick','moneyline_pick']]){
       const r=s.markets?.[kind]?.recommendation,el=document.getElementById(id);if(!el)continue;
       const value=r?.decision==='PICK'?r.selection:r?.decision==='WAIT'?'On hold':r?.decision==='PASS'?'No bet':'Not published';

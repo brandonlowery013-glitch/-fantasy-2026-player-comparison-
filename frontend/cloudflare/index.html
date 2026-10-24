@@ -185,8 +185,6 @@ border-radius:6px;overflow:hidden}
     </div>
 
     <div class="lowgrid">
-      <div class="panel"><h3>SPREAD BREAKDOWN</h3><div class="breakrow"><span>Model Projection</span><b>—</b><b>—</b></div><div class="breakrow"><span>Spread</span><b>—</b><b>—</b></div><div class="breakrow"><span>Model Edge</span><b class="edge">—</b><b class="edge">—</b></div><div class="breakrow"><span>Implied Probability</span><b>—</b><b>—</b></div><div class="breakrow"><span>Our Win Probability</span><b>—</b><b>—</b></div><div class="breakrow"><span>Edge</span><b class="edge">—</b><b class="edge">—</b></div></div>
-      <div class="panel"><h3>TOTAL BREAKDOWN</h3><div class="breakrow"><span>Over / Under</span><b>—</b><b></b></div><div class="breakrow"><span>Our Projection</span><b>—</b><b></b></div><div class="breakrow"><span>Model Lean</span><b class="edge">—</b><b></b></div><div class="breakrow"><span>Edge</span><b class="edge">—</b><b></b></div><div class="breakrow"><span>Implied Probability O/U</span><b>—</b><b>—</b></div><div class="breakrow"><span>Our Probability O/U</span><b>—</b><b>—</b></div></div>
       <div class="panel"><h3>LATEST SCORES</h3><table class="scoretable"><thead><tr><th>TEAM</th><th>1</th><th>2</th><th>3</th><th>4</th><th>T</th></tr></thead><tbody><tr><td>AWAY</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>HOME</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody></table><div class="halftime">Live score feed</div></div>
     </div>
 
@@ -244,9 +242,9 @@ border-radius:6px;overflow:hidden}
 </section>
 </div>
 
-<script src="runtime-central-time-2026.js?v=public-copy-20261024"></script>
-<script src="reading-state.js?v=public-copy-20261024"></script>
-<script src="game-model-source.js?v=public-copy-20261024"></script>
+<script src="runtime-central-time-2026.js?v=selected-picks-20261024"></script>
+<script src="reading-state.js?v=selected-picks-20261024"></script>
+<script src="game-model-source.js?v=selected-picks-20261024"></script>
 <script>
 const PLAYERS=[];
 
@@ -415,7 +413,6 @@ function renderSelectedGameData(){
   const spreadPanel = document.querySelector('.lowgrid .panel:nth-child(1)');
   if(spreadPanel){
     spreadPanel.innerHTML = `<h3>SPREAD BREAKDOWN</h3>
-      <div class="breakrow"><span>Model Projection</span><b>${esc(sb.model_projection_away||'—')}</b><b>${esc(sb.model_projection_home||'—')}</b></div>
       <div class="breakrow"><span>Spread</span><b>${esc(sb.spread||'—')}</b><b></b></div>
       <div class="breakrow"><span>Model Edge</span><b class="edge">${esc(sb.model_edge_away||'—')}</b><b class="edge">${esc(sb.model_edge_home||'')}</b></div>
       <div class="breakrow"><span>Implied Probability</span><b>${esc(sb.implied_prob_away||'—')}</b><b>${esc(sb.implied_prob_home||'—')}</b></div>
@@ -428,7 +425,6 @@ function renderSelectedGameData(){
   if(totalPanel){
     totalPanel.innerHTML = `<h3>TOTAL BREAKDOWN</h3>
       <div class="breakrow"><span>Over / Under</span><b>${esc(tb.line||g.total||'—')}</b><b></b></div>
-      <div class="breakrow"><span>Our Projection</span><b>${esc(tb.our_projection||'—')}</b><b></b></div>
       <div class="breakrow"><span>Model Lean</span><b class="edge">${esc(tb.model_lean||'—')}</b><b></b></div>
       <div class="breakrow"><span>Edge</span><b class="edge">${esc(tb.edge||'—')}</b><b></b></div>
       <div class="breakrow"><span>Implied Probability O/U</span><b>${esc(tb.implied_over||'—')}</b><b>${esc(tb.implied_under||'—')}</b></div>
@@ -619,28 +615,25 @@ async function loadFeed(){
         moneyline:(m.home_moneyline!=null||m.away_moneyline!=null)?`${home} ${m.home_moneyline??'—'} / ${away} ${m.away_moneyline??'—'}`:null,
         model_edge:best?.probability_edge!=null?`${(Number(best.probability_edge)*100).toFixed(1)}%`:null,
         model_pick:best?.selection||(snaps.length?'PASS':'Not published'),
-        win_probability:fp.home_win_probability??null,
-        away_win_probability:fp.away_win_probability??null,
-        home_win_probability:fp.home_win_probability??null,
+        win_probability:mk.moneyline?.side_a?.conditional_win_probability??null,
+        away_win_probability:mk.moneyline?.side_b?.conditional_win_probability??null,
+        home_win_probability:mk.moneyline?.side_a?.conditional_win_probability??null,
         total_pick:totalSel||'PASS',
         model_spread_pick:spreadSel||'PASS',
         moneyline_pick:mlSel||'PASS',
-        model_summary:picks.length?`Our model has ${picks.length} qualified market edge${picks.length===1?'':'s'} at the current ${dk.book||'sportsbook'} lines.`:snaps.length?'No current game market clears the locked betting threshold.':'The football forecast is published. Matching sportsbook quotes have not been published.',
+        model_summary:picks.length?`Our model has ${picks.length} qualified market edge${picks.length===1?'':'s'} at the current ${dk.book||'sportsbook'} lines.`:snaps.length?'No current game market clears the locked betting threshold.':'Waiting for current picks and odds.',
         venue:`Week ${targetWeek} market · `+(dk.book||'sportsbook'),
         spread_breakdown:{
-          model_projection_away:fp.away_score_mean?.toFixed?.(1)??fp.away_score_mean,
-          model_projection_home:fp.home_score_mean?.toFixed?.(1)??fp.home_score_mean,
           spread:Number.isFinite(hs)?`${home} ${hs>0?'+':''}${hs}`:'—',
           model_edge_away:'',
           model_edge_home:mk.spread?.recommendation?.probability_edge!=null?`${(Number(mk.spread.recommendation.probability_edge)*100).toFixed(1)}%`:'—',
           implied_prob_away:'—',implied_prob_home:'—',
-          our_win_prob_away:fp.away_win_probability!=null?`${(Number(fp.away_win_probability)*100).toFixed(1)}%`:'—',
-          our_win_prob_home:fp.home_win_probability!=null?`${(Number(fp.home_win_probability)*100).toFixed(1)}%`:'—',
+          our_win_prob_away:mk.moneyline?.side_b?.conditional_win_probability!=null?`${(Number(mk.moneyline?.side_b?.conditional_win_probability)*100).toFixed(1)}%`:'—',
+          our_win_prob_home:mk.moneyline?.side_a?.conditional_win_probability!=null?`${(Number(mk.moneyline?.side_a?.conditional_win_probability)*100).toFixed(1)}%`:'—',
           edge_away:'—',edge_home:'—'
         },
         total_breakdown:{
           line:m.total??'—',
-          our_projection:fp.model_total?.toFixed?.(1)??fp.model_total??'—',
           model_lean:totalSel||'PASS',
           edge:mk.total?.recommendation?.probability_edge!=null?`${(Number(mk.total.recommendation.probability_edge)*100).toFixed(1)}%`:'—',
           implied_over:'—',implied_under:'—',our_over:'—',our_under:'—',edge_over:'—',edge_under:'—'
@@ -694,11 +687,11 @@ window.CTD_INTERFACE_LOCK = {
 })();
 </script>
 
-<script src="player-details.js?v=public-copy-20261024"></script>
-<script src="../runtime-canonical-player-source-2026.js?v=public-copy-20261024"></script>
-<script src="../runtime-model-state-semantics-2026.js?v=public-copy-20261024"></script>
-<script src="show-work.js?v=public-copy-20261024"></script>
-<script src="formatted-work.js?v=public-copy-20261024"></script>
-<script src="restore-lock1.js?v=public-copy-20261024"></script>
+<script src="player-details.js?v=selected-picks-20261024"></script>
+<script src="../runtime-canonical-player-source-2026.js?v=selected-picks-20261024"></script>
+<script src="../runtime-model-state-semantics-2026.js?v=selected-picks-20261024"></script>
+<script src="show-work.js?v=selected-picks-20261024"></script>
+<script src="formatted-work.js?v=selected-picks-20261024"></script>
+<script src="restore-lock1.js?v=selected-picks-20261024"></script>
 </body>
 </html>

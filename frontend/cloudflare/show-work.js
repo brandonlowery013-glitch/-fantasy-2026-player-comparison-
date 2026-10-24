@@ -87,11 +87,8 @@ function gameDirectionPrediction(game,snapshot,kind){
  const selected=snapshot?.markets?.[kind]?.model_prediction;if(['moneyline','spread'].includes(kind)&&selected?.status==='EVEN')return {...selected,selection:null};
  const e=snapshot?.markets?.[kind],a=e?.side_a?.conditional_win_probability,b=e?.side_b?.conditional_win_probability;
  let home=a,away=b;
- if(kind==='moneyline'&&game.moneyline_model&&(!Number.isFinite(home)||!Number.isFinite(away)))return {status:'UNAVAILABLE',selection:null,reason:'Current moneyline model inputs unavailable',betting_decision:'WAIT'};
- if(kind==='moneyline'&&(!Number.isFinite(home)||!Number.isFinite(away))){
-  const p=game.football_projection||{},sum=p.home_win_probability+p.away_win_probability;
-  if(sum>0){home=p.home_win_probability/sum;away=p.away_win_probability/sum;}
- }
+ const version=kind==='spread'?'sportsbook-calibration-learning-v1':'football-sportsbook-learning-v1';
+ if(kind!=='total'&&e?.model_version!==version)return {status:'UNAVAILABLE',selection:null,reason:'Waiting for current picks',betting_decision:'WAIT'};
  if(!Number.isFinite(home)||!Number.isFinite(away))return {status:'UNAVAILABLE',selection:null,reason:'Matching model probability or spread line unavailable; no invented pick',betting_decision:e?.recommendation?.decision||'WAIT'};
  if(kind==='total'){
   const line=snapshot?.market?.total;
@@ -160,7 +157,7 @@ function gameDirectionPrediction(game,snapshot,kind){
     if(Date.parse(game.kickoff||game.event_start)<=now&&game.rerun!==true)return snapshot;
     const concerns=quarterbackConcerns(game,Math.min(now,Date.parse(game.kickoff||game.event_start)));if(!concerns.length)return snapshot;
     const reason=concerns.map(p=>`${p.player}: last reported ${String(p.status).toLowerCase()}`).join('; ')+'. This forecast has not accounted for the starting-quarterback uncertainty. No recommended bet until availability and the replacement are evaluated.';
-    return {...snapshot,markets:Object.fromEntries(Object.entries(snapshot.markets||{}).map(([kind,e])=>[kind,{...e,baseline_recommendation:e.baseline_recommendation||e.recommendation,recommendation:{decision:'WAIT',selection:null,confidence:null,reason},context_validation:{status:'HOLD',reason,quarterbacks:concerns,checked_at:new Date(now).toISOString(),numeric_adjustment:0}}]))};
+    return {...snapshot,markets:Object.fromEntries(Object.entries(snapshot.markets||{}).map(([kind,e])=>[kind,(['football-sportsbook-learning-v1','sportsbook-calibration-learning-v1'].includes(e.model_version)?e:{...e,baseline_recommendation:e.baseline_recommendation||e.recommendation,recommendation:{decision:'WAIT',selection:null,confidence:null,reason},context_validation:{status:'HOLD',reason,quarterbacks:concerns,checked_at:new Date(now).toISOString(),numeric_adjustment:0}})]))};
   }
   function publicBettingContext(feed,game,kind,asOf=Date.now()){
     const canon=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t),kickoff=Date.parse(game.kickoff||game.event_start),at=typeof asOf==='number'?asOf:Date.parse(asOf);
@@ -180,51 +177,8 @@ function gameDirectionPrediction(game,snapshot,kind){
     return `${r.label||r.side}: consensus ${r.bets}% of bets, Smart Money ${r.money}% of dollars; money minus bets ${r.handle_minus_bets_pp>=0?'+':''}${r.handle_minus_bets_pp} percentage points. ${r.bets===50?'Bet share is even.':r.bets>50?'The majority of bets agrees with this side.':'The majority of bets opposes this side.'} ${r.money===50?'Money share is even.':r.money>50?'The majority of dollars agrees with this side.':'The majority of dollars opposes this side.'} Recorded ${humanTime(context.observed_at)}. These are DraftKings shares, not proof of professional betting; their predictive effect has not been validated. Probability and confidence adjustment: 0.`;
   }
   function gameWork(game,snapshot,kind,now=Date.now()){
-    if((kind==='moneyline'&&game.moneyline_model)||(kind==='spread'&&game.spread_model)){const e=snapshot?.markets?.[kind],p=e?.model_prediction,q=e?.quote||snapshot;return {reader:{summary:p?.selection?`Our pick: ${p.selection}.`:'Prediction unavailable.',details:p?.probability!=null?[`Estimated chance: ${(p.probability*100).toFixed(1)}%.`,`Price from ${q?.book||'sportsbook'}; ${q?.captured_at||'time unavailable'}.`]:['Waiting for current odds.'],verdict:e?.recommendation?.decision||'WAIT',hideVerdict:false}};}
-
-
-    snapshot=gameMarketView(game,snapshot,now);
-    const p=game.football_projection||{},m=snapshot?.market||{},e=snapshot?.markets?.[kind]||{},r=e.recommendation||{decision:'WAIT'};
-    const a=e.side_a||{},b=e.side_b||{},chosen=String(r.selection||'').split(' ')[0],labelA=kind==='total'?'OVER':game.home_team,labelB=kind==='total'?'UNDER':game.away_team,isA=chosen===labelA?true:chosen===labelB?false:num(a.expected_value)!=null&&(num(b.expected_value)==null||a.expected_value>=b.expected_value),s=isA?a:b;
-    const total=num(m.total),spread=num(m.home_spread),home=num(p.home_score_mean),away=num(p.away_score_mean);
-    const implied=total!=null&&spread!=null?`${game.home_team} (${total} − (${spread})) / 2 = ${fmt((total-spread)/2)}; ${game.away_team} (${total} + (${spread})) / 2 = ${fmt((total+spread)/2)}`:'unavailable: both spread and total are required';
-    const edge=home!=null&&away!=null?(kind==='spread'&&spread!=null?home-away+spread:kind==='total'&&total!=null?home+away-total:null):null;
-    const signals=(game.context_evidence?.players||[]).flatMap(p=>(p.signals||[]).map(s=>({...s,player:p.player})));
-    const context=contextReview(signals,now);
-    const betting=e.public_betting_context||publicBettingContext(null,game,kind,now),bettingRead=publicBettingRead(betting,isA?labelA:labelB);
-    const contribution=game.scoring_evidence?.contributions?.[kind==='total'?'total':'margin'];
-    const terms=(contribution?.terms||[]).filter(t=>num(t.contribution)!=null);
-    const threshold=kind==='total'?total:kind==='spread'&&spread!=null?-spread:0;
-    const reconciliation=terms.length?reconcile(contribution.intercept,contribution.reconstructed,threshold,isA?'OVER':'UNDER'):'UNVALIDATED';
-    const attribution=terms.length?`Existing formula: intercept ${fmt(contribution.intercept)} + ${terms.map(t=>`${t.name.replaceAll('_',' ')} ${fmt(t.contribution)} (${((isA?1:-1)*t.contribution)>0?'strengthens':'weakens'} the evaluated side)`).join(' + ')} = ${fmt(contribution.reconstructed)}. These contributions are already included; venue is not added twice.`:'Calibrated score-contribution detail unavailable.';
-    const work=finish([`Model score: ${game.away_team} ${fmt(away)}, ${game.home_team} ${fmt(home)}. Market ${kind}: ${kind==='spread'?spread??'unavailable':kind==='total'?total??'unavailable':`${m.home_moneyline??'unavailable'} / ${m.away_moneyline??'unavailable'}`}.`,kind==='moneyline'?'Moneyline uses the score-distribution win probability.':`${kind==='spread'?'Home cover edge = home score − away score + home spread':'Over edge = model total − market total'} = ${fmt(edge)} points.`,`Team implied totals: ${implied}. Market scoring expectations are context only.`,...priceMath(s,e.fair_market?.[isA?'side_a_probability':'side_b_probability'])],context,reconciliation,s.conditional_win_probability,r.confidence,r.decision,[attribution,`Evaluated side: ${kind==='total'?(isA?'OVER':'UNDER'):(isA?game.home_team:game.away_team)}. Selection: ${r.selection||'none'}; ${r.reason||'locked thresholds applied'}. Quote: ${snapshot?.book||'unavailable'}, ${snapshot?.captured_at||'unavailable'}. Additional score adjustment: 0; context has no validated game-score weight.`]);
-    const pick=r.selection||'No bet',projectedTotal=home!=null&&away!=null?home+away:null;
-    const summary=kind==='total'?`We expect about ${fmt(projectedTotal)} combined points. The line is ${fmt(total)}, so our forecast is ${fmt(edge==null?null:Math.abs(edge))} points ${edge>=0?'above':'below'} it.`:kind==='spread'?`We project ${game.away_team} ${fmt(away)}–${game.home_team} ${fmt(home)}${home!=null&&away!=null?`, with ${home>=away?game.home_team:game.away_team} winning by ${fmt(Math.abs(home-away))}`:''}. ${edge!=null?`Against the ${game.home_team} ${spread>=0?'+':''}${spread} spread, that favors ${edge>=0?game.home_team:game.away_team} by ${fmt(Math.abs(edge))} points.`:'A matching spread is needed to judge the bet.'}`:`We give ${game.home_team} a ${pct(p.home_win_probability)} chance to win and ${game.away_team} ${pct(p.away_win_probability)}.`;
-    work.reader={summary,details:[`Our choice at this saved price: ${pick}.`, `Our estimated chance for the evaluated side: ${pct(s.conditional_win_probability)} when the bet does not end in a refund.`,plainPrice(s),`The spread and total imply ${game.home_team} ${total!=null&&spread!=null?fmt((total-spread)/2):'unknown'} points and ${game.away_team} ${total!=null&&spread!=null?fmt((total+spread)/2):'unknown'} points. These are the sportsbook’s scoring expectations.`, `Odds from ${snapshot?.book||'an unknown sportsbook'}, recorded ${humanTime(snapshot?.captured_at)}.`]};
-    const direction=gameDirectionPrediction(game,snapshot,kind);
-    if(direction?.selection){
-      work.reader.modelPrediction=direction;
-      work.reader.details.unshift(`Model prediction: ${direction.selection}, ${pct(direction.probability)} (${direction.confidence.toLowerCase()} confidence). Betting recommendation: ${r.decision||'WAIT'}${r.selection?' '+r.selection:''}. ${direction.exact_probability_tie?' The probabilities are tied; the displayed direction uses a disclosed deterministic tie-break.':''}`);
-    }
-    work.public_betting_context=betting;work.paragraphs.push(bettingRead);work.reader.publicBettingRead=bettingRead;work.reader.details.push(bettingRead);work.reader.sources=[{label:betting.source||'DraftKings public betting splits',url:betting.source_url,at:betting.observed_at}];
-    const teamFacts=[];
-    for(const [team,opponent] of [[game.home_team,game.away_team],[game.away_team,game.home_team]]){
-      const t=game.scoring_evidence?.teams?.[team],o=game.scoring_evidence?.teams?.[opponent];
-      if(num(t?.current_points_for)!=null&&num(o?.current_points_allowed)!=null)teamFacts.push({text:`${team} has scored ${fmt(t.current_points_for)} points per game across ${t.current_games} completed games this season. ${opponent} has allowed ${fmt(o.current_points_allowed)} per game across ${o.current_games} games.`,source:team+' offense / '+opponent+' defense · scoring averages',at:null});
-    }
-    const rest=game.scoring_evidence?.rest_days;
-    if(num(rest?.home)!=null&&num(rest?.away)!=null)teamFacts.push({text:`${game.home_team} has ${rest.home} days of rest; ${game.away_team} has ${rest.away} days.`,source:'Game schedule',at:null});
-    const liveKey=`${({WAS:'WSH',LA:'LAR',JAC:'JAX'}[game.away_team]||game.away_team)}@${({WAS:'WSH',LA:'LAR',JAC:'JAX'}[game.home_team]||game.home_team)}:${Date.parse(game.kickoff||game.event_start||game.start_at)}`;
-    work.reader.matchupKey=liveKey;work.reader.selection=pick;work.reader.kind=kind;work.reader.matchupIdentity={away:liveKey.split('@')[0],home:liveKey.split('@')[1].split(':')[0],kickoff:game.kickoff||game.event_start||game.start_at,profiles:[{sources:Object.entries(game.scoring_evidence?.teams||{}).flatMap(([team,t])=>(t.completed_game_ids||[]).map(id=>({label:team+' · pregame box score '+id,url:'https://www.espn.com/nfl/boxscore/_/gameId/'+id})))}]};
-    work.reader.matchup=[...teamFacts,...matchupFacts(signals,now),...(globalThis.CTD_MATCHUP_FACTS?.get(liveKey)||[])];
-    const baseline=num(contribution?.intercept),adjusted=num(contribution?.reconstructed);
-    const restApplied=game.scoring_evidence?.rest_adjustment_applied!==false;
-    const adjustment=restApplied?'The scoring matchup and rest':'The scoring matchup';
-    work.reader.reconciliation=baseline!=null&&adjusted!=null?`${kind==='total'?`${adjustment} ${restApplied?'move':'moves'} the total from ${fmt(baseline)} to ${fmt(adjusted)} points.`:`${adjustment} ${restApplied?'change':'changes'} the forecast from ${baseline>=0?game.home_team:game.away_team} winning by ${fmt(Math.abs(baseline))} to ${adjusted>=0?game.home_team:game.away_team} winning by ${fmt(Math.abs(adjusted))}.`} ${kind==='total'?`That leaves the projection ${fmt(Math.abs(edge||0))} points ${edge>=0?'above':'below'} the line.`:kind==='moneyline'?'The score distribution gives each team’s chance of winning.':'The final score forecast is what we compare with the spread.'} These effects are already included in the projection.${restApplied?'':' Rest is excluded from this forecast.'}`:'The pick uses the score forecast above. There is not enough verified evidence to assign an additional matchup adjustment.';
-    work.reader.verdict=verdictText(r.decision,pick,s.conditional_win_probability,r.confidence,context.status==='COMPLETE');
-    work.reader.limit=context.status==='COMPLETE'?null:'Current injury, workload or matchup reports are incomplete. No extra probability boost has been applied.';
-    if(e.context_validation?.status==='HOLD'){work.reader.hold=e.context_validation.reason;work.reader.reconciliation=e.context_validation.reason;work.reader.verdict=e.context_validation.reason;}
-    return work;
+    const e=snapshot?.markets?.[kind],p=gameDirectionPrediction(game,snapshot,kind),q=e?.quote||snapshot;
+    return {reader:{summary:p?.selection?`Our pick: ${p.selection}.`:'Prediction unavailable.',details:p?.probability!=null?[`Estimated chance: ${(p.probability*100).toFixed(1)}%.`,`Price from ${q?.book||'sportsbook'}; ${q?.captured_at||'time unavailable'}.`]:['Waiting for current odds.'],verdict:p?.selection?(e?.recommendation?.decision||'WAIT'):'WAIT',hideVerdict:false}};
   }
   function propStatKey(stat){return ({passing_yards:'pass_yards',passing_tds:'pass_tds',rushing_yards:'rush_yards'})[stat]||stat;}
   function propStat(values,stat){return values?.[stat]??values?.[propStatKey(stat)];}
