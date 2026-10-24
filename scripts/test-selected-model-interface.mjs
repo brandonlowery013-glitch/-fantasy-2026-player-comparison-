@@ -17,3 +17,14 @@ for(const [kind,version] of [['moneyline','football-sportsbook-learning-v1'],['s
 }
 for(const file of ['restore-lock1.js','show-work.js','game-detail-panels.js'])assert(!/PROJECTED SCORE|Projected score:|Model score:|Our projected spread:/.test(fs.readFileSync(new URL(file,dir),'utf8')),file);
 console.log('Selected model probabilities retained; old probabilities, score displays and missing-model fallbacks blocked.');
+
+const source=fs.readFileSync(new URL('game-model-source.js',dir),'utf8');
+assert(!/overlaySpreadFeed|overlayMoneylineFeed|weekly-game-market-recommendations/.test(source));
+const requests=[];const base={week:9,season:2026,games:{x:{snapshot_evaluations:[{eligible_for_current_recommendation:true,markets:{spread:{model_version:'legacy',side_a:{conditional_win_probability:.99}},moneyline:{model_version:'football-sportsbook-learning-v1',side_a:{conditional_win_probability:.61}}}}]}}};
+const browser={window:{},Date,Map,URLSearchParams,AbortSignal,fetch:async url=>{requests.push(url);return {ok:true,json:async()=>url.includes('/release')?{ref:'refs/heads/main',object:{type:'commit',sha:'a'.repeat(40)}}:url.includes('recommendations')?structuredClone(base):null}}};
+vm.createContext(browser);vm.runInContext(source.replace("import('./lib/personnel-matchup.mjs')","Promise.resolve({overlayGameFeed:base=>base})"),browser);
+const loaded=await browser.window.CTD_GAME_MODEL.load();
+assert.equal(loaded.games.x.snapshot_evaluations[0].markets.spread.side_a,undefined);
+assert.equal(loaded.games.x.snapshot_evaluations[0].markets.moneyline.side_a.conditional_win_probability,.61);
+assert(!requests.some(x=>x.includes('raw.githubusercontent.com')||x.includes('all-game')));
+console.log('Future-week server predictions preserved; unselected inputs blocked without raw/research fallback.');
