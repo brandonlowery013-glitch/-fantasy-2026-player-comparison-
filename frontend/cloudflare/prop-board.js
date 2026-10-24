@@ -79,8 +79,8 @@
   if(!availability?.can_project)return [model,availability?.reason||'Availability evidence needs review.'];
   const qb=e.qb_scenario;
   const note=(qb?(qb.restored?'Starter '+qb.expected_qb+' cleared; original projection restored. ':'Assumes '+qb.expected_qb+' starts. '):availability.label+'. ');
-  if(qb)return [model,note+direction+(availability.state==='INJURY_CONCERN'?availability.label+'. ':'')+'Updated for the quarterback change; conditional projection.'];
-  if(availability.state==='INJURY_CONCERN')return [model,note+direction+'Conditional projection; injury concern remains.'];
+  if(qb)return [model,note+direction+(availability.state==='INJURY_CONCERN'?availability.label+'. ':'')+'Updated for the quarterback change; assumes the listed quarterback starts.'];
+  if(availability.state==='INJURY_CONCERN')return [model,note+direction+'Injury concern remains.'];
   if(r?.decision==='WAIT')return [model,note+direction+'Projection shown under this availability assumption.'];
   if(r?.decision==='PICK')return [model,note+direction+`Betting: recommended ${r.side} at this quote · analysis only.`];
   return [model,note+direction+(r?.decision==='PASS'?'Betting: pass. We do not see enough value at this price.':'Betting recommendation unavailable.')];

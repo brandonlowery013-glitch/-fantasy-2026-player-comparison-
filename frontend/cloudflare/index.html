@@ -130,7 +130,7 @@ border-radius:6px;overflow:hidden}
   <div class="tools"><button class="tool">⌕</button><button class="tool">♢</button><button class="tool">CTD</button></div>
 </header>
 
-<section class="page active" id="gamesPage"><div id="games"><p style="padding:12px 20px;margin:0"><a href="model-rerun.html" style="color:#79baff">View archived Week 4 model rerun</a></p>
+<section class="page active" id="gamesPage"><div id="games"><p style="padding:12px 20px;margin:0"></p>
   <div class="content">
     <div class="livebar">
       <h2>NFL LIVE BOARD</h2>
@@ -222,10 +222,10 @@ border-radius:6px;overflow:hidden}
       <button data-season="overpriced">OVERPRICED</button>
       <button data-season="upside">HIGH UPSIDE</button>
     </div>
-    <div id="playerCount" class="categoryIntro">Loading canonical players…</div><div id="seasonCategoryMount"></div><div style="overflow:auto"><table class="boardtable"><thead><tr><th>Rank</th><th>Player</th><th>Position</th><th>Team</th><th>True Value</th><th>Market ADP</th><th>Read</th></tr></thead><tbody id="boardRows"></tbody></table></div>
+    <div id="playerCount" class="categoryIntro">Loading players…</div><div id="seasonCategoryMount"></div><div style="overflow:auto"><table class="boardtable"><thead><tr><th>Rank</th><th>Player</th><th>Position</th><th>Team</th><th>True Value</th><th>Market ADP</th><th>Read</th></tr></thead><tbody id="boardRows"></tbody></table></div>
   </div>
 </section>
-<section class="page" id="comparePage"><div class="categoryWrap"><h2>COMPARE PLAYERS</h2><div class="categoryIntro">Compare current canonical rankings and football evaluations.</div><label>Player 1 <select id="compareA" aria-label="Player 1"></select></label> <label>Player 2 <select id="compareB" aria-label="Player 2"></select></label><div id="comparison" class="categoryGrid"></div></div></section>
+<section class="page" id="comparePage"><div class="categoryWrap"><h2>COMPARE PLAYERS</h2><div class="categoryIntro">Compare player rankings and projections.</div><label>Player 1 <select id="compareA" aria-label="Player 1"></select></label> <label>Player 2 <select id="compareB" aria-label="Player 2"></select></label><div id="comparison" class="categoryGrid"></div></div></section>
 
 <section class="page" id="weeklyPage">
   <div class="categoryWrap">
@@ -244,9 +244,9 @@ border-radius:6px;overflow:hidden}
 </section>
 </div>
 
-<script src="runtime-central-time-2026.js"></script>
-<script src="reading-state.js"></script>
-<script src="game-model-source.js"></script>
+<script src="runtime-central-time-2026.js?v=public-copy-20261024"></script>
+<script src="reading-state.js?v=public-copy-20261024"></script>
+<script src="game-model-source.js?v=public-copy-20261024"></script>
 <script>
 const PLAYERS=[];
 
@@ -502,7 +502,7 @@ function edgePct(x){
 }
 function renderOurPicks(feed){
   const mount=document.getElementById('ourPicksMount'); if(!mount)return;
-  if(feed.status!=='READY'){mount.innerHTML=`<div class="copy">Current market feed: ${esc(feed.status||'WAITING')}.</div>`;return}
+  if(feed.status!=='READY'){mount.innerHTML=`<div class="copy">Open a matchup to view its picks and prices.</div>`;return}
   const legs=(feed.eligible_legs||[]).filter(x=>x.label==='PICK'&&x.standalone_approved===true)
     .sort((a,b)=>(Number(b.expected_value||0)+Number(b.probability_edge||0))-(Number(a.expected_value||0)+Number(a.probability_edge||0)));
   if(!legs.length){mount.innerHTML='<div class="copy"><b>PASS:</b> no current spread, total, moneyline or prop clears the model threshold.</div>';return}
@@ -694,11 +694,11 @@ window.CTD_INTERFACE_LOCK = {
 })();
 </script>
 
-<script src="player-details.js"></script>
-<script src="../runtime-canonical-player-source-2026.js"></script>
-<script src="../runtime-model-state-semantics-2026.js"></script>
-<script src="show-work.js"></script>
-<script src="formatted-work.js"></script>
-<script src="restore-lock1.js"></script>
+<script src="player-details.js?v=public-copy-20261024"></script>
+<script src="../runtime-canonical-player-source-2026.js?v=public-copy-20261024"></script>
+<script src="../runtime-model-state-semantics-2026.js?v=public-copy-20261024"></script>
+<script src="show-work.js?v=public-copy-20261024"></script>
+<script src="formatted-work.js?v=public-copy-20261024"></script>
+<script src="restore-lock1.js?v=public-copy-20261024"></script>
 </body>
 </html>

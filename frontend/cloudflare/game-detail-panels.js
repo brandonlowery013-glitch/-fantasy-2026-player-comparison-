@@ -26,7 +26,7 @@
     return direction?.selection?direction:null;
   }
   function predictionLabel(kind,e,s,raw,g){
-    const p=modelDirection(kind,e,s,raw,g);if(!p)return '';if(raw.personnel_matchup&&!raw.moneyline_model&&kind==='moneyline')return `<p><b>Conditional model prediction: ${esc(p.selection)}</b> · ${pct(p.probability)} · experimental estimate</p>`;
+    const p=modelDirection(kind,e,s,raw,g);if(!p)return '';if(raw.personnel_matchup&&!raw.moneyline_model&&kind==='moneyline')return `<p><b>Prediction: ${esc(p.selection)}</b> · ${pct(p.probability)}</p>`;
     return `<p><b>Model prediction: ${esc(p.selection)}</b> · ${pct(p.probability)} · ${esc(p.confidence.toLowerCase())} confidence${p.exact_probability_tie?' · Even probabilities; deterministic tie-break, no statistical preference':''}</p>`;
   }
   function pickWhy(kind,e,s,raw,g){
@@ -34,7 +34,8 @@
     if((kind==='moneyline'&&raw.moneyline_model)||(kind==='spread'&&raw.spread_model)){const quote=e.quote||s;return '<div class="ctdWhyPick">'+prediction+'<b>'+ (kind==='spread'?'Spread':'Moneyline') +'</b><p>Betting decision: '+esc(rec.decision)+'.</p><details><summary>Price and source</summary><p>'+esc(quote.book||s.book)+' · '+esc(date(quote.captured_at||s.captured_at))+(kind==='spread'?'. Home spread '+esc(s.market?.home_spread):'')+'.</p></details></div>';}
     if(raw.personnel_matchup&&!raw.moneyline_model&&kind==='moneyline'){
       const p=raw.personnel_matchup,a=e.side_a,b=e.side_b,home=a?.conditional_win_probability>=b?.conditional_win_probability,side=home?a:b,team=home?raw.home_team:raw.away_team,prob=side?.conditional_win_probability;
-      return '<div class="ctdWhyPick">'+prediction+'<b>'+esc(kind.toUpperCase())+' · Conditional model · Bet on hold</b><p>Expected quarterbacks: '+esc(p.contexts.home.qb.name)+' and '+esc(p.contexts.away.qb.name)+'. Injuries are weighted by earlier snap usage; offensive efficiency is compared with the opposing defense.</p><p>Projected home margin '+p.margin.toFixed(2)+'. '+esc(team)+' '+(kind==='moneyline'?'win':'cover')+' chance, excluding refunds: '+pct(prob)+'. These probabilities were recalculated for this saved line and price.</p><p>This is an experimental conditional forecast. The 2024 comparison is exploratory, and it does not establish a profitable betting edge.</p><details><summary>Numbers and sources</summary><p>Quote: '+esc(s.book)+' · '+esc(date(s.captured_at))+'. Odds '+esc(side?.offered_odds)+'. Home spread '+esc(s.market?.home_spread)+'.</p><p>Earlier NFLverse team/player statistics and snap counts; current ESPN injuries and NFL.com inactives. Availability and current QB assumptions appear in the personnel forecast panel.</p></details></div>';
+      return '<div class="ctdWhyPick">'+prediction+'<b>'+esc(kind.toUpperCase())+' · No bet available</b><p>Expected quarterbacks: '+esc(p.contexts.home.qb.name)+' and '+esc(p.contexts.away.qb.name)+'.</p><details><summary>Price and source</summary><p>'+esc(s.book)+' · '+esc(date(s.captured_at))+'. Odds '+esc(side?.offered_odds)+'.</p></details></div>';
+
     }
 if(rec.decision!=='PICK'){const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);return `<div class="ctdWhyPick">${prediction}<b>${esc(kind.toUpperCase())} · ${rec.decision==='WAIT'?'On hold':'No bet'}</b>${window.CTD_FORMATTED_WORK?.(work)||''}</div>`;}
     let side=null,marketLabel='';
@@ -73,7 +74,7 @@ if(rec.decision!=='PICK'){const work=window.CTD_SHOW_WORK?.gameWork(raw,s,kind);
       el.textContent=direction?.selection||value;g[field]=direction?.selection||value;
       el.title=r?.decision==='PASS'?(r.reason||'No side clears the model thresholds'):r?.decision==='PICK'?`Stored pregame model pick · ${date(s.captured_at)}`:'No stored decision';
       if(direction)el.title=`Model prediction: ${direction.selection}, ${pct(direction.probability)}, ${direction.confidence.toLowerCase()} confidence. Betting decision: ${r?.decision||'WAIT'}${r?.selection?' '+r.selection:''}. ${r?.reason||''}`;
-      const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent=direction&&raw.personnel_matchup&&!raw.moneyline_model&&kind==='moneyline'?`${pct(direction.probability)} · conditional · bet WAIT`:direction?`${pct(direction.probability)} · ${direction.confidence.toLowerCase()} · bet ${r?.decision||'WAIT'}${s.markets?.[kind]?.context_validation?.status==='HOLD'?' · before QB review':''}`:r?.decision==='PICK'&&typeof r.probability_edge==='number'?`${(r.probability_edge*100).toFixed(1)} percentage points`:'';
+      const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent=direction&&raw.personnel_matchup&&!raw.moneyline_model&&kind==='moneyline'?`${pct(direction.probability)} · bet WAIT`:direction?`${pct(direction.probability)} · ${direction.confidence.toLowerCase()} · bet ${r?.decision||'WAIT'}${s.markets?.[kind]?.context_validation?.status==='HOLD'?' · before QB review':''}`:r?.decision==='PICK'&&typeof r.probability_edge==='number'?`${(r.probability_edge*100).toFixed(1)} percentage points`:'';
     }
     const edge=document.getElementById('mlEdge');if(edge&&!modelDirection('moneyline',s.markets?.moneyline,s,raw,g))edge.textContent=s.markets?.moneyline?.recommendation?.decision==='PICK'?pct(s.markets.moneyline.recommendation.probability_edge):'—';
     let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('section');note.id='ctdPickContext';note.className='ctdPickContext panel';note.style.maxWidth='none';document.getElementById('spreadPick')?.closest('.grid3')?.insertAdjacentElement('afterend',note)}

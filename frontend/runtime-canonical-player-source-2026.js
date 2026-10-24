@@ -29,7 +29,7 @@
  const SOURCES=[
   ['main-live-game-center',MAIN_LIVE],
   ['cloudflare-live-score-poller',local('live-score-poller.js?v=20260917-live')],
-  ['cloudflare-game-detail-panels',local('game-detail-panels.js?v=20260917-live')]
+  ['cloudflare-game-detail-panels',local('game-detail-panels.js?v=public-copy-20261024')]
  ];
  window.CTD_LIVE_RUNTIME_LOADS=window.CTD_LIVE_RUNTIME_LOADS||{};
  async function execute(name,url){
