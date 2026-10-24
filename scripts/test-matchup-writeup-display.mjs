@@ -1,11 +1,7 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
-const base='frontend/cloudflare/';const feed=JSON.parse(fs.readFileSync(base+'matchup-writeups.json'));const script=fs.readFileSync(base+'runtime-matchup-facts-2026.mjs','utf8').replace(/^import .*;\n/gm,'').replace("new URL('./matchup-writeups.json',import.meta.url)","'matchup-writeups.json'");
-let renders=0;const sandbox={assessment:()=>({sections:[{title:'IND availability',text:'A current injury warning'}],risk:'Keep injury warning'}),loadMatchup:async()=>({}),canon:s=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[s]||s),fetch:async()=>({ok:true,json:async()=>feed}),renderSelectedGame:()=>{renders++},BET_FEED:{games:[]},selectedGameIndex:0,document:{addEventListener:()=>{}},AbortSignal,console};vm.createContext(sandbox);vm.runInContext(script,sandbox);await new Promise(r=>setImmediate(r));
-assert(renders>0);
-for(const g of Object.values(feed.games)){
- const data={away:sandbox.canon(g.away_team),home:sandbox.canon(g.home_team),kickoff:g.kickoff};
- for(const kind of ['spread','total','moneyline']){const a=sandbox.CTD_MATCHUP_ASSESSMENT({kind},data);assert.equal(a.sections.length,3);assert.equal(a.risk,'Keep injury warning');assert.equal(a.sections[0].title,g.sections[0].title);}
- assert.equal(sandbox.CTD_MATCHUP_ASSESSMENT({}, {...data,kickoff:'2027-01-01T00:00:00Z'}).sections.length,1);
-}
-const show=fs.readFileSync(base+'show-work.js','utf8');assert(!show.includes("r.kind==='spread'?a.sections:[]"));
-console.log('PASS: all 16 matchups rendered for all three markets; wrong kickoff rejected; injury warnings preserved; async load rerenders');
+const script=fs.readFileSync('frontend/cloudflare/runtime-matchup-facts-2026.mjs','utf8');
+let week=7,renders=0;const game={away_team:'NE',home_team:'CHI',kickoff:'2026-10-25T17:00Z',sections:[{title:'NE offense vs. CHI defense',text:'Current football evidence.'}]};
+const sandbox={BET_FEED:{week:7,season:2026},renderSelectedGame:()=>renders++,fetch:async()=>({ok:true,json:async()=>({week,season:2026,games:{g:game}})}),document:{addEventListener:()=>{}},setInterval:()=>{},AbortSignal,console};vm.createContext(sandbox);vm.runInContext(script,sandbox);await new Promise(r=>setImmediate(r));assert.equal(sandbox.CTD_MATCHUP_REPORTS.size,1);assert(renders);assert.equal(sandbox.CTD_MATCHUP_REPORTS.get('NE@CHI:'+Date.parse(game.kickoff)).sections[0].text,game.sections[0].text);assert(!sandbox.CTD_MATCHUP_REPORTS.has('NE@CHI:'+Date.parse('2026-11-01T17:00Z')));
+week=8;const other={...sandbox,CTD_MATCHUP_REPORTS:undefined};vm.createContext(other);vm.runInContext(script,other);await new Promise(r=>setImmediate(r));assert.equal(other.CTD_MATCHUP_REPORTS.size,0,'Wrong week must not render');
+const panel=fs.readFileSync('frontend/cloudflare/game-detail-panels.js','utf8');assert(panel.includes('${writtenPreview(raw||g)}'));assert(panel.includes("+writtenPreview(raw||g)"),'No-quote games must show previews');assert(script.includes("fetch('/api/live/matchup-previews'"));assert(!script.includes('matchup-writeups.json'));assert(!script.includes('espn.com'));
+console.log('PASS: current-week written preview, exact kickoff identity, stale slate rejected, priced and no-quote games connected, Cloudflare delivery.');

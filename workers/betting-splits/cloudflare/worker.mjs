@@ -1,3 +1,4 @@
+import {MatchupPreviewStore} from './matchup-previews.mjs';
 import {MoneylineProjectionStore} from './moneyline-projections.mjs';
 import {SpreadProjectionStore} from './spread-projections.mjs';
 import {PersonnelGameStore} from './game-projections.mjs';
@@ -11,9 +12,9 @@ const validPath=p=>['/latest.json','/status.json','/index.json'].includes(p)||/^
 const store=env=>env.SPLITS_STORE.get(env.SPLITS_STORE.idFromName('production'));
 export default {
  async scheduled(controller,env){
-  const jobs=controller.cron==='* * * * *'?(env.MONEYLINE_MODEL_ENABLED==='true'?[['moneyline','/moneyline-projections/collect']]:[]):[['splits','/collect'],...(env.PROPS_RELAY_URL?[['props','/props/collect']]:[]),...(env.AVAILABILITY_ENABLED==='true'?[['availability','/availability/collect']]:[]),...(env.SPREAD_MODEL_ENABLED==='true'?[['spread','/spread-projections/collect']]:[]),...(env.MONEYLINE_MODEL_ENABLED==='true'?[['moneyline','/moneyline-projections/collect']]:[])];
-  let splitsComplete=Promise.resolve();
-  const operations=jobs.map(([name,path])=>{const run=(async()=>{if(name==='moneyline')await splitsComplete.catch(()=>{});
+  const jobs=controller.cron==='* * * * *'?(env.MONEYLINE_MODEL_ENABLED==='true'?[['moneyline','/moneyline-projections/collect']]:[]):[['splits','/collect'],...(env.PROPS_RELAY_URL?[['props','/props/collect']]:[]),...(env.AVAILABILITY_ENABLED==='true'?[['availability','/availability/collect']]:[]),...(env.SPREAD_MODEL_ENABLED==='true'?[['spread','/spread-projections/collect']]:[]),...(env.MONEYLINE_MODEL_ENABLED==='true'?[['moneyline','/moneyline-projections/collect']]:[]),...(env.MATCHUP_PREVIEWS_ENABLED==='true'?[['matchup-previews','/matchup-previews/collect']]:[])];
+  let splitsComplete=Promise.resolve(),availabilityComplete=Promise.resolve();
+  const operations=jobs.map(([name,path])=>{const run=(async()=>{if(name==='moneyline')await splitsComplete.catch(()=>{});if(name==='matchup-previews')await availabilityComplete.catch(()=>{});
    const response=await store(env).fetch('https://store'+path,{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});
    const body=await response.text();if(!response.ok)throw Error('Scheduled '+name+' collection failed: '+body);
    console.log(name+'-scheduled-publication',body);
@@ -23,13 +24,14 @@ export default {
     console.log('quarterbacks-scheduled-publication',qbBody);
     if(env.PERSONNEL_GAME_ENABLED==='true'){const r=await store(env).fetch('https://store/game-projections/collect',{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});const b=await r.text();if(!r.ok)throw Error('Personnel game publication failed: '+b);console.log('personnel-games-scheduled-publication',b);}
    }
-  })();if(name==='splits')splitsComplete=run;return run;});
+  })();if(name==='splits')splitsComplete=run;if(name==='availability')availabilityComplete=run;return run;});
   const results=await Promise.allSettled(operations);
   const errors=results.filter(r=>r.status==='rejected').map(r=>r.reason);
   if(errors.length)throw new AggregateError(errors,errors.map(e=>e.message).join('; '));
  },
  async fetch(request,env){
   const path=new URL(request.url).pathname;
+  if(path.startsWith('/matchup-previews/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path,request));
   if(path.startsWith('/moneyline-projections/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
   if(path.startsWith('/spread-projections/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
   if(path.startsWith('/game-projections/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
@@ -43,9 +45,10 @@ export default {
 };
 // Collection is reachable only through the bound object, never through public HTTP.
 export class SplitsStore {
- constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.props=new PropsRelay(ctx.storage,env);this.availability=new AvailabilityStore(ctx.storage);this.quarterbacks=new QuarterbackProjections(ctx.storage);this.games=new PersonnelGameStore(ctx.storage,this.quarterbacks);this.spreads=new SpreadProjectionStore(ctx.storage);this.moneylines=new MoneylineProjectionStore(ctx.storage);}
+ constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.previews=new MatchupPreviewStore(ctx.storage);this.props=new PropsRelay(ctx.storage,env);this.availability=new AvailabilityStore(ctx.storage);this.quarterbacks=new QuarterbackProjections(ctx.storage);this.games=new PersonnelGameStore(ctx.storage,this.quarterbacks);this.spreads=new SpreadProjectionStore(ctx.storage);this.moneylines=new MoneylineProjectionStore(ctx.storage);}
  async fetch(request){
   const path=new URL(request.url).pathname;
+  if(path.startsWith('/matchup-previews/'))return this.previews.handle(request);
   if(path.startsWith('/moneyline-projections/'))return this.moneylines.handle(request);
   if(path.startsWith('/spread-projections/'))return this.spreads.handle(request);
   if(path.startsWith('/game-projections/'))return this.games.handle(request);

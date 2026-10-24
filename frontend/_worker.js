@@ -1,3 +1,4 @@
+import {onRequestGet as previewRequest} from '../functions/api/live/matchup-previews.js';
 import historicalSelection from '../workers/betting-splits/model/ne-chi-current-models.json' with {type:'json'};
 import {applyHistoricalSelection,applyHistoricalFinal,applyHistoricalHistory} from '../workers/betting-splits/lib/historical-model-selection.mjs';
 import {onRequestGet as moneylineRequest} from '../functions/api/live/moneyline-projections.js';
@@ -14,7 +15,7 @@ import {onRequestGet as oddsRequest} from '../functions/api/live/odds.js';
 import {onRequestGet as splitsRequest} from '../functions/api/live/splits.js';
 import {onRequestGet as historyRequest} from '../functions/api/live/history.js';
 
-const LIVE_HANDLERS={'moneyline-projections':moneylineRequest,'spread-projections':spreadRequest,'game-projections':gameProjectionRequest,'prop-quotes':propQuotesRequest,availability:availabilityRequest,'qb-projections':qbRequest,news:newsRequest,odds:oddsRequest,splits:splitsRequest,history:historyRequest};
+const LIVE_HANDLERS={'matchup-previews':previewRequest,'moneyline-projections':moneylineRequest,'spread-projections':spreadRequest,'game-projections':gameProjectionRequest,'prop-quotes':propQuotesRequest,availability:availabilityRequest,'qb-projections':qbRequest,news:newsRequest,odds:oddsRequest,splits:splitsRequest,history:historyRequest};
 const LIVE_RESOURCES=new Set(['','health','scoreboard','game','bundle','model','betting','injuries','players',...Object.keys(LIVE_HANDLERS)]);
 
 const REPO='brandonlowery013-glitch/-fantasy-2026-player-comparison-';
