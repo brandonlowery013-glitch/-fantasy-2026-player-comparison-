@@ -84,6 +84,7 @@
   }
 function gameDirectionPrediction(game,snapshot,kind){
  if(!['moneyline','spread','total'].includes(kind))return null;
+ const selected=snapshot?.markets?.[kind]?.model_prediction;if(kind==='spread'&&selected?.status==='EVEN')return {...selected,selection:null};
  const e=snapshot?.markets?.[kind],a=e?.side_a?.conditional_win_probability,b=e?.side_b?.conditional_win_probability;
  let home=a,away=b;
  if(kind==='moneyline'&&(!Number.isFinite(home)||!Number.isFinite(away))){
@@ -174,6 +175,8 @@ function gameDirectionPrediction(game,snapshot,kind){
     return `${r.label||r.side}: consensus ${r.bets}% of bets, Smart Money ${r.money}% of dollars; money minus bets ${r.handle_minus_bets_pp>=0?'+':''}${r.handle_minus_bets_pp} percentage points. ${r.bets===50?'Bet share is even.':r.bets>50?'The majority of bets agrees with this side.':'The majority of bets opposes this side.'} ${r.money===50?'Money share is even.':r.money>50?'The majority of dollars agrees with this side.':'The majority of dollars opposes this side.'} Recorded ${humanTime(context.observed_at)}. These are DraftKings shares, not proof of professional betting; their predictive effect has not been validated. Probability and confidence adjustment: 0.`;
   }
   function gameWork(game,snapshot,kind,now=Date.now()){
+    if(kind==='spread'&&game.spread_model){const e=snapshot?.markets?.spread,c=e?.calibration;return {reader:{summary:'Spread forecast: sportsbook calibration + existing learning.',details:c?[`Market chance ${(c.book_probability*100).toFixed(2)}%; calibrated ${(c.calibrated_probability*100).toFixed(2)}%; learning change ${(c.learning_change*100).toFixed(2)} percentage points.`,`Training uses ${c.training_games} settled earlier-week games. No bye bonus, Polymarket blend or personnel-model spread adjustment.`,`Saved home spread ${snapshot.market?.home_spread}; ${snapshot.book}; ${snapshot.captured_at}.`]:['Current spread-model inputs unavailable.'],verdict:e?.recommendation?.decision||'WAIT',hideVerdict:false}};}
+
     snapshot=gameMarketView(game,snapshot,now);
     const p=game.football_projection||{},m=snapshot?.market||{},e=snapshot?.markets?.[kind]||{},r=e.recommendation||{decision:'WAIT'};
     const a=e.side_a||{},b=e.side_b||{},chosen=String(r.selection||'').split(' ')[0],labelA=kind==='total'?'OVER':game.home_team,labelB=kind==='total'?'UNDER':game.away_team,isA=chosen===labelA?true:chosen===labelB?false:num(a.expected_value)!=null&&(num(b.expected_value)==null||a.expected_value>=b.expected_value),s=isA?a:b;

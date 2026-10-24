@@ -3,6 +3,9 @@
  const HEAD='https://api.github.com/repos/brandonlowery013-glitch/-fantasy-2026-player-comparison-/git/ref/heads/main';
  const paths={recommendations:['data/market/game-model-consumer-2026.json','all-game-model-rerun-2026.json'],projections:['data/probability/generated/weekly-game-projections-2026.json','all-game-rerun-projections-2026.json'],schedule:['data/calibration/weekly-event-schedule-2026.json'],lines:['data/market/current-game-lines-2026.json']};
  const impactHelper=import('./lib/personnel-matchup.mjs');
+ const spreadHelper=import('./lib/spread-feed.mjs');
+ const spreadCache=new Map();
+ function spreads(){const slot=Math.floor(Date.now()/60000);if(!spreadCache.has(slot)){spreadCache.clear();spreadCache.set(slot,read('/api/live/spread-projections').catch(()=>null));}return spreadCache.get(slot);}
  const impactCache=new Map();
  function personnel(){const slot=Math.floor(Date.now()/60000);if(!impactCache.has(slot)){impactCache.clear();const u=new URLSearchParams(typeof location==='undefined'?'':location.search),team=u.get('game_test'),scenario=u.get('game_scenario')||'qb-out',unit=u.get('game_unit')||'WR';impactCache.set(slot,read('/api/live/game-projections'+(team?'?verify='+encodeURIComponent(team)+'&scenario='+encodeURIComponent(scenario)+'&unit='+encodeURIComponent(unit):'')).catch(()=>null));}return impactCache.get(slot);}
  const cache=new Map(),releases=new Map();
@@ -13,7 +16,7 @@
   if(!paths[kind])return Promise.reject(Error('Unknown game model source'));
   const slot=Math.floor(Date.now()/300000),key=kind+slot;if(cache.has(key))return cache.get(key);
   for(const old of cache.keys())if(old.startsWith(kind))cache.delete(old);
-  const [normal,rerun]=paths[kind];const p=release(slot).then(async sha=>{const baseRead=read('/cloudflare/api/game-model/'+kind+'?ref='+sha).catch(()=>read(ROOT+sha+'/'+normal)).catch(error=>kind==='recommendations'?read(ROOT+sha+'/data/market/weekly-game-market-recommendations-2026.json'):Promise.reject(error));const [base,recalculated]=await Promise.all([baseRead,rerun?read(rerun).catch(()=>null):null]);const chosen=rerun?select(base,recalculated):base;if(!['recommendations','projections'].includes(kind))return chosen;const [helper,live]=await Promise.all([impactHelper,personnel()]);return helper.overlayGameFeed(chosen,live,kind);});
+  const [normal,rerun]=paths[kind];const p=release(slot).then(async sha=>{const baseRead=read('/cloudflare/api/game-model/'+kind+'?ref='+sha).catch(()=>read(ROOT+sha+'/'+normal)).catch(error=>kind==='recommendations'?read(ROOT+sha+'/data/market/weekly-game-market-recommendations-2026.json'):Promise.reject(error));const [base,recalculated]=await Promise.all([baseRead,rerun?read(rerun).catch(()=>null):null]);const chosen=kind==='recommendations'?base:rerun?select(base,recalculated):base;if(!['recommendations','projections'].includes(kind))return chosen;const [helper,live]=await Promise.all([impactHelper,personnel()]);const withPersonnel=helper.overlayGameFeed(chosen,live,kind);if(kind!=='recommendations')return withPersonnel;const [spread,spreadLive]=await Promise.all([spreadHelper,spreads()]);return spread.overlaySpreadFeed(withPersonnel,spreadLive);});
   cache.set(key,p);p.catch(()=>cache.delete(key));return p;
  }};
 })();
