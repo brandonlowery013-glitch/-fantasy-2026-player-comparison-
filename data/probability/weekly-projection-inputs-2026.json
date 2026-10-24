@@ -2,7 +2,7 @@
   "schema_version": "1.5.0",
   "season": 2026,
   "week": 7,
-  "generated_at": "2026-10-24T19:24:49.737Z",
+  "generated_at": "2026-10-24T21:50:54.906Z",
   "status": "SHADOW_ONLY",
   "sportsbook_inputs_used": false,
   "baseline_priority": [
@@ -9643,7 +9643,15 @@
           "adjustments": {
             "mean_multiplier": 1,
             "performance_sd_multiplier": 1,
-            "applied": [],
+            "applied": [
+              {
+                "signal": "quarterback_replacement",
+                "mean_pct": 0,
+                "source": "qb-receiver-effects-2026-v1",
+                "captured_at": "2026-10-24T21:45:45.245Z",
+                "status": "CURRENT"
+              }
+            ],
             "excluded_noncurrent": []
           },
           "missing_core_signals": [
@@ -9660,29 +9668,7 @@
               "Combined uncertainty 1.54; performance 1.54, projection error 0.00."
             ],
             "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
+              "rows": [],
               "missing": [
                 "Positional production / fantasy allowed",
                 "Pass/run tendencies and PROE",
@@ -9704,7 +9690,7 @@
               "Historical baseline 1.87 × existing context multiplier 1.00 = 1.87.",
               "Combined uncertainty 1.54; performance 1.54, projection error 0.00.",
               "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
+              "Context: No sourced contextual evidence attached.",
               "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
               "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
               "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
@@ -9712,23 +9698,44 @@
             "reader": {
               "summary": "Our starting forecast is 1.87. The supported matchup and workload adjustments bring it to 1.87.",
               "matchup": [],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "reconciliation": "quarterback replacement raises the forecast by 0.0%. The supported adjustments leave the starting forecast unchanged.",
               "details": [
                 "Expected variation around the forecast: 1.54. A wider range means a less predictable result.",
                 "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
               ],
-              "sources": []
+              "sources": [
+                {
+                  "label": "qb-receiver-effects-2026-v1"
+                }
+              ]
             }
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 1.87,
+              "sd": 1.5373,
+              "performance_sd": 1.5373,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receiving_yards": {
           "status": "SHADOW_ONLY",
           "actionable": false,
-          "mean": 14.5541,
-          "sd": 17.0507,
-          "performance_sd": 17.0507,
-          "projection_error_sd": 0,
-          "combined_sd": 17.0507,
+          "mean": 12.84669,
+          "sd": 15.059104,
+          "performance_sd": 15.050402,
+          "projection_error_sd": 0.511875,
+          "combined_sd": 15.059104,
           "projection_bias_diagnostic": -1.0403,
           "projection_bias_applied": false,
           "error_model": {
@@ -9766,9 +9773,17 @@
             }
           },
           "adjustments": {
-            "mean_multiplier": 1,
+            "mean_multiplier": 0.8827,
             "performance_sd_multiplier": 1,
-            "applied": [],
+            "applied": [
+              {
+                "signal": "quarterback_replacement",
+                "mean_pct": -0.11731469247479609,
+                "source": "qb-receiver-effects-2026-v1",
+                "captured_at": "2026-10-24T21:45:45.245Z",
+                "status": "CURRENT"
+              }
+            ],
             "excluded_noncurrent": []
           },
           "missing_core_signals": [
@@ -9781,33 +9796,11 @@
           "show_work": {
             "version": 1,
             "math": [
-              "Historical baseline 14.55 × existing context multiplier 1.00 = 14.55.",
-              "Combined uncertainty 17.05; performance 17.05, projection error 0.00."
+              "Historical baseline 14.55 × existing context multiplier 0.88 = 12.85.",
+              "Combined uncertainty 15.06; performance 15.05, projection error 0.51."
             ],
             "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
+              "rows": [],
               "missing": [
                 "Positional production / fantasy allowed",
                 "Pass/run tendencies and PROE",
@@ -9820,30 +9813,51 @@
               ],
               "status": "REVIEW_REQUIRED"
             },
-            "reconciliation": "UNCHANGED",
+            "reconciliation": "DECREASES_PROJECTION",
             "final_probability": null,
             "final_confidence": null,
             "decision": "PROJECTION_ONLY",
             "additional_probability_adjustment": 0,
             "paragraphs": [
-              "Historical baseline 14.55 × existing context multiplier 1.00 = 14.55.",
-              "Combined uncertainty 17.05; performance 17.05, projection error 0.00.",
+              "Historical baseline 14.55 × existing context multiplier 0.88 = 12.85.",
+              "Combined uncertainty 15.06; performance 15.05, projection error 0.51.",
               "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
+              "Context: No sourced contextual evidence attached.",
               "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
-              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
+              "Reconciliation: DECREASES_PROJECTION. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
               "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
             ],
             "reader": {
-              "summary": "Our starting forecast is 14.55. The supported matchup and workload adjustments bring it to 14.55.",
+              "summary": "Our starting forecast is 14.55. The supported matchup and workload adjustments bring it to 12.85.",
               "matchup": [],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "reconciliation": "quarterback replacement lowers the forecast by 11.7%. Together, the supported adjustments lower the starting forecast by 1.71.",
               "details": [
-                "Expected variation around the forecast: 17.05. A wider range means a less predictable result.",
+                "Expected variation around the forecast: 15.06. A wider range means a less predictable result.",
                 "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
               ],
-              "sources": []
+              "sources": [
+                {
+                  "label": "qb-receiver-effects-2026-v1"
+                }
+              ]
             }
+          },
+          "qb_adjustment": {
+            "multiplier": 0.8826853075252039,
+            "multiplier_variance": 0.0012369661235947338,
+            "beta": 0.5634911197051803,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 14.5541,
+              "sd": 17.0507,
+              "performance_sd": 17.0507,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -9893,7 +9907,15 @@
           "adjustments": {
             "mean_multiplier": 1,
             "performance_sd_multiplier": 1,
-            "applied": [],
+            "applied": [
+              {
+                "signal": "quarterback_replacement",
+                "mean_pct": 0,
+                "source": "qb-receiver-effects-2026-v1",
+                "captured_at": "2026-10-24T21:45:45.245Z",
+                "status": "CURRENT"
+              }
+            ],
             "excluded_noncurrent": []
           },
           "missing_core_signals": [
@@ -9910,29 +9932,7 @@
               "Combined uncertainty 1.37; performance 1.37, projection error 0.00."
             ],
             "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
+              "rows": [],
               "missing": [
                 "Positional production / fantasy allowed",
                 "Pass/run tendencies and PROE",
@@ -9954,7 +9954,7 @@
               "Historical baseline 1.51 × existing context multiplier 1.00 = 1.51.",
               "Combined uncertainty 1.37; performance 1.37, projection error 0.00.",
               "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
+              "Context: No sourced contextual evidence attached.",
               "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
               "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
               "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
@@ -9962,15 +9962,74 @@
             "reader": {
               "summary": "Our starting forecast is 1.51. The supported matchup and workload adjustments bring it to 1.51.",
               "matchup": [],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "reconciliation": "quarterback replacement raises the forecast by 0.0%. The supported adjustments leave the starting forecast unchanged.",
               "details": [
                 "Expected variation around the forecast: 1.37. A wider range means a less predictable result.",
                 "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
               ],
-              "sources": []
+              "sources": [
+                {
+                  "label": "qb-receiver-effects-2026-v1"
+                }
+              ]
             }
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 40,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 1.506,
+              "sd": 1.3741,
+              "performance_sd": 1.3741,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         }
+      },
+      "qb_scenario": {
+        "game_id": "2026-W7-CIN-BAL",
+        "team": "BAL",
+        "event_id": "401873012",
+        "kickoff": "2026-10-25T17:00:00.000Z",
+        "starter": "Lamar Jackson",
+        "starter_id": "3916387",
+        "report": {
+          "out": true,
+          "designation": "Out",
+          "concern": false,
+          "source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries",
+          "reported_at": "2026-10-24T19:35Z"
+        },
+        "depth_observed_at": "2026-10-24T21:45:45.245Z",
+        "depth_source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/33/depthcharts",
+        "status": "BACKUP_EXPECTED",
+        "expected_qb": "Tyler Huntley",
+        "backup_id": "4035671",
+        "backup_rank": 2,
+        "backup_concern": false,
+        "selection_basis": "First eligible quarterback on the current team depth chart; not a confirmed starting-lineup announcement",
+        "affected_receivers": [
+          "Derrick Henry",
+          "Zay Flowers",
+          "Mark Andrews",
+          "Rashod Bateman"
+        ],
+        "backup_projection": {
+          "pass_attempts": 29.811005,
+          "pass_yards": 184.294258,
+          "pass_tds": 0.760954,
+          "historical_games": 16,
+          "source": "Historical primary-passer games, shrunk toward league starter prior"
+        },
+        "model_version": "qb-receiver-effects-2026-v1",
+        "backup_historical_games": 16
       }
     },
     "DeVonta Smith": {
@@ -13517,11 +13576,11 @@
         "targets": {
           "status": "SHADOW_ONLY",
           "actionable": false,
-          "mean": 6.5567,
-          "sd": 3.0961,
-          "performance_sd": 3.0961,
-          "projection_error_sd": 0,
-          "combined_sd": 3.0961,
+          "mean": 6.640149,
+          "sd": 3.151033,
+          "performance_sd": 3.135505,
+          "projection_error_sd": 0.312443,
+          "combined_sd": 3.151033,
           "projection_bias_diagnostic": -0.3944,
           "projection_bias_applied": false,
           "error_model": {
@@ -13559,9 +13618,17 @@
             }
           },
           "adjustments": {
-            "mean_multiplier": 1,
+            "mean_multiplier": 1.0127,
             "performance_sd_multiplier": 1,
-            "applied": [],
+            "applied": [
+              {
+                "signal": "quarterback_replacement",
+                "mean_pct": 0.012727255110880575,
+                "source": "qb-receiver-effects-2026-v1",
+                "captured_at": "2026-10-24T21:45:45.245Z",
+                "status": "CURRENT"
+              }
+            ],
             "excluded_noncurrent": []
           },
           "missing_core_signals": [
@@ -13574,33 +13641,11 @@
           "show_work": {
             "version": 1,
             "math": [
-              "Historical baseline 6.56 × existing context multiplier 1.00 = 6.56.",
-              "Combined uncertainty 3.10; performance 3.10, projection error 0.00."
+              "Historical baseline 6.56 × existing context multiplier 1.01 = 6.64.",
+              "Combined uncertainty 3.15; performance 3.14, projection error 0.31."
             ],
             "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
+              "rows": [],
               "missing": [
                 "Positional production / fantasy allowed",
                 "Pass/run tendencies and PROE",
@@ -13613,40 +13658,61 @@
               ],
               "status": "REVIEW_REQUIRED"
             },
-            "reconciliation": "UNCHANGED",
+            "reconciliation": "INCREASES_PROJECTION",
             "final_probability": null,
             "final_confidence": null,
             "decision": "PROJECTION_ONLY",
             "additional_probability_adjustment": 0,
             "paragraphs": [
-              "Historical baseline 6.56 × existing context multiplier 1.00 = 6.56.",
-              "Combined uncertainty 3.10; performance 3.10, projection error 0.00.",
+              "Historical baseline 6.56 × existing context multiplier 1.01 = 6.64.",
+              "Combined uncertainty 3.15; performance 3.14, projection error 0.31.",
               "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
+              "Context: No sourced contextual evidence attached.",
               "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
-              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
+              "Reconciliation: INCREASES_PROJECTION. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
               "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
             ],
             "reader": {
-              "summary": "Our starting forecast is 6.56. The supported matchup and workload adjustments bring it to 6.56.",
+              "summary": "Our starting forecast is 6.56. The supported matchup and workload adjustments bring it to 6.64.",
               "matchup": [],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "reconciliation": "quarterback replacement raises the forecast by 1.3%. Together, the supported adjustments raise the starting forecast by 0.08.",
               "details": [
-                "Expected variation around the forecast: 3.10. A wider range means a less predictable result.",
+                "Expected variation around the forecast: 3.15. A wider range means a less predictable result.",
                 "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
               ],
-              "sources": []
+              "sources": [
+                {
+                  "label": "qb-receiver-effects-2026-v1"
+                }
+              ]
             }
+          },
+          "qb_adjustment": {
+            "multiplier": 1.0127272551108806,
+            "multiplier_variance": 0.0022707562166199087,
+            "beta": 0.7212483084415489,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 6.5567,
+              "sd": 3.0961,
+              "performance_sd": 3.0961,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receiving_yards": {
           "status": "SHADOW_ONLY",
           "actionable": false,
-          "mean": 59.5547,
-          "sd": 36.5923,
-          "performance_sd": 36.5923,
-          "projection_error_sd": 0,
-          "combined_sd": 36.5923,
+          "mean": 51.210892,
+          "sd": 31.564872,
+          "performance_sd": 31.465599,
+          "projection_error_sd": 2.501444,
+          "combined_sd": 31.564872,
           "projection_bias_diagnostic": -3.1175,
           "projection_bias_applied": false,
           "error_model": {
@@ -13684,9 +13750,17 @@
             }
           },
           "adjustments": {
-            "mean_multiplier": 1,
+            "mean_multiplier": 0.8599,
             "performance_sd_multiplier": 1,
-            "applied": [],
+            "applied": [
+              {
+                "signal": "quarterback_replacement",
+                "mean_pct": -0.1401032716345526,
+                "source": "qb-receiver-effects-2026-v1",
+                "captured_at": "2026-10-24T21:45:45.245Z",
+                "status": "CURRENT"
+              }
+            ],
             "excluded_noncurrent": []
           },
           "missing_core_signals": [
@@ -13699,33 +13773,11 @@
           "show_work": {
             "version": 1,
             "math": [
-              "Historical baseline 59.55 × existing context multiplier 1.00 = 59.55.",
-              "Combined uncertainty 36.59; performance 36.59, projection error 0.00."
+              "Historical baseline 59.55 × existing context multiplier 0.86 = 51.21.",
+              "Combined uncertainty 31.56; performance 31.47, projection error 2.50."
             ],
             "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
+              "rows": [],
               "missing": [
                 "Positional production / fantasy allowed",
                 "Pass/run tendencies and PROE",
@@ -13738,40 +13790,61 @@
               ],
               "status": "REVIEW_REQUIRED"
             },
-            "reconciliation": "UNCHANGED",
+            "reconciliation": "DECREASES_PROJECTION",
             "final_probability": null,
             "final_confidence": null,
             "decision": "PROJECTION_ONLY",
             "additional_probability_adjustment": 0,
             "paragraphs": [
-              "Historical baseline 59.55 × existing context multiplier 1.00 = 59.55.",
-              "Combined uncertainty 36.59; performance 36.59, projection error 0.00.",
+              "Historical baseline 59.55 × existing context multiplier 0.86 = 51.21.",
+              "Combined uncertainty 31.56; performance 31.47, projection error 2.50.",
               "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
+              "Context: No sourced contextual evidence attached.",
               "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
-              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
+              "Reconciliation: DECREASES_PROJECTION. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
               "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
             ],
             "reader": {
-              "summary": "Our starting forecast is 59.55. The supported matchup and workload adjustments bring it to 59.55.",
+              "summary": "Our starting forecast is 59.55. The supported matchup and workload adjustments bring it to 51.21.",
               "matchup": [],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "reconciliation": "quarterback replacement lowers the forecast by 14.0%. Together, the supported adjustments lower the starting forecast by 8.34.",
               "details": [
-                "Expected variation around the forecast: 36.59. A wider range means a less predictable result.",
+                "Expected variation around the forecast: 31.56. A wider range means a less predictable result.",
                 "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
               ],
-              "sources": []
+              "sources": [
+                {
+                  "label": "qb-receiver-effects-2026-v1"
+                }
+              ]
             }
+          },
+          "qb_adjustment": {
+            "multiplier": 0.8598967283654474,
+            "multiplier_variance": 0.0017642070232258924,
+            "beta": 0.6729502310605644,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 59.5547,
+              "sd": 36.5923,
+              "performance_sd": 36.5923,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
           "status": "SHADOW_ONLY",
           "actionable": false,
-          "mean": 4.5225,
-          "sd": 2.2828,
-          "performance_sd": 2.2828,
-          "projection_error_sd": 0,
-          "combined_sd": 2.2828,
+          "mean": 4.65701,
+          "sd": 2.360849,
+          "performance_sd": 2.350696,
+          "projection_error_sd": 0.218718,
+          "combined_sd": 2.360849,
           "projection_bias_diagnostic": -0.2571,
           "projection_bias_applied": false,
           "error_model": {
@@ -13809,9 +13882,17 @@
             }
           },
           "adjustments": {
-            "mean_multiplier": 1,
+            "mean_multiplier": 1.0297,
             "performance_sd_multiplier": 1,
-            "applied": [],
+            "applied": [
+              {
+                "signal": "quarterback_replacement",
+                "mean_pct": 0.029742356577358686,
+                "source": "qb-receiver-effects-2026-v1",
+                "captured_at": "2026-10-24T21:45:45.245Z",
+                "status": "CURRENT"
+              }
+            ],
             "excluded_noncurrent": []
           },
           "missing_core_signals": [
@@ -13824,33 +13905,11 @@
           "show_work": {
             "version": 1,
             "math": [
-              "Historical baseline 4.52 × existing context multiplier 1.00 = 4.52.",
-              "Combined uncertainty 2.28; performance 2.28, projection error 0.00."
+              "Historical baseline 4.52 × existing context multiplier 1.03 = 4.66.",
+              "Combined uncertainty 2.36; performance 2.35, projection error 0.22."
             ],
             "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
+              "rows": [],
               "missing": [
                 "Positional production / fantasy allowed",
                 "Pass/run tendencies and PROE",
@@ -13863,32 +13922,91 @@
               ],
               "status": "REVIEW_REQUIRED"
             },
-            "reconciliation": "UNCHANGED",
+            "reconciliation": "INCREASES_PROJECTION",
             "final_probability": null,
             "final_confidence": null,
             "decision": "PROJECTION_ONLY",
             "additional_probability_adjustment": 0,
             "paragraphs": [
-              "Historical baseline 4.52 × existing context multiplier 1.00 = 4.52.",
-              "Combined uncertainty 2.28; performance 2.28, projection error 0.00.",
+              "Historical baseline 4.52 × existing context multiplier 1.03 = 4.66.",
+              "Combined uncertainty 2.36; performance 2.35, projection error 0.22.",
               "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
+              "Context: No sourced contextual evidence attached.",
               "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
-              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
+              "Reconciliation: INCREASES_PROJECTION. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
               "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
             ],
             "reader": {
-              "summary": "Our starting forecast is 4.52. The supported matchup and workload adjustments bring it to 4.52.",
+              "summary": "Our starting forecast is 4.52. The supported matchup and workload adjustments bring it to 4.66.",
               "matchup": [],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "reconciliation": "quarterback replacement raises the forecast by 3.0%. Together, the supported adjustments raise the starting forecast by 0.13.",
               "details": [
-                "Expected variation around the forecast: 2.28. A wider range means a less predictable result.",
+                "Expected variation around the forecast: 2.36. A wider range means a less predictable result.",
                 "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
               ],
-              "sources": []
+              "sources": [
+                {
+                  "label": "qb-receiver-effects-2026-v1"
+                }
+              ]
             }
+          },
+          "qb_adjustment": {
+            "multiplier": 1.0297423565773587,
+            "multiplier_variance": 0.002338903505419149,
+            "beta": 0.5992222213519792,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 4.5225,
+              "sd": 2.2828,
+              "performance_sd": 2.2828,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         }
+      },
+      "qb_scenario": {
+        "game_id": "2026-W7-CIN-BAL",
+        "team": "BAL",
+        "event_id": "401873012",
+        "kickoff": "2026-10-25T17:00:00.000Z",
+        "starter": "Lamar Jackson",
+        "starter_id": "3916387",
+        "report": {
+          "out": true,
+          "designation": "Out",
+          "concern": false,
+          "source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries",
+          "reported_at": "2026-10-24T19:35Z"
+        },
+        "depth_observed_at": "2026-10-24T21:45:45.245Z",
+        "depth_source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/33/depthcharts",
+        "status": "BACKUP_EXPECTED",
+        "expected_qb": "Tyler Huntley",
+        "backup_id": "4035671",
+        "backup_rank": 2,
+        "backup_concern": false,
+        "selection_basis": "First eligible quarterback on the current team depth chart; not a confirmed starting-lineup announcement",
+        "affected_receivers": [
+          "Derrick Henry",
+          "Zay Flowers",
+          "Mark Andrews",
+          "Rashod Bateman"
+        ],
+        "backup_projection": {
+          "pass_attempts": 29.811005,
+          "pass_yards": 184.294258,
+          "pass_tds": 0.760954,
+          "historical_games": 16,
+          "source": "Historical primary-passer games, shrunk toward league starter prior"
+        },
+        "model_version": "qb-receiver-effects-2026-v1",
+        "backup_historical_games": 16
       }
     },
     "Jameson Williams": {
@@ -15942,405 +16060,45 @@
     },
     "Lamar Jackson": {
       "position": "QB",
-      "status": "REVIEW_REQUIRED",
+      "status": "UNAVAILABLE",
       "source_context_status": "REVIEW_REQUIRED",
-      "projections": {
-        "pass_yards": {
-          "status": "SHADOW_ONLY",
-          "actionable": false,
-          "mean": 219.6023,
-          "sd": 78.4494,
-          "performance_sd": 74.2382,
-          "projection_error_sd": 25.3575,
-          "combined_sd": 78.4494,
-          "projection_bias_diagnostic": -12.3297,
-          "projection_bias_applied": false,
-          "error_model": {
-            "snapshot_type": "WALK_FORWARD_RECONSTRUCTION",
-            "tuning_window": [
-              2023,
-              2024
-            ],
-            "evaluation_window": [
-              2025
-            ]
-          },
-          "baseline": {
-            "mean": 219.6023,
-            "sd": 74.2382,
-            "source": "player_shrunk_prior",
-            "prior_player": "Lamar Jackson",
-            "games": 70
-          },
-          "baseline_candidates": {
-            "player": {
-              "mean": 219.6023,
-              "sd": 74.2382,
-              "source": "player_shrunk_prior",
-              "prior_player": "Lamar Jackson",
-              "games": 70
-            },
-            "rookie": null,
-            "role_cohort": null,
-            "position": {
-              "mean": 189.4339,
-              "sd": 106.4342,
-              "source": "position_prior",
-              "sample": 3353
-            }
-          },
-          "adjustments": {
-            "mean_multiplier": 1,
-            "performance_sd_multiplier": 1,
-            "applied": [],
-            "excluded_noncurrent": []
-          },
-          "missing_core_signals": [
-            "role",
-            "injury",
-            "team_environment",
-            "opponent"
-          ],
-          "sportsbook_inputs_used": false,
-          "show_work": {
-            "version": 1,
-            "math": [
-              "Historical baseline 219.60 × existing context multiplier 1.00 = 219.60.",
-              "Combined uncertainty 78.45; performance 74.24, projection error 25.36."
-            ],
-            "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "qb_context",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-23T01:27:35.069Z",
-                  "text": "status: Questionable; body part: Ankle. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-23T01:27:35.069Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
-              "missing": [
-                "Positional production / fantasy allowed",
-                "Pass/run tendencies and PROE",
-                "Pressure / sacks",
-                "Coverage / run defense",
-                "Injuries / offensive line / secondary",
-                "Pace / script",
-                "Home / road / dome / weather",
-                "Role / usage / opportunities"
-              ],
-              "status": "REVIEW_REQUIRED"
-            },
-            "reconciliation": "UNCHANGED",
-            "final_probability": null,
-            "final_confidence": null,
-            "decision": "PROJECTION_ONLY",
-            "additional_probability_adjustment": 0,
-            "paragraphs": [
-              "Historical baseline 219.60 × existing context multiplier 1.00 = 219.60.",
-              "Combined uncertainty 78.45; performance 74.24, projection error 25.36.",
-              "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Questionable; body part: Ankle. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-23T01:27:35.069Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
-              "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
-              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
-              "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
-            ],
-            "reader": {
-              "summary": "Our starting forecast is 219.60. The supported matchup and workload adjustments bring it to 219.60.",
-              "matchup": [],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
-              "details": [
-                "Expected variation around the forecast: 78.45. A wider range means a less predictable result.",
-                "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
-              ],
-              "sources": []
-            }
-          }
+      "projections": {},
+      "qb_scenario": {
+        "game_id": "2026-W7-CIN-BAL",
+        "team": "BAL",
+        "event_id": "401873012",
+        "kickoff": "2026-10-25T17:00:00.000Z",
+        "starter": "Lamar Jackson",
+        "starter_id": "3916387",
+        "report": {
+          "out": true,
+          "designation": "Out",
+          "concern": false,
+          "source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries",
+          "reported_at": "2026-10-24T19:35Z"
         },
-        "pass_tds": {
-          "status": "SHADOW_ONLY",
-          "actionable": false,
-          "mean": 1.6649,
-          "sd": 1.3523,
-          "performance_sd": 1.3523,
-          "projection_error_sd": 0,
-          "combined_sd": 1.3523,
-          "projection_bias_diagnostic": -0.0721,
-          "projection_bias_applied": false,
-          "error_model": {
-            "snapshot_type": "WALK_FORWARD_RECONSTRUCTION",
-            "tuning_window": [
-              2023,
-              2024
-            ],
-            "evaluation_window": [
-              2025
-            ]
-          },
-          "baseline": {
-            "mean": 1.6649,
-            "sd": 1.3523,
-            "source": "player_shrunk_prior",
-            "prior_player": "Lamar Jackson",
-            "games": 70
-          },
-          "baseline_candidates": {
-            "player": {
-              "mean": 1.6649,
-              "sd": 1.3523,
-              "source": "player_shrunk_prior",
-              "prior_player": "Lamar Jackson",
-              "games": 70
-            },
-            "rookie": null,
-            "role_cohort": null,
-            "position": {
-              "mean": 1.173,
-              "sd": 1.1488,
-              "source": "position_prior",
-              "sample": 3353
-            }
-          },
-          "adjustments": {
-            "mean_multiplier": 1,
-            "performance_sd_multiplier": 1,
-            "applied": [],
-            "excluded_noncurrent": []
-          },
-          "missing_core_signals": [
-            "role",
-            "injury",
-            "team_environment",
-            "opponent"
-          ],
-          "sportsbook_inputs_used": false,
-          "show_work": {
-            "version": 1,
-            "math": [
-              "Historical baseline 1.66 × existing context multiplier 1.00 = 1.66.",
-              "Combined uncertainty 1.35; performance 1.35, projection error 0.00."
-            ],
-            "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "qb_context",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-23T01:27:35.069Z",
-                  "text": "status: Questionable; body part: Ankle. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-23T01:27:35.069Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
-              "missing": [
-                "Positional production / fantasy allowed",
-                "Pass/run tendencies and PROE",
-                "Pressure / sacks",
-                "Coverage / run defense",
-                "Injuries / offensive line / secondary",
-                "Pace / script",
-                "Home / road / dome / weather",
-                "Role / usage / opportunities"
-              ],
-              "status": "REVIEW_REQUIRED"
-            },
-            "reconciliation": "UNCHANGED",
-            "final_probability": null,
-            "final_confidence": null,
-            "decision": "PROJECTION_ONLY",
-            "additional_probability_adjustment": 0,
-            "paragraphs": [
-              "Historical baseline 1.66 × existing context multiplier 1.00 = 1.66.",
-              "Combined uncertainty 1.35; performance 1.35, projection error 0.00.",
-              "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Questionable; body part: Ankle. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-23T01:27:35.069Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
-              "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
-              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
-              "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
-            ],
-            "reader": {
-              "summary": "Our starting forecast is 1.66. The supported matchup and workload adjustments bring it to 1.66.",
-              "matchup": [],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
-              "details": [
-                "Expected variation around the forecast: 1.35. A wider range means a less predictable result.",
-                "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
-              ],
-              "sources": []
-            }
-          }
+        "depth_observed_at": "2026-10-24T21:45:45.245Z",
+        "depth_source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/33/depthcharts",
+        "status": "BACKUP_EXPECTED",
+        "expected_qb": "Tyler Huntley",
+        "backup_id": "4035671",
+        "backup_rank": 2,
+        "backup_concern": false,
+        "selection_basis": "First eligible quarterback on the current team depth chart; not a confirmed starting-lineup announcement",
+        "affected_receivers": [
+          "Derrick Henry",
+          "Zay Flowers",
+          "Mark Andrews",
+          "Rashod Bateman"
+        ],
+        "backup_projection": {
+          "pass_attempts": 29.811005,
+          "pass_yards": 184.294258,
+          "pass_tds": 0.760954,
+          "historical_games": 16,
+          "source": "Historical primary-passer games, shrunk toward league starter prior"
         },
-        "rush_yards": {
-          "status": "SHADOW_ONLY",
-          "actionable": false,
-          "mean": 49.1962,
-          "sd": 29.4253,
-          "performance_sd": 29.4253,
-          "projection_error_sd": 0,
-          "combined_sd": 29.4253,
-          "projection_bias_diagnostic": -1.1669,
-          "projection_bias_applied": false,
-          "error_model": {
-            "snapshot_type": "WALK_FORWARD_RECONSTRUCTION",
-            "tuning_window": [
-              2023,
-              2024
-            ],
-            "evaluation_window": [
-              2025
-            ]
-          },
-          "baseline": {
-            "mean": 49.1962,
-            "sd": 29.4253,
-            "source": "player_shrunk_prior",
-            "prior_player": "Lamar Jackson",
-            "games": 70
-          },
-          "baseline_candidates": {
-            "player": {
-              "mean": 49.1962,
-              "sd": 29.4253,
-              "source": "player_shrunk_prior",
-              "prior_player": "Lamar Jackson",
-              "games": 70
-            },
-            "rookie": null,
-            "role_cohort": null,
-            "position": {
-              "mean": 14.7435,
-              "sd": 20.1404,
-              "source": "position_prior",
-              "sample": 3353
-            }
-          },
-          "adjustments": {
-            "mean_multiplier": 1,
-            "performance_sd_multiplier": 1,
-            "applied": [],
-            "excluded_noncurrent": []
-          },
-          "missing_core_signals": [
-            "role",
-            "injury",
-            "team_environment",
-            "opponent"
-          ],
-          "sportsbook_inputs_used": false,
-          "show_work": {
-            "version": 1,
-            "math": [
-              "Historical baseline 49.20 × existing context multiplier 1.00 = 49.20.",
-              "Combined uncertainty 29.43; performance 29.43, projection error 0.00."
-            ],
-            "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "qb_context",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-23T01:27:35.069Z",
-                  "text": "status: Questionable; body part: Ankle. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-23T01:27:35.069Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
-              "missing": [
-                "Positional production / fantasy allowed",
-                "Pass/run tendencies and PROE",
-                "Pressure / sacks",
-                "Coverage / run defense",
-                "Injuries / offensive line / secondary",
-                "Pace / script",
-                "Home / road / dome / weather",
-                "Role / usage / opportunities"
-              ],
-              "status": "REVIEW_REQUIRED"
-            },
-            "reconciliation": "UNCHANGED",
-            "final_probability": null,
-            "final_confidence": null,
-            "decision": "PROJECTION_ONLY",
-            "additional_probability_adjustment": 0,
-            "paragraphs": [
-              "Historical baseline 49.20 × existing context multiplier 1.00 = 49.20.",
-              "Combined uncertainty 29.43; performance 29.43, projection error 0.00.",
-              "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Questionable; body part: Ankle. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-23T01:27:35.069Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
-              "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
-              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
-              "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
-            ],
-            "reader": {
-              "summary": "Our starting forecast is 49.20. The supported matchup and workload adjustments bring it to 49.20.",
-              "matchup": [],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
-              "details": [
-                "Expected variation around the forecast: 29.43. A wider range means a less predictable result.",
-                "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
-              ],
-              "sources": []
-            }
-          }
-        }
+        "reason": "Starting QB ruled out"
       }
     },
     "Drake Maye": {
@@ -34715,7 +34473,15 @@
           "adjustments": {
             "mean_multiplier": 1,
             "performance_sd_multiplier": 1,
-            "applied": [],
+            "applied": [
+              {
+                "signal": "quarterback_replacement",
+                "mean_pct": 0,
+                "source": "qb-receiver-effects-2026-v1",
+                "captured_at": "2026-10-24T21:45:45.245Z",
+                "status": "CURRENT"
+              }
+            ],
             "excluded_noncurrent": []
           },
           "missing_core_signals": [
@@ -34732,29 +34498,7 @@
               "Combined uncertainty 3.13; performance 3.13, projection error 0.00."
             ],
             "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
+              "rows": [],
               "missing": [
                 "Positional production / fantasy allowed",
                 "Pass/run tendencies and PROE",
@@ -34776,7 +34520,7 @@
               "Historical baseline 5.90 × existing context multiplier 1.00 = 5.90.",
               "Combined uncertainty 3.13; performance 3.13, projection error 0.00.",
               "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
+              "Context: No sourced contextual evidence attached.",
               "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
               "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
               "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
@@ -34784,13 +34528,34 @@
             "reader": {
               "summary": "Our starting forecast is 5.90. The supported matchup and workload adjustments bring it to 5.90.",
               "matchup": [],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "reconciliation": "quarterback replacement raises the forecast by 0.0%. The supported adjustments leave the starting forecast unchanged.",
               "details": [
                 "Expected variation around the forecast: 3.13. A wider range means a less predictable result.",
                 "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
               ],
-              "sources": []
+              "sources": [
+                {
+                  "label": "qb-receiver-effects-2026-v1"
+                }
+              ]
             }
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 40,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 5.8952,
+              "sd": 3.1317,
+              "performance_sd": 3.1317,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receiving_yards": {
@@ -34840,7 +34605,15 @@
           "adjustments": {
             "mean_multiplier": 1,
             "performance_sd_multiplier": 1,
-            "applied": [],
+            "applied": [
+              {
+                "signal": "quarterback_replacement",
+                "mean_pct": 0,
+                "source": "qb-receiver-effects-2026-v1",
+                "captured_at": "2026-10-24T21:45:45.245Z",
+                "status": "CURRENT"
+              }
+            ],
             "excluded_noncurrent": []
           },
           "missing_core_signals": [
@@ -34857,29 +34630,7 @@
               "Combined uncertainty 32.95; performance 32.95, projection error 0.00."
             ],
             "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
+              "rows": [],
               "missing": [
                 "Positional production / fantasy allowed",
                 "Pass/run tendencies and PROE",
@@ -34901,7 +34652,7 @@
               "Historical baseline 48.53 × existing context multiplier 1.00 = 48.53.",
               "Combined uncertainty 32.95; performance 32.95, projection error 0.00.",
               "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
+              "Context: No sourced contextual evidence attached.",
               "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
               "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
               "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
@@ -34909,13 +34660,34 @@
             "reader": {
               "summary": "Our starting forecast is 48.53. The supported matchup and workload adjustments bring it to 48.53.",
               "matchup": [],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "reconciliation": "quarterback replacement raises the forecast by 0.0%. The supported adjustments leave the starting forecast unchanged.",
               "details": [
                 "Expected variation around the forecast: 32.95. A wider range means a less predictable result.",
                 "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
               ],
-              "sources": []
+              "sources": [
+                {
+                  "label": "qb-receiver-effects-2026-v1"
+                }
+              ]
             }
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 5,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 48.5294,
+              "sd": 32.9481,
+              "performance_sd": 32.9481,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -34965,7 +34737,15 @@
           "adjustments": {
             "mean_multiplier": 1,
             "performance_sd_multiplier": 1,
-            "applied": [],
+            "applied": [
+              {
+                "signal": "quarterback_replacement",
+                "mean_pct": 0,
+                "source": "qb-receiver-effects-2026-v1",
+                "captured_at": "2026-10-24T21:45:45.245Z",
+                "status": "CURRENT"
+              }
+            ],
             "excluded_noncurrent": []
           },
           "missing_core_signals": [
@@ -34982,29 +34762,7 @@
               "Combined uncertainty 2.53; performance 2.52, projection error 0.24."
             ],
             "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": false,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
+              "rows": [],
               "missing": [
                 "Positional production / fantasy allowed",
                 "Pass/run tendencies and PROE",
@@ -35026,7 +34784,7 @@
               "Historical baseline 4.15 × existing context multiplier 1.00 = 4.15.",
               "Combined uncertainty 2.53; performance 2.52, projection error 0.24.",
               "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-21T01:09:24.621Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
+              "Context: No sourced contextual evidence attached.",
               "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
               "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
               "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
@@ -35034,15 +34792,74 @@
             "reader": {
               "summary": "Our starting forecast is 4.15. The supported matchup and workload adjustments bring it to 4.15.",
               "matchup": [],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "reconciliation": "quarterback replacement raises the forecast by 0.0%. The supported adjustments leave the starting forecast unchanged.",
               "details": [
                 "Expected variation around the forecast: 2.53. A wider range means a less predictable result.",
                 "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
               ],
-              "sources": []
+              "sources": [
+                {
+                  "label": "qb-receiver-effects-2026-v1"
+                }
+              ]
             }
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 4.15,
+              "sd": 2.5317,
+              "performance_sd": 2.5199,
+              "projection_error_sd": 0.2446
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         }
+      },
+      "qb_scenario": {
+        "game_id": "2026-W7-CIN-BAL",
+        "team": "BAL",
+        "event_id": "401873012",
+        "kickoff": "2026-10-25T17:00:00.000Z",
+        "starter": "Lamar Jackson",
+        "starter_id": "3916387",
+        "report": {
+          "out": true,
+          "designation": "Out",
+          "concern": false,
+          "source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries",
+          "reported_at": "2026-10-24T19:35Z"
+        },
+        "depth_observed_at": "2026-10-24T21:45:45.245Z",
+        "depth_source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/33/depthcharts",
+        "status": "BACKUP_EXPECTED",
+        "expected_qb": "Tyler Huntley",
+        "backup_id": "4035671",
+        "backup_rank": 2,
+        "backup_concern": false,
+        "selection_basis": "First eligible quarterback on the current team depth chart; not a confirmed starting-lineup announcement",
+        "affected_receivers": [
+          "Derrick Henry",
+          "Zay Flowers",
+          "Mark Andrews",
+          "Rashod Bateman"
+        ],
+        "backup_projection": {
+          "pass_attempts": 29.811005,
+          "pass_yards": 184.294258,
+          "pass_tds": 0.760954,
+          "historical_games": 16,
+          "source": "Historical primary-passer games, shrunk toward league starter prior"
+        },
+        "model_version": "qb-receiver-effects-2026-v1",
+        "backup_historical_games": 16
       }
     },
     "Quinshon Judkins": {
@@ -71678,11 +71495,11 @@
         "targets": {
           "status": "SHADOW_ONLY",
           "actionable": false,
-          "mean": 4.0669,
-          "sd": 2.3519,
-          "performance_sd": 2.3519,
-          "projection_error_sd": 0,
-          "combined_sd": 2.3519,
+          "mean": 4.11866,
+          "sd": 2.389704,
+          "performance_sd": 2.381833,
+          "projection_error_sd": 0.193798,
+          "combined_sd": 2.389704,
           "projection_bias_diagnostic": -0.3944,
           "projection_bias_applied": false,
           "error_model": {
@@ -71729,9 +71546,17 @@
             }
           },
           "adjustments": {
-            "mean_multiplier": 1,
+            "mean_multiplier": 1.0127,
             "performance_sd_multiplier": 1,
-            "applied": [],
+            "applied": [
+              {
+                "signal": "quarterback_replacement",
+                "mean_pct": 0.012727255110880575,
+                "source": "qb-receiver-effects-2026-v1",
+                "captured_at": "2026-10-24T21:45:45.245Z",
+                "status": "CURRENT"
+              }
+            ],
             "excluded_noncurrent": []
           },
           "missing_core_signals": [
@@ -71743,33 +71568,11 @@
           "show_work": {
             "version": 1,
             "math": [
-              "Historical baseline 4.07 × existing context multiplier 1.00 = 4.07.",
-              "Combined uncertainty 2.35; performance 2.35, projection error 0.00."
+              "Historical baseline 4.07 × existing context multiplier 1.01 = 4.12.",
+              "Combined uncertainty 2.39; performance 2.38, projection error 0.19."
             ],
             "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": true,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-22T22:16:50.615Z",
-                  "text": "depth rank: 1. Current evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-22T22:16:50.615Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-22T22:16:50.615Z",
-                  "text": "status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-22T22:16:50.615Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
+              "rows": [],
               "missing": [
                 "Positional production / fantasy allowed",
                 "Pass/run tendencies and PROE",
@@ -71777,52 +71580,66 @@
                 "Coverage / run defense",
                 "Injuries / offensive line / secondary",
                 "Pace / script",
-                "Home / road / dome / weather"
+                "Home / road / dome / weather",
+                "Role / usage / opportunities"
               ],
               "status": "REVIEW_REQUIRED"
             },
-            "reconciliation": "UNCHANGED",
+            "reconciliation": "INCREASES_PROJECTION",
             "final_probability": null,
             "final_confidence": null,
             "decision": "PROJECTION_ONLY",
             "additional_probability_adjustment": 0,
             "paragraphs": [
-              "Historical baseline 4.07 × existing context multiplier 1.00 = 4.07.",
-              "Combined uncertainty 2.35; performance 2.35, projection error 0.00.",
+              "Historical baseline 4.07 × existing context multiplier 1.01 = 4.12.",
+              "Combined uncertainty 2.39; performance 2.38, projection error 0.19.",
               "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Current evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-22T22:16:50.615Z. status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-22T22:16:50.615Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
-              "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather.",
-              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
+              "Context: No sourced contextual evidence attached.",
+              "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
+              "Reconciliation: INCREASES_PROJECTION. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
               "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
             ],
             "reader": {
-              "summary": "Our starting forecast is 4.07. The supported matchup and workload adjustments bring it to 4.07.",
-              "matchup": [
-                {
-                  "kind": "role",
-                  "field": "depth_rank",
-                  "text": "Depth-chart position: 1.",
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "at": "2026-10-22T22:16:50.615Z"
-                }
-              ],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "summary": "Our starting forecast is 4.07. The supported matchup and workload adjustments bring it to 4.12.",
+              "matchup": [],
+              "reconciliation": "quarterback replacement raises the forecast by 1.3%. Together, the supported adjustments raise the starting forecast by 0.05.",
               "details": [
-                "Expected variation around the forecast: 2.35. A wider range means a less predictable result.",
+                "Expected variation around the forecast: 2.39. A wider range means a less predictable result.",
                 "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
               ],
-              "sources": []
+              "sources": [
+                {
+                  "label": "qb-receiver-effects-2026-v1"
+                }
+              ]
             }
+          },
+          "qb_adjustment": {
+            "multiplier": 1.0127272551108806,
+            "multiplier_variance": 0.0022707562166199087,
+            "beta": 0.7212483084415489,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 4.0669,
+              "sd": 2.3519,
+              "performance_sd": 2.3519,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receiving_yards": {
           "status": "SHADOW_ONLY",
           "actionable": false,
-          "mean": 33.2537,
-          "sd": 28.8215,
-          "performance_sd": 28.8215,
-          "projection_error_sd": 0,
-          "combined_sd": 28.8215,
+          "mean": 28.594748,
+          "sd": 24.822841,
+          "performance_sd": 24.783514,
+          "projection_error_sd": 1.396737,
+          "combined_sd": 24.822841,
           "projection_bias_diagnostic": -3.1175,
           "projection_bias_applied": false,
           "error_model": {
@@ -71869,9 +71686,17 @@
             }
           },
           "adjustments": {
-            "mean_multiplier": 1,
+            "mean_multiplier": 0.8599,
             "performance_sd_multiplier": 1,
-            "applied": [],
+            "applied": [
+              {
+                "signal": "quarterback_replacement",
+                "mean_pct": -0.1401032716345526,
+                "source": "qb-receiver-effects-2026-v1",
+                "captured_at": "2026-10-24T21:45:45.245Z",
+                "status": "CURRENT"
+              }
+            ],
             "excluded_noncurrent": []
           },
           "missing_core_signals": [
@@ -71883,33 +71708,11 @@
           "show_work": {
             "version": 1,
             "math": [
-              "Historical baseline 33.25 × existing context multiplier 1.00 = 33.25.",
-              "Combined uncertainty 28.82; performance 28.82, projection error 0.00."
+              "Historical baseline 33.25 × existing context multiplier 0.86 = 28.59.",
+              "Combined uncertainty 24.82; performance 24.78, projection error 1.40."
             ],
             "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": true,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-22T22:16:50.615Z",
-                  "text": "depth rank: 1. Current evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-22T22:16:50.615Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-22T22:16:50.615Z",
-                  "text": "status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-22T22:16:50.615Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
+              "rows": [],
               "missing": [
                 "Positional production / fantasy allowed",
                 "Pass/run tendencies and PROE",
@@ -71917,52 +71720,66 @@
                 "Coverage / run defense",
                 "Injuries / offensive line / secondary",
                 "Pace / script",
-                "Home / road / dome / weather"
+                "Home / road / dome / weather",
+                "Role / usage / opportunities"
               ],
               "status": "REVIEW_REQUIRED"
             },
-            "reconciliation": "UNCHANGED",
+            "reconciliation": "DECREASES_PROJECTION",
             "final_probability": null,
             "final_confidence": null,
             "decision": "PROJECTION_ONLY",
             "additional_probability_adjustment": 0,
             "paragraphs": [
-              "Historical baseline 33.25 × existing context multiplier 1.00 = 33.25.",
-              "Combined uncertainty 28.82; performance 28.82, projection error 0.00.",
+              "Historical baseline 33.25 × existing context multiplier 0.86 = 28.59.",
+              "Combined uncertainty 24.82; performance 24.78, projection error 1.40.",
               "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Current evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-22T22:16:50.615Z. status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-22T22:16:50.615Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
-              "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather.",
-              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
+              "Context: No sourced contextual evidence attached.",
+              "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
+              "Reconciliation: DECREASES_PROJECTION. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
               "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
             ],
             "reader": {
-              "summary": "Our starting forecast is 33.25. The supported matchup and workload adjustments bring it to 33.25.",
-              "matchup": [
-                {
-                  "kind": "role",
-                  "field": "depth_rank",
-                  "text": "Depth-chart position: 1.",
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "at": "2026-10-22T22:16:50.615Z"
-                }
-              ],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "summary": "Our starting forecast is 33.25. The supported matchup and workload adjustments bring it to 28.59.",
+              "matchup": [],
+              "reconciliation": "quarterback replacement lowers the forecast by 14.0%. Together, the supported adjustments lower the starting forecast by 4.66.",
               "details": [
-                "Expected variation around the forecast: 28.82. A wider range means a less predictable result.",
+                "Expected variation around the forecast: 24.82. A wider range means a less predictable result.",
                 "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
               ],
-              "sources": []
+              "sources": [
+                {
+                  "label": "qb-receiver-effects-2026-v1"
+                }
+              ]
             }
+          },
+          "qb_adjustment": {
+            "multiplier": 0.8598967283654474,
+            "multiplier_variance": 0.0017642070232258924,
+            "beta": 0.6729502310605644,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 33.2537,
+              "sd": 28.8215,
+              "performance_sd": 28.8215,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
           "status": "SHADOW_ONLY",
           "actionable": false,
-          "mean": 2.4455,
-          "sd": 1.7802,
-          "performance_sd": 1.7802,
-          "projection_error_sd": 0,
-          "combined_sd": 1.7802,
+          "mean": 2.518235,
+          "sd": 1.836959,
+          "performance_sd": 1.833147,
+          "projection_error_sd": 0.11827,
+          "combined_sd": 1.836959,
           "projection_bias_diagnostic": -0.2571,
           "projection_bias_applied": false,
           "error_model": {
@@ -72009,9 +71826,17 @@
             }
           },
           "adjustments": {
-            "mean_multiplier": 1,
+            "mean_multiplier": 1.0297,
             "performance_sd_multiplier": 1,
-            "applied": [],
+            "applied": [
+              {
+                "signal": "quarterback_replacement",
+                "mean_pct": 0.029742356577358686,
+                "source": "qb-receiver-effects-2026-v1",
+                "captured_at": "2026-10-24T21:45:45.245Z",
+                "status": "CURRENT"
+              }
+            ],
             "excluded_noncurrent": []
           },
           "missing_core_signals": [
@@ -72023,33 +71848,11 @@
           "show_work": {
             "version": 1,
             "math": [
-              "Historical baseline 2.45 × existing context multiplier 1.00 = 2.45.",
-              "Combined uncertainty 1.78; performance 1.78, projection error 0.00."
+              "Historical baseline 2.45 × existing context multiplier 1.03 = 2.52.",
+              "Combined uncertainty 1.84; performance 1.83, projection error 0.12."
             ],
             "context": {
-              "rows": [
-                {
-                  "kind": "role",
-                  "current": true,
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "captured_at": "2026-10-22T22:16:50.615Z",
-                  "text": "depth rank: 1. Current evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-22T22:16:50.615Z."
-                },
-                {
-                  "kind": "injury",
-                  "current": false,
-                  "source": "ESPN public NFL team injury endpoint",
-                  "captured_at": "2026-10-22T22:16:50.615Z",
-                  "text": "status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-22T22:16:50.615Z."
-                },
-                {
-                  "kind": "team_environment",
-                  "current": false,
-                  "source": "ESPN public NFL scoreboard/summary endpoints",
-                  "captured_at": "2026-10-21T01:09:24.621Z",
-                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
-                }
-              ],
+              "rows": [],
               "missing": [
                 "Positional production / fantasy allowed",
                 "Pass/run tendencies and PROE",
@@ -72057,44 +71860,96 @@
                 "Coverage / run defense",
                 "Injuries / offensive line / secondary",
                 "Pace / script",
-                "Home / road / dome / weather"
+                "Home / road / dome / weather",
+                "Role / usage / opportunities"
               ],
               "status": "REVIEW_REQUIRED"
             },
-            "reconciliation": "UNCHANGED",
+            "reconciliation": "INCREASES_PROJECTION",
             "final_probability": null,
             "final_confidence": null,
             "decision": "PROJECTION_ONLY",
             "additional_probability_adjustment": 0,
             "paragraphs": [
-              "Historical baseline 2.45 × existing context multiplier 1.00 = 2.45.",
-              "Combined uncertainty 1.78; performance 1.78, projection error 0.00.",
+              "Historical baseline 2.45 × existing context multiplier 1.03 = 2.52.",
+              "Combined uncertainty 1.84; performance 1.83, projection error 0.12.",
               "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
-              "Context: depth rank: 1. Current evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-22T22:16:50.615Z. status: Active. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-22T22:16:50.615Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
-              "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather.",
-              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
+              "Context: No sourced contextual evidence attached.",
+              "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
+              "Reconciliation: INCREASES_PROJECTION. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
               "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
             ],
             "reader": {
-              "summary": "Our starting forecast is 2.45. The supported matchup and workload adjustments bring it to 2.45.",
-              "matchup": [
-                {
-                  "kind": "role",
-                  "field": "depth_rank",
-                  "text": "Depth-chart position: 1.",
-                  "source": "ESPN public NFL team depth-chart endpoint",
-                  "at": "2026-10-22T22:16:50.615Z"
-                }
-              ],
-              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "summary": "Our starting forecast is 2.45. The supported matchup and workload adjustments bring it to 2.52.",
+              "matchup": [],
+              "reconciliation": "quarterback replacement raises the forecast by 3.0%. Together, the supported adjustments raise the starting forecast by 0.07.",
               "details": [
-                "Expected variation around the forecast: 1.78. A wider range means a less predictable result.",
+                "Expected variation around the forecast: 1.84. A wider range means a less predictable result.",
                 "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
               ],
-              "sources": []
+              "sources": [
+                {
+                  "label": "qb-receiver-effects-2026-v1"
+                }
+              ]
             }
+          },
+          "qb_adjustment": {
+            "multiplier": 1.0297423565773587,
+            "multiplier_variance": 0.002338903505419149,
+            "beta": 0.5992222213519792,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 2.4455,
+              "sd": 1.7802,
+              "performance_sd": 1.7802,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         }
+      },
+      "qb_scenario": {
+        "game_id": "2026-W7-CIN-BAL",
+        "team": "BAL",
+        "event_id": "401873012",
+        "kickoff": "2026-10-25T17:00:00.000Z",
+        "starter": "Lamar Jackson",
+        "starter_id": "3916387",
+        "report": {
+          "out": true,
+          "designation": "Out",
+          "concern": false,
+          "source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries",
+          "reported_at": "2026-10-24T19:35Z"
+        },
+        "depth_observed_at": "2026-10-24T21:45:45.245Z",
+        "depth_source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/33/depthcharts",
+        "status": "BACKUP_EXPECTED",
+        "expected_qb": "Tyler Huntley",
+        "backup_id": "4035671",
+        "backup_rank": 2,
+        "backup_concern": false,
+        "selection_basis": "First eligible quarterback on the current team depth chart; not a confirmed starting-lineup announcement",
+        "affected_receivers": [
+          "Derrick Henry",
+          "Zay Flowers",
+          "Mark Andrews",
+          "Rashod Bateman"
+        ],
+        "backup_projection": {
+          "pass_attempts": 29.811005,
+          "pass_yards": 184.294258,
+          "pass_tds": 0.760954,
+          "historical_games": 16,
+          "source": "Historical primary-passer games, shrunk toward league starter prior"
+        },
+        "model_version": "qb-receiver-effects-2026-v1",
+        "backup_historical_games": 16
       }
     },
     "Ted Hurst III": {
@@ -73610,16 +73465,33 @@
       "starter": "Lamar Jackson",
       "starter_id": "3916387",
       "report": {
-        "out": false,
-        "designation": "Questionable",
-        "concern": true,
+        "out": true,
+        "designation": "Out",
+        "concern": false,
         "source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries",
-        "reported_at": "2026-10-23T19:49Z"
+        "reported_at": "2026-10-24T19:35Z"
       },
-      "depth_observed_at": "2026-10-23T01:27:35.069Z",
-      "depth_source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/33/roster",
-      "status": "STARTER_INJURY_CONCERN",
-      "expected_qb": "Lamar Jackson"
+      "depth_observed_at": "2026-10-24T21:45:45.245Z",
+      "depth_source_url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/33/depthcharts",
+      "status": "BACKUP_EXPECTED",
+      "expected_qb": "Tyler Huntley",
+      "backup_id": "4035671",
+      "backup_rank": 2,
+      "backup_concern": false,
+      "selection_basis": "First eligible quarterback on the current team depth chart; not a confirmed starting-lineup announcement",
+      "affected_receivers": [
+        "Derrick Henry",
+        "Zay Flowers",
+        "Mark Andrews",
+        "Rashod Bateman"
+      ],
+      "backup_projection": {
+        "pass_attempts": 29.811005,
+        "pass_yards": 184.294258,
+        "pass_tds": 0.760954,
+        "historical_games": 16,
+        "source": "Historical primary-passer games, shrunk toward league starter prior"
+      }
     },
     "2026-W7-CIN-BAL:CIN": {
       "game_id": "2026-W7-CIN-BAL",
@@ -73869,6 +73741,410 @@
       "expected_qb": "Dak Prescott"
     }
   },
-  "qb_baseline_players": {},
-  "quarterback_revision_id": "e0a3dca2e600f8de3107c49952b25749275256980a89ca13e3bba3a727df1dbf"
+  "qb_baseline_players": {
+    "Lamar Jackson": {
+      "position": "QB",
+      "status": "REVIEW_REQUIRED",
+      "source_context_status": "REVIEW_REQUIRED",
+      "projections": {
+        "pass_yards": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "mean": 219.6023,
+          "sd": 78.4494,
+          "performance_sd": 74.2382,
+          "projection_error_sd": 25.3575,
+          "combined_sd": 78.4494,
+          "projection_bias_diagnostic": -12.3297,
+          "projection_bias_applied": false,
+          "error_model": {
+            "snapshot_type": "WALK_FORWARD_RECONSTRUCTION",
+            "tuning_window": [
+              2023,
+              2024
+            ],
+            "evaluation_window": [
+              2025
+            ]
+          },
+          "baseline": {
+            "mean": 219.6023,
+            "sd": 74.2382,
+            "source": "player_shrunk_prior",
+            "prior_player": "Lamar Jackson",
+            "games": 70
+          },
+          "baseline_candidates": {
+            "player": {
+              "mean": 219.6023,
+              "sd": 74.2382,
+              "source": "player_shrunk_prior",
+              "prior_player": "Lamar Jackson",
+              "games": 70
+            },
+            "rookie": null,
+            "role_cohort": null,
+            "position": {
+              "mean": 189.4339,
+              "sd": 106.4342,
+              "source": "position_prior",
+              "sample": 3353
+            }
+          },
+          "adjustments": {
+            "mean_multiplier": 1,
+            "performance_sd_multiplier": 1,
+            "applied": [],
+            "excluded_noncurrent": []
+          },
+          "missing_core_signals": [
+            "role",
+            "injury",
+            "team_environment",
+            "opponent"
+          ],
+          "sportsbook_inputs_used": false,
+          "show_work": {
+            "version": 1,
+            "math": [
+              "Historical baseline 219.60 × existing context multiplier 1.00 = 219.60.",
+              "Combined uncertainty 78.45; performance 74.24, projection error 25.36."
+            ],
+            "context": {
+              "rows": [
+                {
+                  "kind": "role",
+                  "current": false,
+                  "source": "ESPN public NFL team depth-chart endpoint",
+                  "captured_at": "2026-10-21T01:09:24.621Z",
+                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
+                },
+                {
+                  "kind": "qb_context",
+                  "current": false,
+                  "source": "ESPN public NFL team depth-chart endpoint",
+                  "captured_at": "2026-10-21T01:09:24.621Z",
+                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
+                },
+                {
+                  "kind": "injury",
+                  "current": false,
+                  "source": "ESPN public NFL team injury endpoint",
+                  "captured_at": "2026-10-23T01:27:35.069Z",
+                  "text": "status: Questionable; body part: Ankle. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-23T01:27:35.069Z."
+                },
+                {
+                  "kind": "team_environment",
+                  "current": false,
+                  "source": "ESPN public NFL scoreboard/summary endpoints",
+                  "captured_at": "2026-10-21T01:09:24.621Z",
+                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
+                }
+              ],
+              "missing": [
+                "Positional production / fantasy allowed",
+                "Pass/run tendencies and PROE",
+                "Pressure / sacks",
+                "Coverage / run defense",
+                "Injuries / offensive line / secondary",
+                "Pace / script",
+                "Home / road / dome / weather",
+                "Role / usage / opportunities"
+              ],
+              "status": "REVIEW_REQUIRED"
+            },
+            "reconciliation": "UNCHANGED",
+            "final_probability": null,
+            "final_confidence": null,
+            "decision": "PROJECTION_ONLY",
+            "additional_probability_adjustment": 0,
+            "paragraphs": [
+              "Historical baseline 219.60 × existing context multiplier 1.00 = 219.60.",
+              "Combined uncertainty 78.45; performance 74.24, projection error 25.36.",
+              "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
+              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Questionable; body part: Ankle. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-23T01:27:35.069Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
+              "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
+              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
+              "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
+            ],
+            "reader": {
+              "summary": "Our starting forecast is 219.60. The supported matchup and workload adjustments bring it to 219.60.",
+              "matchup": [],
+              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "details": [
+                "Expected variation around the forecast: 78.45. A wider range means a less predictable result.",
+                "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
+              ],
+              "sources": []
+            }
+          }
+        },
+        "pass_tds": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "mean": 1.6649,
+          "sd": 1.3523,
+          "performance_sd": 1.3523,
+          "projection_error_sd": 0,
+          "combined_sd": 1.3523,
+          "projection_bias_diagnostic": -0.0721,
+          "projection_bias_applied": false,
+          "error_model": {
+            "snapshot_type": "WALK_FORWARD_RECONSTRUCTION",
+            "tuning_window": [
+              2023,
+              2024
+            ],
+            "evaluation_window": [
+              2025
+            ]
+          },
+          "baseline": {
+            "mean": 1.6649,
+            "sd": 1.3523,
+            "source": "player_shrunk_prior",
+            "prior_player": "Lamar Jackson",
+            "games": 70
+          },
+          "baseline_candidates": {
+            "player": {
+              "mean": 1.6649,
+              "sd": 1.3523,
+              "source": "player_shrunk_prior",
+              "prior_player": "Lamar Jackson",
+              "games": 70
+            },
+            "rookie": null,
+            "role_cohort": null,
+            "position": {
+              "mean": 1.173,
+              "sd": 1.1488,
+              "source": "position_prior",
+              "sample": 3353
+            }
+          },
+          "adjustments": {
+            "mean_multiplier": 1,
+            "performance_sd_multiplier": 1,
+            "applied": [],
+            "excluded_noncurrent": []
+          },
+          "missing_core_signals": [
+            "role",
+            "injury",
+            "team_environment",
+            "opponent"
+          ],
+          "sportsbook_inputs_used": false,
+          "show_work": {
+            "version": 1,
+            "math": [
+              "Historical baseline 1.66 × existing context multiplier 1.00 = 1.66.",
+              "Combined uncertainty 1.35; performance 1.35, projection error 0.00."
+            ],
+            "context": {
+              "rows": [
+                {
+                  "kind": "role",
+                  "current": false,
+                  "source": "ESPN public NFL team depth-chart endpoint",
+                  "captured_at": "2026-10-21T01:09:24.621Z",
+                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
+                },
+                {
+                  "kind": "qb_context",
+                  "current": false,
+                  "source": "ESPN public NFL team depth-chart endpoint",
+                  "captured_at": "2026-10-21T01:09:24.621Z",
+                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
+                },
+                {
+                  "kind": "injury",
+                  "current": false,
+                  "source": "ESPN public NFL team injury endpoint",
+                  "captured_at": "2026-10-23T01:27:35.069Z",
+                  "text": "status: Questionable; body part: Ankle. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-23T01:27:35.069Z."
+                },
+                {
+                  "kind": "team_environment",
+                  "current": false,
+                  "source": "ESPN public NFL scoreboard/summary endpoints",
+                  "captured_at": "2026-10-21T01:09:24.621Z",
+                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
+                }
+              ],
+              "missing": [
+                "Positional production / fantasy allowed",
+                "Pass/run tendencies and PROE",
+                "Pressure / sacks",
+                "Coverage / run defense",
+                "Injuries / offensive line / secondary",
+                "Pace / script",
+                "Home / road / dome / weather",
+                "Role / usage / opportunities"
+              ],
+              "status": "REVIEW_REQUIRED"
+            },
+            "reconciliation": "UNCHANGED",
+            "final_probability": null,
+            "final_confidence": null,
+            "decision": "PROJECTION_ONLY",
+            "additional_probability_adjustment": 0,
+            "paragraphs": [
+              "Historical baseline 1.66 × existing context multiplier 1.00 = 1.66.",
+              "Combined uncertainty 1.35; performance 1.35, projection error 0.00.",
+              "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
+              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Questionable; body part: Ankle. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-23T01:27:35.069Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
+              "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
+              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
+              "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
+            ],
+            "reader": {
+              "summary": "Our starting forecast is 1.66. The supported matchup and workload adjustments bring it to 1.66.",
+              "matchup": [],
+              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "details": [
+                "Expected variation around the forecast: 1.35. A wider range means a less predictable result.",
+                "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
+              ],
+              "sources": []
+            }
+          }
+        },
+        "rush_yards": {
+          "status": "SHADOW_ONLY",
+          "actionable": false,
+          "mean": 49.1962,
+          "sd": 29.4253,
+          "performance_sd": 29.4253,
+          "projection_error_sd": 0,
+          "combined_sd": 29.4253,
+          "projection_bias_diagnostic": -1.1669,
+          "projection_bias_applied": false,
+          "error_model": {
+            "snapshot_type": "WALK_FORWARD_RECONSTRUCTION",
+            "tuning_window": [
+              2023,
+              2024
+            ],
+            "evaluation_window": [
+              2025
+            ]
+          },
+          "baseline": {
+            "mean": 49.1962,
+            "sd": 29.4253,
+            "source": "player_shrunk_prior",
+            "prior_player": "Lamar Jackson",
+            "games": 70
+          },
+          "baseline_candidates": {
+            "player": {
+              "mean": 49.1962,
+              "sd": 29.4253,
+              "source": "player_shrunk_prior",
+              "prior_player": "Lamar Jackson",
+              "games": 70
+            },
+            "rookie": null,
+            "role_cohort": null,
+            "position": {
+              "mean": 14.7435,
+              "sd": 20.1404,
+              "source": "position_prior",
+              "sample": 3353
+            }
+          },
+          "adjustments": {
+            "mean_multiplier": 1,
+            "performance_sd_multiplier": 1,
+            "applied": [],
+            "excluded_noncurrent": []
+          },
+          "missing_core_signals": [
+            "role",
+            "injury",
+            "team_environment",
+            "opponent"
+          ],
+          "sportsbook_inputs_used": false,
+          "show_work": {
+            "version": 1,
+            "math": [
+              "Historical baseline 49.20 × existing context multiplier 1.00 = 49.20.",
+              "Combined uncertainty 29.43; performance 29.43, projection error 0.00."
+            ],
+            "context": {
+              "rows": [
+                {
+                  "kind": "role",
+                  "current": false,
+                  "source": "ESPN public NFL team depth-chart endpoint",
+                  "captured_at": "2026-10-21T01:09:24.621Z",
+                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
+                },
+                {
+                  "kind": "qb_context",
+                  "current": false,
+                  "source": "ESPN public NFL team depth-chart endpoint",
+                  "captured_at": "2026-10-21T01:09:24.621Z",
+                  "text": "depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z."
+                },
+                {
+                  "kind": "injury",
+                  "current": false,
+                  "source": "ESPN public NFL team injury endpoint",
+                  "captured_at": "2026-10-23T01:27:35.069Z",
+                  "text": "status: Questionable; body part: Ankle. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-23T01:27:35.069Z."
+                },
+                {
+                  "kind": "team_environment",
+                  "current": false,
+                  "source": "ESPN public NFL scoreboard/summary endpoints",
+                  "captured_at": "2026-10-21T01:09:24.621Z",
+                  "text": "No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z."
+                }
+              ],
+              "missing": [
+                "Positional production / fantasy allowed",
+                "Pass/run tendencies and PROE",
+                "Pressure / sacks",
+                "Coverage / run defense",
+                "Injuries / offensive line / secondary",
+                "Pace / script",
+                "Home / road / dome / weather",
+                "Role / usage / opportunities"
+              ],
+              "status": "REVIEW_REQUIRED"
+            },
+            "reconciliation": "UNCHANGED",
+            "final_probability": null,
+            "final_confidence": null,
+            "decision": "PROJECTION_ONLY",
+            "additional_probability_adjustment": 0,
+            "paragraphs": [
+              "Historical baseline 49.20 × existing context multiplier 1.00 = 49.20.",
+              "Combined uncertainty 29.43; performance 29.43, projection error 0.00.",
+              "Fantasy comparison uses football production, opportunity and uncertainty. Sportsbook price and implied team totals do not change fantasy rankings. A calibrated start/sit win probability is unavailable for this stat projection.",
+              "Context: depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. depth rank: 1. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team depth-chart endpoint; captured 2026-10-21T01:09:24.621Z. status: Questionable; body part: Ankle. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL team injury endpoint; captured 2026-10-23T01:27:35.069Z. No supported contextual metric supplied. Review required: stale, missing freshness, or unverified evidence. Source: ESPN public NFL scoreboard/summary endpoints; captured 2026-10-21T01:09:24.621Z.",
+              "Missing or unverified: Positional production / fantasy allowed, Pass/run tendencies and PROE, Pressure / sacks, Coverage / run defense, Injuries / offensive line / secondary, Pace / script, Home / road / dome / weather, Role / usage / opportunities.",
+              "Reconciliation: UNCHANGED. Existing calibrated adjustments are counted once; unvalidated context does not change model weights or probability.",
+              "Final: PROJECTION_ONLY; model probability unavailable; confidence unavailable. Context validation: REVIEW_REQUIRED."
+            ],
+            "reader": {
+              "summary": "Our starting forecast is 49.20. The supported matchup and workload adjustments bring it to 49.20.",
+              "matchup": [],
+              "reconciliation": "The supported adjustments leave the starting forecast unchanged.",
+              "details": [
+                "Expected variation around the forecast: 29.43. A wider range means a less predictable result.",
+                "This is a player-stat projection. It does not establish a head-to-head start/sit win probability."
+              ],
+              "sources": []
+            }
+          }
+        }
+      }
+    }
+  },
+  "quarterback_revision_id": "56ab5b047be02674e34e3a018820b3afe0dd5b926b6aef83d2b76177eebc217e"
 }

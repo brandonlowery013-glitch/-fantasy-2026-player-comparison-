@@ -1,9 +1,9 @@
 {
-  "quarterback_revision_id": "e0a3dca2e600f8de3107c49952b25749275256980a89ca13e3bba3a727df1dbf",
+  "quarterback_revision_id": "56ab5b047be02674e34e3a018820b3afe0dd5b926b6aef83d2b76177eebc217e",
   "schema_version": "1.2.0",
   "season": 2026,
   "week": 7,
-  "generated_at": "2026-10-24T19:24:49.933Z",
+  "generated_at": "2026-10-24T21:50:55.103Z",
   "mode": "SHADOW_ONLY",
   "actionable": false,
   "input_status": "SHADOW_ONLY",
@@ -2970,6 +2970,41 @@
             "variance": 2.3632912900000003,
             "r": 7.088914949217934,
             "p": 0.7912693656988851
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "RB",
+            "stat": "targets",
+            "family": "negative_binomial",
+            "mean": 1.87,
+            "sd": 1.5373,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "mean": 1.87,
+              "variance": 2.3632912900000003,
+              "r": 7.088914949217934,
+              "p": 0.7912693656988851
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 1.87,
+              "sd": 1.5373,
+              "performance_sd": 1.5373,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "rush_yards": {
@@ -2995,15 +3030,49 @@
           "position": "RB",
           "stat": "receiving_yards",
           "family": "lognormal_shifted",
-          "mean": 14.5541,
-          "sd": 17.0507,
+          "mean": 12.84669,
+          "sd": 15.059104,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
             "shift": 0,
-            "log_mu": 2.2458997065499204,
-            "log_sigma": 0.9294869921786731
+            "log_mu": 2.120778689484646,
+            "log_sigma": 0.9298467627803779
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "RB",
+            "stat": "receiving_yards",
+            "family": "lognormal_shifted",
+            "mean": 14.5541,
+            "sd": 17.0507,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "shift": 0,
+              "log_mu": 2.2458997065499204,
+              "log_sigma": 0.9294869921786731
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 0.8826853075252039,
+            "multiplier_variance": 0.0012369661235947338,
+            "beta": 0.5634911197051803,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 14.5541,
+              "sd": 17.0507,
+              "performance_sd": 17.0507,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -3037,6 +3106,41 @@
                 "variance": 2.3632912900000003,
                 "r": 7.088914949217934,
                 "p": 0.7912693656988851
+              },
+              "qb_baseline_spec": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "RB",
+                "stat": "targets",
+                "family": "negative_binomial",
+                "mean": 1.87,
+                "sd": 1.5373,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 1.87,
+                  "variance": 2.3632912900000003,
+                  "r": 7.088914949217934,
+                  "p": 0.7912693656988851
+                }
+              },
+              "qb_adjustment": {
+                "multiplier": 1,
+                "multiplier_variance": 0,
+                "beta": 0,
+                "shrinkage_games": 3,
+                "starter_games": 63,
+                "backup_games": 16,
+                "baseline_before_qb": {
+                  "mean": 1.87,
+                  "sd": 1.5373,
+                  "performance_sd": 1.5373,
+                  "projection_error_sd": 0
+                },
+                "starter": "Lamar Jackson",
+                "expected_qb": "Tyler Huntley",
+                "model_version": "qb-receiver-effects-2026-v1"
               }
             },
             "pmf": [
@@ -3083,7 +3187,103 @@
             "sd": 1.3741,
             "mean_gap_pct": -0.01894530311194881
           },
-          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.",
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "RB",
+            "stat": "receptions",
+            "family": "compound_receptions",
+            "conditional_family": "beta_binomial",
+            "mean": 1.477468373513405,
+            "sd": 1.3392196098452624,
+            "market_price_used_in_probability": false,
+            "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
+            "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
+            "parameters": {
+              "catch_rate": 0.790090039596322,
+              "rho": 0.012251375947309196,
+              "target_distribution": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "RB",
+                "stat": "targets",
+                "family": "negative_binomial",
+                "mean": 1.87,
+                "sd": 1.5373,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 1.87,
+                  "variance": 2.3632912900000003,
+                  "r": 7.088914949217934,
+                  "p": 0.7912693656988851
+                }
+              },
+              "pmf": [
+                0.26204951036925683,
+                0.31917062198807006,
+                0.22230493430862508,
+                0.11624849110230744,
+                0.05071974494917864,
+                0.019500079932327132,
+                0.006825363378652651,
+                0.0022216545832241348,
+                0.0006824654147106925,
+                0.000199969780284761,
+                0.00005633677368561941,
+                0.000015354258642905788,
+                0.000004067912866276783,
+                0.0000010517201402130386,
+                2.6618331864797145e-7,
+                6.61202272371473e-8,
+                1.6153098212549164e-8,
+                3.885775105472773e-9,
+                9.191963676550915e-10,
+                2.115906136150392e-10,
+                4.5624668587822034e-11,
+                8.267773831911205e-12,
+                9.291879918852191e-13
+              ],
+              "support_max": 22,
+              "target_truncated_tail": 3.132849535347759e-11,
+              "normalized_mass": 1.0000000000000002,
+              "marginal_mean": 1.477468373513405,
+              "marginal_variance": 1.7935091633940972,
+              "marginal_sd": 1.3392196098452624
+            },
+            "catch_rate_prior": {
+              "catch_rate": 0.790090039596322,
+              "rho": 0.012251375947309196,
+              "source": "player_shrunk_catch_rate",
+              "prior_player": "Derrick Henry",
+              "games": 16
+            },
+            "standalone_reception_projection": {
+              "mean": 1.506,
+              "sd": 1.3741,
+              "mean_gap_pct": -0.01894530311194881
+            },
+            "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 40,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 1.506,
+              "sd": 1.3741,
+              "performance_sd": 1.3741,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
+          }
         }
       }
     },
@@ -4154,16 +4354,51 @@
           "position": "WR",
           "stat": "targets",
           "family": "negative_binomial",
-          "mean": 6.5567,
-          "sd": 3.0961,
+          "mean": 6.640149,
+          "sd": 3.151033,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
+            "mean": 6.640149,
+            "variance": 9.929008967089,
+            "r": 13.406341158765375,
+            "p": 0.668762514165275
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "WR",
+            "stat": "targets",
+            "family": "negative_binomial",
             "mean": 6.5567,
-            "variance": 9.585835209999999,
-            "r": 14.192273341935111,
-            "p": 0.6839988228839999
+            "sd": 3.0961,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "mean": 6.5567,
+              "variance": 9.585835209999999,
+              "r": 14.192273341935111,
+              "p": 0.6839988228839999
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 1.0127272551108806,
+            "multiplier_variance": 0.0022707562166199087,
+            "beta": 0.7212483084415489,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 6.5567,
+              "sd": 3.0961,
+              "performance_sd": 3.0961,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receiving_yards": {
@@ -4172,15 +4407,49 @@
           "position": "WR",
           "stat": "receiving_yards",
           "family": "student_t",
-          "mean": 59.5547,
-          "sd": 36.5923,
+          "mean": 51.210892,
+          "sd": 31.564872,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
-            "mu": 59.5547,
+            "mu": 51.210892,
             "df": 8,
-            "scale": 31.689861382901313
+            "scale": 27.33598101920412
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "WR",
+            "stat": "receiving_yards",
+            "family": "student_t",
+            "mean": 59.5547,
+            "sd": 36.5923,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "mu": 59.5547,
+              "df": 8,
+              "scale": 31.689861382901313
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 0.8598967283654474,
+            "multiplier_variance": 0.0017642070232258924,
+            "beta": 0.6729502310605644,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 59.5547,
+              "sd": 36.5923,
+              "performance_sd": 36.5923,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -4190,13 +4459,13 @@
           "stat": "receptions",
           "family": "compound_receptions",
           "conditional_family": "beta_binomial",
-          "mean": 4.477987824399055,
-          "sd": 2.452912402223379,
+          "mean": 4.611173878396971,
+          "sd": 2.514800791129737,
           "market_price_used_in_probability": false,
           "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
           "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
           "parameters": {
-            "catch_rate": 0.6829636595143753,
+            "catch_rate": 0.69443831461614,
             "rho": 0.012633422760818603,
             "target_distribution": {
               "status": "SHADOW_ONLY",
@@ -4204,66 +4473,102 @@
               "position": "WR",
               "stat": "targets",
               "family": "negative_binomial",
-              "mean": 6.5567,
-              "sd": 3.0961,
+              "mean": 6.640149,
+              "sd": 3.151033,
               "market_price_used_in_probability": false,
               "source": "2021-2025 football-only distribution-family calibration",
               "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
               "parameters": {
+                "mean": 6.640149,
+                "variance": 9.929008967089,
+                "r": 13.406341158765375,
+                "p": 0.668762514165275
+              },
+              "qb_baseline_spec": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "WR",
+                "stat": "targets",
+                "family": "negative_binomial",
                 "mean": 6.5567,
-                "variance": 9.585835209999999,
-                "r": 14.192273341935111,
-                "p": 0.6839988228839999
+                "sd": 3.0961,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 6.5567,
+                  "variance": 9.585835209999999,
+                  "r": 14.192273341935111,
+                  "p": 0.6839988228839999
+                }
+              },
+              "qb_adjustment": {
+                "multiplier": 1.0127272551108806,
+                "multiplier_variance": 0.0022707562166199087,
+                "beta": 0.7212483084415489,
+                "shrinkage_games": 3,
+                "starter_games": 63,
+                "backup_games": 16,
+                "baseline_before_qb": {
+                  "mean": 6.5567,
+                  "sd": 3.0961,
+                  "performance_sd": 3.0961,
+                  "projection_error_sd": 0
+                },
+                "starter": "Lamar Jackson",
+                "expected_qb": "Tyler Huntley",
+                "model_version": "qb-receiver-effects-2026-v1"
               }
             },
             "pmf": [
-              0.021177565596678067,
-              0.0708734238723019,
-              0.12743040083987478,
-              0.16340026168286417,
-              0.16744500828354084,
-              0.1457628713646425,
-              0.11193134850413669,
-              0.07776826526962927,
-              0.04977952999421418,
-              0.029753163049258565,
-              0.01677753194645266,
-              0.008998286626596099,
-              0.0046201774786662625,
-              0.0022831591604120936,
-              0.001090705297704659,
-              0.0005055664380318623,
-              0.00022809171941805086,
-              0.00010043041094838665,
-              0.00004325627080206778,
-              0.000018261345901425175,
-              0.000007569696393544082,
-              0.000003085717810378899,
-              0.0000012386772557773252,
-              4.902408070389892e-7,
-              1.915030852460624e-7,
-              7.390360861002198e-8,
-              2.819824011822901e-8,
-              1.064364140440373e-8,
-              3.9750005149542056e-9,
-              1.4678400511816475e-9,
-              5.347629021685065e-10,
-              1.9127382331757334e-10,
-              6.655406263402342e-11,
-              2.2186858182866843e-11,
-              6.923968581983798e-12,
-              1.956468890061907e-12,
-              4.772926785407352e-13,
-              9.357250713921939e-14,
-              1.3017629932945324e-14,
-              9.585038907589656e-16
+              0.019700065064386384,
+              0.06652097536104201,
+              0.12110363379391716,
+              0.15771186780600321,
+              0.1645738101150635,
+              0.14622500298249383,
+              0.11484306627666127,
+              0.08175736878224812,
+              0.05371005184971416,
+              0.03299549968501912,
+              0.019148750634085367,
+              0.010582363833549989,
+              0.005604853090136904,
+              0.002859927074942931,
+              0.0014119946211966048,
+              0.0006769735322346883,
+              0.0003161569321591887,
+              0.0001441996064058169,
+              0.00006437780347828564,
+              0.000028188355068577203,
+              0.000012125732827729657,
+              0.000005132204643179132,
+              0.000002140101962189002,
+              8.802605844977606e-7,
+              3.5751116854541863e-7,
+              1.435072337248311e-7,
+              5.697930033993013e-8,
+              2.239291439643614e-8,
+              8.714586780634222e-9,
+              3.358398007913373e-9,
+              1.2805800986740822e-9,
+              4.819691116165866e-10,
+              1.781240005812284e-10,
+              6.40336810169102e-11,
+              2.204761152245194e-11,
+              7.103687097239485e-12,
+              2.0717421132117984e-12,
+              5.216213150711366e-13,
+              1.0556983956644089e-13,
+              1.517075740882379e-14,
+              1.154935727472243e-15
             ],
-            "support_max": 39,
-            "target_truncated_tail": 8.312095456375346e-11,
-            "normalized_mass": 1.0000000000000002,
-            "marginal_mean": 4.477987824399055,
-            "marginal_variance": 6.0167792529812685,
-            "marginal_sd": 2.452912402223379
+            "support_max": 40,
+            "target_truncated_tail": 8.053713251854333e-11,
+            "normalized_mass": 1,
+            "marginal_mean": 4.611173878396971,
+            "marginal_variance": 6.324223019066751,
+            "marginal_sd": 2.514800791129737
           },
           "catch_rate_prior": {
             "catch_rate": 0.6829636595143753,
@@ -4273,11 +4578,124 @@
             "games": 50
           },
           "standalone_reception_projection": {
-            "mean": 4.5225,
-            "sd": 2.2828,
-            "mean_gap_pct": -0.009842382664664358
+            "mean": 4.65701,
+            "sd": 2.360849,
+            "mean_gap_pct": -0.009842392780567043
           },
-          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.",
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "WR",
+            "stat": "receptions",
+            "family": "compound_receptions",
+            "conditional_family": "beta_binomial",
+            "mean": 4.477987824399055,
+            "sd": 2.452912402223379,
+            "market_price_used_in_probability": false,
+            "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
+            "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
+            "parameters": {
+              "catch_rate": 0.6829636595143753,
+              "rho": 0.012633422760818603,
+              "target_distribution": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "WR",
+                "stat": "targets",
+                "family": "negative_binomial",
+                "mean": 6.5567,
+                "sd": 3.0961,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 6.5567,
+                  "variance": 9.585835209999999,
+                  "r": 14.192273341935111,
+                  "p": 0.6839988228839999
+                }
+              },
+              "pmf": [
+                0.021177565596678067,
+                0.0708734238723019,
+                0.12743040083987478,
+                0.16340026168286417,
+                0.16744500828354084,
+                0.1457628713646425,
+                0.11193134850413669,
+                0.07776826526962927,
+                0.04977952999421418,
+                0.029753163049258565,
+                0.01677753194645266,
+                0.008998286626596099,
+                0.0046201774786662625,
+                0.0022831591604120936,
+                0.001090705297704659,
+                0.0005055664380318623,
+                0.00022809171941805086,
+                0.00010043041094838665,
+                0.00004325627080206778,
+                0.000018261345901425175,
+                0.000007569696393544082,
+                0.000003085717810378899,
+                0.0000012386772557773252,
+                4.902408070389892e-7,
+                1.915030852460624e-7,
+                7.390360861002198e-8,
+                2.819824011822901e-8,
+                1.064364140440373e-8,
+                3.9750005149542056e-9,
+                1.4678400511816475e-9,
+                5.347629021685065e-10,
+                1.9127382331757334e-10,
+                6.655406263402342e-11,
+                2.2186858182866843e-11,
+                6.923968581983798e-12,
+                1.956468890061907e-12,
+                4.772926785407352e-13,
+                9.357250713921939e-14,
+                1.3017629932945324e-14,
+                9.585038907589656e-16
+              ],
+              "support_max": 39,
+              "target_truncated_tail": 8.312095456375346e-11,
+              "normalized_mass": 1.0000000000000002,
+              "marginal_mean": 4.477987824399055,
+              "marginal_variance": 6.0167792529812685,
+              "marginal_sd": 2.452912402223379
+            },
+            "catch_rate_prior": {
+              "catch_rate": 0.6829636595143753,
+              "rho": 0.012633422760818603,
+              "source": "player_shrunk_catch_rate",
+              "prior_player": "Zay Flowers",
+              "games": 50
+            },
+            "standalone_reception_projection": {
+              "mean": 4.5225,
+              "sd": 2.2828,
+              "mean_gap_pct": -0.009842382664664358
+            },
+            "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          },
+          "qb_adjustment": {
+            "multiplier": 1.0297423565773587,
+            "multiplier_variance": 0.002338903505419149,
+            "beta": 0.5992222213519792,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 4.5225,
+              "sd": 2.2828,
+              "performance_sd": 2.2828,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
+          }
         }
       }
     },
@@ -4965,59 +5383,7 @@
     },
     "Lamar Jackson": {
       "position": "QB",
-      "distributions": {
-        "pass_yards": {
-          "status": "SHADOW_ONLY",
-          "actionable": false,
-          "position": "QB",
-          "stat": "pass_yards",
-          "family": "normal",
-          "mean": 219.6023,
-          "sd": 78.4494,
-          "market_price_used_in_probability": false,
-          "source": "2021-2025 football-only distribution-family calibration",
-          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-          "parameters": {
-            "mu": 219.6023,
-            "sigma": 78.4494
-          }
-        },
-        "pass_tds": {
-          "status": "SHADOW_ONLY",
-          "actionable": false,
-          "position": "QB",
-          "stat": "pass_tds",
-          "family": "negative_binomial",
-          "mean": 1.6649,
-          "sd": 1.3523,
-          "market_price_used_in_probability": false,
-          "source": "2021-2025 football-only distribution-family calibration",
-          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-          "parameters": {
-            "mean": 1.6649,
-            "variance": 1.82871529,
-            "r": 16.92083815863586,
-            "p": 0.9104205608736393
-          }
-        },
-        "rush_yards": {
-          "status": "SHADOW_ONLY",
-          "actionable": false,
-          "position": "QB",
-          "stat": "rush_yards",
-          "family": "lognormal_shifted",
-          "mean": 49.1962,
-          "sd": 29.4253,
-          "market_price_used_in_probability": false,
-          "source": "2021-2025 football-only distribution-family calibration",
-          "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-          "parameters": {
-            "shift": 0,
-            "log_mu": 3.7429022171839477,
-            "log_sigma": 0.5530174817474063
-          }
-        }
-      }
+      "distributions": {}
     },
     "Drake Maye": {
       "position": "QB",
@@ -10460,6 +10826,41 @@
             "variance": 9.807544889999999,
             "r": 8.883005976500199,
             "p": 0.601088250537694
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "TE",
+            "stat": "targets",
+            "family": "negative_binomial",
+            "mean": 5.8952,
+            "sd": 3.1317,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "mean": 5.8952,
+              "variance": 9.807544889999999,
+              "r": 8.883005976500199,
+              "p": 0.601088250537694
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 40,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 5.8952,
+              "sd": 3.1317,
+              "performance_sd": 3.1317,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receiving_yards": {
@@ -10477,6 +10878,40 @@
             "shift": 0,
             "log_mu": 3.692627403190673,
             "log_sigma": 0.6156986221578218
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "TE",
+            "stat": "receiving_yards",
+            "family": "lognormal_shifted",
+            "mean": 48.5294,
+            "sd": 32.9481,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "shift": 0,
+              "log_mu": 3.692627403190673,
+              "log_sigma": 0.6156986221578218
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 5,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 48.5294,
+              "sd": 32.9481,
+              "performance_sd": 32.9481,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -10510,6 +10945,41 @@
                 "variance": 9.807544889999999,
                 "r": 8.883005976500199,
                 "p": 0.601088250537694
+              },
+              "qb_baseline_spec": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "TE",
+                "stat": "targets",
+                "family": "negative_binomial",
+                "mean": 5.8952,
+                "sd": 3.1317,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 5.8952,
+                  "variance": 9.807544889999999,
+                  "r": 8.883005976500199,
+                  "p": 0.601088250537694
+                }
+              },
+              "qb_adjustment": {
+                "multiplier": 1,
+                "multiplier_variance": 0,
+                "beta": 0,
+                "shrinkage_games": 40,
+                "starter_games": 63,
+                "backup_games": 16,
+                "baseline_before_qb": {
+                  "mean": 5.8952,
+                  "sd": 3.1317,
+                  "performance_sd": 3.1317,
+                  "projection_error_sd": 0
+                },
+                "starter": "Lamar Jackson",
+                "expected_qb": "Tyler Huntley",
+                "model_version": "qb-receiver-effects-2026-v1"
               }
             },
             "pmf": [
@@ -10576,7 +11046,123 @@
             "sd": 2.5317,
             "mean_gap_pct": 0.000872266798093104
           },
-          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.",
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "TE",
+            "stat": "receptions",
+            "family": "compound_receptions",
+            "conditional_family": "beta_binomial",
+            "mean": 4.153619907212087,
+            "sd": 2.487021156658889,
+            "market_price_used_in_probability": false,
+            "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
+            "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
+            "parameters": {
+              "catch_rate": 0.7045765892854927,
+              "rho": 0.011115038092221323,
+              "target_distribution": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "TE",
+                "stat": "targets",
+                "family": "negative_binomial",
+                "mean": 5.8952,
+                "sd": 3.1317,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 5.8952,
+                  "variance": 9.807544889999999,
+                  "r": 8.883005976500199,
+                  "p": 0.601088250537694
+                }
+              },
+              "pmf": [
+                0.03382537412915276,
+                0.09474515461870191,
+                0.14797796533681615,
+                0.17006293192235655,
+                0.16041436988893965,
+                0.13152825526989254,
+                0.0970556753870186,
+                0.0659484522755811,
+                0.041931545465370736,
+                0.025242121373675364,
+                0.014514782046648276,
+                0.008027537955781198,
+                0.004293477493638595,
+                0.002230495652790742,
+                0.0011295975282055602,
+                0.0005593384619259665,
+                0.00027148375727863665,
+                0.0001294358851681576,
+                0.00006072908575245174,
+                0.000028083437895495057,
+                0.0000128175660823335,
+                0.000005780668268901798,
+                0.0000025788159347812182,
+                0.0000011390215494007691,
+                4.985019256491003e-7,
+                2.1634123361913142e-7,
+                9.315946212687457e-8,
+                3.9826233666570275e-8,
+                1.691045600360287e-8,
+                7.1333000323873864e-9,
+                2.988953038450171e-9,
+                1.243002398512544e-9,
+                5.119196913092332e-10,
+                2.078674873445089e-10,
+                8.257049089741392e-11,
+                3.168826708140236e-11,
+                1.1536380632297522e-11,
+                3.884758118605934e-12,
+                1.1693696723891138e-12,
+                3.001482246348161e-13,
+                6.121839396676833e-14,
+                8.774183597107097e-15,
+                6.600919154476894e-16
+              ],
+              "support_max": 42,
+              "target_truncated_tail": 7.262934698104573e-11,
+              "normalized_mass": 0.9999999999999997,
+              "marginal_mean": 4.153619907212087,
+              "marginal_variance": 6.185274233668919,
+              "marginal_sd": 2.487021156658889
+            },
+            "catch_rate_prior": {
+              "catch_rate": 0.7045765892854927,
+              "rho": 0.011115038092221323,
+              "source": "player_shrunk_catch_rate",
+              "prior_player": "Mark Andrews",
+              "games": 76
+            },
+            "standalone_reception_projection": {
+              "mean": 4.15,
+              "sd": 2.5317,
+              "mean_gap_pct": 0.000872266798093104
+            },
+            "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 4.15,
+              "sd": 2.5317,
+              "performance_sd": 2.5199,
+              "projection_error_sd": 0.2446
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
+          }
         }
       }
     },
@@ -20435,16 +21021,51 @@
           "position": "WR",
           "stat": "targets",
           "family": "negative_binomial",
-          "mean": 4.0669,
-          "sd": 2.3519,
+          "mean": 4.11866,
+          "sd": 2.389704,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
+            "mean": 4.11866,
+            "variance": 5.710685207616001,
+            "r": 10.655208293467924,
+            "p": 0.7212199325060308
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "WR",
+            "stat": "targets",
+            "family": "negative_binomial",
             "mean": 4.0669,
-            "variance": 5.5314336100000006,
-            "r": 11.293476296525554,
-            "p": 0.7352343509370982
+            "sd": 2.3519,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "mean": 4.0669,
+              "variance": 5.5314336100000006,
+              "r": 11.293476296525554,
+              "p": 0.7352343509370982
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 1.0127272551108806,
+            "multiplier_variance": 0.0022707562166199087,
+            "beta": 0.7212483084415489,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 4.0669,
+              "sd": 2.3519,
+              "performance_sd": 2.3519,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receiving_yards": {
@@ -20453,15 +21074,49 @@
           "position": "WR",
           "stat": "receiving_yards",
           "family": "student_t",
-          "mean": 33.2537,
-          "sd": 28.8215,
+          "mean": 28.594748,
+          "sd": 24.822841,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
-            "mu": 33.2537,
+            "mu": 28.594748,
             "df": 8,
-            "scale": 24.9601511751732
+            "scale": 21.49721090010192
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "WR",
+            "stat": "receiving_yards",
+            "family": "student_t",
+            "mean": 33.2537,
+            "sd": 28.8215,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "mu": 33.2537,
+              "df": 8,
+              "scale": 24.9601511751732
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 0.8598967283654474,
+            "multiplier_variance": 0.0017642070232258924,
+            "beta": 0.6729502310605644,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 33.2537,
+              "sd": 28.8215,
+              "performance_sd": 28.8215,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -20471,13 +21126,13 @@
           "stat": "receptions",
           "family": "compound_receptions",
           "conditional_family": "beta_binomial",
-          "mean": 2.5672886127509282,
-          "sd": 1.789927893927484,
+          "mean": 2.643645521239835,
+          "sd": 1.8312406184385956,
           "market_price_used_in_probability": false,
           "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
           "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
           "parameters": {
-            "catch_rate": 0.6312642586224116,
+            "catch_rate": 0.6418702982628135,
             "rho": 0.012633422760818603,
             "target_distribution": {
               "status": "SHADOW_ONLY",
@@ -20485,58 +21140,93 @@
               "position": "WR",
               "stat": "targets",
               "family": "negative_binomial",
-              "mean": 4.0669,
-              "sd": 2.3519,
+              "mean": 4.11866,
+              "sd": 2.389704,
               "market_price_used_in_probability": false,
               "source": "2021-2025 football-only distribution-family calibration",
               "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
               "parameters": {
+                "mean": 4.11866,
+                "variance": 5.710685207616001,
+                "r": 10.655208293467924,
+                "p": 0.7212199325060308
+              },
+              "qb_baseline_spec": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "WR",
+                "stat": "targets",
+                "family": "negative_binomial",
                 "mean": 4.0669,
-                "variance": 5.5314336100000006,
-                "r": 11.293476296525554,
-                "p": 0.7352343509370982
+                "sd": 2.3519,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 4.0669,
+                  "variance": 5.5314336100000006,
+                  "r": 11.293476296525554,
+                  "p": 0.7352343509370982
+                }
+              },
+              "qb_adjustment": {
+                "multiplier": 1.0127272551108806,
+                "multiplier_variance": 0.0022707562166199087,
+                "beta": 0.7212483084415489,
+                "shrinkage_games": 3,
+                "starter_games": 63,
+                "backup_games": 16,
+                "baseline_before_qb": {
+                  "mean": 4.0669,
+                  "sd": 2.3519,
+                  "performance_sd": 2.3519,
+                  "projection_error_sd": 0
+                },
+                "starter": "Lamar Jackson",
+                "expected_qb": "Tyler Huntley",
+                "model_version": "qb-receiver-effects-2026-v1"
               }
             },
             "pmf": [
-              0.10070674368667396,
-              0.20771687853830093,
-              0.23440949983610193,
-              0.1916708802421702,
-              0.12700988538074987,
-              0.07238608900438091,
-              0.036797442319932795,
-              0.017094797320623013,
-              0.007383124387375142,
-              0.003002162843687841,
-              0.0011604415505409378,
-              0.00042960434733471295,
-              0.0001532392633482581,
-              0.00005292189661072643,
-              0.00001776637901568385,
-              0.000005817081467454078,
-              0.0000018628168924790336,
-              5.848263683578331e-7,
-              1.8036746286765372e-7,
-              5.474150136591556e-8,
-              1.6372893379350604e-8,
-              4.8309603210464544e-9,
-              1.4066045669931689e-9,
-              4.036534903260512e-10,
-              1.1367570693520377e-10,
-              3.1105204622994937e-11,
-              8.115440587358846e-12,
-              1.956244730096153e-12,
-              4.1493994755939433e-13,
-              7.182931412574924e-14,
-              8.918561326472056e-15,
-              5.896190606817458e-16
+              0.09594399867295915,
+              0.20050735414705037,
+              0.230289792822542,
+              0.1923618825407634,
+              0.1306280929821835,
+              0.07650052409795824,
+              0.04005443434641134,
+              0.019204477188003492,
+              0.008575455192810945,
+              0.0036108660557480263,
+              0.0014473219618208182,
+              0.0005563066956516432,
+              0.00020625387172507447,
+              0.0000741119045827107,
+              0.00002590978869315546,
+              0.000008841733621166034,
+              0.0000029531963501641444,
+              9.67682393203047e-7,
+              3.11685052616317e-7,
+              9.884862942911668e-8,
+              3.090976287607519e-8,
+              9.5391838464295e-9,
+              2.9060731701016745e-9,
+              8.727345773265981e-10,
+              2.5719327337497135e-10,
+              7.361880928012445e-11,
+              2.0078952805415958e-11,
+              5.055278364030773e-12,
+              1.118952593092363e-12,
+              2.0198410182501636e-13,
+              2.614009718544386e-14,
+              1.80105634094315e-15
             ],
             "support_max": 31,
-            "target_truncated_tail": 3.5657476971096e-11,
-            "normalized_mass": 0.9999999999999998,
-            "marginal_mean": 2.5672886127509282,
-            "marginal_variance": 3.2038418654596788,
-            "marginal_sd": 1.789927893927484
+            "target_truncated_tail": 7.688072400924284e-11,
+            "normalized_mass": 0.9999999999999999,
+            "marginal_mean": 2.643645521239835,
+            "marginal_variance": 3.35344220261937,
+            "marginal_sd": 1.8312406184385956
           },
           "catch_rate_prior": {
             "catch_rate": 0.6312642586224116,
@@ -20546,11 +21236,116 @@
             "games": 17
           },
           "standalone_reception_projection": {
-            "mean": 2.4455,
-            "sd": 1.7802,
-            "mean_gap_pct": 0.049801109282734915
+            "mean": 2.518235,
+            "sd": 1.836959,
+            "mean_gap_pct": 0.049800960291567435
           },
-          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.",
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "WR",
+            "stat": "receptions",
+            "family": "compound_receptions",
+            "conditional_family": "beta_binomial",
+            "mean": 2.5672886127509282,
+            "sd": 1.789927893927484,
+            "market_price_used_in_probability": false,
+            "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
+            "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
+            "parameters": {
+              "catch_rate": 0.6312642586224116,
+              "rho": 0.012633422760818603,
+              "target_distribution": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "WR",
+                "stat": "targets",
+                "family": "negative_binomial",
+                "mean": 4.0669,
+                "sd": 2.3519,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 4.0669,
+                  "variance": 5.5314336100000006,
+                  "r": 11.293476296525554,
+                  "p": 0.7352343509370982
+                }
+              },
+              "pmf": [
+                0.10070674368667396,
+                0.20771687853830093,
+                0.23440949983610193,
+                0.1916708802421702,
+                0.12700988538074987,
+                0.07238608900438091,
+                0.036797442319932795,
+                0.017094797320623013,
+                0.007383124387375142,
+                0.003002162843687841,
+                0.0011604415505409378,
+                0.00042960434733471295,
+                0.0001532392633482581,
+                0.00005292189661072643,
+                0.00001776637901568385,
+                0.000005817081467454078,
+                0.0000018628168924790336,
+                5.848263683578331e-7,
+                1.8036746286765372e-7,
+                5.474150136591556e-8,
+                1.6372893379350604e-8,
+                4.8309603210464544e-9,
+                1.4066045669931689e-9,
+                4.036534903260512e-10,
+                1.1367570693520377e-10,
+                3.1105204622994937e-11,
+                8.115440587358846e-12,
+                1.956244730096153e-12,
+                4.1493994755939433e-13,
+                7.182931412574924e-14,
+                8.918561326472056e-15,
+                5.896190606817458e-16
+              ],
+              "support_max": 31,
+              "target_truncated_tail": 3.5657476971096e-11,
+              "normalized_mass": 0.9999999999999998,
+              "marginal_mean": 2.5672886127509282,
+              "marginal_variance": 3.2038418654596788,
+              "marginal_sd": 1.789927893927484
+            },
+            "catch_rate_prior": {
+              "catch_rate": 0.6312642586224116,
+              "rho": 0.012633422760818603,
+              "source": "player_shrunk_catch_rate",
+              "prior_player": "Rashod Bateman",
+              "games": 17
+            },
+            "standalone_reception_projection": {
+              "mean": 2.4455,
+              "sd": 1.7802,
+              "mean_gap_pct": 0.049801109282734915
+            },
+            "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          },
+          "qb_adjustment": {
+            "multiplier": 1.0297423565773587,
+            "multiplier_variance": 0.002338903505419149,
+            "beta": 0.5992222213519792,
+            "shrinkage_games": 3,
+            "starter_games": 63,
+            "backup_games": 16,
+            "baseline_before_qb": {
+              "mean": 2.4455,
+              "sd": 1.7802,
+              "performance_sd": 1.7802,
+              "projection_error_sd": 0
+            },
+            "starter": "Lamar Jackson",
+            "expected_qb": "Tyler Huntley",
+            "model_version": "qb-receiver-effects-2026-v1"
+          }
         }
       }
     },
