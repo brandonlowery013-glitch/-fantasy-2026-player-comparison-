@@ -133,7 +133,7 @@ function detailData(){
     const g=BET_FEED.games[selectedGameIndex];clearMarketDetail(g);if(!g||!feed||Number(feed.week)!==Number(BET_FEED.week))return;
     const raw=Object.values(feed.games||{}).find(x=>sameMatchup(x,g)&&Date.parse(x.kickoff)===Date.parse(g.event_start));if(!raw)return;
     const s=selected(raw);if(!s){
-      window.ctdScoreComparison?.render();
+      window.ctdScoreComparison?.render(raw,null,feed.week);
       document.querySelector('.implied').textContent='Waiting for current picks and odds.';
       document.querySelector('.donut').style.display='none';
       return;
