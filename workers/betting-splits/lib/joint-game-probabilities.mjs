@@ -55,11 +55,11 @@ export function cohereGameFeed(base,training,now=Date.now()){
   }
   const quotes=(g.snapshot_evaluations||[]).filter(q=>q.eligible_for_current_recommendation!==false&&q.joint_distribution).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at)),q=quotes.find(q=>q.book==='draftkings')||quotes[0];
   g.joint_model={version:JOINT_VERSION,status:accepted?'CURRENT':'UNAVAILABLE',checked_at:out.joint_model_checked_at};
-  for(const kind of ['moneyline','spread']){g[kind+'_model']={...g[kind+'_model'],joint_version:JOINT_VERSION,current_prediction:q?.markets[kind].model_prediction||null};g.current_recommendations||={};g.current_recommendations[kind]=q?.markets[kind].recommendation||{decision:'WAIT',reason:'JOINT_MODEL_UNAVAILABLE'};}
+  for(const kind of ['moneyline','spread']){g[kind+'_model']={...g[kind+'_model'],joint_version:JOINT_VERSION,current_prediction:q?.markets[kind].model_prediction||null};g.model_predictions||={};g.model_predictions[kind]=q?.markets[kind].model_prediction||{status:'UNAVAILABLE',selection:null};g.current_recommendations||={};g.current_recommendations[kind]=q?.markets[kind].recommendation||{decision:'WAIT',reason:'JOINT_MODEL_UNAVAILABLE'};}
  }
  return out;
 }
-export function replaceJointOutputs(feed,consumer){
+export function replaceJointOutputs(feed,consumer,now=Date.now()){
  if(feed.week!=null&&Number(feed.week)!==Number(consumer.week))throw Error('Joint prediction week mismatch');
  const out=structuredClone(feed),ids=new Set(Object.keys(consumer.games||{})),old=x=>ids.has(x?.event_id||x?.game_id)&&['spread','moneyline'].includes(String(x.market_type||x.market).toLowerCase()),legs=[],ranked=[];
  for(const [id,g]of Object.entries(consumer.games||{})){
@@ -68,6 +68,7 @@ export function replaceJointOutputs(feed,consumer){
  if(!q)continue;
  for(const kind of ['spread','moneyline']){const e=q.markets[kind],r=e.recommendation;if(r.decision!=='PICK')continue;const home=r.selection.startsWith(g.home_team+' '),v=home?e.side_a:e.side_b,mq=e.quote||q,leg_id=id+':'+kind+':'+q.snapshot_id+':'+r.selection.replace(/\s/g,'_');
  if(target&&Array.isArray(target.model_pick))target.model_pick.push(kind.toUpperCase()+': '+r.selection+' ('+r.confidence+')');
+ if(Date.parse(g.kickoff)<=now)continue;
  legs.push({leg_id,event_id:id,week:consumer.week,market_type:kind,side:r.selection,sportsbook:q.book,american_odds:v.offered_odds,model_win_probability:v.win_probability,model_conditional_win_probability:v.conditional_win_probability,model_push_probability:v.push_probability,probability_edge:v.probability_edge,expected_value:v.expected_value,expected_value_scope:'per_staked_unit',observed_at:mq.captured_at,standalone_approved:true,label:'PICK',source_type:'GAME',model_version:e.model_version,joint_model_version:JOINT_VERSION});
  ranked.push({opportunity_id:'GAME|'+id+'|'+kind.toUpperCase()+'|'+q.snapshot_id,week:consumer.week,entity_type:'GAME',market_type:kind.toUpperCase(),game_id:id,matchup:g.away_team+' @ '+g.home_team,selection:r.selection,decision:'PICK',confidence:r.confidence,book:q.book,captured_at:mq.captured_at,line:kind==='spread'?(home?q.market.home_spread:-q.market.home_spread):null,offered_odds:v.offered_odds,model_win_probability:v.win_probability,model_conditional_win_probability:v.conditional_win_probability,model_push_probability:v.push_probability,probability_edge:v.probability_edge,expected_value:v.expected_value,expected_value_scope:'per_staked_unit',model_version:e.model_version,joint_model_version:JOINT_VERSION});}
  }
