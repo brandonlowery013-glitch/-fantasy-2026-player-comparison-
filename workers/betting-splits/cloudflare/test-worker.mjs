@@ -35,3 +35,9 @@ for(const failed of ['/collect','/moneyline-projections/collect']){
  await assert.rejects(worker.scheduled({scheduledTime:Date.now(),cron:'*/15 * * * *'},isolated),/collection failed/);assert.deepEqual(attempted,['/collect','/moneyline-projections/collect']);
 }
 console.log('PASS: moneyline reads freshly saved sportsbook prices and still runs after split-provider failure');
+
+const jointCalls=[];let jointSettled=0;
+const jointEnv={SPREAD_MODEL_ENABLED:'true',MONEYLINE_MODEL_ENABLED:'true',JOINT_MODEL_ENABLED:'true',SPLITS_STORE:{idFromName:()=>0,get:()=>({fetch:async url=>{const path=new URL(url).pathname;jointCalls.push(path);if(path==='/joint-projections/collect')assert.equal(jointSettled,3,'joint calculation waits for splits and both model inputs');else jointSettled++;return Response.json({status:'CURRENT'});}})}};
+await worker.scheduled({scheduledTime:Date.now(),cron:'*/15 * * * *'},jointEnv);assert.equal(jointCalls.at(-1),'/joint-projections/collect');
+assert.equal((await worker.fetch(new Request('https://public/joint-projections/collect',{method:'POST'}),jointEnv)).status,405);
+console.log('PASS: native schedule publishes joint probabilities only after both model inputs; public requests cannot collect');

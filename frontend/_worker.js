@@ -1,9 +1,8 @@
+import {replaceJointOutputs,JOINT_VERSION} from '../workers/betting-splits/lib/joint-game-probabilities.mjs';
 import historicalSelection from '../workers/betting-splits/model/ne-chi-current-models.json' with {type:'json'};
 import {applyHistoricalSelection,applyHistoricalFinal,applyHistoricalHistory} from '../workers/betting-splits/lib/historical-model-selection.mjs';
 import {onRequestGet as moneylineRequest} from '../functions/api/live/moneyline-projections.js';
-import {overlayMoneylineFeed,replaceMoneylineOutputs} from '../workers/betting-splits/lib/moneyline-feed.mjs';
 import {onRequestGet as spreadRequest} from '../functions/api/live/spread-projections.js';
-import {overlaySpreadFeed,replaceSpreadOutputs} from '../workers/betting-splits/lib/spread-feed.mjs';
 import {onRequestGet as propQuotesRequest,refreshProps} from '../functions/api/live/prop-quotes.js';
 import {onRequestGet as availabilityRequest} from '../functions/api/live/availability.js';
 import {onRequestGet as gameProjectionRequest} from '../functions/api/live/game-projections.js';
@@ -14,12 +13,13 @@ import {onRequestGet as oddsRequest} from '../functions/api/live/odds.js';
 import {onRequestGet as splitsRequest} from '../functions/api/live/splits.js';
 import {onRequestGet as historyRequest} from '../functions/api/live/history.js';
 
-const LIVE_HANDLERS={'moneyline-projections':moneylineRequest,'spread-projections':spreadRequest,'game-projections':gameProjectionRequest,'prop-quotes':propQuotesRequest,availability:availabilityRequest,'qb-projections':qbRequest,news:newsRequest,odds:oddsRequest,splits:splitsRequest,history:historyRequest};
+const LIVE_HANDLERS={'joint-projections':async({env})=>{try{return Response.json(await readJoint(env),{headers:{'cache-control':'no-store'}});}catch(e){return Response.json({status:'UNAVAILABLE',error:e.message},{status:503});}},'moneyline-projections':moneylineRequest,'spread-projections':spreadRequest,'game-projections':gameProjectionRequest,'prop-quotes':propQuotesRequest,availability:availabilityRequest,'qb-projections':qbRequest,news:newsRequest,odds:oddsRequest,splits:splitsRequest,history:historyRequest};
 const LIVE_RESOURCES=new Set(['','health','scoreboard','game','bundle','model','betting','injuries','players',...Object.keys(LIVE_HANDLERS)]);
 
 const REPO='brandonlowery013-glitch/-fantasy-2026-player-comparison-';
 const PATHS={recommendations:'data/market/game-model-consumer-2026.json',projections:'data/probability/generated/weekly-game-projections-2026.json',schedule:'data/calibration/weekly-event-schedule-2026.json',lines:'data/market/current-game-lines-2026.json'};
 
+async function readJoint(env){const path='/joint-projections/latest.json',r=env.SPLITS_SCHEDULER?await env.SPLITS_SCHEDULER.fetch('https://store'+path):await fetch('https://ctd-background-splits.brandonlowery013.workers.dev'+path,{signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('Joint forecast unavailable');const d=await r.json();if(d.model_version!==JOINT_VERSION||!['CURRENT','PARTIAL'].includes(d.health?.status)||Date.now()-Date.parse(d.checked_at)>30*60000||!d.consumer)throw Error('Joint forecast stale or invalid');return d;}
 export default {
  async fetch(request,env,ctx){
   const url=new URL(request.url),prefix='/cloudflare/api/game-model/';
@@ -34,7 +34,7 @@ export default {
    const response=await (LIVE_HANDLERS[leaf]||liveRequest)(context);
    if(leaf==='history'&&response.ok)return Response.json(applyHistoricalHistory(await response.json(),historicalSelection),{headers:{'cache-control':'no-store'}});
    if(!response.ok||!['betting','model','bundle'].includes(leaf))return response;
-   const body=await response.json();try{const [a,b,c]=await Promise.all([fetch(`https://raw.githubusercontent.com/${REPO}/main/${PATHS.recommendations}`,{signal:AbortSignal.timeout(20000)}),spreadRequest({request:new Request(url.origin+'/api/live/spread-projections'),env}),moneylineRequest({request:new Request(url.origin+'/api/live/moneyline-projections'),env})]);if(!a.ok)throw Error('Spread recommendation source unavailable');const consumer=await a.json(),live=b.ok?await b.json():null,moneyline=c.ok?await c.json():null,replace=d=>applyHistoricalFinal(replaceMoneylineOutputs(replaceSpreadOutputs(d,consumer,live),consumer,moneyline),historicalSelection);if(leaf==='bundle'){if(body.betting)body.betting=replace(body.betting);if(body.model)body.model=replace(body.model);}else if(body.data)body.data=replace(body.data);return Response.json(body,{headers:{'cache-control':'no-store'}});}catch(e){return Response.json({status:'SPREAD_DELIVERY_UNAVAILABLE',error:e.message},{status:502});}
+   const body=await response.json();try{const joint=await readJoint(env),replace=d=>replaceJointOutputs(d,joint.consumer);if(leaf==='bundle'){if(body.betting)body.betting=replace(body.betting);if(body.model)body.model=replace(body.model);}else if(body.data)body.data=replace(body.data);return Response.json(body,{headers:{'cache-control':'no-store'}});}catch(e){return Response.json({status:'JOINT_DELIVERY_UNAVAILABLE',error:e.message},{status:503});}
 
   }
   if(!url.pathname.startsWith(prefix))return env.ASSETS.fetch(request);
@@ -44,8 +44,7 @@ export default {
   if(!/^(main|[a-f0-9]{40})$/.test(ref))return new Response('Invalid producer reference',{status:400});
   // Spread authority is evaluated on the server, independently of browser state.
   if(kind==='recommendations'){
-   const upstream=`https://raw.githubusercontent.com/${REPO}/${ref}/${PATHS[kind]}`;
-   try{const [baseResponse,modelResponse,moneylineResponse]=await Promise.all([fetch(upstream,{signal:AbortSignal.timeout(20000)}),spreadRequest({request:new Request(url.origin+'/api/live/spread-projections'),env}),moneylineRequest({request:new Request(url.origin+'/api/live/moneyline-projections'),env})]);if(!baseResponse.ok)throw Error('Recommendation source '+baseResponse.status);const base=await baseResponse.json(),live=modelResponse.ok?await modelResponse.json():null,moneyline=moneylineResponse.ok?await moneylineResponse.json():null;return Response.json(applyHistoricalSelection(overlayMoneylineFeed(overlaySpreadFeed(base,live),moneyline),historicalSelection),{headers:{'cache-control':'no-store','x-ctd-spread-model':'sportsbook-calibration-learning-v1'}});}catch(e){return Response.json({status:'MODEL_SOURCE_UNAVAILABLE',error:e.message},{status:502});}
+   try{const joint=await readJoint(env);return Response.json(joint.consumer,{headers:{'cache-control':'no-store','x-ctd-joint-model':JOINT_VERSION}});}catch(e){return Response.json({status:'MODEL_SOURCE_UNAVAILABLE',error:e.message},{status:503});}
   }
   const key=new Request(url.origin+prefix+kind+(kind==='release'?'':'?ref='+ref));
   const cache=globalThis.caches?.default,cached=cache?await cache.match(key):null;
