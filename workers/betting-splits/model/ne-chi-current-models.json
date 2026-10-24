@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "game_id": "2026-W7-NE-CHI",
+  "season": 2026,
+  "week": 7,
+  "home_team": "CHI",
+  "away_team": "NE",
+  "kickoff": "2026-10-23T00:15:00.000Z",
+  "computed_at": "2026-10-24T21:56:59.801Z",
+  "forecast_as_of": "2026-10-21T04:43:41.365Z",
+  "information_cutoff": "2026-10-22T05:00:00.000Z",
+  "training_through_week": 6,
+  "inputs": {
+    "moneyline_forecast_id": "50860af50b07047a0b99db41065532d1c5897ee5aedb063fd80209dd5a0bde2e",
+    "spread_forecast_id": "73b07c1dc4c9f87d386e98502593ef4f82b89d2523f5ad0a7d725e97ec878049",
+    "football": {
+      "football_probability": 0.5494497117734074,
+      "model_tie_probability": 0.029236,
+      "forecast_available_at": "2026-10-21T01:09:47.726Z",
+      "existing_variables": {
+        "home_score_mean": 23.31,
+        "away_score_mean": 21.685,
+        "team_score_sd": 9.322,
+        "home_away_score_correlation": 0.0048
+      }
+    },
+    "quote": {
+      "snapshot_id": "MKT-e20724017b265934f8d6",
+      "book": "draftkings",
+      "captured_at": "2026-10-21T04:43:41.365Z",
+      "market": {
+        "home_spread": -3,
+        "home_spread_price": -102,
+        "away_spread_price": -118,
+        "total": 50.5,
+        "over_price": -115,
+        "under_price": -105,
+        "home_moneyline": -155,
+        "away_moneyline": 130
+      }
+    }
+  },
+  "evaluations": {
+    "moneyline": {
+      "quote": {
+        "snapshot_id": "MKT-e20724017b265934f8d6",
+        "book": "draftkings",
+        "captured_at": "2026-10-21T04:43:41.365Z",
+        "home_moneyline": -155,
+        "away_moneyline": 130,
+        "source": "The Odds API v4 current odds"
+      },
+      "model_version": "football-sportsbook-learning-v1",
+      "model_prediction": {
+        "status": "MODEL_DIRECTION",
+        "selection": "CHI ML",
+        "probability": 0.5629958767355618,
+        "confidence": "MODERATE",
+        "exact_probability_tie": false,
+        "scope": "Moneyline-only football + sportsbook + earlier-week learning"
+      },
+      "side_a": {
+        "win_probability": 0.546536129283321,
+        "push_probability": 0.029236,
+        "loss_probability": 0.42422787071667906,
+        "conditional_win_probability": 0.5629958767355618,
+        "offered_odds": -155,
+        "probability_edge": -0.0199967643110448,
+        "expected_value": -0.07162391634034297,
+        "expected_value_scope": "per_staked_unit",
+        "tie_estimate_source": "Original football score distribution; not learned by conditional calibration"
+      },
+      "side_b": {
+        "win_probability": 0.42422787071667906,
+        "push_probability": 0.029236,
+        "loss_probability": 0.546536129283321,
+        "conditional_win_probability": 0.43700412326443816,
+        "offered_odds": 130,
+        "probability_edge": 0.019996764311044857,
+        "expected_value": 0.00496010264836187,
+        "expected_value_scope": "per_staked_unit",
+        "tie_estimate_source": "Original football score distribution; not learned by conditional calibration"
+      },
+      "fair_market": {
+        "method": "PROPORTIONAL_TWO_WAY",
+        "side_a_probability": 0.5829926410466066,
+        "side_b_probability": 0.4170073589533933,
+        "book_margin": 0.04262574595055413
+      },
+      "recommendation": {
+        "decision": "PASS",
+        "selection": null,
+        "reason": "NO_EDGE_CLEARS_EXISTING_THRESHOLDS"
+      },
+      "calibration": {
+        "football_probability": 0.5494497117734074,
+        "book_probability": 0.5829926410466066,
+        "calibrated_probability": 0.5716432831123823,
+        "learning_change": -0.008647406376820488,
+        "training_games": 89
+      },
+      "tie_estimate_source": "Original football score distribution; not learned by conditional calibration"
+    },
+    "spread": {
+      "model_version": "sportsbook-calibration-learning-v1",
+      "model_prediction": {
+        "status": "MODEL_DIRECTION",
+        "selection": "CHI -3",
+        "probability": 0.6305990847428001,
+        "confidence": "HIGH",
+        "exact_probability_tie": false,
+        "scope": "Spread-only sportsbook calibration plus earlier-week learning"
+      },
+      "side_a": {
+        "win_probability": null,
+        "push_probability": null,
+        "loss_probability": null,
+        "conditional_win_probability": 0.6305990847428001,
+        "offered_odds": -102,
+        "probability_edge": 0.14796321045907035,
+        "expected_value": 0.24883348154946694,
+        "expected_value_scope": "per_non_push_outcome"
+      },
+      "side_b": {
+        "win_probability": null,
+        "push_probability": null,
+        "loss_probability": null,
+        "conditional_win_probability": 0.36940091525719987,
+        "offered_odds": -118,
+        "probability_edge": -0.14796321045907024,
+        "expected_value": -0.31754746164347825,
+        "expected_value_scope": "per_non_push_outcome"
+      },
+      "fair_market": {
+        "method": "PROPORTIONAL_TWO_WAY",
+        "side_a_probability": 0.4826358742837298,
+        "side_b_probability": 0.5173641257162701,
+        "book_margin": 0.04623489871922981
+      },
+      "thresholds": {
+        "home_spread": -3
+      },
+      "recommendation": {
+        "decision": "PICK",
+        "selection": "CHI -3",
+        "confidence": "HIGH",
+        "probability_edge": 0.14796321045907035,
+        "expected_value": 0.24883348154946694,
+        "expected_value_scope": "per_non_push_outcome",
+        "model_conditional_win_probability": 0.6305990847428001
+      },
+      "calibration": {
+        "book_probability": 0.4826358742837298,
+        "calibrated_probability": 0.631848685720917,
+        "learning_change": -0.0012496009781168826,
+        "training_games": 88
+      },
+      "push_estimate_status": "NOT_ESTIMATED_BY_CONDITIONAL_MODEL"
+    }
+  },
+  "football_projection": {
+    "home_score_mean": 23.31,
+    "away_score_mean": 21.685,
+    "model_home_spread": -1.626,
+    "model_total": 44.995,
+    "home_win_probability": 0.533386,
+    "away_win_probability": 0.437378,
+    "tie_probability": 0.029236
+  },
+  "result_used_in_prediction": false,
+  "grade": {
+    "home_score": 30,
+    "away_score": 24,
+    "observed_at": "2026-10-23T05:19:30.732Z",
+    "source": {
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401873010",
+      "sha256": "d2145cc6e087a109e72a3d29aa98c84ade30038784d293cb1d16d8d65794613c"
+    }
+  }
+}
