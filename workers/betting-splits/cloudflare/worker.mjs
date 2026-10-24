@@ -1,5 +1,3 @@
-import {jointMarketView} from '../lib/joint-game-probabilities.mjs';
-import {JointProjectionStore} from './joint-projections.mjs';
 import {MoneylineProjectionStore} from './moneyline-projections.mjs';
 import {SpreadProjectionStore} from './spread-projections.mjs';
 import {PersonnelGameStore} from './game-projections.mjs';
@@ -13,8 +11,7 @@ const validPath=p=>['/latest.json','/status.json','/index.json'].includes(p)||/^
 const store=env=>env.SPLITS_STORE.get(env.SPLITS_STORE.idFromName('production'));
 export default {
  async scheduled(controller,env){
-  if(controller.cron!=='*/15 * * * *')throw Error('Unsupported schedule');
-  const jobs=[['splits','/collect'],...(env.PROPS_RELAY_URL?[['props','/props/collect']]:[]),...(env.AVAILABILITY_ENABLED==='true'?[['availability','/availability/collect']]:[]),...(env.SPREAD_MODEL_ENABLED==='true'?[['spread','/spread-projections/collect']]:[]),...(env.MONEYLINE_MODEL_ENABLED==='true'?[['moneyline','/moneyline-projections/collect']]:[])];
+  const jobs=controller.cron==='* * * * *'?(env.MONEYLINE_MODEL_ENABLED==='true'?[['moneyline','/moneyline-projections/collect']]:[]):[['splits','/collect'],...(env.PROPS_RELAY_URL?[['props','/props/collect']]:[]),...(env.AVAILABILITY_ENABLED==='true'?[['availability','/availability/collect']]:[]),...(env.SPREAD_MODEL_ENABLED==='true'?[['spread','/spread-projections/collect']]:[]),...(env.MONEYLINE_MODEL_ENABLED==='true'?[['moneyline','/moneyline-projections/collect']]:[])];
   let splitsComplete=Promise.resolve();
   const operations=jobs.map(([name,path])=>{const run=(async()=>{if(name==='moneyline')await splitsComplete.catch(()=>{});
    const response=await store(env).fetch('https://store'+path,{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});
@@ -28,16 +25,11 @@ export default {
    }
   })();if(name==='splits')splitsComplete=run;return run;});
   const results=await Promise.allSettled(operations);
-  if(env.JOINT_MODEL_ENABLED==='true'){const jointResponse=await store(env).fetch('https://store/joint-projections/collect',{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});
-  if(!jointResponse.ok)throw Error('Scheduled joint publication failed: '+await jointResponse.text());
-  console.log('joint-scheduled-publication',await jointResponse.text());}
   const errors=results.filter(r=>r.status==='rejected').map(r=>r.reason);
   if(errors.length)throw new AggregateError(errors,errors.map(e=>e.message).join('; '));
  },
  async fetch(request,env){
   const path=new URL(request.url).pathname;
-  if(['/moneyline-projections/latest.json','/spread-projections/latest.json'].includes(path)&&request.method==='GET'){const jointResponse=await store(env).fetch('https://store/joint-projections/latest.json');if(!jointResponse.ok)return jointResponse;const joint=await jointResponse.json();if(!['CURRENT','PARTIAL'].includes(joint.health?.status))return json({status:'JOINT_MODEL_UNAVAILABLE'},503);const rawResponse=await store(env).fetch('https://store'+path);if(!rawResponse.ok)return rawResponse;return json(jointMarketView(await rawResponse.json(),joint,path.includes('moneyline')?'moneyline':'spread'));}
-  if(path.startsWith('/joint-projections/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
   if(path.startsWith('/moneyline-projections/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
   if(path.startsWith('/spread-projections/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
   if(path.startsWith('/game-projections/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
@@ -51,10 +43,9 @@ export default {
 };
 // Collection is reachable only through the bound object, never through public HTTP.
 export class SplitsStore {
- constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.props=new PropsRelay(ctx.storage,env);this.availability=new AvailabilityStore(ctx.storage);this.quarterbacks=new QuarterbackProjections(ctx.storage);this.games=new PersonnelGameStore(ctx.storage,this.quarterbacks);this.spreads=new SpreadProjectionStore(ctx.storage);this.moneylines=new MoneylineProjectionStore(ctx.storage);this.joint=new JointProjectionStore(ctx.storage);}
+ constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.props=new PropsRelay(ctx.storage,env);this.availability=new AvailabilityStore(ctx.storage);this.quarterbacks=new QuarterbackProjections(ctx.storage);this.games=new PersonnelGameStore(ctx.storage,this.quarterbacks);this.spreads=new SpreadProjectionStore(ctx.storage);this.moneylines=new MoneylineProjectionStore(ctx.storage);}
  async fetch(request){
   const path=new URL(request.url).pathname;
-  if(path.startsWith('/joint-projections/'))return this.joint.handle(request);
   if(path.startsWith('/moneyline-projections/'))return this.moneylines.handle(request);
   if(path.startsWith('/spread-projections/'))return this.spreads.handle(request);
   if(path.startsWith('/game-projections/'))return this.games.handle(request);

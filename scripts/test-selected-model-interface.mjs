@@ -6,7 +6,7 @@ const ctx={};vm.createContext(ctx);vm.runInContext(fs.readFileSync(new URL('show
 const ui=ctx.CTD_SHOW_WORK;
 const game={home_team:'CHI',away_team:'NE',football_projection:{home_win_probability:.99,away_win_probability:.01,home_score_mean:99,away_score_mean:0}};
 for(const [kind,version] of [['moneyline','football-sportsbook-learning-v1'],['spread','sportsbook-calibration-learning-v1']]){
- const evaluation={model_version:version,joint_model_version:'joint-margin-selected-models-v1',side_a:{conditional_win_probability:.63},side_b:{conditional_win_probability:.37},recommendation:{decision:'PICK'}};
+ const evaluation={model_version:version,side_a:{conditional_win_probability:.63},side_b:{conditional_win_probability:.37},recommendation:{decision:'PICK'}};
  const quote={market:{home_spread:-3},markets:{[kind]:evaluation}};
  assert.equal(ui.gameDirectionPrediction(game,quote,kind).probability,.63);
  assert.match(ui.gameDirectionPrediction(game,quote,kind).selection,/CHI/);
@@ -20,7 +20,7 @@ console.log('Selected model probabilities retained; old probabilities, score dis
 
 const source=fs.readFileSync(new URL('game-model-source.js',dir),'utf8');
 assert(!/overlaySpreadFeed|overlayMoneylineFeed|weekly-game-market-recommendations/.test(source));
-const requests=[];const base={week:9,season:2026,games:{x:{snapshot_evaluations:[{eligible_for_current_recommendation:true,markets:{spread:{model_version:'legacy',side_a:{conditional_win_probability:.99}},moneyline:{model_version:'football-sportsbook-learning-v1',joint_model_version:'joint-margin-selected-models-v1',side_a:{conditional_win_probability:.61}}}}]}}};
+const requests=[];const base={week:9,season:2026,games:{x:{snapshot_evaluations:[{eligible_for_current_recommendation:true,markets:{spread:{model_version:'legacy',side_a:{conditional_win_probability:.99}},moneyline:{model_version:'football-sportsbook-learning-v1',side_a:{conditional_win_probability:.61}}}}]}}};
 const browser={window:{},Date,Map,URLSearchParams,AbortSignal,fetch:async url=>{requests.push(url);return {ok:true,json:async()=>url.includes('/release')?{ref:'refs/heads/main',object:{type:'commit',sha:'a'.repeat(40)}}:url.includes('recommendations')?structuredClone(base):null}}};
 vm.createContext(browser);vm.runInContext(source.replace("import('./lib/personnel-matchup.mjs')","Promise.resolve({overlayGameFeed:base=>base})"),browser);
 const loaded=await browser.window.CTD_GAME_MODEL.load();
