@@ -1,3 +1,4 @@
+import {MoneylineProjectionStore} from './moneyline-projections.mjs';
 import {SpreadProjectionStore} from './spread-projections.mjs';
 import {PersonnelGameStore} from './game-projections.mjs';
 import {PropsRelay} from './props-relay.mjs';
@@ -10,7 +11,7 @@ const validPath=p=>['/latest.json','/status.json','/index.json'].includes(p)||/^
 const store=env=>env.SPLITS_STORE.get(env.SPLITS_STORE.idFromName('production'));
 export default {
  async scheduled(controller,env){
-  const jobs=[['splits','/collect'],...(env.PROPS_RELAY_URL?[['props','/props/collect']]:[]),...(env.AVAILABILITY_ENABLED==='true'?[['availability','/availability/collect']]:[]),...(env.SPREAD_MODEL_ENABLED==='true'?[['spread','/spread-projections/collect']]:[])];
+  const jobs=controller.cron==='* * * * *'?(env.MONEYLINE_MODEL_ENABLED==='true'?[['moneyline','/moneyline-projections/collect']]:[]):[['splits','/collect'],...(env.PROPS_RELAY_URL?[['props','/props/collect']]:[]),...(env.AVAILABILITY_ENABLED==='true'?[['availability','/availability/collect']]:[]),...(env.SPREAD_MODEL_ENABLED==='true'?[['spread','/spread-projections/collect']]:[]),...(env.MONEYLINE_MODEL_ENABLED==='true'?[['moneyline','/moneyline-projections/collect']]:[])];
   const results=await Promise.allSettled(jobs.map(async([name,path])=>{
    const response=await store(env).fetch('https://store'+path,{method:'POST',body:JSON.stringify({scheduled_time:controller.scheduledTime,cron:controller.cron})});
    const body=await response.text();if(!response.ok)throw Error('Scheduled '+name+' collection failed: '+body);
@@ -27,6 +28,7 @@ export default {
  },
  async fetch(request,env){
   const path=new URL(request.url).pathname;
+  if(path.startsWith('/moneyline-projections/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
   if(path.startsWith('/spread-projections/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
   if(path.startsWith('/game-projections/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
   if(path.startsWith('/quarterbacks/')&&request.method==='GET')return store(env).fetch(new Request('https://store'+path+new URL(request.url).search,request));
@@ -39,9 +41,10 @@ export default {
 };
 // Collection is reachable only through the bound object, never through public HTTP.
 export class SplitsStore {
- constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.props=new PropsRelay(ctx.storage,env);this.availability=new AvailabilityStore(ctx.storage);this.quarterbacks=new QuarterbackProjections(ctx.storage);this.games=new PersonnelGameStore(ctx.storage,this.quarterbacks);this.spreads=new SpreadProjectionStore(ctx.storage);}
+ constructor(ctx,env){this.ctx=ctx;this.env=env;this.pending=null;this.props=new PropsRelay(ctx.storage,env);this.availability=new AvailabilityStore(ctx.storage);this.quarterbacks=new QuarterbackProjections(ctx.storage);this.games=new PersonnelGameStore(ctx.storage,this.quarterbacks);this.spreads=new SpreadProjectionStore(ctx.storage);this.moneylines=new MoneylineProjectionStore(ctx.storage);}
  async fetch(request){
   const path=new URL(request.url).pathname;
+  if(path.startsWith('/moneyline-projections/'))return this.moneylines.handle(request);
   if(path.startsWith('/spread-projections/'))return this.spreads.handle(request);
   if(path.startsWith('/game-projections/'))return this.games.handle(request);
   if(path.startsWith('/quarterbacks/'))return this.quarterbacks.handle(request);

@@ -1,3 +1,5 @@
+import {onRequestGet as moneylineRequest} from '../functions/api/live/moneyline-projections.js';
+import {overlayMoneylineFeed,replaceMoneylineOutputs} from '../workers/betting-splits/lib/moneyline-feed.mjs';
 import {onRequestGet as spreadRequest} from '../functions/api/live/spread-projections.js';
 import {overlaySpreadFeed,replaceSpreadOutputs} from '../workers/betting-splits/lib/spread-feed.mjs';
 import {onRequestGet as propQuotesRequest,refreshProps} from '../functions/api/live/prop-quotes.js';
@@ -10,7 +12,7 @@ import {onRequestGet as oddsRequest} from '../functions/api/live/odds.js';
 import {onRequestGet as splitsRequest} from '../functions/api/live/splits.js';
 import {onRequestGet as historyRequest} from '../functions/api/live/history.js';
 
-const LIVE_HANDLERS={'spread-projections':spreadRequest,'game-projections':gameProjectionRequest,'prop-quotes':propQuotesRequest,availability:availabilityRequest,'qb-projections':qbRequest,news:newsRequest,odds:oddsRequest,splits:splitsRequest,history:historyRequest};
+const LIVE_HANDLERS={'moneyline-projections':moneylineRequest,'spread-projections':spreadRequest,'game-projections':gameProjectionRequest,'prop-quotes':propQuotesRequest,availability:availabilityRequest,'qb-projections':qbRequest,news:newsRequest,odds:oddsRequest,splits:splitsRequest,history:historyRequest};
 const LIVE_RESOURCES=new Set(['','health','scoreboard','game','bundle','model','betting','injuries','players',...Object.keys(LIVE_HANDLERS)]);
 
 const REPO='brandonlowery013-glitch/-fantasy-2026-player-comparison-';
@@ -29,7 +31,7 @@ export default {
    const context={request,env,waitUntil:ctx.waitUntil.bind(ctx),params:{path:leaf?[leaf]:[]}};
    const response=await (LIVE_HANDLERS[leaf]||liveRequest)(context);
    if(!response.ok||!['betting','model','bundle'].includes(leaf))return response;
-   const body=await response.json();try{const [a,b]=await Promise.all([fetch(`https://raw.githubusercontent.com/${REPO}/main/${PATHS.recommendations}`,{signal:AbortSignal.timeout(20000)}),spreadRequest({request:new Request(url.origin+'/api/live/spread-projections'),env})]);if(!a.ok)throw Error('Spread recommendation source unavailable');const consumer=await a.json(),live=b.ok?await b.json():null;if(leaf==='bundle'){if(body.betting)body.betting=replaceSpreadOutputs(body.betting,consumer,live);if(body.model)body.model=replaceSpreadOutputs(body.model,consumer,live);}else if(body.data)body.data=replaceSpreadOutputs(body.data,consumer,live);return Response.json(body,{headers:{'cache-control':'no-store'}});}catch(e){return Response.json({status:'SPREAD_DELIVERY_UNAVAILABLE',error:e.message},{status:502});}
+   const body=await response.json();try{const [a,b,c]=await Promise.all([fetch(`https://raw.githubusercontent.com/${REPO}/main/${PATHS.recommendations}`,{signal:AbortSignal.timeout(20000)}),spreadRequest({request:new Request(url.origin+'/api/live/spread-projections'),env}),moneylineRequest({request:new Request(url.origin+'/api/live/moneyline-projections'),env})]);if(!a.ok)throw Error('Spread recommendation source unavailable');const consumer=await a.json(),live=b.ok?await b.json():null,moneyline=c.ok?await c.json():null,replace=d=>replaceMoneylineOutputs(replaceSpreadOutputs(d,consumer,live),consumer,moneyline);if(leaf==='bundle'){if(body.betting)body.betting=replace(body.betting);if(body.model)body.model=replace(body.model);}else if(body.data)body.data=replace(body.data);return Response.json(body,{headers:{'cache-control':'no-store'}});}catch(e){return Response.json({status:'SPREAD_DELIVERY_UNAVAILABLE',error:e.message},{status:502});}
 
   }
   if(!url.pathname.startsWith(prefix))return env.ASSETS.fetch(request);
@@ -40,7 +42,7 @@ export default {
   // Spread authority is evaluated on the server, independently of browser state.
   if(kind==='recommendations'){
    const upstream=`https://raw.githubusercontent.com/${REPO}/${ref}/${PATHS[kind]}`;
-   try{const [baseResponse,modelResponse]=await Promise.all([fetch(upstream,{signal:AbortSignal.timeout(20000)}),spreadRequest({request:new Request(url.origin+'/api/live/spread-projections'),env})]);if(!baseResponse.ok)throw Error('Recommendation source '+baseResponse.status);const base=await baseResponse.json(),live=modelResponse.ok?await modelResponse.json():null;return Response.json(overlaySpreadFeed(base,live),{headers:{'cache-control':'no-store','x-ctd-spread-model':'sportsbook-calibration-learning-v1'}});}catch(e){return Response.json({status:'MODEL_SOURCE_UNAVAILABLE',error:e.message},{status:502});}
+   try{const [baseResponse,modelResponse,moneylineResponse]=await Promise.all([fetch(upstream,{signal:AbortSignal.timeout(20000)}),spreadRequest({request:new Request(url.origin+'/api/live/spread-projections'),env}),moneylineRequest({request:new Request(url.origin+'/api/live/moneyline-projections'),env})]);if(!baseResponse.ok)throw Error('Recommendation source '+baseResponse.status);const base=await baseResponse.json(),live=modelResponse.ok?await modelResponse.json():null,moneyline=moneylineResponse.ok?await moneylineResponse.json():null;return Response.json(overlayMoneylineFeed(overlaySpreadFeed(base,live),moneyline),{headers:{'cache-control':'no-store','x-ctd-spread-model':'sportsbook-calibration-learning-v1'}});}catch(e){return Response.json({status:'MODEL_SOURCE_UNAVAILABLE',error:e.message},{status:502});}
   }
   const key=new Request(url.origin+prefix+kind+(kind==='release'?'':'?ref='+ref));
   const cache=globalThis.caches?.default,cached=cache?await cache.match(key):null;

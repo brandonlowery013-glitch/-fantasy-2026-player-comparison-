@@ -84,9 +84,10 @@
   }
 function gameDirectionPrediction(game,snapshot,kind){
  if(!['moneyline','spread','total'].includes(kind))return null;
- const selected=snapshot?.markets?.[kind]?.model_prediction;if(kind==='spread'&&selected?.status==='EVEN')return {...selected,selection:null};
+ const selected=snapshot?.markets?.[kind]?.model_prediction;if(['moneyline','spread'].includes(kind)&&selected?.status==='EVEN')return {...selected,selection:null};
  const e=snapshot?.markets?.[kind],a=e?.side_a?.conditional_win_probability,b=e?.side_b?.conditional_win_probability;
  let home=a,away=b;
+ if(kind==='moneyline'&&game.moneyline_model&&(!Number.isFinite(home)||!Number.isFinite(away)))return {status:'UNAVAILABLE',selection:null,reason:'Current moneyline model inputs unavailable',betting_decision:'WAIT'};
  if(kind==='moneyline'&&(!Number.isFinite(home)||!Number.isFinite(away))){
   const p=game.football_projection||{},sum=p.home_win_probability+p.away_win_probability;
   if(sum>0){home=p.home_win_probability/sum;away=p.away_win_probability/sum;}
@@ -175,6 +176,7 @@ function gameDirectionPrediction(game,snapshot,kind){
     return `${r.label||r.side}: consensus ${r.bets}% of bets, Smart Money ${r.money}% of dollars; money minus bets ${r.handle_minus_bets_pp>=0?'+':''}${r.handle_minus_bets_pp} percentage points. ${r.bets===50?'Bet share is even.':r.bets>50?'The majority of bets agrees with this side.':'The majority of bets opposes this side.'} ${r.money===50?'Money share is even.':r.money>50?'The majority of dollars agrees with this side.':'The majority of dollars opposes this side.'} Recorded ${humanTime(context.observed_at)}. These are DraftKings shares, not proof of professional betting; their predictive effect has not been validated. Probability and confidence adjustment: 0.`;
   }
   function gameWork(game,snapshot,kind,now=Date.now()){
+    if(kind==='moneyline'&&game.moneyline_model){const e=snapshot?.markets?.moneyline,c=e?.calibration;return {reader:{summary:'Moneyline forecast: football + sportsbook + existing learning.',details:c?[`Football home-win chance ${(c.football_probability*100).toFixed(2)}%; sportsbook home-win chance ${(c.book_probability*100).toFixed(2)}%; combined ${(c.calibrated_probability*100).toFixed(2)}%; earlier-game learning change ${(c.learning_change*100).toFixed(2)} percentage points.`,`Training uses ${c.training_games} settled earlier-week games. Spread probabilities are calculated separately.`,`Tie/refund chance comes from the original football score distribution. Quote: ${snapshot.book}; ${snapshot.captured_at}.`]:['Current moneyline inputs unavailable.'],verdict:e?.recommendation?.decision||'WAIT',hideVerdict:false}};}
     if(kind==='spread'&&game.spread_model){const e=snapshot?.markets?.spread,c=e?.calibration;return {reader:{summary:'Spread forecast: sportsbook calibration + existing learning.',details:c?[`Market chance ${(c.book_probability*100).toFixed(2)}%; calibrated ${(c.calibrated_probability*100).toFixed(2)}%; learning change ${(c.learning_change*100).toFixed(2)} percentage points.`,`Training uses ${c.training_games} settled earlier-week games. No bye bonus, Polymarket blend or personnel-model spread adjustment.`,`Saved home spread ${snapshot.market?.home_spread}; ${snapshot.book}; ${snapshot.captured_at}.`]:['Current spread-model inputs unavailable.'],verdict:e?.recommendation?.decision||'WAIT',hideVerdict:false}};}
 
     snapshot=gameMarketView(game,snapshot,now);
