@@ -13,13 +13,16 @@
   if(!paths[kind])return Promise.reject(Error('Unknown game model source'));
   const slot=Math.floor(Date.now()/300000),key=kind+slot;if(cache.has(key))return cache.get(key);
   for(const old of cache.keys())if(old.startsWith(kind))cache.delete(old);
-  const [normal,rerun]=paths[kind];const p=release(slot).then(async sha=>{
+  const [normal,rerun]=paths[kind];
+  // Start independent context I/O while resolving the release and main feed.
+  const pendingPersonnel=['recommendations','projections'].includes(kind)?personnel():null;
+  const p=release(slot).then(async sha=>{
    // Recommendations are evaluated by the deployed server. Never replace them with a
    // raw producer, research replay, personnel model, or a second browser-side fit.
    const base=await (kind==='recommendations'?read('/cloudflare/api/game-model/recommendations?ref='+sha):read('/cloudflare/api/game-model/'+kind+'?ref='+sha).catch(()=>read(ROOT+sha+'/'+normal)));
    const chosen=kind!=='recommendations'&&rerun?select(base,await read(rerun).catch(()=>null)):base;
    if(!['recommendations','projections'].includes(kind))return chosen;
-   const [helper,live]=await Promise.all([impactHelper,personnel()]);
+   const [helper,live]=await Promise.all([impactHelper,pendingPersonnel]);
    const result=helper.overlayGameFeed(chosen,live,kind);
    if(kind==='recommendations')for(const g of Object.values(result.games||{}))for(const q of g.snapshot_evaluations||[])if(q.eligible_for_current_recommendation)for(const [market,version] of [['spread','sportsbook-calibration-learning-v1'],['moneyline','football-sportsbook-learning-v1']])if(q.markets?.[market]?.model_version!==version){q.markets||={};q.markets[market]={model_version:version,recommendation:{decision:'WAIT',reason:'CURRENT_MODEL_UNAVAILABLE'}};}
    return result;

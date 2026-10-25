@@ -25,15 +25,16 @@ const PATHS={recommendations:'data/market/game-model-consumer-2026.json',project
 
 // Coalesce concurrent requests and reuse the serialized response briefly. This
 // avoids repeating the score simulations and parsing the full feed per viewer.
-let recommendationCache=null;
+let recommendationCache=new Map();
 let recommendationTail=Promise.resolve();
 async function recommendationBody(ref,env,url){
- const now=Date.now();if(recommendationCache?.key===ref&&recommendationCache.until>now)return recommendationCache.promise;
- const entry={key:ref,until:now+15000,promise:null};
+ const now=Date.now();for(const [key,cached] of recommendationCache)if(cached.until<=now)recommendationCache.delete(key);
+ const cached=recommendationCache.get(ref);if(cached)return cached.promise;
+ const entry={key:ref,until:Infinity,promise:null};
  entry.promise=recommendationTail.catch(()=>{}).then(async()=>{const upstream=`https://raw.githubusercontent.com/${REPO}/${ref}/${PATHS.recommendations}`;
  const [baseResponse,modelResponse,moneylineResponse,projectionsResponse]=await Promise.all([fetch(upstream,{signal:AbortSignal.timeout(20000)}),spreadRequest({request:new Request(url.origin+'/api/live/spread-projections'),env}),moneylineRequest({request:new Request(url.origin+'/api/live/moneyline-projections'),env}),fetch(`https://raw.githubusercontent.com/${REPO}/${ref}/${PATHS.projections}`,{signal:AbortSignal.timeout(20000)})]);if(!baseResponse.ok)throw Error('Recommendation source '+baseResponse.status);const base=await baseResponse.json();for(const game of Object.values(base.games||{}))delete game.behavior_learning_context;const live=modelResponse.ok?await modelResponse.json():null,moneyline=moneylineResponse.ok?await moneylineResponse.json():null;const evaluated=applyHistoricalSelection(overlayMoneylineFeed(overlaySpreadFeed(base,live),moneyline),historicalSelection),projections=projectionsResponse.ok?await projectionsResponse.json():null;return JSON.stringify(await withModelDrivers(evaluated,live,moneyline,projections));
- }).catch(e=>{if(recommendationCache===entry)recommendationCache=null;throw e;});
- recommendationTail=entry.promise.then(()=>undefined,()=>undefined);recommendationCache=entry;return entry.promise;
+ }).then(body=>{entry.until=Date.now()+15000;return body;}).catch(e=>{if(recommendationCache.get(ref)===entry)recommendationCache.delete(ref);throw e;});
+ recommendationTail=entry.promise.then(()=>undefined,()=>undefined);recommendationCache.set(ref,entry);return entry.promise;
 }
 
 export default {
