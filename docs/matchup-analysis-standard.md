@@ -84,3 +84,10 @@ The current game-margin model uses standardized scoring-matchup and rest feature
 
 
 The preview generator is descriptive only: it never changes a score, selected spread model, selected moneyline model, quote, recommendation or probability. Recent comparisons identify the source games and different opponent samples. Availability is displayed only from a fresh collector snapshot and dated reports, with official inactives matched to the exact kickoff. Failed refreshes retain the previous successful preview and expose health; stale or wrong-week content cannot become a new-slate preview. Regression checks: `node workers/betting-splits/cloudflare/test-matchup-previews.mjs` and `node scripts/test-matchup-writeup-display.mjs`.
+
+
+## Pick-specific explanations
+
+The live recommendation handler adds `matchup_preview` only after the selected spread and moneyline outputs are evaluated. `workers/betting-splits/lib/pick-preview.mjs` reads those evaluations, their exact quote and line, the scheduled prior-game evidence and current saved availability. It does not fit a model or change any probability, score, recommendation or threshold. Its football scenarios are descriptive context, not additional numeric model adjustments.
+
+Every displayed market has a selected-side case and a concrete countercase. The preview distinguishes an outright win from covering the exact spread, and distinguishes an outcome lean from a recommended bet or a hold. A new selected side is explained on the next recommendation refresh; it cannot retain the old side’s text. Evidence must match the exact teams, kickoff, season and week; post-kickoff injuries cannot enter a pregame explanation. The visible preview consumes the server-produced `matchup_preview`, rather than the former offense-versus-defense stat paragraphs. Check with `node scripts/test-pick-preview.mjs` and the existing selected-model and preview display checks.
