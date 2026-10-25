@@ -1,0 +1,282 @@
+{
+  "status": "RESEARCH_ONLY_NOT_LIVE",
+  "generated_at": "2026-10-25T09:39:32.052670+00:00",
+  "moneyline": {
+    "candidate_id": "documented-team-qb-moneyline-research-v1",
+    "candidate_family": "Odds + team/QB form + documented expected starter",
+    "same_saved_games_result": {
+      "wins": 60,
+      "losses": 29,
+      "accuracy": 0.6741573033707865,
+      "underdog_wins": 5,
+      "underdog_losses": 2,
+      "brier": 0.22441023804548588,
+      "logloss": 0.6419639271425388
+    },
+    "all_available_games_result": {
+      "wins": 60,
+      "losses": 32,
+      "accuracy": 0.6521739130434783,
+      "underdog_wins": 5,
+      "underdog_losses": 2,
+      "brier": 0.2318689067135693,
+      "logloss": 0.6579358593269357
+    },
+    "current_model_result": {
+      "wins": 58,
+      "losses": 31,
+      "accuracy": 0.651685393258427,
+      "underdog_wins": 1,
+      "underdog_losses": 0,
+      "brier": 0.23094341511416616,
+      "logloss": 0.6563423110430562
+    },
+    "favorite_baseline": {
+      "wins": 57,
+      "losses": 32,
+      "accuracy": 0.6404494382022472,
+      "underdog_wins": 0,
+      "underdog_losses": 0,
+      "brier": 0.2276750226563134,
+      "logloss": 0.6485766008376924
+    },
+    "upset_picks": [
+      {
+        "week": 2,
+        "matchup": "CIN @ HOU",
+        "dog": "CIN",
+        "outcome": 1
+      },
+      {
+        "week": 2,
+        "matchup": "JAX @ DEN",
+        "dog": "JAX",
+        "outcome": 0
+      },
+      {
+        "week": 3,
+        "matchup": "HOU @ IND",
+        "dog": "IND",
+        "outcome": 1
+      },
+      {
+        "week": 4,
+        "matchup": "DAL @ HOU",
+        "dog": "DAL",
+        "outcome": 1
+      },
+      {
+        "week": 4,
+        "matchup": "ATL @ NO",
+        "dog": "ATL",
+        "outcome": 1
+      },
+      {
+        "week": 5,
+        "matchup": "CLE @ NYJ",
+        "dog": "CLE",
+        "outcome": 0
+      },
+      {
+        "week": 6,
+        "matchup": "NO @ NYG",
+        "dog": "NO",
+        "outcome": 1
+      }
+    ],
+    "formula": "sigmoid(logit(no-vig underdog moneyline probability) + fitted intercept + sum(beta\u00d7earlier-game standardized team/QB input))",
+    "fit": {
+      "columns": [
+        "home",
+        "ypp",
+        "plays",
+        "sacks",
+        "giveaways",
+        "record",
+        "takeaways",
+        "points",
+        "qb_netpass",
+        "qb_sack",
+        "qb_int",
+        "qb_completion",
+        "qb_continuity"
+      ],
+      "mean": [
+        0.40916271721958924,
+        -0.4879111004499473,
+        -0.7524980031201423,
+        0.3571776207594924,
+        0.19992457082201315,
+        -0.19977885270755485,
+        -0.12041883196312478,
+        -3.686312149756301,
+        -0.8086949150267184,
+        0.008603083624857264,
+        0.003766469376745654,
+        -0.022242360902075518,
+        -0.21717904641054692
+      ],
+      "sd": [
+        0.49167935492256704,
+        0.8905312105675015,
+        6.4747374891160545,
+        1.3303612012995094,
+        0.8075408195021004,
+        0.3641971963336074,
+        0.811094012699398,
+        7.1926575692669585,
+        1.7071626690493136,
+        0.043146685425883506,
+        0.024729873381060075,
+        0.08365146246094657,
+        0.660686826384012
+      ],
+      "beta": [
+        -0.05104375806600168,
+        -0.036966358815915104,
+        0.024463474394251786,
+        -0.009805942550549448,
+        -0.08009872799837109,
+        0.05930003274564477,
+        0.057720760528653,
+        0.0616811329926336,
+        -0.08959905606795904,
+        0.04982517759786338,
+        -0.06478019725006964,
+        0.11993541061169027,
+        0.10590868368418122,
+        0.01580712072511667
+      ],
+      "penalty": 100,
+      "n": 633,
+      "offset": true
+    },
+    "features": [
+      "home",
+      "ypp",
+      "plays",
+      "sacks",
+      "giveaways",
+      "record",
+      "takeaways",
+      "points",
+      "qb_netpass",
+      "qb_sack",
+      "qb_int",
+      "qb_completion",
+      "qb_continuity"
+    ],
+    "learning": "Use settled earlier games only; preserve this feature family. Refit coefficients weekly after data checks. Never automatically replace the family with another experiment.",
+    "limits": [
+      "Research replay after repeated inspection; not prospective proof.",
+      "The best empirical fit contains some counterintuitive conditional coefficients. It is a statistical correction to odds, not a causal explanation of player value. The directional alternative scored worse and is retained for comparison.",
+      "2026 expected-QB archive has timestamped depth charts but weekly injury reports lack publication timestamps; valid as a near-kickoff reconstruction, not proof of Tuesday knowledge.",
+      "Older seasons lack the same complete dated lineup archive in this research run.",
+      "Seven selected underdogs is a small sample. No fixed upset quota."
+    ]
+  },
+  "totals": {
+    "candidate": "qb_context_total",
+    "same_saved_lines": {
+      "wins": 51,
+      "losses": 39,
+      "pushes": 0,
+      "accuracy": 0.5666666666666667,
+      "mae": 10.298832003676047,
+      "games": 90
+    },
+    "all_available": {
+      "wins": 53,
+      "losses": 40,
+      "pushes": 0,
+      "accuracy": 0.5698924731182796,
+      "mae": 10.420788616583188,
+      "games": 93
+    },
+    "archived_football_forecast": {
+      "wins": 38,
+      "losses": 52,
+      "pushes": 0,
+      "accuracy": 0.4222222222222222,
+      "mae": 11.245811111111111,
+      "games": 90
+    },
+    "learning": "Independent total regression around the listed total; earlier scoring, pace, efficiency and QB features. Fixed candidate settings selected on2025, weekly updates use earlier outcomes only."
+  },
+  "props": {
+    "candidate_by_stat": {
+      "passing_yards": "last3_median_role",
+      "passing_tds": "shrunk_mean_normal",
+      "rushing_yards": "shrunk_mean_role",
+      "receiving_yards": "recent_mean_role",
+      "receptions": "last3_median_normal"
+    },
+    "test_weeks3_4": {
+      "passing_yards": {
+        "wins": 30,
+        "losses": 34,
+        "accuracy": 0.46875,
+        "markets": 64,
+        "always_under_wins_same_markets": 26,
+        "always_under_losses_same_markets": 38,
+        "brier": 0.282023046875
+      },
+      "passing_tds": {
+        "wins": 38,
+        "losses": 25,
+        "accuracy": 0.6031746031746031,
+        "markets": 63,
+        "always_under_wins_same_markets": 28,
+        "always_under_losses_same_markets": 35,
+        "brier": 0.24415475201530012
+      },
+      "rushing_yards": {
+        "wins": 108,
+        "losses": 74,
+        "accuracy": 0.5934065934065934,
+        "markets": 182,
+        "always_under_wins_same_markets": 102,
+        "always_under_losses_same_markets": 80,
+        "brier": 0.2640252747252747
+      },
+      "receiving_yards": {
+        "wins": 176,
+        "losses": 182,
+        "accuracy": 0.49162011173184356,
+        "markets": 358,
+        "always_under_wins_same_markets": 172,
+        "always_under_losses_same_markets": 186,
+        "brier": 0.29056319832402233
+      },
+      "receptions": {
+        "wins": 192,
+        "losses": 158,
+        "accuracy": 0.5485714285714286,
+        "markets": 350,
+        "always_under_wins_same_markets": 179,
+        "always_under_losses_same_markets": 171,
+        "brier": 0.27103161942579734
+      }
+    },
+    "primary_research_candidates": [
+      "passing_tds",
+      "rushing_yards",
+      "receptions"
+    ],
+    "not_supported_as_replacements": [
+      "passing_yards",
+      "receiving_yards"
+    ],
+    "coverage": "Means tested throughWeek6; betting sides onlyWeeks1\u20134, with method choice onWeeks1\u20132 and evaluationWeeks3\u20134.",
+    "learning": "Forecast expected workload and output from earlier appearances; use prior-season baseline for sparse data. Calibrate the outcome distribution by stat and comparable workload; QB calibration separates starters from relief players. Never assume a missing result means zero."
+  },
+  "live_changes": {
+    "models": false,
+    "performance_only": true,
+    "firefox_touched": false,
+    "paid_subscriptions": false,
+    "branch": "frontend/ctd-cloudflare-work",
+    "commit": "040ea60ca2c0a104b349f2615fc1ad258f5a86d6",
+    "deployment": "9da4013b"
+  }
+}
