@@ -26,8 +26,10 @@
    if(pair.some(r=>!r)||!['bets','money'].every(k=>pair.every(r=>Number.isFinite(r[k])&&r[k]>=0&&r[k]<=100)&&Math.abs(pair[0][k]+pair[1][k]-100)<=1)){
     block.innerHTML+='<p class="ctdSplitEmpty">'+(data?'No published percentages':'Loading percentages…')+'</p>';card.append(block);return;
    }
+   const price=value=>{const n=Number(String(value??'').replace(/−/g,'-'));return Number.isInteger(n)&&Math.abs(n)>=100?(n>0?'+':'')+n:'—'};
    const labels=pair.map((r,i)=>market==='total'?r.label:market==='spread'?`${i===0?g.away_team:g.home_team} ${r.label.split(' ').at(-1)}`:i===0?g.away_team:g.home_team);
    block.innerHTML+=`<div class="ctdSplitSides"><span><i class="ctdSideA"></i>${esc(labels[0])}</span><span>${esc(labels[1])}<i class="ctdSideB"></i></span></div>`;
+   block.innerHTML+=`<div class="ctdSplitPrices" aria-label="${esc(labels[0]+' odds '+price(pair[0].odds)+'; '+labels[1]+' odds '+price(pair[1].odds))}"><b>${esc(price(pair[0].odds))}</b><span>Odds</span><b>${esc(price(pair[1].odds))}</b></div>`;
    for(const [key,label] of [['bets','Consensus'],['money','Smart Money']]){
     block.innerHTML+=`<div class="ctdSplitMetric"><div class="ctdSplitValues"><b>${pair[0][key]}<small>%</small></b><span>${label}</span><b>${pair[1][key]}<small>%</small></b></div><div class="ctdSplitBar" role="img" aria-label="${esc(label+': '+labels[0]+' '+pair[0][key]+'%, '+labels[1]+' '+pair[1][key]+'%')}"><span class="ctdSideA" style="width:${pair[0][key]}%"></span><span class="ctdSideB" style="width:${pair[1][key]}%"></span></div></div>`;
    }
@@ -51,6 +53,7 @@
  .ctdSplitHeading strong{font-size:12px;font-weight:700;color:#e9f2fd}.ctdSplitHeading>span{font-size:9px;color:#8ca4bc}
  .ctdSplitSides{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;color:#d6e5f6;margin-bottom:10px}
  .ctdSplitSides>span{display:flex;align-items:center;gap:6px}.ctdSplitSides i{width:6px;height:6px;border-radius:50%;display:inline-block;flex:none}
+ .ctdSplitPrices{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:-3px 0 10px;padding-bottom:9px;border-bottom:1px solid #21374f;font-variant-numeric:tabular-nums}.ctdSplitPrices b{font-size:12px;font-weight:650;color:#c9ddf2}.ctdSplitPrices>span{font-size:9px;color:#8ca4bc;font-weight:500}
  .ctdSideA{background:#519fff}.ctdSideB{background:#43cbb8}
  .ctdSplitMetric+.ctdSplitMetric{margin-top:10px}
  .ctdSplitValues{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;font-variant-numeric:tabular-nums}
