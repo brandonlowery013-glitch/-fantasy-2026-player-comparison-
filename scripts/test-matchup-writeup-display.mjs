@@ -7,3 +7,5 @@ const panel=fs.readFileSync('frontend/cloudflare/game-detail-panels.js','utf8');
 console.log('PASS: current-week written preview, exact kickoff identity, stale slate rejected, priced and no-quote games connected, Cloudflare delivery.');
 
 const loader=fs.readFileSync('frontend/cloudflare/restore-lock1.js','utf8');assert(loader.includes("src.split('?')[0].endsWith('.mjs')"),'Versioned modules must load as modules');
+
+const early={...sandbox,BET_FEED:{games:[]},renderSelectedGame:()=>{},fetch:async()=>({ok:true,json:async()=>({week:7,season:2026,games:{g:game}})})};vm.createContext(early);vm.runInContext(script,early);await new Promise(r=>setImmediate(r));assert.equal(early.CTD_MATCHUP_REPORTS.size,0);early.BET_FEED={week:7,games:[game]};early.renderSelectedGame();assert.equal(early.CTD_MATCHUP_REPORTS.size,1,'Preview arriving before the game feed must attach on first game render');
