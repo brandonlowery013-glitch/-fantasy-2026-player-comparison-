@@ -319,7 +319,7 @@ document.addEventListener('click',ev=>{const p=ev.target.closest('[data-profile]
     .then(()=>load('./live-score-poller.js'))
     .catch(err=>console.error('CTD live score bootstrap failed',err))
     .then(()=>load('./pick-history.js'))
-    .then(()=>load('./game-detail-panels.js?v=pick-reasons-20261024'))
+    .then(()=>load('./game-detail-panels.js?v=actual-model-drivers-20261024'))
     .catch(err=>console.error('CTD game detail panels failed',err))
     .then(()=>load('./live-odds.js'))
     .catch(err=>console.error('CTD live odds failed',err))

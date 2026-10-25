@@ -1,0 +1,527 @@
+{
+  "game_id": "2026-W7-NE-CHI",
+  "kickoff": "2026-10-23T00:15:00.000Z",
+  "quote_id": "MKT-e20724017b265934f8d6",
+  "forecast_ids": {
+    "spread": "73b07c1dc4c9f87d386e98502593ef4f82b89d2523f5ad0a7d725e97ec878049",
+    "moneyline": "50860af50b07047a0b99db41065532d1c5897ee5aedb063fd80209dd5a0bde2e"
+  },
+  "features": {
+    "spread": {
+      "probability_confidence": -0.17952864291854426,
+      "scoring_margin": 0.1625,
+      "offensive_plays": 9.176550314164714,
+      "pass_play_share": -0.010697920343825662,
+      "rush_yards_per_attempt": 0.05848482856476167,
+      "turnovers": 0.2412227604556949,
+      "sacks_allowed": 0.2671941495986465,
+      "third_down_rate": 0.021791363857669055,
+      "red_zone_rate": -0.22396668052334423,
+      "net_yards_per_play": -0.9701412950618744,
+      "possession_seconds": 199.42196145014714,
+      "consensus_home": -0.25,
+      "money_minus_bets_home": 0.15
+    },
+    "moneyline": {
+      "probability_confidence": 0.19844755491737356,
+      "scoring_margin": 0.1625,
+      "offensive_plays": 9.176550314164714,
+      "pass_play_share": -0.010697920343825662,
+      "rush_yards_per_attempt": 0.05848482856476167,
+      "turnovers": 0.2412227604556949,
+      "sacks_allowed": 0.2671941495986465,
+      "third_down_rate": 0.021791363857669055,
+      "red_zone_rate": -0.22396668052334423,
+      "net_yards_per_play": -0.9701412950618744,
+      "possession_seconds": 199.42196145014714,
+      "consensus_home": -0.35,
+      "money_minus_bets_home": -0.03
+    }
+  },
+  "fits": {
+    "spread": {
+      "version": "sportsbook-calibration-learning-v1",
+      "week": 7,
+      "train_n": 88,
+      "training_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "calibration": {
+        "formula": "sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))",
+        "emh_null": "All fitted corrections equal zero: the market benchmark remains the estimate",
+        "columns": [
+          "market_logit"
+        ],
+        "excluded_columns": [],
+        "mean": {
+          "market_logit": -0.005328637272980061
+        },
+        "sd": {
+          "market_logit": 0.05071918853768383
+        },
+        "beta": [
+          -0.1443587282283013,
+          -0.5960835441309208
+        ],
+        "penalty": 0.1,
+        "training_game_ids": [
+          "2026-W1-ARI-LAC",
+          "2026-W1-ATL-PIT",
+          "2026-W1-BAL-IND",
+          "2026-W1-BUF-HOU",
+          "2026-W1-CHI-CAR",
+          "2026-W1-CLE-JAX",
+          "2026-W1-DAL-NYG",
+          "2026-W1-DEN-KC",
+          "2026-W1-GB-MIN",
+          "2026-W1-MIA-LV",
+          "2026-W1-NE-SEA",
+          "2026-W1-NO-DET",
+          "2026-W1-NYJ-TEN",
+          "2026-W1-SF-LA",
+          "2026-W1-TB-CIN",
+          "2026-W1-WAS-PHI",
+          "2026-W2-CAR-ATL",
+          "2026-W2-CIN-HOU",
+          "2026-W2-CLE-TB",
+          "2026-W2-DET-BUF",
+          "2026-W2-GB-NYJ",
+          "2026-W2-IND-KC",
+          "2026-W2-JAX-DEN",
+          "2026-W2-LV-LAC",
+          "2026-W2-MIA-SF",
+          "2026-W2-MIN-CHI",
+          "2026-W2-NO-BAL",
+          "2026-W2-NYG-LA",
+          "2026-W2-PHI-TEN",
+          "2026-W2-PIT-NE",
+          "2026-W2-SEA-ARI",
+          "2026-W2-WAS-DAL",
+          "2026-W3-ARI-SF",
+          "2026-W3-ATL-GB",
+          "2026-W3-BAL-DAL",
+          "2026-W3-CAR-CLE",
+          "2026-W3-CIN-PIT",
+          "2026-W3-HOU-IND",
+          "2026-W3-KC-MIA",
+          "2026-W3-LA-DEN",
+          "2026-W3-LAC-BUF",
+          "2026-W3-LV-NO",
+          "2026-W3-MIN-TB",
+          "2026-W3-NE-JAX",
+          "2026-W3-NYJ-DET",
+          "2026-W3-PHI-CHI",
+          "2026-W3-SEA-WAS",
+          "2026-W3-TEN-NYG",
+          "2026-W4-ARI-NYG",
+          "2026-W4-ATL-NO",
+          "2026-W4-DAL-HOU",
+          "2026-W4-DEN-SF",
+          "2026-W4-DET-CAR",
+          "2026-W4-GB-TB",
+          "2026-W4-IND-WAS",
+          "2026-W4-JAX-CIN",
+          "2026-W4-KC-LV",
+          "2026-W4-LA-PHI",
+          "2026-W4-MIA-MIN",
+          "2026-W4-NE-BUF",
+          "2026-W4-NYJ-CHI",
+          "2026-W4-PIT-CLE",
+          "2026-W4-TEN-BAL",
+          "2026-W5-PHI-JAX",
+          "2026-W5-CHI-GB",
+          "2026-W5-HOU-TEN",
+          "2026-W5-LV-NE",
+          "2026-W5-MIN-NO",
+          "2026-W5-CLE-NYJ",
+          "2026-W5-IND-PIT",
+          "2026-W5-NYG-WAS",
+          "2026-W5-DEN-LAC",
+          "2026-W5-DET-ARI",
+          "2026-W5-SF-SEA",
+          "2026-W5-BAL-ATL",
+          "2026-W5-BUF-LA",
+          "2026-W6-CHI-ATL",
+          "2026-W6-BAL-CLE",
+          "2026-W6-TEN-IND",
+          "2026-W6-NYJ-NE",
+          "2026-W6-NO-NYG",
+          "2026-W6-CAR-PHI",
+          "2026-W6-PIT-TB",
+          "2026-W6-ARI-LA",
+          "2026-W6-LAC-KC",
+          "2026-W6-BUF-LV",
+          "2026-W6-DAL-GB",
+          "2026-W6-WAS-SF"
+        ],
+        "numeric_authority": 0
+      },
+      "residual": {
+        "rule_id": "postgame-logit-residual-ridge-v2",
+        "n": 88,
+        "training_fingerprint": "fnv32:de75372",
+        "intercept": -0.010061283453584681,
+        "coefficients": [
+          {
+            "key": "probability_confidence",
+            "mean": 0.034708050760156046,
+            "sd": 0.33690251132345,
+            "observations": 88,
+            "coefficient": 0.00019275097996879998
+          },
+          {
+            "key": "scoring_margin",
+            "mean": 0.2796499999999999,
+            "sd": 0.4210068874949456,
+            "observations": 88,
+            "coefficient": -0.014799146960617654
+          },
+          {
+            "key": "offensive_plays",
+            "mean": -0.7753467600697763,
+            "sd": 8.916761129638092,
+            "observations": 72,
+            "coefficient": -0.018535363286971453
+          },
+          {
+            "key": "pass_play_share",
+            "mean": 0.0007661406220295197,
+            "sd": 0.10753670173809814,
+            "observations": 72,
+            "coefficient": 0.009200413093446602
+          },
+          {
+            "key": "rush_yards_per_attempt",
+            "mean": 0.06138790840571479,
+            "sd": 1.09698548320116,
+            "observations": 72,
+            "coefficient": -0.00588220388834053
+          },
+          {
+            "key": "turnovers",
+            "mean": 0.050921201844835104,
+            "sd": 1.0567995684053286,
+            "observations": 72,
+            "coefficient": -0.0037960174221833886
+          },
+          {
+            "key": "sacks_allowed",
+            "mean": -0.05653288388414844,
+            "sd": 1.5319356103756134,
+            "observations": 72,
+            "coefficient": -0.013473937293476023
+          },
+          {
+            "key": "third_down_rate",
+            "mean": 0.0062108489291179325,
+            "sd": 0.17318027492348997,
+            "observations": 72,
+            "coefficient": -0.007778414215326699
+          },
+          {
+            "key": "red_zone_rate",
+            "mean": 0.005564734487985907,
+            "sd": 0.27922555019669154,
+            "observations": 70,
+            "coefficient": -0.018302077318814156
+          },
+          {
+            "key": "net_yards_per_play",
+            "mean": 0.0499631334751754,
+            "sd": 1.2890140249099344,
+            "observations": 72,
+            "coefficient": -0.011294325509283857
+          },
+          {
+            "key": "possession_seconds",
+            "mean": -6.265704472630647,
+            "sd": 298.7971993889301,
+            "observations": 72,
+            "coefficient": -0.018102313673414104
+          },
+          {
+            "key": "consensus_home",
+            "mean": 0.05090909090909091,
+            "sd": 0.2033561383589501,
+            "observations": 11,
+            "coefficient": -0.004846465099027619
+          },
+          {
+            "key": "money_minus_bets_home",
+            "mean": -0.021818181818181813,
+            "sd": 0.11644883244804302,
+            "observations": 11,
+            "coefficient": 0.0050667803354372334
+          }
+        ],
+        "excluded_features": [],
+        "probability_change_cap": 0.02
+      }
+    },
+    "moneyline": {
+      "version": "football-sportsbook-learning-v1",
+      "week": 7,
+      "train_n": 89,
+      "training_weeks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "calibration": {
+        "formula": "sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))",
+        "emh_null": "All fitted corrections equal zero: the market benchmark remains the estimate",
+        "columns": [
+          "market_logit",
+          "football_minus_market_logit",
+          "home_score_mean",
+          "away_score_mean",
+          "team_score_sd"
+        ],
+        "excluded_columns": [
+          {
+            "column": "home_away_score_correlation",
+            "reason": "EXACTLY_COLLINEAR_WITH_team_score_sd"
+          }
+        ],
+        "mean": {
+          "market_logit": 0.25703683285041895,
+          "football_minus_market_logit": 0.09842664600972725,
+          "home_score_mean": 24.132067415730337,
+          "away_score_mean": 21.259337078651683,
+          "team_score_sd": 9.540606741573036,
+          "home_away_score_correlation": -0.016773033707865214
+        },
+        "sd": {
+          "market_logit": 0.7351003693981765,
+          "football_minus_market_logit": 0.45376716611021534,
+          "home_score_mean": 2.3638549965878446,
+          "away_score_mean": 2.4048388202843287,
+          "team_score_sd": 0.2917601607746087,
+          "home_away_score_correlation": 0.028792121129073197
+        },
+        "beta": [
+          -0.029739106528676822,
+          -0.009064679584636392,
+          0.03687340547837893,
+          0.011046671941422363,
+          -0.020304544226880876,
+          -0.014314539217608143
+        ],
+        "penalty": 100,
+        "training_game_ids": [
+          "2026-W1-ARI-LAC",
+          "2026-W1-ATL-PIT",
+          "2026-W1-BAL-IND",
+          "2026-W1-BUF-HOU",
+          "2026-W1-CHI-CAR",
+          "2026-W1-CLE-JAX",
+          "2026-W1-DAL-NYG",
+          "2026-W1-DEN-KC",
+          "2026-W1-GB-MIN",
+          "2026-W1-MIA-LV",
+          "2026-W1-NE-SEA",
+          "2026-W1-NO-DET",
+          "2026-W1-NYJ-TEN",
+          "2026-W1-SF-LA",
+          "2026-W1-TB-CIN",
+          "2026-W1-WAS-PHI",
+          "2026-W2-CAR-ATL",
+          "2026-W2-CIN-HOU",
+          "2026-W2-CLE-TB",
+          "2026-W2-DET-BUF",
+          "2026-W2-GB-NYJ",
+          "2026-W2-IND-KC",
+          "2026-W2-JAX-DEN",
+          "2026-W2-LV-LAC",
+          "2026-W2-MIA-SF",
+          "2026-W2-MIN-CHI",
+          "2026-W2-NO-BAL",
+          "2026-W2-NYG-LA",
+          "2026-W2-PHI-TEN",
+          "2026-W2-PIT-NE",
+          "2026-W2-SEA-ARI",
+          "2026-W2-WAS-DAL",
+          "2026-W3-ARI-SF",
+          "2026-W3-ATL-GB",
+          "2026-W3-BAL-DAL",
+          "2026-W3-CAR-CLE",
+          "2026-W3-CIN-PIT",
+          "2026-W3-HOU-IND",
+          "2026-W3-KC-MIA",
+          "2026-W3-LA-DEN",
+          "2026-W3-LAC-BUF",
+          "2026-W3-LV-NO",
+          "2026-W3-MIN-TB",
+          "2026-W3-NE-JAX",
+          "2026-W3-NYJ-DET",
+          "2026-W3-PHI-CHI",
+          "2026-W3-SEA-WAS",
+          "2026-W3-TEN-NYG",
+          "2026-W4-ARI-NYG",
+          "2026-W4-ATL-NO",
+          "2026-W4-DAL-HOU",
+          "2026-W4-DEN-SF",
+          "2026-W4-DET-CAR",
+          "2026-W4-GB-TB",
+          "2026-W4-IND-WAS",
+          "2026-W4-JAX-CIN",
+          "2026-W4-KC-LV",
+          "2026-W4-LA-PHI",
+          "2026-W4-LAC-SEA",
+          "2026-W4-MIA-MIN",
+          "2026-W4-NE-BUF",
+          "2026-W4-NYJ-CHI",
+          "2026-W4-PIT-CLE",
+          "2026-W4-TEN-BAL",
+          "2026-W5-PHI-JAX",
+          "2026-W5-CHI-GB",
+          "2026-W5-HOU-TEN",
+          "2026-W5-CIN-MIA",
+          "2026-W5-LV-NE",
+          "2026-W5-MIN-NO",
+          "2026-W5-CLE-NYJ",
+          "2026-W5-IND-PIT",
+          "2026-W5-DEN-LAC",
+          "2026-W5-DET-ARI",
+          "2026-W5-SF-SEA",
+          "2026-W5-BAL-ATL",
+          "2026-W5-BUF-LA",
+          "2026-W6-CHI-ATL",
+          "2026-W6-BAL-CLE",
+          "2026-W6-TEN-IND",
+          "2026-W6-NYJ-NE",
+          "2026-W6-NO-NYG",
+          "2026-W6-CAR-PHI",
+          "2026-W6-PIT-TB",
+          "2026-W6-ARI-LA",
+          "2026-W6-LAC-KC",
+          "2026-W6-BUF-LV",
+          "2026-W6-DAL-GB",
+          "2026-W6-WAS-SF"
+        ],
+        "numeric_authority": 0
+      },
+      "residual": {
+        "rule_id": "postgame-logit-residual-ridge-v2",
+        "n": 89,
+        "training_fingerprint": "fnv32:f3422eb",
+        "intercept": -0.010726818161748712,
+        "coefficients": [
+          {
+            "key": "probability_confidence",
+            "mean": 0.2809146785805195,
+            "sd": 0.7365746293135181,
+            "observations": 89,
+            "coefficient": -0.004452953548506474
+          },
+          {
+            "key": "scoring_margin",
+            "mean": 0.28727303370786506,
+            "sd": 0.42972965705106225,
+            "observations": 89,
+            "coefficient": 0.005533035581396424
+          },
+          {
+            "key": "offensive_plays",
+            "mean": -0.9644069744168307,
+            "sd": 8.9156528984689,
+            "observations": 73,
+            "coefficient": -0.014948886433578654
+          },
+          {
+            "key": "pass_play_share",
+            "mean": -0.0014682205042337107,
+            "sd": 0.1079750325666034,
+            "observations": 73,
+            "coefficient": -0.0005208732086422295
+          },
+          {
+            "key": "rush_yards_per_attempt",
+            "mean": 0.061353310392632567,
+            "sd": 1.1024854423415396,
+            "observations": 73,
+            "coefficient": -0.0051395613127821075
+          },
+          {
+            "key": "turnovers",
+            "mean": 0.05387403665304889,
+            "sd": 1.0462343089964947,
+            "observations": 73,
+            "coefficient": 0.0017424045078410831
+          },
+          {
+            "key": "sacks_allowed",
+            "mean": -0.05459448207002256,
+            "sd": 1.5244101758022386,
+            "observations": 73,
+            "coefficient": -0.01033337998813184
+          },
+          {
+            "key": "third_down_rate",
+            "mean": 0.0067316855844342825,
+            "sd": 0.1715098804511986,
+            "observations": 73,
+            "coefficient": -0.005565021906767104
+          },
+          {
+            "key": "red_zone_rate",
+            "mean": 0.004907400052749903,
+            "sd": 0.27804052955396846,
+            "observations": 71,
+            "coefficient": -0.014515778930624711
+          },
+          {
+            "key": "net_yards_per_play",
+            "mean": 0.05135842693952204,
+            "sd": 1.2870573220570958,
+            "observations": 73,
+            "coefficient": 0.0015897684137383317
+          },
+          {
+            "key": "possession_seconds",
+            "mean": -6.819324444570481,
+            "sd": 297.63792011968457,
+            "observations": 73,
+            "coefficient": -0.0157612028615517
+          },
+          {
+            "key": "consensus_home",
+            "mean": 0.061818181818181814,
+            "sd": 0.3103317339943934,
+            "observations": 11,
+            "coefficient": 0.0024613491085679873
+          },
+          {
+            "key": "money_minus_bets_home",
+            "mean": -0.03545454545454546,
+            "sd": 0.13432414230737366,
+            "observations": 11,
+            "coefficient": -0.0011278641716615475
+          }
+        ],
+        "excluded_features": [],
+        "probability_change_cap": 0.02
+      }
+    }
+  },
+  "football_inputs": {
+    "football_probability": 0.5494497117734074,
+    "model_tie_probability": 0.029236,
+    "forecast_available_at": "2026-10-21T01:09:47.726Z",
+    "existing_variables": {
+      "home_score_mean": 23.31,
+      "away_score_mean": 21.685,
+      "team_score_sd": 9.322,
+      "home_away_score_correlation": 0.0048
+    }
+  },
+  "source": "Existing archived pregame forecasts and the unchanged selected-model training rows; no game result used."
+}
