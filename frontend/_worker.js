@@ -22,6 +22,19 @@ const LIVE_RESOURCES=new Set(['','health','scoreboard','game','bundle','model','
 const REPO='brandonlowery013-glitch/-fantasy-2026-player-comparison-';
 const PATHS={recommendations:'data/market/game-model-consumer-2026.json',projections:'data/probability/generated/weekly-game-projections-2026.json',schedule:'data/calibration/weekly-event-schedule-2026.json',lines:'data/market/current-game-lines-2026.json'};
 
+
+// Coalesce concurrent requests and reuse the serialized response briefly. This
+// avoids repeating the score simulations and parsing the full feed per viewer.
+let recommendationCache=null;
+async function recommendationBody(ref,env,url){
+ const now=Date.now();if(recommendationCache?.key===ref&&recommendationCache.until>now)return recommendationCache.promise;
+ const entry={key:ref,until:now+15000,promise:null};
+ entry.promise=(async()=>{const upstream=`https://raw.githubusercontent.com/${REPO}/${ref}/${PATHS.recommendations}`;
+ const [baseResponse,modelResponse,moneylineResponse,projectionsResponse]=await Promise.all([fetch(upstream,{signal:AbortSignal.timeout(20000)}),spreadRequest({request:new Request(url.origin+'/api/live/spread-projections'),env}),moneylineRequest({request:new Request(url.origin+'/api/live/moneyline-projections'),env}),fetch(`https://raw.githubusercontent.com/${REPO}/${ref}/${PATHS.projections}`,{signal:AbortSignal.timeout(20000)})]);if(!baseResponse.ok)throw Error('Recommendation source '+baseResponse.status);const base=await baseResponse.json(),live=modelResponse.ok?await modelResponse.json():null,moneyline=moneylineResponse.ok?await moneylineResponse.json():null;const evaluated=applyHistoricalSelection(overlayMoneylineFeed(overlaySpreadFeed(base,live),moneyline),historicalSelection),projections=projectionsResponse.ok?await projectionsResponse.json():null;return JSON.stringify(await withModelDrivers(evaluated,live,moneyline,projections));
+ })().catch(e=>{if(recommendationCache===entry)recommendationCache=null;throw e;});
+ recommendationCache=entry;return entry.promise;
+}
+
 export default {
  async fetch(request,env,ctx){
   const url=new URL(request.url),prefix='/cloudflare/api/game-model/';
@@ -46,8 +59,7 @@ export default {
   if(!/^(main|[a-f0-9]{40})$/.test(ref))return new Response('Invalid producer reference',{status:400});
   // Spread authority is evaluated on the server, independently of browser state.
   if(kind==='recommendations'){
-   const upstream=`https://raw.githubusercontent.com/${REPO}/${ref}/${PATHS[kind]}`;
-   try{const [baseResponse,modelResponse,moneylineResponse,projectionsResponse]=await Promise.all([fetch(upstream,{signal:AbortSignal.timeout(20000)}),spreadRequest({request:new Request(url.origin+'/api/live/spread-projections'),env}),moneylineRequest({request:new Request(url.origin+'/api/live/moneyline-projections'),env}),fetch(`https://raw.githubusercontent.com/${REPO}/${ref}/${PATHS.projections}`,{signal:AbortSignal.timeout(20000)})]);if(!baseResponse.ok)throw Error('Recommendation source '+baseResponse.status);const base=await baseResponse.json(),live=modelResponse.ok?await modelResponse.json():null,moneyline=moneylineResponse.ok?await moneylineResponse.json():null;const evaluated=applyHistoricalSelection(overlayMoneylineFeed(overlaySpreadFeed(base,live),moneyline),historicalSelection),projections=projectionsResponse.ok?await projectionsResponse.json():null;return Response.json(await withModelDrivers(evaluated,live,moneyline,projections),{headers:{'cache-control':'no-store','x-ctd-spread-model':'sportsbook-calibration-learning-v1'}});}catch(e){return Response.json({status:'MODEL_SOURCE_UNAVAILABLE',error:e.message},{status:502});}
+   try{const begin=performance.now(),body=await recommendationBody(ref,env,url);return new Response(body,{headers:{'content-type':'application/json','cache-control':'no-store','x-ctd-spread-model':'sportsbook-calibration-learning-v1','server-timing':'recommendations;dur='+(performance.now()-begin).toFixed(1)}});}catch(e){return Response.json({status:'MODEL_SOURCE_UNAVAILABLE',error:e.message},{status:502});}
   }
   const key=new Request(url.origin+prefix+kind+(kind==='release'?'':'?ref='+ref));
   const cache=globalThis.caches?.default,cached=cache?await cache.match(key):null;

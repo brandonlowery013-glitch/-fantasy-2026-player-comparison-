@@ -16,6 +16,7 @@ export function informationFeatures(row) {
   if (!['moneyline','spread'].includes(row.market)) throw Error('Only moneyline and spread are in scope');
   if (!(Date.parse(row.forecast_available_at) <= Date.parse(row.decision_at) && Date.parse(row.decision_at) < Date.parse(row.kickoff))) throw Error('Future or post-kickoff forecast');
   const f = {
+    ...(row.market==='spread'?{home_line:row.home_line}:{}),
     market_logit: logit(row.sportsbook_probability),
     football_minus_market_logit: logit(row.football_probability) - logit(row.sportsbook_probability),
     home_score_mean: row.existing_variables.home_score_mean,
@@ -44,7 +45,7 @@ function solve(a,b) {
   return m.map(r=>r[n]);
 }
 
-export function fitInformationModel(rows, columns, penalty) {
+export function fitInformationModel(rows, columns, penalty, {positive_columns=[]}={}) {
   if(!rows.length || !Number.isFinite(penalty) || penalty<=0)throw Error('Training data and a positive declared penalty required');
   const values=rows.map(informationFeatures), mean={},sd={};
   for(const k of columns){if(values.some(v=>!Number.isFinite(v[k])))throw Error('Missing training feature '+k);mean[k]=values.reduce((s,v)=>s+v[k],0)/values.length;sd[k]=Math.sqrt(values.reduce((s,v)=>s+(v[k]-mean[k])**2,0)/values.length);}
@@ -63,7 +64,7 @@ export function fitInformationModel(rows, columns, penalty) {
       const p=sigmoid(logit(rows[r].sportsbook_probability)+x[r].reduce((s,v,i)=>s+v*beta[i],0)),w=Math.max(p*(1-p),1e-8);
       for(let i=0;i<dim;i++){g[i]+=x[r][i]*(p-rows[r].outcome);for(let j=0;j<dim;j++)h[i][j]+=w*x[r][i]*x[r][j];}
     }
-    const step=solve(h,g);beta=beta.map((b,i)=>b-step[i]);if(Math.max(...step.map(Math.abs))<1e-8)break;
+    const step=solve(h,g);beta=beta.map((b,i)=>positive_columns.includes(active[i-1])?Math.max(0,b-step[i]):b-step[i]);if(Math.max(...step.map(Math.abs))<1e-8)break;
   }
   return {formula:'sigmoid(logit(sportsbook_probability) + fitted_intercept + sum(fitted_beta_j * training_standardized_feature_j))',emh_null:'All fitted corrections equal zero: the market benchmark remains the estimate',columns:active,excluded_columns,mean,sd,beta,penalty,training_game_ids:rows.map(r=>r.game_id),numeric_authority:0};
 }
