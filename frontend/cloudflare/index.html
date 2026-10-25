@@ -244,7 +244,8 @@ border-radius:6px;overflow:hidden}
 
 <script src="runtime-central-time-2026.js?v=selected-picks-20261024b"></script>
 <script src="reading-state.js?v=selected-picks-20261024b"></script>
-<script src="game-model-source.js?v=selected-picks-20261024b"></script>
+<script src="data-transport.js?v=site-recovery-20261025"></script>
+<script src="game-model-source.js?v=site-recovery-20261025"></script>
 <script>
 const PLAYERS=[];
 
@@ -654,6 +655,7 @@ async function loadFeed(){
     document.documentElement.dataset.gameFeedStatus=BET_FEED.status;
   }catch(err){
     if(request!==feedRequest)return;
+    if(BET_FEED.games?.length&&BET_FEED.status!=='FEED_UNAVAILABLE'&&Number(BET_FEED.week)===Number(targetWeek||BET_FEED.week)){document.getElementById('gameVenue').textContent='Refresh unavailable · Showing last loaded picks and prices';document.documentElement.dataset.gameFeedStatus='STALE';return;}
     replaceGameFeed({week:targetWeek,status:'FEED_UNAVAILABLE',games:[],props:[],parlays:[],eligible_legs:[]});
     renderTicker();renderSelectedGame();renderOurPicks(BET_FEED);document.dispatchEvent(new Event('ctd:games-ready'));
     document.getElementById('gameVenue').textContent=`Live market feed unavailable: ${err.message}`;
@@ -689,7 +691,7 @@ window.CTD_INTERFACE_LOCK = {
 
 <script src="player-details.js?v=selected-picks-20261024b"></script>
 <script src="../runtime-canonical-player-source-2026.js?v=selected-picks-20261024b"></script>
-<script src="../runtime-model-state-semantics-2026.js?v=selected-picks-20261024b"></script>
+<script src="../runtime-model-state-semantics-2026.js?v=site-recovery-20261025"></script>
 <script src="show-work.js?v=selected-picks-20261024b"></script>
 <script src="formatted-work.js?v=selected-picks-20261024b"></script>
 <script src="restore-lock1.js?v=actual-model-drivers-20261024"></script>

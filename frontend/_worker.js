@@ -37,9 +37,24 @@ async function recommendationBody(ref,env,url){
  recommendationTail=entry.promise.then(()=>undefined,()=>undefined);recommendationCache.set(ref,entry);return entry.promise;
 }
 
+
+async function publishedData(request,env,ctx,url){
+ const path=url.pathname.slice('/cloudflare/api/published/'.length);
+ if(request.method!=='GET'||! /^(main|frontend\/ctd-cloudflare-work|[a-f0-9]{40})\/(?:data\/[a-zA-Z0-9_./-]+|[a-zA-Z0-9_-]+)\.json$/.test(path)||path.includes('..'))return new Response('Unknown published resource',{status:404});
+ const key=new Request(url.origin+'/cloudflare/api/published/'+path),cache=caches.default;
+ const saved=await cache.match(key);if(saved)return saved;
+ try{
+  const response=await fetch('https://raw.githubusercontent.com/'+REPO+'/'+path,{signal:AbortSignal.timeout(8000),cf:{cacheTtl:60,cacheEverything:true}});
+  if(!response.ok)return Response.json({status:'PUBLISHED_DATA_UNAVAILABLE',upstream_status:response.status},{status:502});
+  const result=new Response(response.body,{headers:{'content-type':'application/json','cache-control':'public, max-age=30','x-ctd-data-transport':'cloudflare'}});
+  ctx.waitUntil(cache.put(key,result.clone()));return result;
+ }catch{return Response.json({status:'PUBLISHED_DATA_TIMEOUT'},{status:504});}
+}
+
 export default {
  async fetch(request,env,ctx){
   const url=new URL(request.url),prefix='/cloudflare/api/game-model/';
+  if(url.pathname.startsWith('/cloudflare/api/published/'))return publishedData(request,env,ctx,url);
   if(url.pathname==='/api/internal/props-refresh')return refreshProps({request,env});
   // Advanced-mode Pages ignores the Functions directory. Keep every supported
   // live API resource connected to its existing handler here.

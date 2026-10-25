@@ -16,7 +16,7 @@
   const [normal,rerun]=paths[kind];
   // Start independent context I/O while resolving the release and main feed.
   const pendingPersonnel=['recommendations','projections'].includes(kind)?personnel():null;
-  const p=release(slot).then(async sha=>{
+  const p=Promise.resolve('main').then(async sha=>{
    // Recommendations are evaluated by the deployed server. Never replace them with a
    // raw producer, research replay, personnel model, or a second browser-side fit.
    const base=await (kind==='recommendations'?read('/cloudflare/api/game-model/recommendations?ref='+sha):read('/cloudflare/api/game-model/'+kind+'?ref='+sha).catch(()=>read(ROOT+sha+'/'+normal)));

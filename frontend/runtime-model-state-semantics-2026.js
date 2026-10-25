@@ -3,7 +3,7 @@
   const URLS={weeklyGame:'/cloudflare/api/game-model/recommendations',finalBetting:'/api/live/betting',marketValue:RAW+'data/market/market-value-board-2026.json',opportunities:'/api/live/model'};
   const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const pct=v=>Number.isFinite(Number(v))?`${(Number(v)*100).toFixed(1)}%`:'—';
-  const json=async url=>{const r=await fetch(`${url}?ts=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error(`${r.status} ${url}`);const d=await r.json();return d.data||d};
+  const json=async url=>{if(url===URLS.weeklyGame)return window.CTD_GAME_MODEL.load('recommendations');const r=await fetch(`${url}?ts=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error(`${r.status} ${url}`);const d=await r.json();return d.data||d};
   const normalize=(source,raw)=>({source,status:String(raw?.status||'UNKNOWN'),mode:String(raw?.mode||raw?.status||'UNKNOWN'),actionable:raw?.actionable===true,football_projection_mutation_allowed:raw?.football_projection_mutation_allowed===true,week:raw?.week??null,generated_at:raw?.generated_at??null,spread_model_status:raw?.spread_model_status??null,moneyline_model_status:raw?.moneyline_model_status??null});
   const stateLabel=s=>s.actionable?'ACTIONABLE':(s.mode==='SHADOW_ONLY'||s.status==='SHADOW_ONLY'?'SHADOW ONLY':'NOT ACTIONABLE');
   let expectedCount=null,market=null,opps=null,marketByName=new Map(),weeklyView='opportunities';
