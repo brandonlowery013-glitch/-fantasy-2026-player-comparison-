@@ -6,37 +6,291 @@
   "mode": "SHADOW_ONLY",
   "actionable": false,
   "sportsbook_inputs_used": false,
-  "generated_at": "2026-10-26T00:12:20.487Z",
+  "generated_at": "2026-10-26T04:41:52.057Z",
   "model_version": "scoring-decay-no-rest-2026-v2",
   "artifact_sha256": "ab32efd745900e177e345ac62dcdcceea48ad7ae78e942ef5ef9f4af624fcfcf",
   "sources": [
     {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=1",
-      "sha256": "d0d0f432839e7523c6056a68532797e1a2213b3bd7cc73fba8364153e14a07f5"
+      "sha256": "36db76f9f2722c7fc98dafa13a837a463900977b4ccbff9785716257154e3518"
     },
     {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=2",
-      "sha256": "630f989c2d0a47cd0c1eb8253bd9ef7efdbb160c95be947a066670cf0f83f853"
+      "sha256": "3c5eeb7aee478dc240d948fa6060bd3ce7c413cfcb310b462183939d0bdc6333"
     },
     {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=3",
-      "sha256": "dcd3be0f7d295c1ee43eba334cd244f082a40799b14bee19e34d86b8217882d2"
+      "sha256": "551f7a10e8a44166fae7dd3a7dce2cc5d24b4401772eeffeb309c2cb11bea02e"
     },
     {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=4",
-      "sha256": "48e9814405c0b8527b3ccdd698ac79487a495495b6e19685fca7c95ab8873405"
+      "sha256": "975f223a293c8690f1a917ba2197c05944efa02d499fb5619c4ad287d861f0bf"
     },
     {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=5",
-      "sha256": "2209a1a41692a0c1ebf7ea9375c86c9dea63fc2da29ee3af9fbff52ca4681cf6"
+      "sha256": "11452a662b5f9db93631ac3a9ed0d41ce8b21aca05ef4ae47846443f9a72dbda"
     },
     {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=6",
-      "sha256": "230144f5881f55a24f8f5a088dffde9cda3526eb772653fc7c2de0a80472684d"
+      "sha256": "d8e99f2affc61c6cde89c70209ce18e4d3a4173b31a8f07f14974f3d102c046c"
     }
   ],
   "completed_games": 93,
   "games": {
+    "2026-W7-DAL-PHI": {
+      "home_team": "PHI",
+      "away_team": "DAL",
+      "event_start": "2026-10-27T00:15:00.000Z",
+      "home_score_mean": 24.505973441936998,
+      "away_score_mean": 21.887860028317274,
+      "distribution": {
+        "team_score_sd": 9.322092091970088,
+        "home_away_score_correlation": 0.004801120766302407,
+        "source": "Earlier-fit held-out 2024/2025 prediction residuals",
+        "games": 544,
+        "calibration_status": "BASE_MODEL_RESIDUALS_NO_REST_VARIANT_NOT_REVALIDATED"
+      },
+      "model_version": "scoring-decay-no-rest-2026-v2",
+      "variant_status": "USER_REQUESTED_UNVALIDATED_ABLATION",
+      "base_model_version": "scoring-decay-rest-2026-v1",
+      "evidence": {
+        "method": "Historically calibrated scoring matchup; rest removed by user instruction",
+        "half_life_games": 4,
+        "home_field_advantage_feature": 1.7442724458204335,
+        "home_field_advantage_contribution": 2.15108045027228,
+        "rest_days": null,
+        "rest_adjustment_applied": false,
+        "margin_features": [
+          1.482720916489928,
+          0.005886681383370125
+        ],
+        "total_features": [
+          47.32250330526564,
+          1.1464311994113319
+        ],
+        "teams": {
+          "PHI": {
+            "prior_games": 17,
+            "current_games": 6,
+            "prior_weight": 0.35355339059327373,
+            "current_weight": 0.6464466094067263,
+            "prior_points_for": 22.294117647058822,
+            "prior_points_allowed": 19.11764705882353,
+            "current_points_for": 17.666666666666668,
+            "current_points_allowed": 22.833333333333332,
+            "blended_offense": 19.302717650588484,
+            "blended_defense_allowed": 21.519639852599504,
+            "completed_game_ids": [
+              "401872929",
+              "401872939",
+              "401872963",
+              "401872970",
+              "401872981",
+              "401872998"
+            ]
+          },
+          "DAL": {
+            "prior_games": 17,
+            "current_games": 6,
+            "prior_weight": 0.35355339059327373,
+            "current_weight": 0.6464466094067263,
+            "prior_points_for": 27.705882352941178,
+            "prior_points_allowed": 30.058823529411764,
+            "current_points_for": 25.166666666666668,
+            "current_points_allowed": 26.5,
+            "blended_offense": 26.06441498199665,
+            "blended_defense_allowed": 27.758234125346654,
+            "completed_game_ids": [
+              "401872930",
+              "401872944",
+              "401872960",
+              "401872967",
+              "401872980",
+              "401873007"
+            ]
+          }
+        },
+        "personnel_numeric_adjustment_applied": false,
+        "granular_matchup_numeric_adjustment_applied": false,
+        "excluded_numeric_features": [
+          "granular EPA/pace/explosive matchup extension failed ablation",
+          "observed personnel continuity failed ablation",
+          "injury and coaching coefficients not validated",
+          "Days of rest removed by explicit user instruction"
+        ],
+        "contributions": {
+          "schema_version": 1,
+          "model_version": "scoring-decay-no-rest-2026-v2",
+          "margin": {
+            "intercept": 2.0625459896983074,
+            "terms": [
+              {
+                "name": "scoring_matchup_including_venue",
+                "raw": 1.482720916489928,
+                "training_mean": 1.0322212853771517,
+                "training_scale": 4.0478595159637,
+                "coefficient": 4.99192169841483,
+                "contribution": 0.5555674239214163
+              }
+            ],
+            "reconstructed": 2.6181134136197235
+          },
+          "total": {
+            "intercept": 45.02354672553348,
+            "terms": [
+              {
+                "name": "combined_scoring_matchup",
+                "raw": 47.32250330526564,
+                "training_mean": 45.2720513740941,
+                "training_scale": 3.330240876050951,
+                "coefficient": 2.225550796781011,
+                "contribution": 1.370286744720797
+              }
+            ],
+            "reconstructed": 46.39383347025427
+          },
+          "venue_component": {
+            "parent_term": "scoring_matchup_including_venue",
+            "contribution": 2.15108045027228,
+            "additive": false
+          },
+          "scope": "Numerical attribution of scoring model with rest removed; not a causal explanation",
+          "excluded_numeric_features": [
+            "granular EPA/pace/explosive matchup extension failed ablation",
+            "observed personnel continuity failed ablation",
+            "injury and coaching coefficients not validated",
+            "Days of rest removed by explicit user instruction"
+          ]
+        }
+      }
+    },
+    "2026-W7-NE-CHI": {
+      "home_team": "CHI",
+      "away_team": "NE",
+      "event_start": "2026-10-23T00:15:00.000Z",
+      "home_score_mean": 23.310162112100812,
+      "away_score_mean": 21.684655078775464,
+      "distribution": {
+        "team_score_sd": 9.322092091970088,
+        "home_away_score_correlation": 0.004801120766302407,
+        "source": "Earlier-fit held-out 2024/2025 prediction residuals",
+        "games": 544,
+        "calibration_status": "BASE_MODEL_RESIDUALS_NO_REST_VARIANT_NOT_REVALIDATED"
+      },
+      "model_version": "scoring-decay-no-rest-2026-v2",
+      "variant_status": "USER_REQUESTED_UNVALIDATED_ABLATION",
+      "base_model_version": "scoring-decay-rest-2026-v1",
+      "evidence": {
+        "method": "Historically calibrated scoring matchup; rest removed by user instruction",
+        "half_life_games": 4,
+        "home_field_advantage_feature": 1.7442724458204335,
+        "home_field_advantage_contribution": 2.15108045027228,
+        "rest_days": null,
+        "rest_adjustment_applied": false,
+        "margin_features": [
+          0.6778342566377233,
+          0.005886681383370125
+        ],
+        "total_features": [
+          45.22906144512743,
+          1.1464311994113319
+        ],
+        "teams": {
+          "CHI": {
+            "prior_games": 17,
+            "current_games": 6,
+            "prior_weight": 0.35355339059327373,
+            "current_weight": 0.6464466094067263,
+            "prior_points_for": 25.941176470588236,
+            "prior_points_allowed": 24.41176470588235,
+            "current_points_for": 25,
+            "current_points_allowed": 19.833333333333332,
+            "blended_offense": 25.33275613232308,
+            "blended_defense_allowed": 21.452053268696652,
+            "completed_game_ids": [
+              "401872661",
+              "401872937",
+              "401872963",
+              "401872972",
+              "401872990",
+              "401872999"
+            ]
+          },
+          "NE": {
+            "prior_games": 17,
+            "current_games": 6,
+            "prior_weight": 0.35355339059327373,
+            "current_weight": 0.6464466094067263,
+            "prior_points_for": 28.823529411764707,
+            "prior_points_allowed": 18.823529411764707,
+            "current_points_for": 22.666666666666668,
+            "current_points_allowed": 18.833333333333332,
+            "blended_offense": 24.843446365613488,
+            "blended_defense_allowed": 18.829867123621636,
+            "completed_game_ids": [
+              "401872656",
+              "401872946",
+              "401872957",
+              "401872971",
+              "401872986",
+              "401873001"
+            ]
+          }
+        },
+        "personnel_numeric_adjustment_applied": false,
+        "granular_matchup_numeric_adjustment_applied": false,
+        "excluded_numeric_features": [
+          "granular EPA/pace/explosive matchup extension failed ablation",
+          "observed personnel continuity failed ablation",
+          "injury and coaching coefficients not validated",
+          "Days of rest removed by explicit user instruction"
+        ],
+        "contributions": {
+          "schema_version": 1,
+          "model_version": "scoring-decay-no-rest-2026-v2",
+          "margin": {
+            "intercept": 2.0625459896983074,
+            "terms": [
+              {
+                "name": "scoring_matchup_including_venue",
+                "raw": 0.6778342566377233,
+                "training_mean": 1.0322212853771517,
+                "training_scale": 4.0478595159637,
+                "coefficient": 4.99192169841483,
+                "contribution": -0.4370389563729556
+              }
+            ],
+            "reconstructed": 1.6255070333253518
+          },
+          "total": {
+            "intercept": 45.02354672553348,
+            "terms": [
+              {
+                "name": "combined_scoring_matchup",
+                "raw": 45.22906144512743,
+                "training_mean": 45.2720513740941,
+                "training_scale": 3.330240876050951,
+                "coefficient": 2.225550796781011,
+                "contribution": -0.028729534657200018
+              }
+            ],
+            "reconstructed": 44.994817190876276
+          },
+          "venue_component": {
+            "parent_term": "scoring_matchup_including_venue",
+            "contribution": 2.15108045027228,
+            "additive": false
+          },
+          "scope": "Numerical attribution of scoring model with rest removed; not a causal explanation",
+          "excluded_numeric_features": [
+            "granular EPA/pace/explosive matchup extension failed ablation",
+            "observed personnel continuity failed ablation",
+            "injury and coaching coefficients not validated",
+            "Days of rest removed by explicit user instruction"
+          ]
+        }
+      }
+    },
     "2026-W7-PIT-NO": {
       "home_team": "NO",
       "away_team": "PIT",
@@ -1539,260 +1793,6 @@
               }
             ],
             "reconstructed": 44.21396279067524
-          },
-          "venue_component": {
-            "parent_term": "scoring_matchup_including_venue",
-            "contribution": 2.15108045027228,
-            "additive": false
-          },
-          "scope": "Numerical attribution of scoring model with rest removed; not a causal explanation",
-          "excluded_numeric_features": [
-            "granular EPA/pace/explosive matchup extension failed ablation",
-            "observed personnel continuity failed ablation",
-            "injury and coaching coefficients not validated",
-            "Days of rest removed by explicit user instruction"
-          ]
-        }
-      }
-    },
-    "2026-W7-NE-CHI": {
-      "home_team": "CHI",
-      "away_team": "NE",
-      "event_start": "2026-10-23T00:15:00.000Z",
-      "home_score_mean": 23.310162112100812,
-      "away_score_mean": 21.684655078775464,
-      "distribution": {
-        "team_score_sd": 9.322092091970088,
-        "home_away_score_correlation": 0.004801120766302407,
-        "source": "Earlier-fit held-out 2024/2025 prediction residuals",
-        "games": 544,
-        "calibration_status": "BASE_MODEL_RESIDUALS_NO_REST_VARIANT_NOT_REVALIDATED"
-      },
-      "model_version": "scoring-decay-no-rest-2026-v2",
-      "variant_status": "USER_REQUESTED_UNVALIDATED_ABLATION",
-      "base_model_version": "scoring-decay-rest-2026-v1",
-      "evidence": {
-        "method": "Historically calibrated scoring matchup; rest removed by user instruction",
-        "half_life_games": 4,
-        "home_field_advantage_feature": 1.7442724458204335,
-        "home_field_advantage_contribution": 2.15108045027228,
-        "rest_days": null,
-        "rest_adjustment_applied": false,
-        "margin_features": [
-          0.6778342566377233,
-          0.005886681383370125
-        ],
-        "total_features": [
-          45.22906144512743,
-          1.1464311994113319
-        ],
-        "teams": {
-          "CHI": {
-            "prior_games": 17,
-            "current_games": 6,
-            "prior_weight": 0.35355339059327373,
-            "current_weight": 0.6464466094067263,
-            "prior_points_for": 25.941176470588236,
-            "prior_points_allowed": 24.41176470588235,
-            "current_points_for": 25,
-            "current_points_allowed": 19.833333333333332,
-            "blended_offense": 25.33275613232308,
-            "blended_defense_allowed": 21.452053268696652,
-            "completed_game_ids": [
-              "401872661",
-              "401872937",
-              "401872963",
-              "401872972",
-              "401872990",
-              "401872999"
-            ]
-          },
-          "NE": {
-            "prior_games": 17,
-            "current_games": 6,
-            "prior_weight": 0.35355339059327373,
-            "current_weight": 0.6464466094067263,
-            "prior_points_for": 28.823529411764707,
-            "prior_points_allowed": 18.823529411764707,
-            "current_points_for": 22.666666666666668,
-            "current_points_allowed": 18.833333333333332,
-            "blended_offense": 24.843446365613488,
-            "blended_defense_allowed": 18.829867123621636,
-            "completed_game_ids": [
-              "401872656",
-              "401872946",
-              "401872957",
-              "401872971",
-              "401872986",
-              "401873001"
-            ]
-          }
-        },
-        "personnel_numeric_adjustment_applied": false,
-        "granular_matchup_numeric_adjustment_applied": false,
-        "excluded_numeric_features": [
-          "granular EPA/pace/explosive matchup extension failed ablation",
-          "observed personnel continuity failed ablation",
-          "injury and coaching coefficients not validated",
-          "Days of rest removed by explicit user instruction"
-        ],
-        "contributions": {
-          "schema_version": 1,
-          "model_version": "scoring-decay-no-rest-2026-v2",
-          "margin": {
-            "intercept": 2.0625459896983074,
-            "terms": [
-              {
-                "name": "scoring_matchup_including_venue",
-                "raw": 0.6778342566377233,
-                "training_mean": 1.0322212853771517,
-                "training_scale": 4.0478595159637,
-                "coefficient": 4.99192169841483,
-                "contribution": -0.4370389563729556
-              }
-            ],
-            "reconstructed": 1.6255070333253518
-          },
-          "total": {
-            "intercept": 45.02354672553348,
-            "terms": [
-              {
-                "name": "combined_scoring_matchup",
-                "raw": 45.22906144512743,
-                "training_mean": 45.2720513740941,
-                "training_scale": 3.330240876050951,
-                "coefficient": 2.225550796781011,
-                "contribution": -0.028729534657200018
-              }
-            ],
-            "reconstructed": 44.994817190876276
-          },
-          "venue_component": {
-            "parent_term": "scoring_matchup_including_venue",
-            "contribution": 2.15108045027228,
-            "additive": false
-          },
-          "scope": "Numerical attribution of scoring model with rest removed; not a causal explanation",
-          "excluded_numeric_features": [
-            "granular EPA/pace/explosive matchup extension failed ablation",
-            "observed personnel continuity failed ablation",
-            "injury and coaching coefficients not validated",
-            "Days of rest removed by explicit user instruction"
-          ]
-        }
-      }
-    },
-    "2026-W7-DAL-PHI": {
-      "home_team": "PHI",
-      "away_team": "DAL",
-      "event_start": "2026-10-27T00:15:00.000Z",
-      "home_score_mean": 24.505973441936998,
-      "away_score_mean": 21.887860028317274,
-      "distribution": {
-        "team_score_sd": 9.322092091970088,
-        "home_away_score_correlation": 0.004801120766302407,
-        "source": "Earlier-fit held-out 2024/2025 prediction residuals",
-        "games": 544,
-        "calibration_status": "BASE_MODEL_RESIDUALS_NO_REST_VARIANT_NOT_REVALIDATED"
-      },
-      "model_version": "scoring-decay-no-rest-2026-v2",
-      "variant_status": "USER_REQUESTED_UNVALIDATED_ABLATION",
-      "base_model_version": "scoring-decay-rest-2026-v1",
-      "evidence": {
-        "method": "Historically calibrated scoring matchup; rest removed by user instruction",
-        "half_life_games": 4,
-        "home_field_advantage_feature": 1.7442724458204335,
-        "home_field_advantage_contribution": 2.15108045027228,
-        "rest_days": null,
-        "rest_adjustment_applied": false,
-        "margin_features": [
-          1.482720916489928,
-          0.005886681383370125
-        ],
-        "total_features": [
-          47.32250330526564,
-          1.1464311994113319
-        ],
-        "teams": {
-          "PHI": {
-            "prior_games": 17,
-            "current_games": 6,
-            "prior_weight": 0.35355339059327373,
-            "current_weight": 0.6464466094067263,
-            "prior_points_for": 22.294117647058822,
-            "prior_points_allowed": 19.11764705882353,
-            "current_points_for": 17.666666666666668,
-            "current_points_allowed": 22.833333333333332,
-            "blended_offense": 19.302717650588484,
-            "blended_defense_allowed": 21.519639852599504,
-            "completed_game_ids": [
-              "401872929",
-              "401872939",
-              "401872963",
-              "401872970",
-              "401872981",
-              "401872998"
-            ]
-          },
-          "DAL": {
-            "prior_games": 17,
-            "current_games": 6,
-            "prior_weight": 0.35355339059327373,
-            "current_weight": 0.6464466094067263,
-            "prior_points_for": 27.705882352941178,
-            "prior_points_allowed": 30.058823529411764,
-            "current_points_for": 25.166666666666668,
-            "current_points_allowed": 26.5,
-            "blended_offense": 26.06441498199665,
-            "blended_defense_allowed": 27.758234125346654,
-            "completed_game_ids": [
-              "401872930",
-              "401872944",
-              "401872960",
-              "401872967",
-              "401872980",
-              "401873007"
-            ]
-          }
-        },
-        "personnel_numeric_adjustment_applied": false,
-        "granular_matchup_numeric_adjustment_applied": false,
-        "excluded_numeric_features": [
-          "granular EPA/pace/explosive matchup extension failed ablation",
-          "observed personnel continuity failed ablation",
-          "injury and coaching coefficients not validated",
-          "Days of rest removed by explicit user instruction"
-        ],
-        "contributions": {
-          "schema_version": 1,
-          "model_version": "scoring-decay-no-rest-2026-v2",
-          "margin": {
-            "intercept": 2.0625459896983074,
-            "terms": [
-              {
-                "name": "scoring_matchup_including_venue",
-                "raw": 1.482720916489928,
-                "training_mean": 1.0322212853771517,
-                "training_scale": 4.0478595159637,
-                "coefficient": 4.99192169841483,
-                "contribution": 0.5555674239214163
-              }
-            ],
-            "reconstructed": 2.6181134136197235
-          },
-          "total": {
-            "intercept": 45.02354672553348,
-            "terms": [
-              {
-                "name": "combined_scoring_matchup",
-                "raw": 47.32250330526564,
-                "training_mean": 45.2720513740941,
-                "training_scale": 3.330240876050951,
-                "coefficient": 2.225550796781011,
-                "contribution": 1.370286744720797
-              }
-            ],
-            "reconstructed": 46.39383347025427
           },
           "venue_component": {
             "parent_term": "scoring_matchup_including_venue",
