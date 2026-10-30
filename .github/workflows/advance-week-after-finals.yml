@@ -77,6 +77,34 @@ jobs:
         if: steps.gate.outputs.ready == 'true'
         run: node scripts/validate-canonical-consumers.mjs --write-exports
 
+      - name: Build consistent next-week game and player views
+        if: steps.gate.outputs.ready == 'true'
+        run: |
+          node scripts/build-weekly-probability-engine.mjs
+          node scripts/build-player-detail-feed.mjs
+          node scripts/validate-player-detail-feed.mjs
+          node scripts/build-game-team-scoring-priors.mjs
+          node scripts/refresh-current-game-scoring.mjs
+          node scripts/build-weekly-game-projections.mjs
+
+      - name: Capture next-week markets and rebuild recommendations
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          MARKET_MAX_PROP_EVENTS: ${{ vars.MARKET_MAX_PROP_EVENTS }}
+        run: |
+          node scripts/ingest-live-market-snapshots.mjs
+          node scripts/validate-weekly-matchup-market-snapshots.mjs
+          node scripts/validate-player-prop-market-snapshots.mjs
+          node scripts/build-game-market-recommendations.mjs
+          node scripts/refresh-postgame-model-learning.mjs --capture
+          node scripts/build-player-prop-recommendations.mjs
+          node scripts/build-weekly-matchup-notes.mjs
+          node scripts/build-unified-opportunity-engine.mjs
+          node scripts/build-weekly-parlay-recommendations.mjs
+          node scripts/build-final-betting-ui-feed.mjs
+          node scripts/validate-final-betting-pipeline-step4.mjs
+
       - name: Run hard guardrail QA
         if: steps.gate.outputs.ready == 'true'
         run: node scripts/run-guardrail-qa.mjs
@@ -95,6 +123,24 @@ jobs:
             data/probability/weekly-football-context-inputs-2026.json
             data/probability/weekly-projection-inputs-2026.json
             data/weekly/in-season-ranking-layer-2026.json
+            data/weekly/player-detail-feed-2026.json
+            lib/weekly-matchup-notes.mjs
+            data/probability/generated/weekly-probability-distributions-2026.json
+            data/probability/generated/game-team-scoring-priors-2023-2025.json
+            data/probability/generated/current-game-scoring-2026.json
+            data/probability/generated/weekly-game-projections-2026.json
+            data/market/current-game-lines-2026.json
+            data/market/weekly-matchup-market-snapshots-2026.json
+            data/market/player-prop-market-snapshots-2026.json
+            data/market/live-market-ingestion-status-2026.json
+            data/market/weekly-game-market-recommendations-2026.json
+            data/market/game-model-consumer-2026.json
+            data/market/postgame-model-learning-2026.json
+            data/market/player-prop-recommendations-2026.json
+            data/market/unified-opportunities-2026.json
+            data/market/parlay-recommendations-2026.json
+            data/market/final-betting-ui-feed-2026.json
+            data/market/issued-pick-history-2026.json
             exports/fantasy-2026-current.xlsx exports/fantasy-2026-current.docx
             guardrails/weekly-football-context-normalization-report.json
             guardrails/in-season-ranking-layer-report.json
