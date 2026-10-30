@@ -5,7 +5,7 @@ const code=fs.readFileSync('frontend/runtime-model-state-semantics-2026.js','utf
 async function run(expected,count){
  const banner={dataset:{},textContent:''};const events=[];
  const document={documentElement:{dataset:{}},getElementById:id=>id==='ctdModelStateBanner'?banner:id==='ctd-model-state-style'?{}:null,querySelector:()=>null,querySelectorAll:()=>[],addEventListener(){},dispatchEvent:e=>events.push(e.type)};
- const window={};
+ const window={CTD_GAME_MODEL:{load:async kind=>{assert.equal(kind,'recommendations');return {status:'SHADOW_ONLY',mode:'SHADOW_ONLY',actionable:false};}}};
  vm.runInNewContext(code,{window,document,Map,Set,Date,Number,Array,console,CustomEvent:class{constructor(type){this.type=type}},MutationObserver:class{observe(){}},setInterval(){},setTimeout(){},fetch:async url=>({ok:true,json:async()=>String(url).includes('MODEL_SOURCE_OF_TRUTH')?{active_player_model:expected}:String(url).includes('market-value-board')?{universe:count,status:'STEP_3_MARKET_DISCREPANCY_VALUE_BOARD',authority:'COMPANION_ONLY_NO_INTRINSIC_RANK_MUTATION',board:Array.from({length:count},(_,i)=>({player:'Player '+i}))}:{status:'SHADOW_ONLY',mode:'SHADOW_ONLY',actionable:false}})});
  for(let i=0;i<5;i++)await new Promise(resolve=>setImmediate(resolve));
  return {window,events};

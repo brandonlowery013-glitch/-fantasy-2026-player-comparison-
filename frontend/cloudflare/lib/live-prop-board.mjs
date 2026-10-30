@@ -16,5 +16,5 @@ export function livePropSnapshots(feed,{schedule,week,personnel,recs,now=Date.no
  }
  return {schema_version:1,snapshots};
 }
-export function propEvaluationKey(s){return JSON.stringify([key(s.player),s.stat,s.book,Number(s.line),Number(s.over_price),Number(s.under_price)]);}
+export function propEvaluationKey(s){return JSON.stringify([Number(s.week),s.game_id,Date.parse(s.kickoff),key(s.player),s.stat,s.book,Number(s.line),Number(s.over_price),Number(s.under_price)]);}
 export function evaluatedQuoteKey(e){return propEvaluationKey({...e,over_price:e.sides?.find(s=>s.side==='OVER')?.offered_odds,under_price:e.sides?.find(s=>s.side==='UNDER')?.offered_odds});}

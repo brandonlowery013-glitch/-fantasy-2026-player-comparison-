@@ -26,7 +26,8 @@ export function currentPlatformInterface(){
  if(fs.existsSync('frontend/cloudflare/index.html')){
   const cloud=fs.readFileSync('frontend/cloudflare/restore-lock1.js','utf8');
   need(cloud.includes("addEventListener('change',compare)"),'Cloudflare comparison changes are wired');
-  for(const module of ['prop-board.js','game-detail-panels.js','news-updates.js','runtime-public-splits-2026.js','current-rank-views.js'])need(cloud.includes(`load('./${module}')`),`Cloudflare ${module} bootstrap`);
+  const bootstraps=[...cloud.matchAll(/load\(['"]([^'"]+)['"]\)/g)].map(m=>m[1].split('?')[0]);
+  for(const module of ['prop-board.js','game-detail-panels.js','news-updates.js','runtime-public-splits-2026.js','current-rank-views.js'])need(bootstraps.includes('./'+module),`Cloudflare ${module} bootstrap`);
  }else{
   const html=fs.readFileSync('index.html','utf8');
   need(html.includes('function renderCompare(')&&html.includes("el.addEventListener('change',renderCompare)"),'primary comparison changes are wired');
