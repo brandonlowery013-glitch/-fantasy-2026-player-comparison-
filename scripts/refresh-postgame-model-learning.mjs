@@ -1,3 +1,4 @@
+import {buildFootballMoneylineState} from '../lib/football-moneyline-state.mjs';
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {appendForecasts,appendFinal,newLedger,gameFeatures,totalFeatures,candidateFor,availableTraining,fitResidual,FACTORS,TOTAL_FACTORS,TOTAL_RULE,UNSUPPORTED,RULE} from '../lib/postgame-model-learning.mjs';
@@ -71,3 +72,6 @@ save(path,ledger);
 console.log(JSON.stringify({forecasts:ledger.forecasts.length,settlements:ledger.settlements.length,observations:ledger.observations?.length||0,training_games:model.n,candidate_pairs:ledger.candidate_pairs.length,validation:ledger.validation,coefficients:model.coefficients.map(c=>c.key),production_numeric_authority:0}));
 
 }
+
+// Publish a compact active football-only fit on every capture/settlement run.
+save('data/market/football-moneyline-learning-2026.json',buildFootballMoneylineState(ledger,schedule,read('data/probability/generated/weekly-game-projections-2026.json'),now));
