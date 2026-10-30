@@ -24,6 +24,7 @@ jobs:
           node-version: '20'
       - run: node scripts/test-pick-settlement.mjs
       - run: node scripts/test-postgame-model-learning.mjs
+      - run: node scripts/test-football-moneyline-state.mjs
       - run: node scripts/test-total-model-learning.mjs
       - run: node scripts/test-game-direction-prediction.mjs
       - run: node scripts/test-injury-ranking-policy.mjs
@@ -48,7 +49,7 @@ jobs:
         id: persist
         shell: bash
         run: |
-          paths=(data/market/browser-pick-history-2026.json data/market/issued-pick-results-2026.json data/market/betting-history-ui-2026.json data/market/postgame-model-learning-2026.json)
+          paths=(data/market/football-moneyline-learning-2026.json data/market/browser-pick-history-2026.json data/market/issued-pick-results-2026.json data/market/betting-history-ui-2026.json data/market/postgame-model-learning-2026.json)
           git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${paths[@]}"
           if git diff --cached --quiet; then echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
