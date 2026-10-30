@@ -48,6 +48,8 @@ jobs:
           node-version: '22'
       - name: Verify Pages dispatch and backend response contracts
         run: |
+          node scripts/test-football-moneyline.mjs
+          node scripts/test-free-splits.mjs
           node scripts/test-market-context-delivery.mjs
           node scripts/test-matchup-writeup-display.mjs
           node scripts/test-pages-live-routing.mjs

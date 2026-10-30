@@ -32,7 +32,7 @@ export async function onRequestGet({request,env,waitUntil}){
   try{
    const live=await(await onDemandSplits(context)).json(),future=(live.games||[]).filter(g=>Date.parse(g.start_at)>Date.now());
    const fresh=future.length>0&&future.every(g=>['moneyline','spread','total'].every(m=>g[m]?.length===2&&Date.now()-Date.parse(g.market_observed_at?.[m]||g.observed_at)<=900000));
-   if(live.health?.status!=='CURRENT'||!fresh){if(live.backup?.games?.length)return {...saved,backup:live.backup,background_health:background,health:{status:'PARTIAL',source:'public-backup',last_success_at:live.backup.observed_at,checked_at:live.health.checked_at,error:'DraftKings percentages unavailable; alternate public coverage shown where available'}};return saved;}
+   if(live.health?.status!=='CURRENT'||!fresh){if(live.backup?.games?.length)return {...saved,backup:live.backup,background_health:background,health:{status:live.backup.games.length>0&&live.backup.games.every(g=>['moneyline','spread','total'].every(m=>g[m]?.length===2))?'CURRENT':'PARTIAL',source:'public-backup',provider:live.backup.source,last_success_at:live.backup.observed_at,checked_at:live.health.checked_at,error:'DraftKings unavailable; free public backup active'}};return saved;}
    return {...preservePublished(live,saved),collection:saved.collection,history:saved.history,background_health:background,health:{status:'CURRENT',source:'live-request-fallback',checked_at:live.health.checked_at,last_success_at:live.observed_at,background_status:background.status}};
   }catch{}
   return saved;

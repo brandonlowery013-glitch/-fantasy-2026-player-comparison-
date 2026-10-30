@@ -1,3 +1,4 @@
+import {parseScoresSplits,SCORES_SOURCE} from '../../../frontend/cloudflare/lib/scoresandodds-splits.mjs';
 import {parseActionPublic,ACTION_SOURCE} from '../../../frontend/cloudflare/lib/action-public-splits.mjs';
 import {parseSplits,SOURCE} from '../../../frontend/cloudflare/lib/public-splits.mjs';
 import '../../../frontend/cloudflare/runtime-league-refresh-2026.js';
@@ -38,14 +39,16 @@ export async function onRequestGet({request,env,waitUntil}){
    return response(fallback||{schema_version:1,games:[]},{status:current?(fallback?.backup?.games?.length&&!fallback.games.some(g=>Date.parse(g.start_at)>Date.now())?'PARTIAL':'CURRENT'):'SAVED',checked_at:new Date().toISOString(),refresh_slot:slot});
   }
   // Independent public backup: a provider outage must not discard usable ticket data.
-  const sources=await Promise.allSettled([read(SOURCE),read(SOURCE.replace('tb_page=1','tb_page=2')),read(ACTION_SOURCE)]),checked=new Date().toISOString();
+  const sources=await Promise.allSettled([read(SOURCE),read(SOURCE.replace('tb_page=1','tb_page=2')),read(ACTION_SOURCE),read(SCORES_SOURCE)]),checked=new Date().toISOString();
   const parsed=sources.slice(0,2).filter(r=>r.status==='fulfilled').map(r=>parseSplits(r.value,events,checked));
   const a=parsed[0]||{schema_version:1,games:[],observed_at:checked};
   for(const p of parsed.slice(1))a.games.push(...p.games.filter(g=>!a.games.some(x=>x.event_id===g.event_id)));
-  const backup=sources[2].status==='fulfilled'?parseActionPublic(sources[2].value,events,checked):null;
+  const action=sources[2].status==='fulfilled'?parseActionPublic(sources[2].value,events,checked):null;
+  const scores=sources[3].status==='fulfilled'?parseScoresSplits(sources[3].value,{events,season:schedule.season?.year,week:schedule.week?.number},checked):null;
+  const backup=scores?.games.length?scores:action;
   if(!a.games.length&&!backup?.games.length)throw Error('Public providers have no matched pregame percentages');
   const combined=preservePublished(a,fallback);combined.refresh_slot=slot;combined.backup=backup;
-  const health={status:a.games.length?'CURRENT':'PARTIAL',checked_at:checked,refresh_slot:slot,...(!a.games.length?{error:'DraftKings unavailable; Action Network public coverage is partial'}:{})};
+  const health={status:a.games.length?'CURRENT':'PARTIAL',checked_at:checked,refresh_slot:slot,...(!a.games.length?{error:'DraftKings unavailable; public backup coverage shown'}:{})};
   waitUntil(cache.put(key,new Response(JSON.stringify(combined),{headers:{...headers,'cache-control':'public, max-age=604800'}})));return response(combined,health);
  }catch(error){return response(fallback||{schema_version:1,games:[]},{status:'STALE',checked_at:new Date().toISOString(),error:String(error?.message||error)});}
 }
