@@ -4,6 +4,15 @@ import {parseSplits,SOURCE} from '../../../frontend/cloudflare/lib/public-splits
 import '../../../frontend/cloudflare/runtime-league-refresh-2026.js';
 import {preservePublished} from '../../../frontend/cloudflare/lib/splits-history.mjs';
 export {preservePublished};
+export function publicRefreshSlot(events,now=Date.now()){
+ const plan=globalThis.CTD_LEAGUE_REFRESH.plan(events,now);
+ const day=date=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(date));
+ const offDay=!events.some(event=>day(event.date)===day(now));
+ // Last night's final must not suppress the next slate's recurring collection.
+ const preview=offDay&&events.some(event=>Date.parse(event.date)>now)?`preview:${Math.floor(now/900000)}`:null;
+ return preview||plan.keys.at(-1)||null;
+}
+
 const headers={'content-type':'application/json; charset=utf-8','cache-control':'public, max-age=300','access-control-allow-origin':'*'};
 // Keep published game snapshots when the provider removes a game after kickoff.
 // The game's original observed_at remains unchanged.
@@ -26,13 +35,7 @@ export async function onRequestGet({request,env,waitUntil}){
    }
    waitUntil(cache.put(scheduleKey,response(schedule)));
   }
-  const events=schedule.events||[],plan=globalThis.CTD_LEAGUE_REFRESH.plan(events);
-  const centralDay=date=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(date));
-  const today=centralDay(Date.now()),offDay=!events.some(event=>centralDay(event.date)===today);
-  // Upcoming markets are published before game day. Refresh them on off days
-  // too, while retaining the game-day kickoff cutoff and saved-game history.
-  const previewSlot=offDay&&events.some(event=>Date.parse(event.date)>Date.now())?`preview:${Math.floor(Date.now()/900000)}`:null;
-  const slot=plan.keys.at(-1)||previewSlot;
+  const events=schedule.events||[],slot=publicRefreshSlot(events);
   if(!slot||fallback?.refresh_slot===slot){
    const age=Date.now()-Date.parse(fallback?.observed_at);
    const current=slot&&fallback?.refresh_slot===slot&&Number.isFinite(age)&&age>=0&&age<=900000;

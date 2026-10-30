@@ -5,3 +5,10 @@ const html='<link rel="canonical" href="https://www.scoresandodds.com/nfl/consen
 const d=parseScoresSplits(html,slate,at);assert.equal(d.games.length,1);assert(['moneyline','spread','total'].every(m=>d.games[0][m].length===2));assert.equal(d.games[0].moneyline[0].bets,5);assert.equal(d.games[0].kickoff_offset_seconds,3600);assert.equal(d.games[0].start_at,event.date);assert(d.games[0].source_start_at.includes('19:00'));
 assert.equal(parseScoresSplits(html,{...slate,week:9},at).games.length,0);assert.equal(parseScoresSplits(html.replaceAll('2026-11-01T19:00','2026-11-08T19:00'),slate,at).games.length,0);assert.equal(parseScoresSplits(html.replaceAll('2026-11-01T19:00','2026-11-01T21:00'),slate,at).games.length,0);assert.equal(parseScoresSplits(html,slate,'2026-11-02T00:00Z').games.length,0);assert.equal(parseScoresSplits(html.replaceAll('width:95%','width:55%'),slate,at).games.length,0);
 console.log('PASS: free public ticket and money pairs in all three markets, small rendered bars, same-week identity, retained DST discrepancy, invalid/missing and post-kickoff data rejected.');
+
+const {publicRefreshSlot}=await import('../functions/api/live/splits-live-fallback.js');
+const now=Date.parse('2026-10-30T08:00Z'),events=[{date:'2026-10-30T00:15Z',status:{type:{completed:true}}},event];
+assert.equal(publicRefreshSlot(events,now),`preview:${Math.floor(now/900000)}`);
+assert.notEqual(publicRefreshSlot(events,now),publicRefreshSlot(events,now+900000));
+assert.equal(publicRefreshSlot(events.slice(0,1),now),'20261029:final:night');
+console.log('PASS: prior-night finals cannot block the upcoming slate’s 15-minute public refresh.');
