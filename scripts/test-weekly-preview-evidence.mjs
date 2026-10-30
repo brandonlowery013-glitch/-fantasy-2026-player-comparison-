@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {buildPreview,previewKey} from '../lib/matchup-preview.mjs';
+const now=Date.parse('2026-10-24T23:00Z'),game={away_team:'NE',home_team:'CHI',kickoff:'2026-10-25T17:00Z'},observations=[];
+for(let i=1;i<=3;i++)for(const team of ['NE','CHI','BUF','DET'])observations.push({season:2026,entity_type:'team',team,event_id:(['NE','BUF'].includes(team)?'n':'c')+i,event_start:`2026-10-${String(4+i).padStart(2,'0')}T17:00Z`,observed_at:'2026-10-10T18:00Z',verified_final:true,metrics:{rush_yards:110,rush_attempts:25,net_passing_yards:210,sacks_allowed:2,turnovers:1,third_down_conversions:5,third_down_attempts:12}});
+const ledger={observations},original=JSON.stringify({game,ledger}),p=buildPreview(game,ledger,null,now);
+assert(p.sections.length>=3);assert(p.sources.length>=2);assert(p.evidence.every(e=>e.n===3));assert.equal(JSON.stringify({game,ledger}),original);
+const contaminated=structuredClone(ledger);contaminated.observations.push({...observations[0],event_start:game.kickoff,event_id:'future',metrics:{rush_yards:999999,rush_attempts:1}});assert.deepEqual(buildPreview(game,contaminated,null,now),p);
+const later=structuredClone(ledger);later.observations.push({...observations[0],observed_at:'2026-11-01T17:00Z',event_id:'later',metrics:{rush_yards:999999,rush_attempts:1}});assert.deepEqual(buildPreview(game,later,null,now),p);
+assert.notEqual(previewKey(game),previewKey({...game,kickoff:'2026-11-01T17:00Z'}));assert.throws(()=>buildPreview(game,{observations:[]},null,now),/evidence unavailable/);
+console.log('PASS: dated written previews require verified prior evidence, reject future results, preserve model inputs and isolate exact events.');
