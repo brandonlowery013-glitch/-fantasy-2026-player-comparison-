@@ -1,7 +1,7 @@
 (()=>{
  const base=new URL('.',document.currentScript.src),canon=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t);
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- let data=null,busy=false,lastFetch=0,market='moneyline',oddsHTML=null;
+ let data=null,busy=false,lastFetch=0,market='moneyline',oddsHTML=null,moneylineModels=null;
  import(new URL('lib/market-card.mjs',base)).then(m=>{oddsHTML=m.cardOddsHTML;render();});
  const savedKey='ctd-published-splits-v1',historyModule=import(new URL('lib/splits-history.mjs',base)),producerModule=import(new URL('lib/public-betting-feed.mjs',base));
  const markets={moneyline:'Moneyline',spread:'Spread',total:'Total'};
@@ -17,8 +17,12 @@
  function render(){
   controls();document.getElementById('ctdPublicSplits')?.remove();
   document.querySelectorAll('#ctdGameTicker [data-game-index]').forEach(card=>{
-   card.querySelector('.ctdCardSplits')?.remove();card.querySelector('.ctdCardOdds')?.remove();
+   card.querySelector('.ctdCardMlValue')?.remove();card.querySelector('.ctdCardSplits')?.remove();card.querySelector('.ctdCardOdds')?.remove();
    const g=BET_FEED.games?.[Number(card.dataset.gameIndex)];if(!g)return;
+   const raw=Object.values(moneylineModels?.games||{}).find(x=>canon(x.home_team)===canon(g.home_team)&&canon(x.away_team)===canon(g.away_team)&&Date.parse(x.kickoff)===Date.parse(g.event_start||g.kickoff)),win=raw?.moneyline_model?.current_prediction,rec=raw?.current_recommendations?.moneyline;
+   if(win?.selection&&Date.parse(raw.kickoff)>Date.now()){
+    const value=document.createElement('div');value.className='ctdCardMlValue';value.innerHTML=`<span>CTD most likely winner</span><b>${esc(win.selection)} · ${(win.probability*100).toFixed(1)}%</b><span>Moneyline value bet</span><b class="ctdValueSelection">${esc(rec?.decision==='PICK'?rec.selection:rec?.decision==='WAIT'?'On hold':'No qualifying value bet')}</b>`;card.append(value);
+   }
    if(oddsHTML)card.insertAdjacentHTML('beforeend',oddsHTML(g,window.CTD_LIVE_ODDS,esc));
    const start=Date.parse(g.event_start||g.kickoff||g.start_at),matches=x=>canon(x.home)===canon(g.home_team)&&canon(x.away)===canon(g.away_team)&&Date.parse(x.start_at)===start;
    const primary=data?.games?.find(matches),backup=data?.backup?.games?.find(matches),at=x=>Date.parse(x?.market_observed_at?.[market]||x?.observed_at);
@@ -39,7 +43,7 @@
    card.append(block);
   });
  }
- async function load(){if(busy||document.hidden||Date.now()-lastFetch<300000)return;busy=true;lastFetch=Date.now();try{const local=['localhost','127.0.0.1'].includes(location.hostname),api=location.hostname.endsWith('.pages.dev')?'/api/live/splits':'https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev/api/live/splits';let r;try{r=await fetch(local?new URL('market-percentages.json',base):api,{cache:'no-store',signal:AbortSignal.timeout(15000)});}catch{}if(!r?.ok)r=await fetch(new URL('market-percentages.json',base),{cache:'no-store'});if(!r.ok)throw Error();const next=await r.json();let producer=null;try{const [{publicBettingFeed},recommendations]=await Promise.all([producerModule,window.CTD_GAME_MODEL.load('recommendations')]);producer=publicBettingFeed(recommendations);}catch{}if(next.schema_version===1&&Array.isArray(next.games)){const {preservePublished}=await historyModule;let saved=null;try{saved=JSON.parse(localStorage.getItem(savedKey));}catch{}data=preservePublished(next,producer,data,saved);try{localStorage.setItem(savedKey,JSON.stringify(data));}catch{}}}catch{}finally{busy=false;render();}}
+ async function load(){if(busy||document.hidden||Date.now()-lastFetch<300000)return;busy=true;lastFetch=Date.now();try{const local=['localhost','127.0.0.1'].includes(location.hostname),api=location.hostname.endsWith('.pages.dev')?'/api/live/splits':'https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev/api/live/splits';let r;try{r=await fetch(local?new URL('market-percentages.json',base):api,{cache:'no-store',signal:AbortSignal.timeout(15000)});}catch{}if(!r?.ok)r=await fetch(new URL('market-percentages.json',base),{cache:'no-store'});if(!r.ok)throw Error();const next=await r.json();let producer=null;try{const [{publicBettingFeed},recommendations]=await Promise.all([producerModule,window.CTD_GAME_MODEL.load('recommendations')]);producer=publicBettingFeed(recommendations);moneylineModels=recommendations;}catch{}if(next.schema_version===1&&Array.isArray(next.games)){const {preservePublished}=await historyModule;let saved=null;try{saved=JSON.parse(localStorage.getItem(savedKey));}catch{}data=preservePublished(next,producer,data,saved);try{localStorage.setItem(savedKey,JSON.stringify(data));}catch{}}}catch{}finally{busy=false;render();}}
  const originalTicker=renderTicker;renderTicker=function(){originalTicker();render();};
  const originalSelection=renderSelectedGame;renderSelectedGame=function(){originalSelection();render();};
  const style=document.createElement('style');style.textContent=`
@@ -50,6 +54,7 @@
  #ctdSplitsControls button[aria-pressed=true]{background:#1e4269;color:#f1f7ff;box-shadow:inset 0 0 0 1px #3a6591}
  #ctdSplitsControls button:focus-visible{outline:2px solid #78b9ff;outline-offset:2px}
  #ctdGameTicker .gamecard{display:flex;flex-direction:column;justify-content:flex-start;gap:0;min-width:280px;flex:0 0 280px!important;align-self:stretch}
+ .ctdCardMlValue{display:grid;gap:5px;text-align:left;margin-top:10px;padding:10px 12px;border:1px solid #375471;border-radius:8px;background:#102337;font-size:12px;white-space:normal}.ctdCardMlValue span{font-size:10px;color:#9db5cd}.ctdCardMlValue span:nth-child(3){margin-top:6px}.ctdCardMlValue .ctdValueSelection{color:#f3cc79}
  .ctdCardOdds{margin-top:11px;padding:11px 12px;border:1px solid #36526e;border-radius:8px;background:#102337;text-align:left;white-space:normal}.ctdCardQuote{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:7px 0;border-bottom:1px solid #263d53;font-size:11px;font-variant-numeric:tabular-nums}.ctdCardQuote small{grid-column:1/-1;color:#95acc2;font-size:10px}.ctdCardQuote b:last-child{text-align:right}.ctdCardOdds .ctdSplitHeading{margin-bottom:5px}
  .ctdCardSplits{margin-top:11px;padding:11px 12px 9px;border:1px solid #21374f;border-radius:8px;background:#0c1c2e;text-align:left;white-space:normal}
  .ctdSplitHeading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:13px}

@@ -11,3 +11,5 @@ const loader=fs.readFileSync('frontend/cloudflare/restore-lock1.js','utf8');asse
 const early={...sandbox,BET_FEED:{games:[]},renderSelectedGame:()=>{},fetch:async()=>({ok:true,json:async()=>({week:7,season:2026,games:{g:game}})})};vm.createContext(early);vm.runInContext(script,early);await new Promise(r=>setImmediate(r));assert.equal(early.CTD_MATCHUP_REPORTS.size,0);early.BET_FEED={week:7,games:[game]};early.renderSelectedGame();assert.equal(early.CTD_MATCHUP_REPORTS.size,1,'Preview arriving before the game feed must attach on first game render');
 
 const written=panel.slice(panel.indexOf('  function writtenPreview('),panel.indexOf('  function modelPicks('));assert(written.includes('CTD_MATCHUP_REPORTS'));assert(written.includes('FOOTBALL MATCHUP REPORT'));assert(!/model_drivers|stages\.sportsbook|probability|MODEL PICK BREAKDOWN/.test(written),'Written report must contain football evidence, not probability breakdowns');
+
+assert(!loader.includes('probability advantage, '),'Written summaries cannot revert to probability breakdowns');assert(loader.includes('report.sections.map(s=>'),'The matchup-report dialog must use the same written football evidence');
