@@ -1,3 +1,4 @@
+import {footballJson,footballRoster} from '../lib/football-source-fetch.mjs';
 import {parseFantasyProsInjuries} from '../lib/fantasypros-injury-source.mjs';
 import {parseInjuryReports,assessInjury} from '../lib/injury-evidence.mjs';
 import {parseTeamPersonnel} from '../lib/team-personnel.mjs';
@@ -33,7 +34,7 @@ function availabilityFromEvidence(depth,injury,now=Date.now()){
   if(typeof depth?.active==='boolean'&&contract.availability_contract?.explicit_espn_athlete_active_flag_may_support_availability===true)return {value:depth.active,basis:'espn_explicit_athlete_active_flag'};
   return {value:null,basis:null};
 }
-async function getJson(url){const r=await fetch(url,{headers:{'user-agent':'fantasy-2026-context-adapter'}});if(!r.ok)throw new Error(`${url} -> ${r.status}`);return r.json();}
+const getJson=footballJson;
 async function teamDirectory(){const j=await getJson('https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=40');const m=new Map();for(const t of j.sports?.[0]?.leagues?.[0]?.teams||[]){const x=t.team||t,abbr=canonTeam(x.abbreviation);if(abbr&&x.id)m.set(abbr,String(x.id));}return m;}
 function verifiedScheduleWeek(){if(!fs.existsSync(path.join(root,schedulePath)))return null;const s=read(schedulePath),games=Object.values(s.games||{});const w=Number(s.week);if(Number.isInteger(w)&&w>=1&&w<=18&&games.some(g=>g?.verified===true&&Number(g.week)===w))return w;return null;}
 async function currentWeek(){const scheduled=verifiedScheduleWeek();if(scheduled!=null)return scheduled;const forced=process.env.NFL_WEEK;if(forced){const n=Number(forced);if(Number.isInteger(n)&&n>=1&&n<=18)return n;}for(let w=1;w<=18;w++){const j=await getJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=2026&seasontype=2&week=${w}`);const events=j.events||[];if(!events.length)continue;const now=Date.now();if(events.some(e=>Date.parse(e.date)>=now))return w;}throw new Error('Unable to resolve 2026 NFL week from verified schedule or ESPN');}
@@ -71,8 +72,7 @@ async function main(){
     }
     const fpByName=new Map(fpRecords.map(p=>[norm(p.name),p]));
     for(const [abbr,id] of teams){const teamPlayers=P.filter(p=>p.team===abbr);let depth=[],inj=[];try{depth=parseDepth(await getJson(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${id}/depthcharts`));}catch(e){blocked.push(`depth ${abbr}: ${e.message}`);}try{inj=parseInjuryReports(injuriesByTeam.get(id)?.injuries||[]);}catch(e){blocked.push(`injury ${abbr}: ${e.message}`);}
-      const rosterUrl=`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${id}/roster`;
-      try {personnel.teams[abbr]=parseTeamPersonnel(await getJson(rosterUrl),abbr,depth,inj,captured,rosterUrl);}
+      try {personnel.teams[abbr]=await (async()=>{const roster=await footballRoster(id,abbr);return parseTeamPersonnel(roster.payload,abbr,depth,inj,captured,roster.url);})();}
       catch(e){blocked.push(`roster ${abbr}: ${e.message}`);personnel.issues.push(`${abbr}: ${e.message}`);}
       const injBy=new Map(inj.map(x=>[norm(x.name),x]));
       for(const d of depth){const p=byName.get(norm(d.name));if(!p||p.team!==abbr||!['QB','RB','WR','TE'].includes(p.position))continue;const a=availabilityFromEvidence(d,injBy.get(norm(p.name)),captured);const c=cohort(p.position,d.rank);if(c)add(rows,week,'role',p,captured,{team:abbr,depth_rank:d.rank,position:p.position,espn_name:d.name,espn_active_flag:d.active,availability_basis:a.basis,availability_evidence_version:2},{cohort:c,...(a.value===null?{}:{expected_active:a.value})});if(p.position==='QB'&&d.rank===1)add(rows,week,'qb_context',p,captured,{team:abbr,expected_qb:p.name,depth_rank:1,certainty:'DEPTH_CHART_QB1'});}
