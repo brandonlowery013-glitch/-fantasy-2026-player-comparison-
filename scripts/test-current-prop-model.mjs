@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {evaluateCurrentProp} from '../frontend/cloudflare/lib/current-prop-model.mjs';
+import {propEvaluationKey} from '../frontend/cloudflare/lib/live-prop-board.mjs';
+const now=Date.parse('2026-10-30T03:00:00Z'),kickoff='2026-11-01T18:00:00Z',generated_at='2026-10-30T02:00:00Z';
+const policy=JSON.parse(fs.readFileSync('data/sources/player-prop-recommendation-layer-2026.json')).recommendation_policy;
+const quote={horizon:'WEEKLY',week:8,game_id:'g',player:'Player',position:'WR',team:'BUF',stat:'receiving_yards',line:50.5,over_price:-110,under_price:-110,captured_at:new Date(now-60000).toISOString(),kickoff};
+const context={now,policy,availability:{can_project:true,state:'ASSUMED_STARTER',confirmed_for_game:false},projection:{season:2026,week:8,sportsbook_inputs_used:false,generated_at,players:{Player:{}}},distribution:{season:2026,week:8,sportsbook_inputs_used:false,generated_at,distributions:{Player:{distributions:{receiving_yards:{status:'SHADOW_ONLY',market_price_used_in_probability:false,family:'normal',parameters:{mu:65,sigma:20}}}}}},schedule:{season:2026,week:8,games:{g:{home_team:'BUF',away_team:'NE',event_start:kickoff}}}};
+const before=JSON.stringify(context),a=evaluateCurrentProp(quote,context);assert.equal(a.model_pick.side,'OVER');assert.equal(a.recommendation.decision,'WAIT');assert.equal(a.eligibility.eligible_for_pick,false);
+const b=evaluateCurrentProp({...quote,line:80.5},context);assert.equal(b.model_pick.side,'UNDER');assert.notEqual(a.model.over_probability,b.model.over_probability);
+const changedPrice=evaluateCurrentProp({...quote,over_price:150,under_price:-180},context);assert.deepEqual(changedPrice.model,a.model);assert.notEqual(changedPrice.sides[0].expected_value,a.sides[0].expected_value);
+const confirmed=evaluateCurrentProp(quote,{...context,availability:{can_project:true,state:'AVAILABLE',confirmed_for_game:true}});assert.equal(confirmed.recommendation.decision,'PICK');
+for(const change of [{week:7},{game_id:'other'},{team:'CHI'},{player:'Unknown'},{position:'UNKNOWN'},{line:null},{over_price:0},{captured_at:new Date(now-151*60000).toISOString()},{captured_at:new Date(now+1000).toISOString()},{kickoff:new Date(now-1000).toISOString()}])assert.equal(evaluateCurrentProp({...quote,...change},context),null,JSON.stringify(change));
+for(const change of [{availability:{can_project:false}},{policy:null},{distribution:{...context.distribution,week:7}},{projection:{...context.projection,sportsbook_inputs_used:true}},{distribution:{...context.distribution,generated_at:kickoff}}])assert.equal(evaluateCurrentProp(quote,{...context,...change}),null);
+const d=structuredClone(context);d.distribution.distributions.Player.distributions.receptions={status:'SHADOW_ONLY',market_price_used_in_probability:false,family:'compound_receptions',parameters:{pmf:[.1,.2,.3,.4]}};
+const integer=evaluateCurrentProp({...quote,stat:'receptions',line:2},d);assert.ok(Math.abs(integer.model.push_probability-.3)<1e-9);assert.ok(Math.abs(integer.sides.find(s=>s.side==='OVER').expected_value-(.4*100/110-.3))<1e-9);
+assert.notEqual(propEvaluationKey(quote),propEvaluationKey({...quote,week:7}));assert.notEqual(propEvaluationKey(quote),propEvaluationKey({...quote,game_id:'other'}));assert.notEqual(propEvaluationKey(quote),propEvaluationKey({...quote,kickoff:'2026-11-02T18:00:00Z'}));assert.equal(JSON.stringify(context),before);
+console.log('PASS: exact quote math, price-independent football probabilities, discrete pushes, availability, week/event identity, freshness and immutable projections');
