@@ -41,7 +41,9 @@ jobs:
         with:
           node-version: '20'
       - name: Validate adaptive market cadence bands
-        run: node scripts/adaptive-market-refresh-gate.mjs --self-test
+        run: |
+          node scripts/adaptive-market-refresh-gate.mjs --self-test
+          bash scripts/test-open-adaptive-market-pr.sh
       - name: Revalidate live market ingestion contract
         run: node scripts/validate-live-market-ingestion-contract.mjs
       - name: Revalidate Step 4 betting pipeline
@@ -110,8 +112,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          pr_url=$(gh pr create --base main --head "${{ steps.persist.outputs.branch }}" --title "Production: adaptive pregame market refresh" --body "Automated adaptive market refresh. Required Guardrail QA must pass on the current protected candidate before merge.")
-          echo "number=${pr_url##*/}" >> "$GITHUB_OUTPUT"
+          number=$(bash scripts/open-adaptive-market-pr.sh "${{ steps.persist.outputs.branch }}")
+          echo "number=$number" >> "$GITHUB_OUTPUT"
       - name: Validate current protected candidate and merge adaptive market state
         if: steps.persist.outputs.changed == 'true'
         env:
