@@ -68,6 +68,7 @@
   const pendingQB=Object.values(qbFeed?.scenarios||{}).find(q=>q.game_id===s.game_id&&q.team===s.team&&['BACKUP_EXPECTED','REVIEW_REQUIRED'].includes(q.status));
   if(!e&&qbState.holds?.has(s.game_id+':'+s.team))return ['QB update pending','The starting quarterback is unavailable; waiting for the replacement projection.'];
   if(!e&&pendingQB)return ['QB update pending',pendingQB.reason||'Waiting for the matching quarterback-adjusted model inputs.'];
+  if(!e&&typeof projection!=='undefined'&&projection?.season===2026&&Number(projection.week)===Number(s.week)&&!projection.players?.[s.player])return ['No player projection','Current sportsbook quote. This player is outside the current projection coverage; no model probability is assigned.'];
   if(!e)return ['Model update pending',(availability?.label?availability.label+'. ':'')+'Current sportsbook quote. The model has not evaluated this exact line and price yet.'];
   let pick=e?.model_pick;
   if(!pick&&[q?.over_probability,q?.under_probability,q?.push_probability].every(x=>typeof x==='number'&&Number.isFinite(x)&&x>=0&&x<=1)&&Math.abs(q.over_probability+q.under_probability+q.push_probability-1)<1e-5){
