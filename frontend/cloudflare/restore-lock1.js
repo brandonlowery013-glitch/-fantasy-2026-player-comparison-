@@ -67,7 +67,8 @@ function compareData(){
   report.addEventListener('click',()=>{
     let dialog=document.getElementById('matchupReport');if(!dialog){dialog=document.createElement('dialog');dialog.id='matchupReport';dialog.style.cssText='background:#0a1422;color:#f3f7fd;border:1px solid #2e5684;border-radius:10px;max-width:680px;width:90%';document.body.appendChild(dialog)}
     const g=BET_FEED.games[selectedGameIndex];
-    dialog.innerHTML=`<button class="btn" id="closeReport">Close report</button><h2>${g?escape(g.away_team)+' @ '+escape(g.home_team):'No game selected'}</h2><p>${escape(window.CTD_MODEL_STATE_2026?.actionable?'Actionable':'Analysis only')}</p>${g?`<p>${escape(g.model_summary)}</p>${[['Spread',g.spread],['Model spread',g.model_spread_pick],['Total',g.total],['Model total',g.total_pick],['Moneyline',g.moneyline_pick]].map(([k,v])=>`<div class="catPlayer"><span>${k}</span><b>${escape(v)}</b></div>`).join('')}`:''}`;
+    const canon=t=>({LA:'LAR',WAS:'WSH',JAC:'JAX'}[t]||t),report=g&&window.CTD_MATCHUP_REPORTS?.get(`${canon(g.away_team)}@${canon(g.home_team)}:${Date.parse(g.event_start||g.kickoff)}`);
+    dialog.innerHTML=`<button class="btn" id="closeReport">Close report</button><h2>${g?escape(g.away_team)+' @ '+escape(g.home_team):'No game selected'}</h2><h3>Football matchup report</h3>${report?.sections?.length?report.sections.map(s=>`<h4>${escape(s.title)}</h4><p style="line-height:1.7">${escape(s.text)}</p>`).join(''):'<p>Current football evidence is loading. Please reopen the report shortly.</p>'}`;
     dialog.querySelector('#closeReport').onclick=()=>dialog.close();dialog.showModal();
   });
   const tools=[...document.querySelectorAll('.tools .tool')];
@@ -127,7 +128,7 @@ function renderOutlookData(){
   const num=x=>x==null?'Unavailable':Number(x).toFixed(1);
   function latest(game){return (game.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(game.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));}
   function selected(game){const rows=latest(game);return rows.find(s=>s.book==='draftkings')||rows[0];}
-  function explain(game,s){const lines=Object.entries(s.markets||{}).filter(([,m])=>m.recommendation?.decision==='PICK').map(([kind,m])=>`${kind}: ${m.recommendation.selection}, ${pp(m.recommendation.probability_edge)} probability advantage, ${pct(m.recommendation.expected_value)} expected return per unit risked.`);const directions=['moneyline','spread','total'].map(kind=>window.CTD_SHOW_WORK?.gameDirectionPrediction(game,s,kind)?.selection).filter(Boolean);return `Model predictions: ${directions.join('; ')||'unavailable'}. `+(lines.length?'Betting recommendations: '+lines.join(' '):'No betting recommendation clears the current checks.');}
+  function explain(game,s){const report=window.CTD_MATCHUP_REPORTS?.get(`${teamKey(game.away_team)}@${teamKey(game.home_team)}:${Date.parse(game.kickoff||game.event_start)}`),players=report?.sections?.filter(x=>x.title.includes('players who'))||[];return players.length?players.map(x=>x.text).join(' '):'The written football matchup report is loading. Player performances and injury context will appear below.';}
   function detail(){return window.CTD_READING.preserve(document.getElementById('gamesPage'),detailData);}
 function detailData(){
     const g=BET_FEED.games[selectedGameIndex];clearMarketDetail(g);if(!g||!feed||Number(feed.week)!==Number(BET_FEED.week))return;
@@ -160,8 +161,8 @@ function detailData(){
       const r=s.markets[kind]?.recommendation,el=document.getElementById(id),badge=el.parentElement.lastElementChild;
       const direction=window.CTD_SHOW_WORK?.gameDirectionPrediction(raw,s,kind);
       el.textContent=direction?.selection||(r?.decision==='PICK'?r.selection:r?.decision==='WAIT'?'On hold':'No bet');
-      el.title=direction?`Model prediction: ${direction.selection}. Betting decision: ${r?.decision||'WAIT'}. ${r?.reason||''}`:(r?.reason||'');
-      badge.textContent=direction&&raw.personnel_matchup&&!raw.moneyline_model&&kind==='moneyline'?`${pct(direction.probability)} · bet WAIT`:direction?`${pct(direction.probability)} · bet ${r?.decision||'WAIT'}${s.markets[kind]?.context_validation?.status==='HOLD'?' · before QB review':''}`:r?.decision==='PICK'?pp(r.probability_edge):'';
+      el.title=direction?`Model prediction: ${direction.selection}. Betting decision: ${r?.decision||'WAIT'} ${r?.selection||''}. ${r?.reason||''}`:(r?.reason||'');
+      badge.textContent=direction&&raw.personnel_matchup&&!raw.moneyline_model&&kind==='moneyline'?`${pct(direction.probability)} · bet WAIT`:direction?`${pct(direction.probability)} · bet ${r?.decision||'WAIT'}${kind==='moneyline'&&r?.decision==='PICK'?' '+r.selection+' · value bet':''}${s.markets[kind]?.context_validation?.status==='HOLD'?' · before QB review':''}`:r?.decision==='PICK'?pp(r.probability_edge):'';
       badge.title='Model probability minus the market probability after removing bookmaker margin. pp = percentage points.';
       if(kind==='spread')g.model_spread_pick=el.textContent;if(kind==='total')g.total_pick=el.textContent;if(kind==='moneyline')g.moneyline_pick=el.textContent;
     }

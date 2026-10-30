@@ -84,10 +84,10 @@
   }
 function gameDirectionPrediction(game,snapshot,kind){
  if(!['moneyline','spread','total'].includes(kind))return null;
- const selected=snapshot?.markets?.[kind]?.model_prediction;if(kind==='moneyline'&&selected?.selection_basis==='both-prior-upset-wins-home-underdog-v1'&&snapshot?.markets?.moneyline?.selection_exception?.applied)return {...selected,betting_decision:snapshot.markets.moneyline.recommendation?.decision||'PASS'};if(['moneyline','spread'].includes(kind)&&selected?.status==='EVEN')return {...selected,selection:null};
+ const past=Number.isFinite(Date.parse(game.kickoff||game.event_start))&&Date.parse(game.kickoff||game.event_start)<=Date.now();const selected=snapshot?.markets?.[kind]?.model_prediction;if(past&&kind==='moneyline'&&selected?.selection_basis==='both-prior-upset-wins-home-underdog-v1'&&snapshot?.markets?.moneyline?.selection_exception?.applied)return {...selected,betting_decision:snapshot.markets.moneyline.recommendation?.decision||'PASS'};if(['moneyline','spread'].includes(kind)&&selected?.status==='EVEN')return {...selected,selection:null};
  const e=snapshot?.markets?.[kind],a=e?.side_a?.conditional_win_probability,b=e?.side_b?.conditional_win_probability;
  let home=a,away=b;
- const version=kind==='spread'?'sportsbook-calibration-learning-v1':'football-sportsbook-learning-v1';
+ const version=kind==='spread'?'sportsbook-calibration-learning-v1':past&&e?.model_version==='football-sportsbook-learning-v1'?'football-sportsbook-learning-v1':'ctd-football-moneyline-v1';
  if(kind!=='total'&&e?.model_version!==version)return {status:'UNAVAILABLE',selection:null,reason:'Waiting for current picks',betting_decision:'WAIT'};
  if(!Number.isFinite(home)||!Number.isFinite(away))return {status:'UNAVAILABLE',selection:null,reason:'Matching model probability or spread line unavailable; no invented pick',betting_decision:e?.recommendation?.decision||'WAIT'};
  if(kind==='total'){
