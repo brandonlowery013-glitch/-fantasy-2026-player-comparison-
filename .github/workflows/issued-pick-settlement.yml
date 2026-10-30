@@ -24,6 +24,7 @@ jobs:
           node-version: '20'
       - run: node scripts/test-pick-settlement.mjs
       - run: node scripts/test-postgame-model-learning.mjs
+      - run: node scripts/test-total-model-learning.mjs
       - run: node scripts/test-game-direction-prediction.mjs
       - run: node scripts/test-injury-ranking-policy.mjs
   publish:
@@ -42,7 +43,7 @@ jobs:
         with:
           node-version: '20'
       - run: node scripts/settle-issued-picks.mjs
-      - run: node scripts/refresh-postgame-model-learning.mjs --settle
+      - run: node scripts/refresh-postgame-model-learning.mjs --capture --settle
       - name: Persist pick settlement state through guarded PR
         id: persist
         shell: bash

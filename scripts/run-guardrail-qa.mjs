@@ -45,6 +45,9 @@ catch(e){block('event_source_binding',String(e.stderr||e.message));}
 try{execFileSync(process.execPath,['scripts/test-fantasypros-injury-source.mjs'],{cwd:root,stdio:'pipe'});execFileSync(process.execPath,['scripts/validate-player-detail-feed.mjs'],{cwd:root,stdio:'pipe'});pass('universal_player_injury_news','All canonical profiles, source-bound labels/news and zero Questionable rank penalty passed');}
 catch(e){block('universal_player_injury_news',String(e.stderr||e.message));}
 
+try{execFileSync(process.execPath,['scripts/test-total-model-learning.mjs'],{cwd:root,stdio:'pipe'});pass('total_model_learning','Frozen totals, push grading, prior-week learning and separate model passed');}
+catch(e){block('total_model_learning',String(e.stderr||e.message));}
+
 try{execFileSync(process.execPath,['scripts/test-weekly-preview-evidence.mjs'],{cwd:root,stdio:'pipe'});pass('weekly_preview_evidence','Dated preview chronology, verified evidence and no model mutation passed');}
 catch(e){block('weekly_preview_evidence',String(e.stderr||e.message));}
 
