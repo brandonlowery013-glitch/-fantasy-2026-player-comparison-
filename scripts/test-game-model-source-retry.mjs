@@ -8,4 +8,6 @@ assert.deepEqual(await make(async()=>{if(++calls===1)throw Error('signal timed o
 calls=0;assert.deepEqual(await make(async()=>++calls===1?{ok:false,status:503}:{ok:true,json:async()=>({current:true})})('/feed'),{current:true});assert.equal(calls,2);
 calls=0;await assert.rejects(make(async()=>{calls++;return {ok:false,status:404};})('/feed'),/404/);assert.equal(calls,1);
 calls=0;await assert.rejects(make(async()=>{calls++;throw Error('still down');})('/feed'),/still down/);assert.equal(calls,2);
+calls=0;assert.deepEqual(await make(async()=>({ok:true,json:async()=>{if(++calls===1)throw Error('body transfer interrupted');return {current:true};}}))('/feed'),{current:true});assert.equal(calls,2);
+calls=0;await assert.rejects(make(async()=>({ok:true,json:async()=>{calls++;throw new SyntaxError('invalid JSON');}}))('/feed'),/invalid JSON/);assert.equal(calls,1);
 console.log('PASS: bounded cold-load timeout, one transient retry, permanent failures surfaced, no raw-model fallback.');
