@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {newLedger,appendForecasts,appendFinal,availableTraining,totalFeatures,candidateFor,TOTAL_RULE} from '../lib/postgame-model-learning.mjs';
+const f={market:'total',game_id:'g',season:2026,week:8,event_id:'1',home_team:'BUF',away_team:'NE',kickoff:'2026-11-01T18:00:00Z',captured_at:'2026-10-30T02:00:00Z',source_generated_at:'2026-10-30T01:00:00Z',probability:.6,total_line:45,home_score_mean:27,away_score_mean:21,features:{}};
+let l=appendForecasts(newLedger(),[f,{...f,market:'moneyline'}]);assert.equal(l.forecasts.length,2);assert.throws(()=>appendForecasts(newLedger(),[{...f,total_line:null}]),/total line/);
+const total=l.forecasts.find(r=>r.market==='total'),final={verified_final:true,event_id:'1',home_team:'BUF',away_team:'NE',kickoff:f.kickoff,home_score:24,away_score:21},at='2026-11-01T23:00:00Z';
+l=appendFinal(l,'g',final,at,total.forecast_id);assert.equal(l.settlements[0].outcome,null);assert.equal(l.settlements[0].brier,null);
+const corrected=appendFinal(l,'g',{...final,away_score:24},'2026-11-02T01:00:00Z',total.forecast_id);assert.equal(corrected.settlements.at(-1).outcome,1);assert.equal(l.forecasts[0].probability,.6);
+assert.equal(availableTraining(corrected,{week:9,asOf:at}).length,0);assert.equal(availableTraining(corrected,{week:8,asOf:'2026-11-02T02:00:00Z'}).length,0);
+assert.equal(availableTraining(corrected,{week:9,asOf:'2026-11-02T02:00:00Z'}).length,1);
+const features=totalFeatures(f,{'team|BUF':{metrics:{offensive_plays:{mean:65}}},'team|NE':{metrics:{offensive_plays:{mean:60}}}});assert.equal(features.combined_offensive_plays,125);assert.equal(features.scoring_total,48);assert.equal(features.combined_net_yards_per_play,null);
+const candidate=candidateFor(corrected,{...f,week:9,features},'2026-11-02T02:00:00Z');assert.equal(candidate.rule_id,TOTAL_RULE);assert.equal(candidate.model.n,1);assert.equal(candidate.numeric_authority,0);assert.equal(candidate.actionable,false);assert.ok(Math.abs(candidate.probability_change)<=.02);assert.equal(candidate.model.coefficients.length,0);
+console.log('PASS: frozen totals, over/under grading, pushes, append-only corrections, prior-week cutoffs, separate total training and no automatic promotion');

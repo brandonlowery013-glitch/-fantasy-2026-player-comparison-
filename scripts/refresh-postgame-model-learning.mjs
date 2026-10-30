@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
-import {appendForecasts,appendFinal,newLedger,gameFeatures,candidateFor,availableTraining,fitResidual,FACTORS,UNSUPPORTED,RULE} from '../lib/postgame-model-learning.mjs';
+import {appendForecasts,appendFinal,newLedger,gameFeatures,totalFeatures,candidateFor,availableTraining,fitResidual,FACTORS,TOTAL_FACTORS,TOTAL_RULE,UNSUPPORTED,RULE} from '../lib/postgame-model-learning.mjs';
 import {finalResult} from '../lib/pick-settlement.mjs';
 import {finalBehavior,appendBehavior,behaviorState,classifyFactor} from '../lib/football-learning.mjs';
 const path='data/market/postgame-model-learning-2026.json';
@@ -26,6 +26,11 @@ if(process.argv.includes('--capture')){
    const spread={...row,market:'spread',home_line:quote.market.home_spread,probability:cover,quote_snapshot_id:quote.snapshot_id,market_context:quote.markets.spread.public_betting_context||null};
    spread.features=gameFeatures(spread,state);spread.candidate=candidateFor(ledger,spread,now);records.push(spread);
   }
+  const over=quote?.markets?.total?.side_a?.conditional_win_probability;
+  if(quote?.eligible_for_current_recommendation===true&&Number.isFinite(over)&&over>0&&over<1&&Number.isFinite(quote.market?.total)&&Date.parse(quote.captured_at)<=Date.parse(now)){
+   const total={...row,market:'total',total_line:quote.market.total,probability:over,quote_snapshot_id:quote.snapshot_id,market_context:null};
+   total.features=totalFeatures(total,state);total.candidate=candidateFor(ledger,total,now);records.push(total);
+  }
  }
  ledger=appendForecasts(ledger,records);
 }
@@ -47,15 +52,15 @@ if(process.argv.includes('--settle')){
  if(errors.length)throw Error(errors.join('\n')); // Do not persist a partially fetched batch.
 }
 const changed=createHash('sha256').update(JSON.stringify([ledger.forecasts,ledger.settlements,ledger.observations])).digest('hex')!==inputFingerprint;
-if(!changed&&ledger.current_fit&&ledger.learning_week===schedule.week&&ledger.rule_id===RULE){console.log(JSON.stringify({status:'NO_NEW_LEARNING_EVIDENCE',forecasts:ledger.forecasts.length,settlements:ledger.settlements.length}));}else{
+if(!changed&&ledger.current_fit?.total&&ledger.learning_week===schedule.week&&ledger.rule_id===RULE){console.log(JSON.stringify({status:'NO_NEW_LEARNING_EVIDENCE',forecasts:ledger.forecasts.length,settlements:ledger.settlements.length}));}else{
 const training=availableTraining(ledger,{week:schedule.week,asOf:now});
-const models=Object.fromEntries(['moneyline','spread'].map(m=>[m,fitResidual(training.filter(r=>(r.market||'moneyline')===m))]));
+const models=Object.fromEntries(['moneyline','spread','total'].map(m=>[m,fitResidual(training.filter(r=>(r.market||'moneyline')===m),m==='total'?TOTAL_FACTORS:FACTORS,m==='total'?TOTAL_RULE:RULE)]));
 const model=models.moneyline;
 const latest=new Map(ledger.settlements.map(s=>[s.forecast_id,s]));
-ledger.candidate_pairs=ledger.forecasts.filter(f=>f.candidate&&latest.get(f.forecast_id)?.outcome!==null&&latest.has(f.forecast_id)).map(f=>{const s=latest.get(f.forecast_id);return {prediction_id:f.forecast_id,market:f.market||'moneyline',rule_id:f.candidate.rule_id,week:f.week,model_version:f.model_version,rule_frozen_at:f.captured_at,captured_at:f.captured_at,kickoff:f.kickoff,settled_at:s.observed_at,verified_final:true,result:s.outcome,core_probability:f.probability,candidate_probability:f.candidate.candidate_probability};});
+ledger.candidate_pairs=ledger.forecasts.filter(f=>f.candidate&&latest.get(f.forecast_id)?.outcome!==null&&latest.has(f.forecast_id)).map(f=>{const s=latest.get(f.forecast_id);return {prediction_id:f.forecast_id,...(f.market==='total'?{game_id:f.game_id,total_line:f.total_line}:{}),market:f.market||'moneyline',rule_id:f.candidate.rule_id,week:f.week,model_version:f.model_version,rule_frozen_at:f.captured_at,captured_at:f.captured_at,kickoff:f.kickoff,settled_at:s.observed_at,verified_final:true,result:s.outcome,core_probability:f.probability,candidate_probability:f.candidate.candidate_probability};});
 const state=behaviorState(ledger.observations||[],{season:2026,week:schedule.week,asOf:now});
 ledger.current_fit=models;ledger.team_and_player_state=state;
-ledger.validation=Object.fromEntries(['moneyline','spread'].map(m=>{const pairs=ledger.candidate_pairs.filter(p=>p.market===m&&p.rule_id===RULE),trial={factor:'postgame_residual',market:m,rule_id:RULE,prospective:true,independent_holdout:true,rule_frozen_at:pairs[0]?.rule_frozen_at||now,pairs};return [m,classifyFactor(trial)];}));
+ledger.validation=Object.fromEntries(['moneyline','spread','total'].map(m=>{const rule=m==='total'?TOTAL_RULE:RULE,pairs=ledger.candidate_pairs.filter(p=>p.market===m&&p.rule_id===rule),trial={factor:'postgame_residual',market:m,rule_id:rule,prospective:true,independent_holdout:true,rule_frozen_at:pairs[0]?.rule_frozen_at||now,pairs};return [m,classifyFactor(trial)];}));
 ledger.rule_id=RULE;
 ledger.status='AUTOMATIC_LEARNING_CHALLENGER_NOT_PROMOTED';
 ledger.production_numeric_authority=0;ledger.learning_week=schedule.week;ledger.updated_at=now;
