@@ -49,11 +49,12 @@ jobs:
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "pr_head_sha=$PR_HEAD_SHA" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout full history for drift comparison
+      - name: Checkout full commit history with on-demand historical blobs
         uses: actions/checkout@v4
         with:
           ref: ${{ steps.target.outputs.target_sha }}
           fetch-depth: 0
+          filter: blob:none
       - name: Use Node
         uses: actions/setup-node@v4
         with:

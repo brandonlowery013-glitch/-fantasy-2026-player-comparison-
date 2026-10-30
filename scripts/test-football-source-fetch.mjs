@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {footballJson,footballRoster} from '../lib/football-source-fetch.mjs';
+import {parseTeamPersonnel} from '../lib/team-personnel.mjs';
+const wait=async()=>{};let calls=0;
+const actual={season:{year:2026},team:{abbreviation:'NE'},athletes:[{position:'offense',items:[{id:'1',displayName:'Verified player',position:{abbreviation:'QB'}}]}]};
+const recovered=await footballJson('https://example.test/roster',{wait,fetcher:async()=>++calls<3?new Response('',{status:calls===1?404:503}):Response.json(actual)});
+assert.deepEqual(recovered,actual);assert.equal(calls,3);
+const seen=[];const fallback=await footballRoster('17','NE',{wait,fetcher:async url=>{seen.push(url);return url.includes('/17/')?new Response('',{status:404}):Response.json(actual);}});
+assert.equal(seen.length,4);assert.match(fallback.url,/\/ne\/roster\?season=2026$/);assert.equal(parseTeamPersonnel(fallback.payload,'NE',[],[],new Date().toISOString(),fallback.url).status,'OBSERVED');
+calls=0;await assert.rejects(footballJson('https://example.test',{wait,fetcher:async()=>{calls++;throw new TypeError('connection reset');}}),/connection reset/);assert.equal(calls,3);
+calls=0;await assert.rejects(footballJson('https://example.test',{wait,fetcher:async()=>{calls++;return new Response('',{status:401});}}),/401/);assert.equal(calls,1);
+await assert.rejects(footballRoster('17','NE',{wait,fetcher:async()=>new Response('',{status:404})}),/404/);
+assert.throws(()=>parseTeamPersonnel({...actual,team:{abbreviation:'NYJ'}},'NE',[],[],new Date().toISOString(),fallback.url),/team mismatch/);
+assert.throws(()=>parseTeamPersonnel({...actual,season:{year:2025}},'NE',[],[],new Date().toISOString(),fallback.url),/season or shape/);
+console.log('PASS: transient 404/503/network recovery, bounded retries, same-provider roster fallback, persistent failure and identity/season rejection.');
