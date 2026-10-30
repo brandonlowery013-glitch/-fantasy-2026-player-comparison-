@@ -17,9 +17,9 @@ const headers={'content-type':'application/json; charset=utf-8','cache-control':
 // Keep published game snapshots when the provider removes a game after kickoff.
 // The game's original observed_at remains unchanged.
 const response=(data,health)=>new Response(JSON.stringify(health?{...data,health}:data),{headers});
-async function read(url){const r=await fetch(url,{signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('Source unavailable');const text=await r.text();if(text.length>3000000)throw Error('Source too large');return text;}
+async function read(url){const r=await fetch(url,{signal:AbortSignal.timeout(12000),headers:{accept:'text/html,application/xhtml+xml','user-agent':'Mozilla/5.0 (compatible; CTD/1.0)'}});if(!r.ok)throw Error('Source HTTP '+r.status);const text=await r.text();if(text.length>3000000)throw Error('Source too large');return text;}
 export async function onRequestGet({request,env,waitUntil}){
- const cache=caches.default,key=new Request(new URL('/api/live/splits-cache',request.url)),stored=await cache.match(key);
+ const cache=caches.default,key=new Request(new URL('/api/live/splits-cache-v2',request.url)),stored=await cache.match(key);
  let fallback=stored?await stored.json():null;
  {try{const r=await env.ASSETS.fetch(new URL('/cloudflare/market-percentages.json',request.url));if(r.ok){const saved=await r.json();fallback=preservePublished(fallback||saved,saved);}}catch{}}
  try{
@@ -51,7 +51,8 @@ export async function onRequestGet({request,env,waitUntil}){
   const backup=scores?.games.length?scores:action;
   if(!a.games.length&&!backup?.games.length)throw Error('Public providers have no matched pregame percentages');
   const combined=preservePublished(a,fallback);combined.refresh_slot=slot;combined.backup=backup;
-  const health={status:a.games.length?'CURRENT':'PARTIAL',checked_at:checked,refresh_slot:slot,...(!a.games.length?{error:'DraftKings unavailable; public backup coverage shown'}:{})};
+  const source_checks={scoresandodds:sources[3].status==='fulfilled'?{status:'FETCHED',bytes:sources[3].value.length,matched_games:scores?.games.length||0,source_week:sources[3].value.match(/week=(\d+-reg-\d+)/)?.[1]||null,schedule_season:schedule.season?.year,schedule_week:schedule.week?.number}:{status:'FAILED',error:String(sources[3].reason?.message||sources[3].reason)}};
+  const health={source_checks,status:a.games.length?'CURRENT':'PARTIAL',checked_at:checked,refresh_slot:slot,...(!a.games.length?{error:'DraftKings unavailable; public backup coverage shown'}:{})};
   waitUntil(cache.put(key,new Response(JSON.stringify(combined),{headers:{...headers,'cache-control':'public, max-age=604800'}})));return response(combined,health);
  }catch(error){return response(fallback||{schema_version:1,games:[]},{status:'STALE',checked_at:new Date().toISOString(),error:String(error?.message||error)});}
 }
