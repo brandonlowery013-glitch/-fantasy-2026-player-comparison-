@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const source=fs.readFileSync('frontend/cloudflare/game-model-source.js','utf8');
+const code=source.slice(source.indexOf(' const read='),source.indexOf('\n function release'));
+const make=fetch=>new Function('fetch','AbortSignal',code+';return read;')(fetch,{timeout:n=>{assert.equal(n,30000);return {};}});
+let calls=0;
+assert.deepEqual(await make(async()=>{if(++calls===1)throw Error('signal timed out');return {ok:true,json:async()=>({current:true})};})('/feed'),{current:true});assert.equal(calls,2);
+calls=0;assert.deepEqual(await make(async()=>++calls===1?{ok:false,status:503}:{ok:true,json:async()=>({current:true})})('/feed'),{current:true});assert.equal(calls,2);
+calls=0;await assert.rejects(make(async()=>{calls++;return {ok:false,status:404};})('/feed'),/404/);assert.equal(calls,1);
+calls=0;await assert.rejects(make(async()=>{calls++;throw Error('still down');})('/feed'),/still down/);assert.equal(calls,2);
+console.log('PASS: bounded cold-load timeout, one transient retry, permanent failures surfaced, no raw-model fallback.');

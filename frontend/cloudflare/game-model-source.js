@@ -6,7 +6,7 @@
  const impactCache=new Map();
  function personnel(){const slot=Math.floor(Date.now()/60000);if(!impactCache.has(slot)){impactCache.clear();const u=new URLSearchParams(typeof location==='undefined'?'':location.search),team=u.get('game_test'),scenario=u.get('game_scenario')||'qb-out',unit=u.get('game_unit')||'WR';impactCache.set(slot,read('/api/live/game-projections'+(team?'?verify='+encodeURIComponent(team)+'&scenario='+encodeURIComponent(scenario)+'&unit='+encodeURIComponent(unit):'')).catch(()=>null));}return impactCache.get(slot);}
  const cache=new Map(),releases=new Map();
- const read=async url=>{const r=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('Game model unavailable: '+r.status);return r.json()};
+ const read=async url=>{for(let attempt=0;attempt<2;attempt++){let r;try{r=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(30000)});}catch(error){if(attempt===0)continue;throw error;}if(!r.ok){if(attempt===0&&(r.status===429||r.status>=500))continue;throw Error('Game model unavailable: '+r.status);}return r.json();}};
  function release(slot){if(!releases.has(slot)){releases.clear();releases.set(slot,read('/cloudflare/api/game-model/release').then(x=>{if(x.ref!=='refs/heads/main'||x.object?.type!=='commit'||!/^[a-f0-9]{40}$/.test(x.object?.sha||''))throw Error('Invalid producer release');return x.object.sha;}).catch(()=> 'main'));}return releases.get(slot);}
  function select(base,rerun){return rerun?.rerun===true&&rerun.actionable===false&&rerun.season===base.season&&rerun.week===base.week&&Object.keys(base.games||{}).every(id=>rerun.games?.[id])?rerun:base;}
  window.CTD_GAME_MODEL={select,release:()=>release(Math.floor(Date.now()/300000)),load(kind='recommendations'){
