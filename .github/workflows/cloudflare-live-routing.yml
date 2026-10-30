@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'frontend/_worker.js'
+      - 'frontend/cloudflare/game-model-source.js'
+      - 'scripts/test-game-model-source-retry.mjs'
       - 'frontend/_routes.json'
       - 'functions/**'
       - 'frontend/cloudflare/lib/**'
@@ -21,6 +23,8 @@ on:
     branches: ['frontend/ctd-cloudflare-work']
     paths:
       - 'frontend/_worker.js'
+      - 'frontend/cloudflare/game-model-source.js'
+      - 'scripts/test-game-model-source-retry.mjs'
       - 'frontend/_routes.json'
       - 'functions/**'
       - 'frontend/cloudflare/lib/**'
@@ -56,6 +60,7 @@ jobs:
           node scripts/test-canonical-model-state.mjs
           node scripts/test-public-odds.mjs
           node scripts/test-same-origin-game-feed.mjs
+          node scripts/test-game-model-source-retry.mjs
           node scripts/test-news-route.mjs
           node scripts/test-public-splits-api.mjs
           node scripts/test-published-feed-stream.mjs
