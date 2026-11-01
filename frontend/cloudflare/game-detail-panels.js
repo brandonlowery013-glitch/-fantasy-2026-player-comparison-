@@ -90,7 +90,11 @@
   if(!doc.getElementById('ctdMarketPicksStyle')){const style=doc.createElement('style');style.id='ctdMarketPicksStyle';style.textContent=CSS+UPSET_CSS;doc.head.appendChild(style);}
  
   if(!g){mount.innerHTML='<p>Choose a game to see spread, total and moneyline separately.</p>';return;}
+  const matchup=[g.home_team,g.away_team,g.kickoff||g.event_start].join('|');
+  const explainOpen=mount.dataset.upsetGame===matchup&&mount.querySelector('.ctdUpsetPanel details')?.open;
   mount.innerHTML=markup(build(g,s,directions,meta));
+  mount.dataset.upsetGame=matchup;
+  if(explainOpen){const details=mount.querySelector('.ctdUpsetPanel details');if(details)details.open=true;}
  }
  root.CTD_MARKET_PICKS={build,markup,render,setComparisons,comparisonGame:resolve,upset,upsetMarkup};
 })(globalThis);
