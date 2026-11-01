@@ -26,7 +26,6 @@ def export(report):
  rows={n:{k:v for k,v in r.items() if k in keys} for n,r in rows.items()}
  template.update(week=report['week'],generated_at=report['generated_at'],players=rows)
  template['learning'].update(parameter_id=report['parameters']['id'],data_through_week=report['week']-1,live_graded_count=report['live_calibration_records'])
- import os
  path=Path(os.environ.get('CTD_LEARNING_STATE',str(ROOT.parent/'learning-state')))/'weekly-fantasy-rankings.json';path.write_text(json.dumps(template,separators=(',',':')));return path
 if __name__=='__main__':
  print(export(json.loads((ROOT.parent/'learning-state'/'current_run.json').read_text())))
