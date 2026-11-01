@@ -27,7 +27,8 @@
 // Serve the preserved LOCK1 runtime from Pages with a JavaScript content type.
 (()=>{
   const escape=s=>String(s??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let finalFeed=null;
+  let finalFeed=null,parlayAnalysis=null;
+  import('./lib/parlay-analysis.mjs').then(m=>{parlayAnalysis=m;betting();});
   const percent=n=>n==null?'—':(Number(n)*100).toFixed(1)+'%';
   const bettingCard=x=>{
     const legs=(x.legs||[]).map(id=>finalFeed?.eligible_legs?.find(l=>l.leg_id===id)).filter(Boolean);
@@ -60,8 +61,11 @@ function compareData(){
     const mode=window.CTD_MODEL_STATE_2026?.actionable?'Current picks':'No bets currently available';
     const matchingWeek=Number(finalFeed?.week)===Number(BET_FEED?.week);
     const eligible=x=>!x.player||window.CTD_WEEKLY_ELIGIBILITY?.(x.player,BET_FEED.week)?.state==='ELIGIBLE';const props=matchingWeek?(finalFeed?.props||[]).filter(eligible):[],parlays=matchingWeek?(finalFeed?.parlays||[]).filter(x=>(x.legs||[]).every(id=>{const leg=finalFeed?.eligible_legs?.find(l=>l.leg_id===id);return leg&&eligible(leg)})):[];
+    const supplemental=[];
+    if(matchingWeek&&parlayAnalysis){const legs=(finalFeed.eligible_legs||[]).filter(l=>l.standalone_approved===true&&l.label==='PICK'&&eligible(l));for(const prop of legs.filter(l=>l.market_type==='player_prop'))for(const leg of legs.filter(l=>l.market_type!=='player_prop'&&l.event_id!==prop.event_id&&l.sportsbook===prop.sportsbook)){const ticket=parlayAnalysis.evaluateTicket([prop,leg],{correlations:finalFeed.correlations||[]});if(ticket.status==='EVALUATED'&&ticket.parlay_expected_value>0)supplemental.push({...ticket,name:'Player-prop parlay comparison',explanation:'Comparison of saved eligible legs from different games. '+ticket.explanation});}}
+    supplemental.sort((a,b)=>b.parlay_expected_value-a.parlay_expected_value);
     for(const [panel,rows] of [['parlays',parlays]]){
-      document.querySelector(`[data-bet-panel="${panel}"]`).innerHTML=`<div class="panel"><h3>${panel.toUpperCase()}</h3><p class="copy">${escape(mode)}</p>${Array.isArray(rows)&&rows.length?rows.map(bettingCard).join(''):`<p class="copy">${finalFeed?'No '+panel+' have been published for Week '+(BET_FEED?.week||'—')+'.':'Published '+panel+' feed is unavailable.'}</p>`}</div>`;
+      document.querySelector(`[data-bet-panel="${panel}"]`).innerHTML=`<div class="panel"><h3>${panel.toUpperCase()}</h3><p class="copy">${escape(mode)}</p>${supplemental.length?'<h3>WITH PLAYER PROPS · SAVED-LEG COMPARISONS</h3>'+supplemental.slice(0,5).map(bettingCard).join('')+'<h3>GAME PARLAYS</h3>':'<p class="copy">No same-book, different-game player-prop combinations currently pass the saved-leg checks.</p>'}${Array.isArray(rows)&&rows.length?rows.map(bettingCard).join(''):`<p class="copy">${finalFeed?'No '+panel+' have been published for Week '+(BET_FEED?.week||'—')+'.':'Published '+panel+' feed is unavailable.'}</p>`}</div>`;
     }
   }
   async function finalData(){try{const r=await fetch('/api/live/betting?ts='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error(r.status);finalFeed=(await r.json()).data;betting()}catch{finalFeed=null;betting()}}
