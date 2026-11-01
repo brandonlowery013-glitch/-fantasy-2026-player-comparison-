@@ -17,6 +17,7 @@ def export(report):
   if start and dt.datetime.fromisoformat(start.replace('Z','+00:00'))<=dt.datetime.now(dt.timezone.utc) and previous.get('week')==report['week'] and p['name'] in previous['players']:
    baseline=template if report['week']==template.get('week') and template.get('server_cutover_at') and dt.datetime.fromisoformat(start.replace('Z','+00:00'))<=dt.datetime.fromisoformat(template['server_cutover_at']) else previous
    r=baseline['players'][p['name']].copy()
+  if r['weekly_availability'].startswith(('Out','Not playing')):r['weekly_rank_status']='NOT_EXPECTED_TO_PLAY'
   r['weekly_overall_rank']=None;r['weekly_position_rank']=None;rows[p['name']]=r
  assert len(rows)==template['universe']==197
  counts={}
