@@ -82,7 +82,7 @@ function build({schedule,gameRecs,propRecs,propLedger}){
 
   const model_picks=week!=null&&!blocked.length?generateModelParlays(legs,{correlations:[],limit:50}):[];
   const status=blocked.length?'BLOCKED':week==null?'WAITING_FOR_CURRENT_WEEK':'READY';
-  return {schema_version:'1.0.0',season:2026,week:week==null?null:Number(week),status,mode:'SHADOW_ONLY',actionable:false,generated_at:new Date().toISOString(),eligible_leg_count:legs.length,eligible_legs:legs,model_picks,review_required,blocked};
+  return {schema_version:'1.0.0',season:2026,week:week==null?null:Number(week),status,mode:'LIVE_RECOMMENDATIONS',actionable:false,wager_execution_enabled:false,generated_at:new Date().toISOString(),eligible_leg_count:legs.length,eligible_legs:legs,model_picks,review_required,blocked};
 }
 
 function synthetic(){
