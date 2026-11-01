@@ -17,14 +17,22 @@ jobs:
         with:
           ref: main
           path: producer
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /scripts/publish-prepared-game-model.mjs
       - uses: actions/checkout@v4
         with:
           ref: frontend/ctd-cloudflare-work
           path: engine
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /workers/betting-splits/lib/
+            /workers/betting-splits/model/
       - uses: actions/checkout@v4
         with:
           ref: data/prepared-game-model
           path: publication
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /data/market/prepared-game-model-2026*
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
