@@ -18,9 +18,10 @@
   const selection=kind==='moneyline'?(home?g.home_team:g.away_team)+' ML':kind==='total'?(finite(m.total)?(home?'OVER ':'UNDER ')+m.total:null):finite(m.home_spread)?(home?g.home_team:g.away_team)+' '+signed(home?m.home_spread:-m.home_spread):null;
   return selection?{selection,probability:Math.max(a,b)}:null;
  }
- let comparisons={};
+ let comparisons={},current={};
+ function setCurrent(payload){current=payload?.games||{};}
  function setComparisons(payload){comparisons=payload?.kind==='RECONSTRUCTED_NOT_LIVE'?payload.games||{}:{};}
- function resolve(g){if(g?.snapshot_evaluations?.length)return g;return Object.values(comparisons).find(x=>x.home_team===g?.home_team&&x.away_team===g?.away_team&&Date.parse(x.kickoff)===Date.parse(g?.kickoff||g?.event_start))||g;}
+ function resolve(g){if(g?.snapshot_evaluations?.length)return g;return Object.values({...comparisons,...current}).find(x=>x.home_team===g?.home_team&&x.away_team===g?.away_team&&Date.parse(x.kickoff)===Date.parse(g?.kickoff||g?.event_start))||g;}
 
  const implied=o=>o<0?-o/(100-o):100/(100+o);
  const validOdds=o=>finite(o)&&Math.abs(o)>=100;
@@ -113,7 +114,7 @@
   for(const detail of mount.querySelectorAll('details[data-reading-key]'))if(opened.includes(detail.dataset.readingKey))detail.open=true;
   applyMarket();
  }
- root.CTD_MARKET_PICKS={build,markup,render,setComparisons,comparisonGame:resolve,upset,upsetMarkup,setMarket,getMarket:activeMarket,applyMarket};
+ root.CTD_MARKET_PICKS={build,markup,render,setComparisons,setCurrent,comparisonGame:resolve,upset,upsetMarkup,setMarket,getMarket:activeMarket,applyMarket};
  root.document?.addEventListener('click',event=>{const button=event.target.closest?.('[data-model-market]');if(button)setMarket(button.dataset.modelMarket);});
  root.document?.addEventListener('ctd:market-selected',event=>{const kind=event.detail?.market;if(!kinds.includes(kind))return;root.CTD_ACTIVE_MARKET=kind;if(lastRender)render(lastRender.g,lastRender.s,lastRender.directions,lastRender.meta);applyMarket();});
 })(globalThis);
@@ -279,7 +280,7 @@ function renderData(){
   document.addEventListener('input',e=>{if(e.target.id!=='ctdFlowRange')return;const g=selected(),p=games.get(key(g))?.data?.win_probability?.[Number(e.target.value)];const label=document.getElementById('ctdFlowReadout');if(label)label.textContent=flowLabel(g,p)});
   async function loadFeeds(){
     const results=await Promise.allSettled([window.CTD_GAME_MODEL.load(),get(RAW+'data/probability/generated/matchup-tidbits-2026.json'),get('/api/live/history'),get('./historical-game-comparisons-2026.json?v=20261101')]);
-    if(results[0].status==='fulfilled')markets=results[0].value;
+    if(results[0].status==='fulfilled'){markets=results[0].value;window.CTD_MARKET_PICKS.setCurrent(markets);renderTicker();}
     if(results[3]?.status==='fulfilled'&&results[3].value.season===2026&&Number(results[3].value.week)===Number(BET_FEED.week)){const archive=results[3].value;window.CTD_MARKET_PICKS.setComparisons(archive);if(markets?.games)for(const [id,g]of Object.entries(archive.games||{}))if(!markets.games[id])markets.games[id]=g;renderTicker();}
     if(results[1].status==='fulfilled')history=results[1].value;
     if(results[2].status==='fulfilled'){issuedHistory=results[2].value.history;pickResults=results[2].value.results;}
