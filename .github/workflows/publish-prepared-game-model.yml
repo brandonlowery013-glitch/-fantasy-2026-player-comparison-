@@ -1,0 +1,49 @@
+name: Publish prepared game model
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: prepared-game-model
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: publication
+      - uses: actions/checkout@v4
+        with:
+          ref: frontend/ctd-cloudflare-work
+          path: engine
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Calculate with the deployed model engine
+        run: |
+          cp publication/scripts/publish-prepared-game-model.mjs engine/publish-model.mjs
+          export CTD_ENGINE_REF=$(git -C engine rev-parse HEAD)
+          node engine/publish-model.mjs "$GITHUB_WORKSPACE/prepared.json"
+      - name: Publish without overwriting concurrent changes
+        working-directory: publication
+        run: |
+          git config user.name 'CTD Model Publisher'
+          git config user.email 'ctd-model-publisher@users.noreply.github.com'
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            mkdir -p data/market
+            cp "$GITHUB_WORKSPACE/prepared.json.gz" data/market/prepared-game-model-2026.json.gz
+            cp "$GITHUB_WORKSPACE/prepared.json.manifest.json" data/market/prepared-game-model-2026.manifest.json
+            cp "$GITHUB_WORKSPACE/prepared.json.moneyline.json" data/market/prepared-game-model-2026.moneyline.json
+            git add data/market/prepared-game-model-2026*
+            git diff --cached --quiet && exit 0
+            git commit -m 'Publish prepared game model [skip ci]'
+            git push origin HEAD:main && exit 0
+          done
+          exit 1
