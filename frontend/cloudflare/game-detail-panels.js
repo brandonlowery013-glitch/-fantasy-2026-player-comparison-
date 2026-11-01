@@ -1,3 +1,54 @@
+(function(root){
+ 'use strict';
+ const CSS='.ctdLegacyPicks{display:none!important}#gamesPage .grid3{grid-template-columns:1fr 1fr}#ctdMarketsSummary{margin:16px 0}.ctdMarketTiming{font-size:12px;color:#b2cce7;margin-bottom:12px}.ctdMarketTop{display:grid;grid-template-columns:1fr 2fr;gap:20px;border-bottom:1px solid #294a68;padding-bottom:16px}.ctdMarketTop span,.ctdMarketCard span{display:block;font-size:12px;color:#b2cce7;margin:9px 0 5px}.ctdMarketTop strong{display:block;font-size:20px;line-height:1.4}.ctdMarketTop small,.ctdMarketCard small{display:block;font-size:11px;line-height:1.5;color:#a8bdd3}.ctdMarketCards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}.ctdMarketCard{background:#0b1c2d;border:1px solid #294a68;border-radius:8px;padding:14px}.ctdMarketCard h3{font-size:14px;margin:0 0 12px}.ctdMarketCard strong{font-size:16px;line-height:1.5;display:block}.ctdMarketMetrics{font-size:12px;line-height:1.8;margin:12px 0}.ctdValueYes{color:#56de95}.ctdMarketNote{font-size:12px;line-height:1.6;color:#a8bdd3;margin-bottom:0}@media(max-width:640px){.ctdMarketTop,.ctdMarketCards,#gamesPage .grid3{grid-template-columns:1fr}}\n';
+ const kinds=['spread','total','moneyline'];
+ const finite=x=>typeof x==='number'&&Number.isFinite(x);
+ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const pct=x=>finite(x)?(100*x).toFixed(1)+'%':'Unavailable';
+ const odds=x=>finite(x)?(x>0?'+':'')+x:'Odds unavailable';
+ const names={spread:'Spread',total:'Total',moneyline:'Moneyline'};
+ const signed=x=>(x>0?'+':'')+x;
+ function direction(kind,e,s,g){
+  if(e?.model_prediction?.selection)return e.model_prediction;
+  const a=e?.side_a?.conditional_win_probability,b=e?.side_b?.conditional_win_probability;
+  if(!finite(a)||!finite(b))return null;
+  if(Math.abs(a-b)<1e-9)return {selection:'No statistical preference',probability:a};
+  const home=a>b,m=e.quote||s?.market||{};
+  const selection=kind==='moneyline'?(home?g.home_team:g.away_team)+' ML':kind==='total'?(finite(m.total)?(home?'OVER ':'UNDER ')+m.total:null):finite(m.home_spread)?(home?g.home_team:g.away_team)+' '+signed(home?m.home_spread:-m.home_spread):null;
+  return selection?{selection,probability:Math.max(a,b)}:null;
+ }
+ function build(g,s,directions={},meta={},now=Date.now()){
+  const kickoff=Date.parse(g?.kickoff||g?.event_start),started=Number.isFinite(kickoff)&&kickoff<=now;
+  const rows=kinds.map(kind=>{
+   const e=s?.markets?.[kind],rec=e?.recommendation,dir=directions[kind]||direction(kind,e,s,g),quote=e?.quote||{},at=quote.captured_at||s?.captured_at;
+   const held=e?.context_validation?.status==='HOLD'||rec?.decision==='WAIT';
+   const selectedA=kind==='total'?/^OVER\b/i.test(rec?.selection||''):String(rec?.selection||'').startsWith(g?.home_team+' ');
+   const side=selectedA?e?.side_a:e?.side_b;
+   const validQuote=Number.isFinite(Date.parse(at))&&Number.isFinite(kickoff)&&Date.parse(at)<kickoff&&Date.parse(at)<=now;
+   const eligible=rec?.decision==='PICK'&&!held&&validQuote&&finite(rec.expected_value)&&rec.expected_value>0&&finite(side?.offered_odds);
+   return {kind,label:names[kind],prediction:held?'On hold':dir?.selection||'Unavailable',probability:held?null:dir?.probability??null,bet:eligible?rec.selection:held?'Wait':rec?.decision==='PASS'?'Pass — no qualifying value':'Unavailable',eligible,ev:eligible?rec.expected_value:null,edge:eligible?rec.probability_edge:null,odds:eligible?side.offered_odds:null,book:quote.book||s?.book||'',at:at||null,reason:held?'Inputs on hold':rec?.reason||(!validQuote?'No verified pregame quote':'')};
+  });
+  const candidates=rows.filter(r=>r.eligible).sort((a,b)=>b.ev-a.ev||kinds.indexOf(a.kind)-kinds.indexOf(b.kind));
+  const best=candidates[0]||null,tied=best?candidates.filter(r=>Math.abs(r.ev-best.ev)<1e-6):[];
+  return {rows,best,tied,started,rerun:meta.rerun===true,winner:rows[2].prediction,winnerProbability:rows[2].probability};
+ }
+ function markup(v){
+  const timing=v.rerun?'Recalculated comparison — not an original pregame record':v.started?'Pregame comparison — game started; not a current betting recommendation':'Pregame model picks and betting value';
+  const best=v.tied.length>1?'Equal highest modeled value: '+v.tied.map(r=>r.label+' · '+r.bet).join(' / '):v.best?v.best.label+' · '+v.best.bet:'Pass — no qualifying value bet';
+  return `<div class="ctdMarketTiming">${esc(timing)}</div><div class="ctdMarketTop"><div><span>Predicted winner</span><strong>${esc(v.winner.replace(/ ML$/,''))}</strong><small>${esc(pct(v.winnerProbability))} model win chance, excluding ties</small></div><div><span>${v.started||v.rerun?'Highest modeled value in this comparison':'Recommended value bet'}</span><strong>${esc(best)}</strong><small>${v.best?'Highest expected return per $1 staked among qualifying markets.':'Wait for a qualifying price and complete model inputs.'}</small></div></div><div class="ctdMarketCards">${v.rows.map(r=>`<article class="ctdMarketCard"><h3>${r.label}</h3><span>${r.kind==='moneyline'?'Predicted winner':'Model pick'}</span><strong>${esc(r.prediction)}</strong><small>${esc(pct(r.probability))} model chance</small><span>Betting value</span><strong class="${r.eligible?'ctdValueYes':''}">${esc(r.bet)}</strong><small>${r.eligible?esc(odds(r.odds)+' · '+r.book):esc(r.reason||'No qualifying recommendation')}</small><div class="ctdMarketMetrics">Expected return: <b>${r.eligible?esc((100*r.ev).toFixed(1)+'%'):'—'}</b><br>Probability edge: <b>${finite(r.edge)?esc((100*r.edge).toFixed(1)+' percentage points'):'—'}</b></div><small>Quote: ${r.at?esc(new Date(r.at).toLocaleString('en-US',{timeZone:'America/Chicago',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' CT'):'Unavailable'}</small></article>`).join('')}</div><p class="ctdMarketNote">The predicted winner is the team most likely to win. A value bet can be on the other team if its price is favorable. The recommendation ranks modeled expected return, not safety or certainty. These are model estimates; positive expected return can still lose. All three markets stay visible.</p>`;
+ }
+ function render(g,s,directions,meta){
+  const doc=root.document;if(!doc)return;
+  let mount=doc.getElementById('ctdMarketsSummary');
+  if(!mount){const grid=doc.querySelector('#gamesPage .grid3');if(!grid)return;mount=doc.createElement('section');mount.id='ctdMarketsSummary';mount.className='panel';mount.setAttribute('aria-label','Spread total and moneyline picks');grid.insertAdjacentElement('beforebegin',mount);doc.getElementById('spreadPick')?.closest('.panel')?.classList.add('ctdLegacyPicks');}
+  if(!doc.getElementById('ctdMarketPicksStyle')){const style=doc.createElement('style');style.id='ctdMarketPicksStyle';style.textContent=CSS;doc.head.appendChild(style);}
+ 
+  if(!g){mount.innerHTML='<p>Choose a game to see spread, total and moneyline separately.</p>';return;}
+  mount.innerHTML=markup(build(g,s,directions,meta));
+ }
+ root.CTD_MARKET_PICKS={build,markup,render};
+})(globalThis);
+
 (()=>{
   'use strict';
   const RAW='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/';
@@ -32,7 +83,7 @@
   }
 
   function modelPicks(g){
-    const raw=marketGame(g),s=snapshot(raw);if(!s){let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('section');note.id='ctdPickContext';note.className='ctdPickContext panel';document.getElementById('spreadPick')?.closest('.grid3')?.insertAdjacentElement('afterend',note)}if(note)note.textContent=raw?.football_projection?'Waiting for current picks and matching sportsbook prices.':'Current picks are unavailable for this matchup.';if(note&&raw?.football_projection){const facts=window.CTD_MATCHUP_REPORTS?.get(`${norm(raw.away_team)}@${norm(raw.home_team)}:${Date.parse(raw.kickoff)}`),review=facts&&window.CTD_MATCHUP_ASSESSMENT?.({kind:'moneyline'},facts);if(review?.sections?.length)note.innerHTML='<h3>OUR MATCHUP ASSESSMENT</h3><p>Waiting for current picks and matching sportsbook prices.</p>'+review.sections.map(x=>`<h4>${esc(x.title)}</h4><p>${esc(x.text)}</p>`).join('')+'<details><summary>Sources</summary>'+review.sources.map(x=>`<p><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label)}</a> ${esc(x.at||'')}</p>`).join('')+'</details>';}if(note)note.innerHTML='<h3>OUR MATCHUP ASSESSMENT</h3><p>Waiting for current picks and matching sportsbook prices.</p>'+writtenPreview(raw||g);for(const id of ['spreadPick','totalPick','mlPick']){const el=document.getElementById(id);if(el){el.textContent='Not published';el.title='Waiting for a matching pregame model snapshot';const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent='';}}const edge=document.getElementById('mlEdge'),direction=modelDirection('moneyline',null,null,raw,g);if(direction){const el=document.getElementById('mlPick');if(el){el.textContent=direction.selection;el.title='Football prediction; matching betting prices unavailable';}if(edge)edge.textContent=`${pct(direction.probability)} · ${direction.confidence.toLowerCase()} · bet WAIT`;}else if(edge)edge.textContent='—';return;}
+    const raw=marketGame(g),s=snapshot(raw);window.CTD_MARKET_PICKS?.render(raw||g,s,Object.fromEntries(['spread','total','moneyline'].map(k=>[k,modelDirection(k,s?.markets?.[k],s,raw,g)])),{rerun:markets?.rerun===true});if(!s){let note=document.getElementById('ctdPickContext');if(!note){note=document.createElement('section');note.id='ctdPickContext';note.className='ctdPickContext panel';document.getElementById('spreadPick')?.closest('.grid3')?.insertAdjacentElement('afterend',note)}if(note)note.textContent=raw?.football_projection?'Waiting for current picks and matching sportsbook prices.':'Current picks are unavailable for this matchup.';if(note&&raw?.football_projection){const facts=window.CTD_MATCHUP_REPORTS?.get(`${norm(raw.away_team)}@${norm(raw.home_team)}:${Date.parse(raw.kickoff)}`),review=facts&&window.CTD_MATCHUP_ASSESSMENT?.({kind:'moneyline'},facts);if(review?.sections?.length)note.innerHTML='<h3>OUR MATCHUP ASSESSMENT</h3><p>Waiting for current picks and matching sportsbook prices.</p>'+review.sections.map(x=>`<h4>${esc(x.title)}</h4><p>${esc(x.text)}</p>`).join('')+'<details><summary>Sources</summary>'+review.sources.map(x=>`<p><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.label)}</a> ${esc(x.at||'')}</p>`).join('')+'</details>';}if(note)note.innerHTML='<h3>OUR MATCHUP ASSESSMENT</h3><p>Waiting for current picks and matching sportsbook prices.</p>'+writtenPreview(raw||g);for(const id of ['spreadPick','totalPick','mlPick']){const el=document.getElementById(id);if(el){el.textContent='Not published';el.title='Waiting for a matching pregame model snapshot';const badge=el.parentElement.lastElementChild;if(badge!==el)badge.textContent='';}}const edge=document.getElementById('mlEdge'),direction=modelDirection('moneyline',null,null,raw,g);if(direction){const el=document.getElementById('mlPick');if(el){el.textContent=direction.selection;el.title='Football prediction; matching betting prices unavailable';}if(edge)edge.textContent=`${pct(direction.probability)} · ${direction.confidence.toLowerCase()} · bet WAIT`;}else if(edge)edge.textContent='—';return;}
     for(const [kind,id,field] of [['spread','spreadPick','model_spread_pick'],['total','totalPick','total_pick'],['moneyline','mlPick','moneyline_pick']]){
       const r=s.markets?.[kind]?.recommendation,el=document.getElementById(id);if(!el)continue;
       const value=r?.decision==='PICK'?r.selection:r?.decision==='WAIT'?'On hold':r?.decision==='PASS'?'No bet':'Not published';
