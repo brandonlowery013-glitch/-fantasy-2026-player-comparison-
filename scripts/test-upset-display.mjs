@@ -1,0 +1,20 @@
+import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
+const source=fs.readFileSync(new URL('../frontend/cloudflare/game-detail-panels.js',import.meta.url),'utf8').split('\n\n\n(()=>{')[0];const ctx={};vm.createContext(ctx);vm.runInContext(source,ctx);const {upset,upsetMarkup}=ctx.CTD_MARKET_PICKS;
+const now=Date.parse('2026-11-01T20:00Z'),g={home_team:'H',away_team:'A',kickoff:'2026-11-02T01:00Z'};
+const side=(p,tie,price)=>({win_probability:p*(1-tie),loss_probability:(1-p)*(1-tie),push_probability:tie,conditional_win_probability:p,offered_odds:price});
+const q={book:'draftkings',captured_at:'2026-11-01T19:50Z',markets:{moneyline:{model_version:'ctd-football-moneyline-v1',side_a:side(.6,.02,-250),side_b:side(.4,.02,200),quote:{home_moneyline:-250,away_moneyline:200,captured_at:'2026-11-01T19:50Z'},recommendation:{decision:'PASS'},value_policy:{minimum_probability_edge:.03,minimum_expected_value:.02}}}};
+const before=JSON.stringify({g,q});let u=upset(g,q,now);
+assert.equal(u.team,'A');assert(Math.abs(u.probability-.392)<1e-12);assert.equal(u.conditionalProbability,.4);assert(Math.abs(u.ev-.196)<1e-12);assert(u.qualifies,'A 40% underdog can have value below 50%, regardless of displayed winner / PASS');assert.equal(u.status,'Value');
+let low=structuredClone(q);low.markets.moneyline.side_b=side(.34,.02,200);low.markets.moneyline.side_a=side(.66,.02,-250);u=upset(g,low,now);assert(u.ev>0);assert(!u.qualifies);assert.equal(u.status,'Positive EV · below betting threshold');
+let neg=structuredClone(q);neg.markets.moneyline.side_b=side(.25,.02,200);neg.markets.moneyline.side_a=side(.75,.02,-250);u=upset(g,neg,now);assert(u.ev<0);assert.equal(u.status,'No value');
+let home=structuredClone(q);home.markets.moneyline.side_a=side(.4,0,200);home.markets.moneyline.side_b=side(.6,0,-250);home.markets.moneyline.quote.home_moneyline=200;home.markets.moneyline.quote.away_moneyline=-250;assert.equal(upset(g,home,now).team,'H');
+let stale=structuredClone(q);stale.markets.moneyline.quote.captured_at='2026-11-01T12:00Z';u=upset(g,stale,now);assert(u.ready);assert(u.held);assert(!u.qualifies);assert.equal(u.probability,.392);
+let held=structuredClone(q);held.markets.moneyline.context_validation={status:'HOLD'};assert(!upset(g,held,now).ready);
+let invalid=structuredClone(q);invalid.markets.moneyline.side_b.push_probability=.3;assert(!upset(g,invalid,now).ready);
+let wrong=structuredClone(q);wrong.markets.moneyline.quote.away_moneyline=300;assert(!upset(g,wrong,now).ready);
+let even=structuredClone(q);even.markets.moneyline.side_b.offered_odds=-250;assert(upset(g,even,now).pickem);
+assert(!upset(g,null,now).ready);assert.equal(JSON.stringify({g,q}),before,'Display calculation must not alter model outputs');
+const history=JSON.parse(fs.readFileSync(new URL('../frontend/cloudflare/historical-game-comparisons-2026.json',import.meta.url)));ctx.CTD_MARKET_PICKS.setComparisons(history);const car=Object.values(history.games).find(g=>g.away_team==='CAR'&&g.home_team==='GB');const archived=upset(car,null,Date.parse('2026-11-01T22:59Z'));assert(archived.ready);assert.equal(archived.team,'CAR');assert.equal(archived.status,'No value');
+console.log('PASS: archived Thursday plus deterministic underdog scenarios; underdogs below 50%, both team orientations, positive / negative EV, threshold PASS, ties, stale quotes, HOLD, inconsistent prices and immutable source tested.');
+
+const baseView=ctx.CTD_MARKET_PICKS.build(g,q,{}, {},now);assert.equal(baseView.rows.length,3);assert.equal(baseView.winner,'H ML');assert(baseView.upset.qualifies);assert(ctx.CTD_MARKET_PICKS.markup(baseView).includes('Chance to win outright'));

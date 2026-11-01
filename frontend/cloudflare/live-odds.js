@@ -53,6 +53,8 @@
       const view=window.CTD_MARKET_PICKS?.build(g,selected);
       for(const kind of ['spread','total','moneyline']){const line=document.createElement('span');line.style.display='block';const r=view?.rows.find(r=>r.kind===kind);line.textContent=(kind==='moneyline'?'Winner':kind==='spread'?'Spread':'Total')+': '+(r?.prediction||'Awaiting model analysis');pick.appendChild(line);}
       const valueLine=document.createElement('span');valueLine.style.display='block';valueLine.textContent=(view?.started?'Pregame top value: ':'Value recommendation: ')+(view?.best?.bet||'Pass / awaiting qualifying inputs');pick.appendChild(valueLine);
+      const u=view?.upset;
+      for(const text of u?.ready?[(view.started?'Pregame upset: ':'Upset: ')+u.team+' '+(u.probability*100).toFixed(1)+'% · '+(u.price>0?'+':'')+u.price,(view.started?'Pregame underdog ML: ':'Underdog ML: ')+u.status+' · EV '+(u.ev>0?'+':'')+(u.ev*100).toFixed(1)+'%']:['Upset: '+(u?.status||'Awaiting moneyline and model')]){const line=document.createElement('span');line.className='ctdUpsetTicker';line.style.display='block';line.textContent=text;pick.appendChild(line);}
       row.append(market,pick);
     });
   };
