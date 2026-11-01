@@ -47,8 +47,11 @@
       market.textContent='Stored market: '+(g.spread||'Spread pending')+' · Total '+(g.total??'pending');
       market.title='Sportsbook spread quoted for the home team: minus means favored; plus means underdog. Updated prices are in Live Sportsbook Lines.';
       const pick=document.createElement('span');pick.className='edge';
-      const value=typeof g.model_edge==='string'&&/[A-Za-z]/.test(g.model_edge)?g.model_edge:g.model_pick;
-      pick.textContent='Model pick: '+(!value||value==='PENDING'?'Pending analysis':value==='PASS'?'Pass — no qualifying pick':value);
+      const snapshots=(g.snapshot_evaluations||[]).filter(q=>q.eligible_for_current_recommendation===true&&Date.parse(q.captured_at)<=Date.parse(g.kickoff||g.event_start)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));
+      const selected=snapshots.find(q=>q.book==='draftkings')||snapshots[0];
+      const view=window.CTD_MARKET_PICKS?.build(g,selected);
+      for(const kind of ['spread','total','moneyline']){const line=document.createElement('span');line.style.display='block';const r=view?.rows.find(r=>r.kind===kind);line.textContent=(kind==='moneyline'?'Winner':kind==='spread'?'Spread':'Total')+': '+(r?.prediction||'Awaiting model analysis');pick.appendChild(line);}
+      const valueLine=document.createElement('span');valueLine.style.display='block';valueLine.textContent=(view?.started?'Pregame top value: ':'Value recommendation: ')+(view?.best?.bet||'Pass / awaiting qualifying inputs');pick.appendChild(valueLine);
       row.append(market,pick);
     });
   };
