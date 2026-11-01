@@ -1,0 +1,75 @@
+name: Weekly fantasy player learning
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+    - cron: '0,30 15-19 * * 0'
+  workflow_dispatch:
+  push:
+    branches: [fix/server-weekly-player-learning]
+    paths: ['scripts/weekly-player-learning/**', '.github/workflows/weekly-fantasy-player-learning.yml']
+  pull_request:
+    paths: ['scripts/weekly-player-learning/**', '.github/workflows/weekly-fantasy-player-learning.yml']
+permissions:
+  contents: write
+concurrency:
+  group: weekly-fantasy-player-learning
+  cancel-in-progress: false
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python scripts/weekly-player-learning/test_learning.py
+  refresh:
+    if: github.event_name != 'pull_request'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: engine
+      - uses: actions/checkout@v4
+        with:
+          ref: data/weekly-fantasy-learning
+          path: publication
+          sparse-checkout: data/weekly-fantasy-learning
+      - uses: actions/checkout@v4
+        with:
+          ref: frontend/ctd-cloudflare-work
+          path: website
+          sparse-checkout: frontend/cloudflare
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Grade final results and refresh shared player projections
+        env:
+          CTD_LEARNING_STATE: ${{ github.workspace }}/publication/data/weekly-fantasy-learning
+        run: python engine/scripts/weekly-player-learning/run.py
+      - name: Preserve forecast ledger before publication
+        working-directory: publication
+        run: |
+          git config user.name 'CTD Weekly Player Learning'
+          git config user.email 'ctd-model-publisher@users.noreply.github.com'
+          git add data/weekly-fantasy-learning/learning.sqlite3 data/weekly-fantasy-learning/forecasts data/weekly-fantasy-learning/reconstruction.json data/weekly-fantasy-learning/reconstruction_current.json data/weekly-fantasy-learning/calibration_current.json data/weekly-fantasy-learning/weekly-fantasy-rankings.json data/weekly-fantasy-learning/forecast_history.csv
+          git diff --cached --quiet && exit 0
+          git commit -m 'Save weekly player forecasts and calibration'
+          git push origin HEAD:data/weekly-fantasy-learning
+      - name: Publish shared weekly PPR rankings
+        working-directory: website
+        run: |
+          git config user.name 'CTD Weekly Player Learning'
+          git config user.email 'ctd-model-publisher@users.noreply.github.com'
+          for attempt in 1 2 3 4; do
+            git fetch origin frontend/ctd-cloudflare-work
+            git reset --hard origin/frontend/ctd-cloudflare-work
+            cp ../publication/data/weekly-fantasy-learning/weekly-fantasy-rankings.json frontend/cloudflare/weekly-fantasy-rankings.json
+            git add frontend/cloudflare/weekly-fantasy-rankings.json
+            git diff --cached --quiet && exit 0
+            git commit -m 'Refresh shared weekly player rankings and PPR ranges'
+            git push origin HEAD:frontend/ctd-cloudflare-work && exit 0
+          done
+          exit 1
