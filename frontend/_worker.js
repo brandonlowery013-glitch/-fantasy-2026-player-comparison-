@@ -34,7 +34,7 @@ async function preparedResponse(ref,kind='recommendations'){
  if(manifest.kind!=='PRECOMPUTED_SERVER_MODEL'||!Number.isFinite(generated)||!Number.isFinite(expires)||generated>now+60000||expires<=now||expires-generated>20*60000)throw Error('Prepared model is awaiting a fresh publication');
  const response=await fetch(root+(kind==='moneyline'?'.moneyline.json':'.json.gz'),{signal:AbortSignal.timeout(20000),cf:{cacheTtl:30,cacheEverything:true}});
  if(!response.ok)throw Error('Prepared model result unavailable');
- return new Response(response.body,{headers:{'content-type':'application/json','cache-control':'no-store',...(kind==='moneyline'?{}:{'content-encoding':'gzip'}),'x-ctd-model-delivery':'precomputed','x-ctd-model-generated-at':manifest.generated_at,'x-ctd-spread-model':'sportsbook-calibration-learning-v1'}});
+ return new Response(response.body,{encodeBody:kind==='moneyline'?'automatic':'manual',headers:{'content-type':'application/json','cache-control':'no-store',...(kind==='moneyline'?{}:{'content-encoding':'gzip'}),'x-ctd-model-delivery':'precomputed','x-ctd-model-generated-at':manifest.generated_at,'x-ctd-spread-model':'sportsbook-calibration-learning-v1'}});
 }
 async function recommendationBody(ref){const response=await preparedResponse(ref);return new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).text();}
 
