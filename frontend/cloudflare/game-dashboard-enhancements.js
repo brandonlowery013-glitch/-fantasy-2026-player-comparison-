@@ -96,7 +96,7 @@
     }
   }
 
-  function enhance(){mo.disconnect();try{ensureGamesDefault();enhanceTicker();moveBettingToolsUp();gameHero();removeNarrative();plainEnglishBetting();addLogosToGameDetail()}finally{mo.observe(document.documentElement,{subtree:true,childList:true})}}
+  function enhance(){mo.disconnect();try{ensureGamesDefault();enhanceTicker();moveBettingToolsUp();gameHero();removeNarrative();plainEnglishBetting();addLogosToGameDetail();window.CTD_MARKET_PICKS?.applyMarket()}finally{mo.observe(document.documentElement,{subtree:true,childList:true})}}
   document.addEventListener('DOMContentLoaded',enhance,{once:true});
   document.addEventListener('ctd:games-ready',enhance);
   document.addEventListener('ctd:live-scores-updated',enhance);

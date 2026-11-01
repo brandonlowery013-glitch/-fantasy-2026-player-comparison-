@@ -13,10 +13,12 @@
     panel.innerHTML='<h3>SPORTSBOOK LINES</h3>';
     if(!match){panel.innerHTML+='<p class="copy">'+esc(feed?.status==='unavailable'?feed.message:g?.completed?'This game is complete. Pregame lines remain in betting history.':'No live lines are currently available for this matchup.')+'</p>';return}
     panel.innerHTML+=`<p class="copy">${feed.status==='stale'?'Stale pregame quotes':'Pregame quotes'} · Collected ${esc(new Date(Math.max(...match.bookmakers.map(b=>Date.parse(b.last_update)))).toLocaleString())}</p>`;
-    for(const b of match.bookmakers){
-      const market=k=>b.markets.find(m=>m.key===k);const side=(k,n)=>market(k)?.outcomes.find(o=>o.name===n);
+    const kind=window.CTD_ACTIVE_MARKET||'moneyline';
+    for(const [index,b]of match.bookmakers.entries()){
+      const market=k=>b.markets.find(m=>m.key===k),side=(k,n)=>market(k)?.outcomes.find(o=>o.name===n);
       const h=side('spreads',match.home_team),a=side('spreads',match.away_team),over=side('totals','Over'),under=side('totals','Under');
-      panel.innerHTML+=`<details open><summary>${esc(b.title)} · ${esc(g.home_team)} ${signed(h?.point)} · Total ${esc(over?.point)}</summary><p class="copy">Spread: ${esc(g.away_team)} ${signed(a?.point)} (${signed(a?.price)}) / ${esc(g.home_team)} ${signed(h?.point)} (${signed(h?.price)})<br>Total: Over ${esc(over?.point)} (${signed(over?.price)}) / Under ${esc(under?.point)} (${signed(under?.price)})<br>Moneyline: ${esc(g.away_team)} ${signed(side('h2h',match.away_team)?.price)} / ${esc(g.home_team)} ${signed(side('h2h',match.home_team)?.price)}<br>Quote collected: ${esc(b.last_update?new Date(b.last_update).toLocaleString():'Unavailable')}</p></details>`;
+      const line=kind==='spread'?`${g.away_team} ${signed(a?.point)} (${signed(a?.price)}) / ${g.home_team} ${signed(h?.point)} (${signed(h?.price)})`:kind==='total'?`Over ${over?.point??'—'} (${signed(over?.price)}) / Under ${under?.point??'—'} (${signed(under?.price)})`:`${g.away_team} ${signed(side('h2h',match.away_team)?.price)} / ${g.home_team} ${signed(side('h2h',match.home_team)?.price)}`;
+      panel.innerHTML+=`<details${index===0?' open':''}><summary>${esc(b.title)} · ${esc({moneyline:'Moneyline',spread:'Spread',total:'Total'}[kind])}</summary><p class="copy">${esc(line)}<br>Collected: ${esc(b.last_update?new Date(b.last_update).toLocaleString():'Unavailable')}</p></details>`;
     }
     panel.innerHTML+='<p class="copy">Model picks above retain their original evaluated lines. A new sportsbook price does not automatically create a new model edge.</p>';
   }
@@ -31,6 +33,7 @@
   }
   const original=renderSelectedGame;renderSelectedGame=function(){original();render()};
   document.addEventListener('ctd:games-ready',()=>{schedule();render()});
+  document.addEventListener('ctd:market-selected',render);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
   schedule();refresh();setInterval(refresh,300000);
 })();
@@ -44,22 +47,20 @@
       if(!g||!row)return;
       row.replaceChildren();
       const market=document.createElement('span');
-      const stored=g.snapshot_evaluations?.[0]?.market;
-      market.textContent='Stored market: '+(g.spread||(Number.isFinite(stored?.home_spread)?g.home_team+' '+(stored.home_spread>0?'+':'')+stored.home_spread:'Spread pending'))+' · Total '+(g.total??stored?.total??'pending');
-      market.title='Sportsbook spread quoted for the home team: minus means favored; plus means underdog. Updated prices are in Live Sportsbook Lines.';
+      const kind=window.CTD_ACTIVE_MARKET||'moneyline';
+      market.textContent={moneyline:'Moneyline',spread:'Spread',total:'Total (Over/Under)'}[kind];
       const pick=document.createElement('span');pick.className='edge';
       const snapshots=(g.snapshot_evaluations||[]).filter(q=>q.eligible_for_current_recommendation===true&&Date.parse(q.captured_at)<=Date.parse(g.kickoff||g.event_start)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));
-      const selected=snapshots.find(q=>q.book==='draftkings')||snapshots[0];
-      const view=window.CTD_MARKET_PICKS?.build(g,selected);
-      for(const kind of ['spread','total','moneyline']){const line=document.createElement('span');line.style.display='block';const r=view?.rows.find(r=>r.kind===kind);line.textContent=(kind==='moneyline'?'Winner':kind==='spread'?'Spread':'Total')+': '+(r?.prediction||'Awaiting model analysis');pick.appendChild(line);}
-      const valueLine=document.createElement('span');valueLine.style.display='block';valueLine.textContent=(view?.started?'Pregame top value: ':'Value recommendation: ')+(view?.best?.bet||'Pass / awaiting qualifying inputs');pick.appendChild(valueLine);
-      const u=view?.upset;
-      for(const text of u?.ready?[(view.started?'Pregame upset: ':'Upset: ')+u.team+' '+(u.probability*100).toFixed(1)+'% · '+(u.price>0?'+':'')+u.price,(view.started?'Pregame underdog ML: ':'Underdog ML: ')+u.status+' · EV '+(u.ev>0?'+':'')+(u.ev*100).toFixed(1)+'%']:['Upset: '+(u?.status||'Awaiting moneyline and model')]){const line=document.createElement('span');line.className='ctdUpsetTicker';line.style.display='block';line.textContent=text;pick.appendChild(line);}
+      const selected=snapshots.find(q=>q.book==='draftkings')||snapshots[0],view=window.CTD_MARKET_PICKS?.build(g,selected),r=view?.rows.find(r=>r.kind===kind);
+      const lines=[(kind==='moneyline'?'Model winner: ':'Model pick: ')+(r?.prediction||'Awaiting model analysis'),(view?.started?'Pregame value: ':'Value bet: ')+(r?.bet||'Awaiting model inputs')];
+      if(kind==='moneyline'){const u=view?.upset;lines.push(u?.ready?'Upset chance: '+u.team+' '+(100*u.probability).toFixed(1)+'%':'Upset: '+(u?.status||'Awaiting model'));if(u?.ready)lines.push('Underdog value: '+u.status.replace('Positive EV','Positive return'));}
+      for(const text of lines){const line=document.createElement('span');line.style.display='block';line.textContent=text;pick.appendChild(line);}
       row.append(market,pick);
     });
   };
   const style=document.createElement('style');
   style.textContent='#gamesPage .gamecard{flex-basis:260px!important}#ctdGameTicker .marketline{display:flex;flex-direction:column;align-items:flex-start;gap:8px;white-space:normal;text-align:left}#ctdGameTicker .marketline .edge{line-height:1.4}';
   document.head.append(style);
+  document.addEventListener('ctd:market-selected',()=>{renderTicker();renderSelectedGame();});
   renderTicker();
 })();

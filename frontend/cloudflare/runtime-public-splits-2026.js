@@ -1,15 +1,15 @@
 (()=>{
  const base=new URL('.',document.currentScript.src),canon=t=>({WAS:'WSH',LA:'LAR',JAC:'JAX'}[t]||t);
  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- let data=null,busy=false,lastFetch=0,market='moneyline',oddsHTML=null,moneylineModels=null;
+ let data=null,busy=false,lastFetch=0,market=window.CTD_ACTIVE_MARKET||'moneyline',oddsHTML=null,moneylineModels=null;
  import(new URL('lib/market-card.mjs',base)).then(m=>{oddsHTML=m.cardOddsHTML;render();});
  const savedKey='ctd-published-splits-v1',historyModule=import(new URL('lib/splits-history.mjs',base)),producerModule=import(new URL('lib/public-betting-feed.mjs',base));
  const markets={moneyline:'Moneyline',spread:'Spread',total:'Total'};
  function controls(){
   const ticker=document.getElementById('ctdGameTicker');if(!ticker)return;
   let host=document.getElementById('ctdSplitsControls');
-  if(!host){host=document.createElement('div');host.id='ctdSplitsControls';host.innerHTML='<span>Consensus &amp; Smart Money</span><div role="group" aria-label="Betting percentage market">'+Object.entries(markets).map(([key,label])=>`<button type="button" data-splits-market="${key}" aria-pressed="${key===market}">${label}</button>`).join('')+'</div>';ticker.before(host);
-   host.addEventListener('click',event=>{const button=event.target.closest('[data-splits-market]');if(!button)return;market=button.dataset.splitsMarket;render();});
+  if(!host){host=document.createElement('div');host.id='ctdSplitsControls';host.innerHTML='<span>Betting market</span><div role="group" aria-label="Betting market">'+Object.entries(markets).map(([key,label])=>`<button type="button" data-splits-market="${key}" aria-pressed="${key===market}">${label}</button>`).join('')+'</div>';ticker.before(host);
+   host.addEventListener('click',event=>{const button=event.target.closest('[data-splits-market]');if(!button)return;market=button.dataset.splitsMarket;if(window.CTD_MARKET_PICKS?.setMarket)window.CTD_MARKET_PICKS.setMarket(market);else{window.CTD_ACTIVE_MARKET=market;document.dispatchEvent(new CustomEvent('ctd:market-selected',{detail:{market}}));}render();});
   }
   let state=document.getElementById('ctdSplitsCollection');if(!state){state=document.createElement('div');state.id='ctdSplitsCollection';host.after(state);}const health=data?.health;state.textContent=health?(health.status==='PARTIAL'?'Primary feed delayed · '+(data?.backup?.source||'Public')+' backup · Coverage varies by market':health.status==='CURRENT'?'Betting percentages updated':'Betting percentages unavailable or delayed')+' · Last successful check '+(health.last_success_at?new Date(health.last_success_at).toLocaleString():'unavailable')+' · Automatic retry every 5 minutes · Odds remain visible separately':'Loading betting percentages…';
   host.querySelectorAll('[data-splits-market]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.splitsMarket===market)));
@@ -20,10 +20,7 @@
    card.querySelector('.ctdCardMlValue')?.remove();card.querySelector('.ctdCardSplits')?.remove();card.querySelector('.ctdCardOdds')?.remove();
    const g=BET_FEED.games?.[Number(card.dataset.gameIndex)];if(!g)return;
    const raw=Object.values(moneylineModels?.games||{}).find(x=>canon(x.home_team)===canon(g.home_team)&&canon(x.away_team)===canon(g.away_team)&&Date.parse(x.kickoff)===Date.parse(g.event_start||g.kickoff)),win=raw?.moneyline_model?.current_prediction,rec=raw?.current_recommendations?.moneyline;
-   if(win?.selection&&Date.parse(raw.kickoff)>Date.now()){
-    const value=document.createElement('div');value.className='ctdCardMlValue';value.innerHTML=`<span>CTD most likely winner</span><b>${esc(win.selection)} · ${(win.probability*100).toFixed(1)}%</b><span>Moneyline value bet</span><b class="ctdValueSelection">${esc(rec?.decision==='PICK'?rec.selection:rec?.decision==='WAIT'?'On hold':'No qualifying value bet')}</b>`;card.append(value);
-   }
-   if(oddsHTML)card.insertAdjacentHTML('beforeend',oddsHTML(g,window.CTD_LIVE_ODDS,esc));
+   if(oddsHTML)card.insertAdjacentHTML('beforeend',oddsHTML(g,window.CTD_LIVE_ODDS,esc,Date.now(),market));
    const start=Date.parse(g.event_start||g.kickoff||g.start_at),matches=x=>canon(x.home)===canon(g.home_team)&&canon(x.away)===canon(g.away_team)&&Date.parse(x.start_at)===start;
    const primary=data?.games?.find(matches),backup=data?.backup?.games?.find(matches),at=x=>Date.parse(x?.market_observed_at?.[market]||x?.observed_at);
    let m=backup?.[market]?.length===2&&(!primary?.[market]?.length||at(backup)>at(primary))?backup:primary;
@@ -72,5 +69,6 @@
  .ctdSplitBar{height:5px;border-radius:3px;overflow:hidden;display:flex;background:#23374b}.ctdSplitBar>span{display:block;min-width:0}.ctdSplitBar>span+span{border-left:2px solid #0c1c2e;box-sizing:border-box}
  .ctdSplitChecked{font-size:9px;line-height:1.4;color:#7893ad;margin-top:12px}.ctdSplitEmpty{font-size:11px;color:#8ca4bc;margin:8px 0 0;line-height:1.6}
  `;document.head.append(style);
+ document.addEventListener('ctd:market-selected',event=>{if(markets[event.detail?.market]){market=event.detail.market;render();}});
  document.addEventListener('ctd:odds-ready',render);document.addEventListener('ctd:games-ready',render);document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});load();setInterval(load,300000);
 })();
