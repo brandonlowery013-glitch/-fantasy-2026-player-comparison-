@@ -24,7 +24,9 @@
    if(!['recommendations','projections'].includes(kind))return chosen;
    const [helper,live]=await Promise.all([impactHelper,pendingPersonnel]);
    const result=helper.overlayGameFeed(chosen,live,kind);
-   if(kind==='recommendations')for(const g of Object.values(result.games||{}))for(const q of g.snapshot_evaluations||[])if(q.eligible_for_current_recommendation)for(const [market,version] of [['spread','sportsbook-calibration-learning-v1'],['moneyline','ctd-football-moneyline-v1']])if(q.markets?.[market]?.model_version!==version){q.markets||={};q.markets[market]={model_version:version,recommendation:{decision:'WAIT',reason:'CURRENT_MODEL_UNAVAILABLE'}};}
+   // Started games retain original pregame snapshots, labeled retrospective in the UI.
+   // Current-model version gates apply only before kickoff; never rewrite saved history.
+   if(kind==='recommendations')for(const g of Object.values(result.games||{}))for(const q of (Date.parse(g.kickoff||g.event_start)<=Date.now()?[]:g.snapshot_evaluations||[]))if(q.eligible_for_current_recommendation)for(const [market,version] of [['spread','sportsbook-calibration-learning-v1'],['moneyline','ctd-football-moneyline-v1']])if(q.markets?.[market]?.model_version!==version){q.markets||={};q.markets[market]={model_version:version,recommendation:{decision:'WAIT',reason:'CURRENT_MODEL_UNAVAILABLE'}};}
    return result;
   });
   cache.set(key,p);p.catch(()=>cache.delete(key));return p;
