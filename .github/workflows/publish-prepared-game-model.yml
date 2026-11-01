@@ -53,6 +53,9 @@ jobs:
             cp "$GITHUB_WORKSPACE/prepared.json.gz" data/market/prepared-game-model-2026.json.gz
             cp "$GITHUB_WORKSPACE/prepared.json.manifest.json" data/market/prepared-game-model-2026.manifest.json
             cp "$GITHUB_WORKSPACE/prepared.json.moneyline.json" data/market/prepared-game-model-2026.moneyline.json
+            for kind in model betting model-envelope betting-envelope; do
+              cp "$GITHUB_WORKSPACE/prepared.json.$kind.json.gz" "data/market/prepared-game-model-2026.$kind.json.gz"
+            done
             git add data/market/prepared-game-model-2026*
             git diff --cached --quiet && exit 0
             git commit -m 'Publish prepared game model [skip ci]'
