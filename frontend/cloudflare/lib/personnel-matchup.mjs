@@ -13,6 +13,8 @@ export function overlayGameFeed(base,live,kind='recommendations',now=Date.now())
  if(!live||live.season!==base.season||Number(live.week)!==Number(base.week)||live.sportsbook_inputs_used!==false||live.model_version!=='personnel-matchup-conditional-v2'||!['CURRENT','PARTIAL'].includes(live.health?.status)||!Number.isFinite(Date.parse(live.checked_at))||now-Date.parse(live.checked_at)>30*60000||Date.parse(live.checked_at)>now+300000)return {...base,personnel_matchup_status:'UNAVAILABLE'};
  const result=structuredClone(base);result.personnel_matchup_status='EXPERIMENTAL_CONDITIONAL';result.personnel_matchup_checked_at=live.checked_at;
  for(const [id,g] of Object.entries(result.games||{})){
+  // Never overwrite original pregame recommendations with an after-kickoff personnel overlay.
+  if(kind==='recommendations'&&Date.parse(g.kickoff||g.event_start)<=now)continue;
   const p=live.games?.[id];if(!p||g.home_team!==p.home_team||g.away_team!==p.away_team||Date.parse(g.kickoff||g.event_start)!==Date.parse(p.kickoff)||p.status!=='EXPERIMENTAL_CONDITIONAL')continue;
   const original=kind==='projections'?g.model:g.football_projection;if(!original)continue;g.scoring_only_baseline=structuredClone(original);const probs=marginProbabilities(p.margin,live.margin_residuals),updated={...original,home_score_mean:p.home_score_mean,away_score_mean:p.away_score_mean,home_minus_away_margin:p.margin,model_home_spread:-p.margin,home_win_probability:probs.win_probability,away_win_probability:probs.loss_probability,tie_probability:probs.push_probability};
   if(kind==='projections')g.model=updated;else g.football_projection=updated;
