@@ -3,6 +3,19 @@ on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-prepared-game-model.yml'
+      - 'scripts/publish-prepared-game-model.mjs'
+      - 'data/market/game-model-consumer-2026.json'
+      - 'data/market/final-betting-ui-feed-2026.json'
+      - 'data/market/unified-opportunities-2026.json'
+      - 'data/market/football-moneyline-learning-2026.json'
+      - 'data/probability/generated/weekly-game-projections-2026.json'
+  workflow_run:
+    workflows: ['Adaptive Pregame Market Refresh', 'Issued Pick Settlement']
+    types: [completed]
 permissions:
   contents: write
 concurrency:
@@ -10,6 +23,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   publish:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
