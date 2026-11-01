@@ -6,7 +6,7 @@ const read=p=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const c=read('data/sources/game-market-recommendation-layer-2026.json');
 const blocked=[];
 if(c.status!=='STEP_15_GAME_MARKET_RECOMMENDATIONS_LOCKED')blocked.push('status not locked');
-if(c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('must remain SHADOW_ONLY/non-actionable');
+if(c.mode!=='LIVE_RECOMMENDATIONS'||c.actionable!==false||c.wager_execution_enabled!==false)blocked.push('live recommendations must retain manual execution only');
 if(c.fair_market_method!=='PROPORTIONAL_TWO_WAY')blocked.push('Step 13 fair-market method drift');
 for(const m of ['moneyline','spread','total'])if(!c.supported_markets.includes(m))blocked.push(`missing market ${m}`);
 const p=c.recommendation_policy||{};

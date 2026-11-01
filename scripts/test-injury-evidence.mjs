@@ -19,6 +19,14 @@ assert.equal(assessInjury({...parsed[0],source_updated_at:old},now).expected_act
 assert.equal(assessInjury({...parsed[0],source_updated_at:'2026-09-17T00:00:00Z'},now).expected_active,null);
 assert.equal(assessInjury({...parsed[0],source_updated_at:null},now).expected_active,null);
 const activeRole={captured_at:fresh,evidence:{espn_active_flag:true}};
+const healthyRole={captured_at:fresh,evidence:{team:'ARI',espn_name:'Trey McBride',depth_rank:1,espn_active_flag:null}};
+const recap={status:'Active',source_updated_at:old,body_part:null,practice_status:null,display_status:null};
+const healthySignals={role:healthyRole,injury:{evidence:recap}};
+assert.equal(resolveAvailability(healthySignals,now).expected_active,true);
+assert.equal(resolveAvailability(healthySignals,now).designation_confirmed_for_game,false);
+for(const patch of [{status:'Questionable'},{status:'Out'},{status:'UNKNOWN'},{body_part:'Ankle'},{practice_status:'Limited'},{display_status:'Questionable'},{conflicting_reports:true},{source_updated_at:'2026-09-17T00:00:00Z'}])assert.notEqual(resolveAvailability({...healthySignals,injury:{evidence:{...recap,...patch}}},now).expected_active,true);
+assert.notEqual(resolveAvailability({...healthySignals,role:{...healthyRole,captured_at:old}},now+3600000).expected_active,true);
+assert.notEqual(resolveAvailability({...healthySignals,role:{...healthyRole,evidence:{...healthyRole.evidence,espn_active_flag:false}}},now).expected_active,true);
 assert.equal(resolveAvailability({role:activeRole},now).expected_active,true);
 assert.equal(resolveAvailability({role:{...activeRole,captured_at:old}},now+3600000).expected_active,null);
 for(const status of ['Out','Injured Reserve','Inactive','Suspended'])assert.equal(resolveAvailability({role:activeRole,injury:{evidence:{status,source_updated_at:fresh}}},now).expected_active,false);
