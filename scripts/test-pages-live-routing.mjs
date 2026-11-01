@@ -52,7 +52,7 @@ const context={waitUntil:promise=>waits.push(promise)};
 const assets={ASSETS:{fetch:async()=>Response.json(savedAssets)}};
 try {
  globalThis.fetch=async url=>{
-  const value=String(url);calls.push(value);
+  const value=String(url).split('?')[0];calls.push(value);
   if(value.endsWith('.manifest.json'))return Response.json({kind:'PRECOMPUTED_SERVER_MODEL',generated_at:new Date().toISOString(),expires_at:new Date(Date.now()+600000).toISOString()});
   if(value.includes('prepared-game-model-2026.')&&value.endsWith('.json.gz'))return new Response(gzipSync(JSON.stringify(value.includes('-envelope')?{data:{published:true,games:[]}}:{published:true,games:[]})));  
   if(value.includes('/scoreboard'))return Response.json({events:[]});

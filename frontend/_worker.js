@@ -26,11 +26,11 @@ const PATHS={recommendations:'data/market/game-model-consumer-2026.json',project
 async function preparedResponse(ref,kind='recommendations'){
  if(ref!=='main')throw Error('Prepared historical release unavailable');
  const root=`https://raw.githubusercontent.com/${REPO}/data/prepared-game-model/data/market/prepared-game-model-2026`;
- const manifestResponse=await fetch(root+'.manifest.json',{signal:AbortSignal.timeout(10000),cf:{cacheTtl:30,cacheEverything:true}});
+ const manifestResponse=await fetch(root+'.manifest.json?refresh='+Math.floor(Date.now()/30000),{signal:AbortSignal.timeout(10000),cf:{cacheTtl:30,cacheEverything:true}});
  if(!manifestResponse.ok)throw Error('Prepared model manifest unavailable');
  const manifest=await manifestResponse.json(),now=Date.now(),generated=Date.parse(manifest.generated_at),expires=Date.parse(manifest.expires_at);
  if(manifest.kind!=='PRECOMPUTED_SERVER_MODEL'||!Number.isFinite(generated)||!Number.isFinite(expires)||generated>now+60000||expires<=now||expires-generated>20*60000)throw Error('Prepared model is awaiting a fresh publication');
- const response=await fetch(root+(kind==='moneyline'?'.moneyline.json':kind==='recommendations'?'.json.gz':'.'+kind+'.json.gz'),{signal:AbortSignal.timeout(20000),cf:{cacheTtl:30,cacheEverything:true}});
+ const response=await fetch(root+(kind==='moneyline'?'.moneyline.json':kind==='recommendations'?'.json.gz':'.'+kind+'.json.gz')+'?publication='+encodeURIComponent(manifest.generated_at),{signal:AbortSignal.timeout(20000),cf:{cacheTtl:30,cacheEverything:true}});
  if(!response.ok)throw Error('Prepared model result unavailable');
  return new Response(response.body,{encodeBody:kind==='moneyline'?'automatic':'manual',headers:{'content-type':'application/json','cache-control':'no-store',...(kind==='moneyline'?{}:{'content-encoding':'gzip'}),'x-ctd-model-delivery':'precomputed','x-ctd-model-generated-at':manifest.generated_at,'x-ctd-spread-model':'sportsbook-calibration-learning-v1'}});
 }

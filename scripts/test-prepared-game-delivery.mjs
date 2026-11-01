@@ -8,8 +8,8 @@ const request=(path,method='GET')=>worker.fetch(new Request('https://preview.exa
 try{
  globalThis.fetch=async url=>{
   calls.push(String(url));
-  if(String(url).endsWith('.manifest.json'))return Response.json({kind:'PRECOMPUTED_SERVER_MODEL',generated_at:new Date(Date.now()-60000).toISOString(),expires_at:new Date(Date.now()+(stale?-1:600000)).toISOString()});
-  if(String(url).endsWith('.moneyline.json'))return Response.json({model_version:'ctd-football-moneyline-v1',games:feed.games});
+  if(String(url).split('?')[0].endsWith('.manifest.json'))return Response.json({kind:'PRECOMPUTED_SERVER_MODEL',generated_at:new Date(Date.now()-60000).toISOString(),expires_at:new Date(Date.now()+(stale?-1:600000)).toISOString()});
+  if(String(url).split('?')[0].endsWith('.moneyline.json'))return Response.json({model_version:'ctd-football-moneyline-v1',games:feed.games});
   return new Response(gzipSync(JSON.stringify(feed)));
  };
  let r=await request('/cloudflare/api/game-model/recommendations');
