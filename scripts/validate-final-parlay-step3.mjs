@@ -4,7 +4,7 @@ const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
 const c=read('data/sources/parlay-engine-2026.json');
 const blocked=[];
 if(c.season!==2026||c.step!=='FINAL_INTERFACE_STEP_3'||c.status!=='LOCKED')blocked.push('Step 3 identity/status mismatch');
-if(c.authority!=='DOWNSTREAM_BETTING_DECISION_ONLY'||c.mode!=='SHADOW_ONLY'||c.actionable!==false)blocked.push('Step 3 authority/mode mismatch');
+if(c.authority!=='DOWNSTREAM_BETTING_DECISION_ONLY'||c.mode!=='LIVE_RECOMMENDATIONS'||c.actionable!==false||c.wager_execution_enabled!==false)blocked.push('Step 3 authority/mode mismatch');
 if(c.supported_leg_counts?.minimum!==2||c.supported_leg_counts?.maximum!==12)blocked.push('Parlay leg count must be 2-12');
 if(c.eligible_leg_contract?.must_already_pass_standalone_threshold!==true||c.eligible_leg_contract?.required_label!=='PICK'||c.eligible_leg_contract?.raw_feed_quote_alone_is_eligible!==false)blocked.push('Standalone-leg gate invalid');
 if(c.probability_contract?.same_game_independence_assumption_allowed!==false||c.probability_contract?.known_relationship_may_silently_fall_back_to_independence!==false)blocked.push('Same-game correlation guardrail invalid');
