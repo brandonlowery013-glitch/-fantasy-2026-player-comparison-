@@ -54,7 +54,7 @@ try {
  globalThis.fetch=async url=>{
   const value=String(url);calls.push(value);
   if(value.endsWith('.manifest.json'))return Response.json({kind:'PRECOMPUTED_SERVER_MODEL',generated_at:new Date().toISOString(),expires_at:new Date(Date.now()+600000).toISOString()});
-  if(value.endsWith('prepared-game-model-2026.json.gz'))return new Response(gzipSync(JSON.stringify({season:2026,week:8,games:{}}))); 
+  if(value.includes('prepared-game-model-2026.')&&value.endsWith('.json.gz'))return new Response(gzipSync(JSON.stringify(value.includes('-envelope')?{data:{published:true,games:[]}}:{published:true,games:[]})));  
   if(value.includes('/scoreboard'))return Response.json({events:[]});
   if(value.includes('/live-news.json'))return Response.json({fetched_at:new Date().toISOString(),articles:[]});
   if(value.includes('current-game-lines'))return Response.json({quote_type:'pregame',games:[]});
@@ -66,7 +66,7 @@ try {
  for(const leaf of ['', 'health','news','odds','splits','bundle','model','betting','injuries','players','history']){
   const response=await worker.fetch(new Request('https://ctd.test/api/live'+(leaf?'/'+leaf:'')),assets,context);
   assert.equal(response.status,200,leaf||'root health');
-  const data=await response.json();
+  const data=response.headers.get('content-encoding')==='gzip'?JSON.parse((await import('node:zlib')).gunzipSync(Buffer.from(await response.arrayBuffer()))):await response.json();
   if(leaf==='news')assert.equal(data.status,'CURRENT');
   if(leaf==='odds')assert.equal(data.quote_type,'pregame');
   if(leaf==='splits')assert.equal(data.schema_version,1);
