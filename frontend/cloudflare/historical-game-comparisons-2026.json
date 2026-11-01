@@ -30,20 +30,52 @@
         "historical_prices": true,
         "prices_source": "https://raw.githubusercontent.com/nflverse/nfldata/master/data/games.csv",
         "quote_time_verified": false,
-        "book_verified": false,
+        "book_verified": true,
         "limitations": [
           "Reconstructed today; no original pregame forecast was saved.",
           "Pre-Week 8 scoring inputs only; no Thursday result or later-week results enter projection.",
-          "Historical sportsbook lines from nflverse; sportsbook and exact capture time unverified.",
           "Scoring baseline only; complete archived personnel/injury context unavailable.",
           "No betting result or live forecast is added to the saved prediction ledger."
         ],
-        "artifact_sha256": "ab32efd745900e177e345ac62dcdcceea48ad7ae78e942ef5ef9f4af624fcfcf"
+        "artifact_sha256": "ab32efd745900e177e345ac62dcdcceea48ad7ae78e942ef5ef9f4af624fcfcf",
+        "sportsbook": "DraftKings",
+        "sources": [
+          {
+            "label": "DraftKings Network \u2014 moneyline, spread and total",
+            "url": "https://dknetwork.draftkings.com/2026/10/29/panthers-vs-packers-nfl-player-prop-bets-and-picks-for-thursday-night-football/",
+            "published_at": "2026-10-29T20:00:00Z",
+            "timestamp_kind": "Article publication time",
+            "confirms": [
+              "home_moneyline",
+              "away_moneyline",
+              "home_spread",
+              "total"
+            ]
+          },
+          {
+            "label": "Sports Illustrated \u2014 complete DraftKings price table",
+            "url": "https://www.si.com/betting/panthers-vs-packers-prediction-odds-spread-injuries-trends-for-nfl-week-8-2026",
+            "published_on": "2026-10-26",
+            "confirms": [
+              "home_spread_price",
+              "away_spread_price",
+              "over_price",
+              "under_price",
+              "home_moneyline",
+              "away_moneyline",
+              "home_spread",
+              "total"
+            ]
+          }
+        ],
+        "quote_source_published_at": "2026-10-29T20:00:00Z",
+        "publication_time_verified": true,
+        "timestamp_basis": "DraftKings article publication metadata; not a bookmaker quote tick timestamp."
       },
       "snapshot_evaluations": [
         {
           "snapshot_id": "RECONSTRUCTED-CAR-GB-W8",
-          "book": "Historical odds (book unverified)",
+          "book": "DraftKings",
           "captured_at": null,
           "eligible_for_current_recommendation": false,
           "comparison_only": true,
@@ -186,7 +218,37 @@
               },
               "model_version": "reconstructed-scoring-decay-no-rest-2026-v2"
             }
-          }
+          },
+          "source_publication_time": "2026-10-29T20:00:00Z",
+          "sources": [
+            {
+              "label": "DraftKings Network \u2014 moneyline, spread and total",
+              "url": "https://dknetwork.draftkings.com/2026/10/29/panthers-vs-packers-nfl-player-prop-bets-and-picks-for-thursday-night-football/",
+              "published_at": "2026-10-29T20:00:00Z",
+              "timestamp_kind": "Article publication time",
+              "confirms": [
+                "home_moneyline",
+                "away_moneyline",
+                "home_spread",
+                "total"
+              ]
+            },
+            {
+              "label": "Sports Illustrated \u2014 complete DraftKings price table",
+              "url": "https://www.si.com/betting/panthers-vs-packers-prediction-odds-spread-injuries-trends-for-nfl-week-8-2026",
+              "published_on": "2026-10-26",
+              "confirms": [
+                "home_spread_price",
+                "away_spread_price",
+                "over_price",
+                "under_price",
+                "home_moneyline",
+                "away_moneyline",
+                "home_spread",
+                "total"
+              ]
+            }
+          ]
         }
       ]
     }
