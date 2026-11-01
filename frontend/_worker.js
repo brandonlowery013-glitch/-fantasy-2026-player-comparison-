@@ -36,7 +36,7 @@ async function preparedResponse(ref,kind='recommendations'){
  if(!response.ok)throw Error('Prepared model result unavailable');
  return new Response(response.body,{headers:{'content-type':'application/json','cache-control':'no-store',...(kind==='moneyline'?{}:{'content-encoding':'gzip'}),'x-ctd-model-delivery':'precomputed','x-ctd-model-generated-at':manifest.generated_at,'x-ctd-spread-model':'sportsbook-calibration-learning-v1'}});
 }
-async function recommendationBody(ref){return (await preparedResponse(ref)).text();}
+async function recommendationBody(ref){const response=await preparedResponse(ref);return new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).text();}
 
 
 async function publishedData(request,env,ctx,url){

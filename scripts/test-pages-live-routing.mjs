@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import {gzipSync} from 'node:zlib';
 import worker from '../frontend/_worker.js';
 
 const routes=JSON.parse(fs.readFileSync('frontend/_routes.json','utf8'));
@@ -52,6 +53,8 @@ const assets={ASSETS:{fetch:async()=>Response.json(savedAssets)}};
 try {
  globalThis.fetch=async url=>{
   const value=String(url);calls.push(value);
+  if(value.endsWith('.manifest.json'))return Response.json({kind:'PRECOMPUTED_SERVER_MODEL',generated_at:new Date().toISOString(),expires_at:new Date(Date.now()+600000).toISOString()});
+  if(value.endsWith('prepared-game-model-2026.json.gz'))return new Response(gzipSync(JSON.stringify({season:2026,week:8,games:{}}))); 
   if(value.includes('/scoreboard'))return Response.json({events:[]});
   if(value.includes('/live-news.json'))return Response.json({fetched_at:new Date().toISOString(),articles:[]});
   if(value.includes('current-game-lines'))return Response.json({quote_type:'pregame',games:[]});
