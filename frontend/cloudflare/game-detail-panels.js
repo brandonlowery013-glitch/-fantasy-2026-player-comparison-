@@ -55,7 +55,7 @@
   if(!g){mount.innerHTML='<p>Choose a game to see spread, total and moneyline separately.</p>';return;}
   mount.innerHTML=markup(build(g,s,directions,meta));
  }
- root.CTD_MARKET_PICKS={build,markup,render,setComparisons};
+ root.CTD_MARKET_PICKS={build,markup,render,setComparisons,comparisonGame:resolve};
 })(globalThis);
 
 

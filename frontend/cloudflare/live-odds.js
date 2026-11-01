@@ -40,11 +40,12 @@
   renderTicker=function(){
     originalTicker();
     document.querySelectorAll('#ctdGameTicker [data-game-index]').forEach(card=>{
-      const g=BET_FEED.games[Number(card.dataset.gameIndex)],row=card.querySelector('.marketline');
+      const originalGame=BET_FEED.games[Number(card.dataset.gameIndex)],g=window.CTD_MARKET_PICKS?.comparisonGame?.(originalGame)||originalGame,row=card.querySelector('.marketline');
       if(!g||!row)return;
       row.replaceChildren();
       const market=document.createElement('span');
-      market.textContent='Stored market: '+(g.spread||'Spread pending')+' · Total '+(g.total??'pending');
+      const stored=g.snapshot_evaluations?.[0]?.market;
+      market.textContent='Stored market: '+(g.spread||(Number.isFinite(stored?.home_spread)?g.home_team+' '+(stored.home_spread>0?'+':'')+stored.home_spread:'Spread pending'))+' · Total '+(g.total??stored?.total??'pending');
       market.title='Sportsbook spread quoted for the home team: minus means favored; plus means underdog. Updated prices are in Live Sportsbook Lines.';
       const pick=document.createElement('span');pick.className='edge';
       const snapshots=(g.snapshot_evaluations||[]).filter(q=>q.eligible_for_current_recommendation===true&&Date.parse(q.captured_at)<=Date.parse(g.kickoff||g.event_start)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));

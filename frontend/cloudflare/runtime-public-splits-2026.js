@@ -26,7 +26,9 @@
    if(oddsHTML)card.insertAdjacentHTML('beforeend',oddsHTML(g,window.CTD_LIVE_ODDS,esc));
    const start=Date.parse(g.event_start||g.kickoff||g.start_at),matches=x=>canon(x.home)===canon(g.home_team)&&canon(x.away)===canon(g.away_team)&&Date.parse(x.start_at)===start;
    const primary=data?.games?.find(matches),backup=data?.backup?.games?.find(matches),at=x=>Date.parse(x?.market_observed_at?.[market]||x?.observed_at);
-   const m=backup?.[market]?.length===2&&(!primary?.[market]?.length||at(backup)>at(primary))?backup:primary;
+   let m=backup?.[market]?.length===2&&(!primary?.[market]?.length||at(backup)>at(primary))?backup:primary;
+   const archived=window.CTD_MARKET_PICKS?.comparisonGame?.(g)?.public_betting_splits;
+   if(!m?.[market]?.length&&archived&&matches(archived)&&Date.parse(archived.observed_at)<start)m=archived;
    const block=document.createElement('div');block.className='ctdCardSplits';
    block.title='Consensus is ticket share. Smart Money is dollar share; it does not identify professional bettors. Each pair uses one named source.';
    const source=m?.source||'Provider unavailable';
