@@ -26,7 +26,7 @@
    const side=selectedA?e?.side_a:e?.side_b;
    const validQuote=Number.isFinite(Date.parse(at))&&Number.isFinite(kickoff)&&Date.parse(at)<kickoff&&Date.parse(at)<=now;
    const eligible=rec?.decision==='PICK'&&!held&&validQuote&&finite(rec.expected_value)&&rec.expected_value>0&&finite(side?.offered_odds);
-   return {kind,label:names[kind],prediction:held?'On hold':dir?.selection||'Unavailable',probability:held?null:dir?.probability??null,bet:eligible?rec.selection:held?'Wait':rec?.decision==='PASS'?'Pass — no qualifying value':'Unavailable',eligible,ev:eligible?rec.expected_value:null,edge:eligible?rec.probability_edge:null,odds:eligible?side.offered_odds:null,book:quote.book||s?.book||'',at:at||null,reason:held?'Inputs on hold':rec?.reason||(!validQuote?'No verified pregame quote':'')};
+   return {kind,label:names[kind],prediction:held?'On hold':dir?.selection||'Unavailable',probability:held?null:dir?.probability??null,bet:eligible?rec.selection:held?'Wait':rec?.decision==='PASS'?'Pass — no qualifying value':'Unavailable',eligible,ev:eligible?rec.expected_value:null,edge:eligible?rec.probability_edge:null,odds:eligible?side.offered_odds:null,book:quote.book||s?.book||'',at:at||null,reason:held?'Waiting for complete verified inputs':rec?.decision==='PASS'?'No qualifying value at these odds':!validQuote?'No verified pregame quote':'Model decision unavailable'};
   });
   const candidates=rows.filter(r=>r.eligible).sort((a,b)=>b.ev-a.ev||kinds.indexOf(a.kind)-kinds.indexOf(b.kind));
   const best=candidates[0]||null,tied=best?candidates.filter(r=>Math.abs(r.ev-best.ev)<1e-6):[];
@@ -48,6 +48,7 @@
  }
  root.CTD_MARKET_PICKS={build,markup,render};
 })(globalThis);
+
 
 (()=>{
   'use strict';
