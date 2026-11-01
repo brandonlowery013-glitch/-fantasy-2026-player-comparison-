@@ -17,25 +17,34 @@
   const selection=kind==='moneyline'?(home?g.home_team:g.away_team)+' ML':kind==='total'?(finite(m.total)?(home?'OVER ':'UNDER ')+m.total:null):finite(m.home_spread)?(home?g.home_team:g.away_team)+' '+signed(home?m.home_spread:-m.home_spread):null;
   return selection?{selection,probability:Math.max(a,b)}:null;
  }
+ let comparisons={};
+ function setComparisons(payload){comparisons=payload?.kind==='RECONSTRUCTED_NOT_LIVE'?payload.games||{}:{};}
+ function resolve(g){if(g?.snapshot_evaluations?.length)return g;return Object.values(comparisons).find(x=>x.home_team===g?.home_team&&x.away_team===g?.away_team&&Date.parse(x.kickoff)===Date.parse(g?.kickoff||g?.event_start))||g;}
  function build(g,s,directions={},meta={},now=Date.now()){
+  g=resolve(g);if(!s&&g?.reconstruction)s=g.snapshot_evaluations?.[0];
   const kickoff=Date.parse(g?.kickoff||g?.event_start),started=Number.isFinite(kickoff)&&kickoff<=now;
   const rows=kinds.map(kind=>{
    const e=s?.markets?.[kind],rec=e?.recommendation,dir=directions[kind]||direction(kind,e,s,g),quote=e?.quote||{},at=quote.captured_at||s?.captured_at;
    const held=e?.context_validation?.status==='HOLD'||rec?.decision==='WAIT';
    const selectedA=kind==='total'?/^OVER\b/i.test(rec?.selection||''):String(rec?.selection||'').startsWith(g?.home_team+' ');
-   const side=selectedA?e?.side_a:e?.side_b;
+   let side=selectedA?e?.side_a:e?.side_b,sideA=selectedA;
+   if(!rec?.selection&&finite(e?.side_a?.expected_value)&&finite(e?.side_b?.expected_value)){sideA=e.side_a.expected_value>=e.side_b.expected_value;side=sideA?e.side_a:e.side_b;}
+   const m=e?.quote||s?.market||{},priceSelection=rec?.selection||(kind==='moneyline'?(sideA?g.home_team:g.away_team)+' ML':kind==='total'?(sideA?'OVER ':'UNDER ')+m.total:(sideA?g.home_team:g.away_team)+' '+signed(sideA?m.home_spread:-m.home_spread));
+   const historical=started&&g?.reconstruction?.kind==='RECONSTRUCTED_NOT_LIVE'&&g.reconstruction.data_through_week<g.week&&g.reconstruction.historical_prices===true;
+   const metricEV=rec?.decision==='PICK'?rec.expected_value:side?.expected_value,metricEdge=rec?.decision==='PICK'?rec.probability_edge:side?.probability_edge;
+   const hasMetrics=!held&&finite(side?.offered_odds)&&finite(metricEV)&&finite(metricEdge);
    const validQuote=Number.isFinite(Date.parse(at))&&Number.isFinite(kickoff)&&Date.parse(at)<kickoff&&Date.parse(at)<=now;
-   const eligible=rec?.decision==='PICK'&&!held&&validQuote&&finite(rec.expected_value)&&rec.expected_value>0&&finite(side?.offered_odds);
-   return {kind,label:names[kind],prediction:held?'On hold':dir?.selection||'Unavailable',probability:held?null:dir?.probability??null,bet:eligible?rec.selection:held?'Wait':rec?.decision==='PASS'?'Pass — no qualifying value':'Unavailable',eligible,ev:eligible?rec.expected_value:null,edge:eligible?rec.probability_edge:null,odds:eligible?side.offered_odds:null,book:quote.book||s?.book||'',at:at||null,reason:held?'Waiting for complete verified inputs':rec?.decision==='PASS'?'No qualifying value at these odds':!validQuote?'No verified pregame quote':'Model decision unavailable'};
+   const eligible=rec?.decision==='PICK'&&!held&&(validQuote||historical)&&finite(rec.expected_value)&&rec.expected_value>0&&finite(side?.offered_odds);
+   return {kind,label:names[kind],prediction:held?'On hold':dir?.selection||'Unavailable',probability:held?null:dir?.probability??null,bet:eligible?rec.selection:held?'Wait':rec?.decision==='PASS'?'Pass — no qualifying value':'Unavailable',eligible,ev:hasMetrics?metricEV:null,edge:hasMetrics?metricEdge:null,odds:hasMetrics?side.offered_odds:null,hasMetrics,priceSelection,historical,book:quote.book||s?.book||'',at:at||null,reason:held?'Waiting for complete verified inputs':rec?.decision==='PASS'?'No qualifying value at these odds':!validQuote?'No verified pregame quote':'Model decision unavailable'};
   });
   const candidates=rows.filter(r=>r.eligible).sort((a,b)=>b.ev-a.ev||kinds.indexOf(a.kind)-kinds.indexOf(b.kind));
   const best=candidates[0]||null,tied=best?candidates.filter(r=>Math.abs(r.ev-best.ev)<1e-6):[];
-  return {rows,best,tied,started,rerun:meta.rerun===true,winner:rows[2].prediction,winnerProbability:rows[2].probability};
+  return {rows,best,tied,started,rerun:meta.rerun===true||!!g?.reconstruction,reconstruction:g?.reconstruction||null,winner:rows[2].prediction,winnerProbability:rows[2].probability};
  }
  function markup(v){
-  const timing=v.rerun?'Recalculated comparison — not an original pregame record':v.started?'Pregame comparison — game started; not a current betting recommendation':'Pregame model picks and betting value';
+  const timing=v.reconstruction?'Reconstructed comparison · pre-Week 8 scoring inputs · not a saved pregame forecast':v.rerun?'Recalculated comparison — not an original pregame record':v.started?'Pregame comparison — game started; not a current betting recommendation':'Pregame model picks and betting value';
   const best=v.tied.length>1?'Equal highest modeled value: '+v.tied.map(r=>r.label+' · '+r.bet).join(' / '):v.best?v.best.label+' · '+v.best.bet:'Pass — no qualifying value bet';
-  return `<div class="ctdMarketTiming">${esc(timing)}</div><div class="ctdMarketTop"><div><span>Predicted winner</span><strong>${esc(v.winner.replace(/ ML$/,''))}</strong><small>${esc(pct(v.winnerProbability))} model win chance, excluding ties</small></div><div><span>${v.started||v.rerun?'Highest modeled value in this comparison':'Recommended value bet'}</span><strong>${esc(best)}</strong><small>${v.best?'Highest expected return per $1 staked among qualifying markets.':'Wait for a qualifying price and complete model inputs.'}</small></div></div><div class="ctdMarketCards">${v.rows.map(r=>`<article class="ctdMarketCard"><h3>${r.label}</h3><span>${r.kind==='moneyline'?'Predicted winner':'Model pick'}</span><strong>${esc(r.prediction)}</strong><small>${esc(pct(r.probability))} model chance</small><span>Betting value</span><strong class="${r.eligible?'ctdValueYes':''}">${esc(r.bet)}</strong><small>${r.eligible?esc(odds(r.odds)+' · '+r.book):esc(r.reason||'No qualifying recommendation')}</small><div class="ctdMarketMetrics">Expected return: <b>${r.eligible?esc((100*r.ev).toFixed(1)+'%'):'—'}</b><br>Probability edge: <b>${finite(r.edge)?esc((100*r.edge).toFixed(1)+' percentage points'):'—'}</b></div><small>Quote: ${r.at?esc(new Date(r.at).toLocaleString('en-US',{timeZone:'America/Chicago',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' CT'):'Unavailable'}</small></article>`).join('')}</div><p class="ctdMarketNote">The predicted winner is the team most likely to win. A value bet can be on the other team if its price is favorable. The recommendation ranks modeled expected return, not safety or certainty. These are model estimates; positive expected return can still lose. All three markets stay visible.</p>`;
+  return `<div class="ctdMarketTiming">${esc(timing)}</div><div class="ctdMarketTop"><div><span>Predicted winner</span><strong>${esc(v.winner.replace(/ ML$/,''))}</strong><small>${esc(pct(v.winnerProbability))} model win chance, excluding ties</small></div><div><span>${v.started||v.rerun?'Highest modeled value in this comparison':'Recommended value bet'}</span><strong>${esc(best)}</strong><small>${v.best?'Highest expected return per $1 staked among qualifying markets.':'Wait for a qualifying price and complete model inputs.'}</small></div></div><div class="ctdMarketCards">${v.rows.map(r=>`<article class="ctdMarketCard"><h3>${r.label}</h3><span>${r.kind==='moneyline'?'Predicted winner':'Model pick'}</span><strong>${esc(r.prediction)}</strong><small>${esc(pct(r.probability))} model chance</small><span>Betting value</span><strong class="${r.eligible?'ctdValueYes':''}">${esc(r.bet)}</strong><small>${r.hasMetrics?esc(r.priceSelection+' · '+odds(r.odds)+' · '+r.book):esc(r.reason||'No qualifying recommendation')}</small><div class="ctdMarketMetrics">Expected return: <b>${r.hasMetrics?esc((100*r.ev).toFixed(1)+'%'):'—'}</b><br>Probability edge: <b>${finite(r.edge)?esc((100*r.edge).toFixed(1)+' percentage points'):'—'}</b></div><small>Quote: ${r.historical?'Historical line; book/time unverified':r.at?esc(new Date(r.at).toLocaleString('en-US',{timeZone:'America/Chicago',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})+' CT'):'Unavailable'}</small></article>`).join('')}</div><p class="ctdMarketNote">${v.reconstruction?'Thursday values use the CTD scoring baseline and historical lines. Archived personnel/injury inputs were unavailable. No Thursday result was used to produce the forecast. ':''}The predicted winner is the team most likely to win. A value bet can be on the other team if its price is favorable. The recommendation ranks modeled expected return, not safety or certainty. These are model estimates; positive expected return can still lose. All three markets stay visible.</p>`;
  }
  function render(g,s,directions,meta){
   const doc=root.document;if(!doc)return;
@@ -46,7 +55,7 @@
   if(!g){mount.innerHTML='<p>Choose a game to see spread, total and moneyline separately.</p>';return;}
   mount.innerHTML=markup(build(g,s,directions,meta));
  }
- root.CTD_MARKET_PICKS={build,markup,render};
+ root.CTD_MARKET_PICKS={build,markup,render,setComparisons};
 })(globalThis);
 
 
@@ -72,7 +81,7 @@
   async function get(url){const r=await fetch(url.startsWith(RAW)?`${url}?refresh=${Math.floor(Date.now()/60000)}`:url,{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error(`Request failed (${r.status})`);return r.json()}
   function marketGame(g){return Number(markets?.week)===Number(BET_FEED.week)?Object.values(markets.games||{}).find(x=>same(x,g)):null}
   function pregame(raw){return (raw?.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(raw.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at))}
-  function snapshot(raw){const rows=pregame(raw);return rows.find(x=>x.book==='draftkings')||rows[0]}
+  function snapshot(raw){if(raw?.reconstruction?.kind==='RECONSTRUCTED_NOT_LIVE')return raw.snapshot_evaluations?.[0];const rows=pregame(raw);return rows.find(x=>x.book==='draftkings')||rows[0]}
   function modelDirection(kind,e,s,raw,g){
     const direction=window.CTD_SHOW_WORK?.gameDirectionPrediction(raw||g,s,kind);
     return direction?.selection?direction:null;
@@ -209,8 +218,9 @@ function renderData(){
   document.addEventListener('ctd:live-scores-updated',()=>{render();void refresh()});
   document.addEventListener('input',e=>{if(e.target.id!=='ctdFlowRange')return;const g=selected(),p=games.get(key(g))?.data?.win_probability?.[Number(e.target.value)];const label=document.getElementById('ctdFlowReadout');if(label)label.textContent=flowLabel(g,p)});
   async function loadFeeds(){
-    const results=await Promise.allSettled([window.CTD_GAME_MODEL.load(),get(RAW+'data/probability/generated/matchup-tidbits-2026.json'),get('/api/live/history')]);
+    const results=await Promise.allSettled([window.CTD_GAME_MODEL.load(),get(RAW+'data/probability/generated/matchup-tidbits-2026.json'),get('/api/live/history'),get('./historical-game-comparisons-2026.json?v=20261101')]);
     if(results[0].status==='fulfilled')markets=results[0].value;
+    if(results[3]?.status==='fulfilled'&&results[3].value.season===2026&&Number(results[3].value.week)===Number(BET_FEED.week)){const archive=results[3].value;window.CTD_MARKET_PICKS.setComparisons(archive);if(markets?.games)for(const [id,g]of Object.entries(archive.games||{}))if(!markets.games[id])markets.games[id]=g;renderTicker();}
     if(results[1].status==='fulfilled')history=results[1].value;
     if(results[2].status==='fulfilled'){issuedHistory=results[2].value.history;pickResults=results[2].value.results;}
     historyError=results.slice(2).some(r=>r.status==='rejected')?'History refresh unavailable; showing any last loaded records.':'';
