@@ -1,6 +1,4 @@
-import {overlayGameFeed} from '../workers/betting-splits/lib/personnel-matchup.mjs';
-import {overlayFootballMoneyline,attachFootballMoneylineDrivers,FOOTBALL_MONEYLINE_VERSION} from '../workers/betting-splits/lib/football-moneyline.mjs';
-import {withModelDrivers} from '../workers/betting-splits/lib/model-driver-preview.mjs';
+import {FOOTBALL_MONEYLINE_VERSION} from '../workers/betting-splits/lib/football-moneyline.mjs';
 import {onRequestGet as previewRequest} from '../functions/api/live/matchup-previews.js';
 import historicalSelection from '../workers/betting-splits/model/ne-chi-current-models.json' with {type:'json'};
 import {applyHistoricalSelection,applyHistoricalFinal,applyHistoricalHistory} from '../workers/betting-splits/lib/historical-model-selection.mjs';
@@ -25,23 +23,20 @@ const REPO='brandonlowery013-glitch/-fantasy-2026-player-comparison-';
 const PATHS={recommendations:'data/market/game-model-consumer-2026.json',projections:'data/probability/generated/weekly-game-projections-2026.json',schedule:'data/calibration/weekly-event-schedule-2026.json',lines:'data/market/current-game-lines-2026.json'};
 
 
-// Coalesce concurrent requests and reuse the serialized response briefly. This
-// avoids repeating the score simulations and parsing the full feed per viewer.
-let recommendationCache=new Map();
-let recommendationTail=Promise.resolve();
-async function recommendationBody(ref,env,url){
- const now=Date.now();for(const [key,cached] of recommendationCache)if(cached.until<=now)recommendationCache.delete(key);
- const cached=recommendationCache.get(ref);if(cached)return cached.promise;
- const entry={key:ref,until:Infinity,promise:null};
- entry.promise=recommendationTail.catch(()=>{}).then(async()=>{const upstream=`https://raw.githubusercontent.com/${REPO}/${ref}/${PATHS.recommendations}`;
- const read=async pending=>{const r=await pending;return r.ok?await r.json():null;};
- const [base,live,moneyline,rawProjections,learning,personnel]=await Promise.all([read(fetch(upstream,{signal:AbortSignal.timeout(20000)})),read(spreadRequest({request:new Request(url.origin+'/api/live/spread-projections'),env})),read(moneylineRequest({request:new Request(url.origin+'/api/live/moneyline-projections'),env})),read(fetch(`https://raw.githubusercontent.com/${REPO}/${ref}/${PATHS.projections}`,{signal:AbortSignal.timeout(20000)})),read(fetch(`https://raw.githubusercontent.com/${REPO}/${ref}/data/market/football-moneyline-learning-2026.json`,{signal:AbortSignal.timeout(20000)})),read(fetch('https://ctd-background-splits.brandonlowery013.workers.dev/game-projections/latest.json',{signal:AbortSignal.timeout(20000)}))]);
- if(!base)throw Error('Recommendation source unavailable');for(const game of Object.values(base.games||{}))delete game.behavior_learning_context;
- const projections=rawProjections?overlayGameFeed(rawProjections,personnel,'projections'):null;if(projections?.personnel_matchup_status==='EXPERIMENTAL_CONDITIONAL')projections.generated_at=personnel.checked_at;
- const evaluated=overlayFootballMoneyline(applyHistoricalSelection(overlaySpreadFeed(base,live),historicalSelection),projections,moneyline,Date.now(),learning);return JSON.stringify(attachFootballMoneylineDrivers(await withModelDrivers(evaluated,live,moneyline,rawProjections)));
- }).then(body=>{entry.until=Date.now()+15000;return body;}).catch(e=>{if(recommendationCache.get(ref)===entry)recommendationCache.delete(ref);throw e;});
- recommendationTail=entry.promise.then(()=>undefined,()=>undefined);recommendationCache.set(ref,entry);return entry.promise;
+// Model evaluation and explanatory simulations run in the scheduled publisher.
+// The request path reads only a small freshness manifest and streams the result.
+async function preparedResponse(ref,kind='recommendations'){
+ if(ref!=='main')throw Error('Prepared historical release unavailable');
+ const root=`https://raw.githubusercontent.com/${REPO}/data/prepared-game-model/data/market/prepared-game-model-2026`;
+ const manifestResponse=await fetch(root+'.manifest.json',{signal:AbortSignal.timeout(10000),cf:{cacheTtl:30,cacheEverything:true}});
+ if(!manifestResponse.ok)throw Error('Prepared model manifest unavailable');
+ const manifest=await manifestResponse.json(),now=Date.now(),generated=Date.parse(manifest.generated_at),expires=Date.parse(manifest.expires_at);
+ if(manifest.kind!=='PRECOMPUTED_SERVER_MODEL'||!Number.isFinite(generated)||!Number.isFinite(expires)||generated>now+60000||expires<=now||expires-generated>20*60000)throw Error('Prepared model is awaiting a fresh publication');
+ const response=await fetch(root+(kind==='moneyline'?'.moneyline.json':'.json.gz'),{signal:AbortSignal.timeout(20000),cf:{cacheTtl:30,cacheEverything:true}});
+ if(!response.ok)throw Error('Prepared model result unavailable');
+ return new Response(response.body,{headers:{'content-type':'application/json','cache-control':'no-store',...(kind==='moneyline'?{}:{'content-encoding':'gzip'}),'x-ctd-model-delivery':'precomputed','x-ctd-model-generated-at':manifest.generated_at,'x-ctd-spread-model':'sportsbook-calibration-learning-v1'}});
 }
+async function recommendationBody(ref){return (await preparedResponse(ref)).text();}
 
 
 async function publishedData(request,env,ctx,url){
@@ -70,7 +65,7 @@ export default {
    if(request.method!=='GET')return new Response('Read-only endpoint',{status:405,headers:{Allow:'GET'}});
    if(leaf==='moneyline-projections'){
     const h=url.searchParams.get('history');if(h){const archived=await moneylineRequest({request,env});if(!archived.ok)return archived;return Response.json({...await archived.json(),archived_model:true,current_model_version:FOOTBALL_MONEYLINE_VERSION,note:'Historical captures retain their original formula. Current predictions use CTD football probabilities.'},{headers:{'cache-control':'no-store'}});}
-    try{const feed=JSON.parse(await recommendationBody('main',env,url)),games={};for(const [id,g]of Object.entries(feed.games||{})){if(Date.parse(g.kickoff)<=Date.now())continue;const q=(g.snapshot_evaluations||[]).find(q=>q.markets?.moneyline?.model_version===FOOTBALL_MONEYLINE_VERSION&&q.markets.moneyline.model_prediction);if(q)games[id]={game_id:id,home_team:g.home_team,away_team:g.away_team,kickoff:g.kickoff,evaluation:q.markets.moneyline};}return Response.json({season:feed.season,week:feed.week,status:feed.moneyline_model_status,model_version:FOOTBALL_MONEYLINE_VERSION,checked_at:new Date().toISOString(),sportsbook_inputs_used_for_win_probability:false,learned_correction_enabled:true,automatic_upset_override_enabled:false,games},{headers:{'cache-control':'no-store'}});}catch(e){return Response.json({status:'UNAVAILABLE',error:e.message},{status:502});}
+    try{return await preparedResponse('main','moneyline');}catch(e){return Response.json({status:'UNAVAILABLE',error:e.message},{status:503});}
    }
    const context={request,env,waitUntil:ctx.waitUntil.bind(ctx),params:{path:leaf?[leaf]:[]}};
    const response=await (LIVE_HANDLERS[leaf]||liveRequest)(context);
@@ -86,7 +81,7 @@ export default {
   if(!/^(main|[a-f0-9]{40})$/.test(ref))return new Response('Invalid producer reference',{status:400});
   // Spread authority is evaluated on the server, independently of browser state.
   if(kind==='recommendations'){
-   try{const begin=performance.now(),body=await recommendationBody(ref,env,url);return new Response(body,{headers:{'content-type':'application/json','cache-control':'no-store','x-ctd-spread-model':'sportsbook-calibration-learning-v1','server-timing':'recommendations;dur='+(performance.now()-begin).toFixed(1)}});}catch(e){return Response.json({status:'MODEL_SOURCE_UNAVAILABLE',error:e.message},{status:502});}
+   try{return await preparedResponse(ref);}catch(e){return Response.json({status:'MODEL_SOURCE_UNAVAILABLE',error:e.message},{status:503});}
   }
   const key=new Request(url.origin+prefix+kind+(kind==='release'?'':'?ref='+ref));
   const cache=globalThis.caches?.default,cached=cache?await cache.match(key):null;
