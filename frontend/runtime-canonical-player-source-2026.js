@@ -24,6 +24,8 @@
 (()=>{
  if(window.__CTD_LIVE_CLOUDFLARE_BOOTSTRAP_2026__)return;
  window.__CTD_LIVE_CLOUDFLARE_BOOTSTRAP_2026__=true;
+ // The current entrypoint already mounts these adapters; avoid fetching and executing a second legacy copy.
+ if(document.querySelector('script[src*="live-score-poller.js"]')&&document.querySelector('script[src*="game-detail-panels.js"]')){document.documentElement.dataset.ctdLiveRuntimeBootstrap='ENTRYPOINT_MANAGED';return;}
  const MAIN_LIVE='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/runtime-live-game-center-2026.js?v=20260917-cloudflare-live';
  const local=name=>new URL(name,document.baseURI).href;
  const SOURCES=[
