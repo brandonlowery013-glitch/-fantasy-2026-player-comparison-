@@ -1,3 +1,4 @@
+import {currentTeamPlayers} from './lib/current-team-players.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -20,7 +21,8 @@ const espnAlias={LAR:'LA',WSH:'WAS',JAC:'JAX'};
 const canonTeam=x=>espnAlias[String(x||'').toUpperCase()]||String(x||'').toUpperCase();
 const teamMap={'Arizona Cardinals':'ARI','Atlanta Falcons':'ATL','Baltimore Ravens':'BAL','Buffalo Bills':'BUF','Carolina Panthers':'CAR','Chicago Bears':'CHI','Cincinnati Bengals':'CIN','Cleveland Browns':'CLE','Dallas Cowboys':'DAL','Denver Broncos':'DEN','Detroit Lions':'DET','Green Bay Packers':'GB','Houston Texans':'HOU','Indianapolis Colts':'IND','Jacksonville Jaguars':'JAX','Kansas City Chiefs':'KC','Las Vegas Raiders':'LV','Los Angeles Chargers':'LAC','Los Angeles Rams':'LA','Miami Dolphins':'MIA','Minnesota Vikings':'MIN','New England Patriots':'NE','New Orleans Saints':'NO','New York Giants':'NYG','New York Jets':'NYJ','Philadelphia Eagles':'PHI','Pittsburgh Steelers':'PIT','San Francisco 49ers':'SF','Seattle Seahawks':'SEA','Tampa Bay Buccaneers':'TB','Tennessee Titans':'TEN','Washington Commanders':'WAS'};
 const players=[];
-for(let i=0;i<shards;i++)for(const p of read(`players${i}.json`)){const team=teamMap[p.t];if(!team)throw new Error(`Unknown team for ${p.n}: ${p.t}`);players.push({name:p.n,position:String(p.p||'').toUpperCase(),team});}
+const currentPlayers=currentTeamPlayers(Array.from({length:shards},(_,i)=>read(`players${i}.json`)).flat());
+for(const p of currentPlayers){const team=teamMap[p.t];if(!team)throw new Error(`Unknown team for ${p.n}: ${p.t}`);players.push({name:p.n,position:String(p.p||'').toUpperCase(),team});}
 if(players.length!==activeCount)throw new Error(`Universe mismatch ${players.length}/${activeCount}`);
 const byNorm=new Map(players.map(p=>[norm(p.name),p]));
 

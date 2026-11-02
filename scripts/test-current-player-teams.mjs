@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {resolveCurrentTeams,applyCurrentTeams,athleteRows} from '../lib/current-player-teams.mjs';
+const p=[{n:'Test Receiver',p:'WR',t:'Old Team',o:1,mp:200}],now=Date.now();
+const r={name:'Test Receiver',id:'123',position:'WR'},t={name:'New Team',roster:[r],depth:[r],roster_url:'roster',depth_url:'depth'};
+let x=resolveCurrentTeams(p,[t]);assert.equal(x.status,'PASS');assert.equal(x.players[p[0].n].current_team,'New Team');assert.equal(applyCurrentTeams(p,x)[0].o,1);assert.equal(p[0].t,'Old Team');
+assert.equal(resolveCurrentTeams(p,[{...t,depth:[{...r,id:'456'}]}]).status,'BLOCKED');
+assert.equal(resolveCurrentTeams(p,[{...t,depth:[],roster:[{...r,position:'DT'}]}]).players[p[0].n].current_team,'Old Team');
+assert.throws(()=>applyCurrentTeams(p,{...x,observed_at:new Date(now-13*3600000).toISOString()}));
+assert.equal(athleteRows({athletes:[{id:'123',displayName:'Test Receiver',position:{abbreviation:'WR'}}]}).length,1);
+assert.equal(athleteRows({team:{id:'1',displayName:'Team Header'}}).length,0);
+console.log('PASS: corroborated transfers, identity conflicts, positions, freshness, and immutable model inputs');
