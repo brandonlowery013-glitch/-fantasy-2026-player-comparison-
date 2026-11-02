@@ -57,6 +57,10 @@ for(const u of ledger.materially_implicated_untracked||[]){
   u.admission_request_id=candidateId;
   u.onboarding_manifest=`admissions/queue.json#${candidateId}`;
   u.onboarding_complete=Boolean(byId.get(candidateId).onboarding_complete);
+  if(!u.onboarding_complete){
+    u.requested_decision='ADMIT';u.decision='HOLD_OUT';u.admission_status=entry.status;
+    u.reason='Admission requested; held outside the active model until calibrated onboarding completes. '+(entry.blockers||[]).join('; ');
+  }
   staged++;
 }
 

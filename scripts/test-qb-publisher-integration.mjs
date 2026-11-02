@@ -16,7 +16,9 @@ try{
  write('data/probability/weekly-football-context-inputs-2026.json',context);write('data/probability/weekly-football-context-raw-2026.json',context);
  const run=(name,clock)=>execFileSync(process.execPath,[...(clock?['--import',clock]:[]),path.join(root,'scripts',name)],{cwd:temp,stdio:'pipe'});
  run('build-weekly-projection-generator.mjs');const baseline=read('data/probability/weekly-projection-inputs-2026.json');assert(baseline.players['Rome Odunze'].projections.receiving_yards);
- const opponent=Object.keys(context.players).find(n=>context.players[n].position==='WR'&&context.players[n].signals?.role?.evidence?.team===schedule.games[id].away_team&&n!=='Rome Odunze');
+ const opponentTeam=schedule.games[id].away_team==='CHI'?schedule.games[id].home_team:schedule.games[id].away_team;
+ const opponent=Object.keys(context.players).find(n=>context.players[n].position==='WR'&&context.players[n].signals?.role?.evidence?.team===opponentTeam);
+ assert(opponent,'An actual opposing receiver is required');assert.notEqual(opponentTeam,'CHI');
  const scenario={game_id:id,event_id:schedule.games[id].event_id,kickoff,team:'CHI',starter:'Caleb Williams',starter_id:'4431611',expected_qb:'Tyson Bagent',backup_id:'4434153',status:'BACKUP_EXPECTED',report:{out:true,designation:'Out',reported_at:at,source_url:'TEST_ONLY'}};
  const state={week:schedule.week,season:2026,sportsbook_inputs_used:false,revision_id:'a'.repeat(64),observed_at:at,model_version:'qb-receiver-effects-2026-v1',scenarios:{chi:scenario}};write('data/ingestion/current-quarterback-scenarios-2026.json',state);
  run('build-weekly-projection-generator.mjs');const updated=read('data/probability/weekly-projection-inputs-2026.json');assert.equal(Object.keys(updated.players).length,Object.keys(baseline.players).length);assert.notEqual(updated.players['Rome Odunze'].projections.receiving_yards.mean,baseline.players['Rome Odunze'].projections.receiving_yards.mean);assert.equal(updated.players['Caleb Williams'].status,'UNAVAILABLE');
