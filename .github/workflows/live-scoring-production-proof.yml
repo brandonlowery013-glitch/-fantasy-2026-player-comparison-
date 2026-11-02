@@ -3,6 +3,11 @@ name: Live Scoring Production Proof
 # Pull-request execution validates only the observer contract. Production proof is accepted only from an autonomous
 # schedule or from the completion of the repository's already-proven scheduled Adaptive Pregame Market Refresh.
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/verify-cloudflare-live-scoring-production.mjs'
+      - '.github/workflows/live-scoring-production-proof.yml'
   schedule:
     - cron: '*/15 * * * *'
   workflow_run:
@@ -37,7 +42,7 @@ jobs:
 
   live-window:
     if: >-
-      github.event_name == 'schedule' ||
+      github.event_name == 'schedule' || github.event_name == 'push' ||
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.event == 'schedule' &&
        github.event.workflow_run.head_branch == 'main')
@@ -77,7 +82,7 @@ jobs:
   production-proof:
     if: >-
       needs.live-window.outputs.has_live_game == 'true' &&
-      (github.event_name == 'schedule' ||
+      (github.event_name == 'schedule' || github.event_name == 'push' ||
        (github.event_name == 'workflow_run' &&
         github.event.workflow_run.event == 'schedule' &&
         github.event.workflow_run.head_branch == 'main'))
@@ -85,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      CTD_PRODUCTION_URL: https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev/
+      CTD_PRODUCTION_URL: https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev/cloudflare/
       CTD_PROOF_DIR: artifacts/live-scoring-production-proof
     steps:
       - uses: actions/checkout@v4

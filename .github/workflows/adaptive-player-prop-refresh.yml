@@ -93,6 +93,9 @@ jobs:
           node scripts/build-player-prop-recommendations.mjs --self-test
           node scripts/test-issued-history-storage.mjs
           node scripts/test-market-ingestion-settings.mjs
+          node scripts/test-prop-board-quotes.mjs
+          node scripts/test-prop-board-model.mjs
+          node scripts/test-prop-coverage-recovery.mjs
       - name: Validate live market ingestion contract
         run: node scripts/validate-live-market-ingestion-contract.mjs
       - name: Validate player prop snapshot contract
@@ -165,7 +168,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          paths=(data/ingestion/current-quarterback-scenarios-2026.json data/probability/weekly-projection-inputs-2026.json data/probability/generated/weekly-probability-distributions-2026.json data/market/cloudflare-player-prop-current-2026.json data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
+          paths=(data/market/player-prop-board-model-2026.json data/market/player-prop-board-quotes-2026.json data/ingestion/current-quarterback-scenarios-2026.json data/probability/weekly-projection-inputs-2026.json data/probability/generated/weekly-probability-distributions-2026.json data/market/cloudflare-player-prop-current-2026.json data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${paths[@]}"

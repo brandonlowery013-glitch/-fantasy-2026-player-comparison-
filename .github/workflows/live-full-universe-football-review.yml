@@ -69,9 +69,15 @@ jobs:
         with:
           ref: ${{ github.event_name == 'schedule' && 'main' || github.ref }}
           fetch-depth: 0
+          filter: blob:none
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Verify current roster identities without changing season model
+        run: |
+          node scripts/test-current-player-teams.mjs
+          node scripts/validate-canonical-team-identity.mjs
 
       - name: Build live canonical-universe football review ledger
         run: |
@@ -141,7 +147,6 @@ jobs:
       - name: Build incremental evidence proposals and canonical-universe taxonomy
         run: |
           node scripts/build-substantive-component-recalculation-v2.mjs
-          node scripts/build-substantive-rank-proposals.mjs
           node scripts/build-full-universe-reconciliation-taxonomy.mjs
 
       - name: Validate taxonomy and silent-evidence guard
@@ -192,8 +197,6 @@ jobs:
             analysis/rookie-development-review-current.json
             analysis/substantive-component-recalculation-current.json
             analysis/substantive-component-recalculation-current.md
-            analysis/substantive-rank-proposals-current.json
-            analysis/substantive-rank-proposals-current.md
             analysis/full-universe-reconciliation-taxonomy-current.json
             analysis/full-universe-reconciliation-taxonomy-current.md
           if-no-files-found: error
@@ -203,6 +206,8 @@ jobs:
         shell: bash
         run: |
           EVIDENCE_FILES=(
+            data/ingestion/current-player-teams-2026.json
+            guardrails/canonical-team-identity-report.json
             guardrails/current-football-review.json
             guardrails/live-full-universe-review-summary.json
             guardrails/full-universe-news-review-report.json
@@ -216,8 +221,6 @@ jobs:
             analysis/rookie-development-review-current.json
             analysis/substantive-component-recalculation-current.json
             analysis/substantive-component-recalculation-current.md
-            analysis/substantive-rank-proposals-current.json
-            analysis/substantive-rank-proposals-current.md
             analysis/full-universe-reconciliation-taxonomy-current.json
             analysis/full-universe-reconciliation-taxonomy-current.md
           )

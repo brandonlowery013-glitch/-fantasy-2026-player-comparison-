@@ -1,8 +1,10 @@
+import {currentTeamPlayers} from './lib/current-team-players.mjs';
 import fs from 'node:fs';
 import {loadCanonicalPlayers} from '../lib/canonical-player-source.mjs';
 import {fantasyInjuryStatus} from '../lib/weekly-ranking-availability.mjs';
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
-const {truth,players}=await loadCanonicalPlayers(read);
+const {truth,players:seasonPlayers}=await loadCanonicalPlayers(read);
+const players=currentTeamPlayers(seasonPlayers);
 const context=read('data/probability/weekly-football-context-inputs-2026.json');
 const ranks=read('data/weekly/in-season-ranking-layer-2026.json');
 const review=read('guardrails/current-football-review.json');

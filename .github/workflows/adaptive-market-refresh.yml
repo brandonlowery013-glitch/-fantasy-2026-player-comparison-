@@ -119,3 +119,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: bash scripts/merge-guarded-production-pr.sh "${{ steps.state_pr.outputs.number }}" "${{ steps.persist.outputs.branch }}" merge
+      - name: Publish the current prepared model after successful state refresh
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run publish-prepared-game-model.yml --ref main

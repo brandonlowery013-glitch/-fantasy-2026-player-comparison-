@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import process from 'node:process';
 import { chromium } from 'playwright';
 
-const SITE = process.env.CTD_PRODUCTION_URL || 'https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev/';
+const SITE = process.env.CTD_PRODUCTION_URL || 'https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev/cloudflare/';
 const OUT_DIR = process.env.CTD_PROOF_DIR || 'artifacts/live-scoring-production-proof';
 const ESPN = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -101,7 +101,7 @@ try {
     let matched = null;
     for (let attempt = 0; attempt < 5 && !matched; attempt += 1) {
       const feed = await siteGames(page);
-      for (const event of live) {
+      for (const event of await liveEspnEvents()) {
         const game = feed?.games?.find(candidate => normForPage(candidate.away_team) === event.away_team && normForPage(candidate.home_team) === event.home_team);
         if (game) {
           const scoreMatch = Number(game.away_score) === event.away_score && Number(game.home_score) === event.home_score;

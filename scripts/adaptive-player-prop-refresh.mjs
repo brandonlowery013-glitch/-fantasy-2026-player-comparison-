@@ -1,3 +1,4 @@
+import {propBoardQuotes} from '../lib/prop-board-quotes.mjs';
 import {cloudflarePropEvents} from '../lib/cloudflare-prop-import.mjs';
 import {playerResolver,earlyPropRefreshNeeded} from '../lib/prop-player-identity.mjs';
 import fs from 'node:fs';
@@ -42,15 +43,40 @@ function selfTest(){const now=Date.parse('2026-09-01T00:00:00Z');const tests=[];
 
 async function importScheduledProps(){
  const nowIso=process.env.MARKET_INGEST_NOW||new Date().toISOString(),now=ts(nowIso);if(now==null)throw Error('MARKET_INGEST_NOW invalid');
- const response=await fetch(contract.background_prop_feed_url,{headers:{accept:'application/json'},signal:AbortSignal.timeout(30000)});if(!response.ok)throw Error('Cloudflare prop feed HTTP '+response.status);
- const feed=await response.json(),events=cloudflarePropEvents(feed,{now}),currentPath='data/market/cloudflare-player-prop-current-2026.json';
+ let feed;try{const response=await fetch(contract.background_prop_feed_url,{headers:{accept:'application/json'},signal:AbortSignal.timeout(30000)});if(!response.ok)throw Error('Cloudflare prop feed HTTP '+response.status);feed=await response.json();}catch(error){feed={event:'cloudflare-cron',health:{status:'STALE'},games:[],error:error.message};}
+ let events;try{events=cloudflarePropEvents(feed,{now});}catch(error){events=[];console.log(JSON.stringify({background_feed_status:'UNAVAILABLE',reason:error.message,fallback:'Current-week provider coverage recovery'}));}const currentPath='data/market/cloudflare-player-prop-current-2026.json';
  const previous=exists(currentPath)?read(currentPath):{schema_version:'1.0.0',season:2026,status:'LIVE_PLAYER_PROP_SNAPSHOTS',market_context_only:true,probability_fit_input:false,snapshots:[]},ledger={...previous,snapshots:[]};
  const state=exists(statePath)?read(statePath):initialState();state.games??={};state.summary??=initialState().summary;
  const games=scheduleEntries(),players=loadPlayers();let matched=0;
  for(const e of events){const g=matchEvent(e,games);if(!g)continue;matched++;appendProps(e,g,ledger,players,e.observed_at,contract.provider.weekly_player_prop_markets||{});state.games[g.game_id]={...state.games[g.game_id],provider_event_id:e.id,kickoff:g.kickoff,last_prop_fetch_at:e.observed_at,coverage_version:3,collected_by:'Cloudflare Cron Trigger'};}
+ // Preserve matching fresh quotes from either scheduled collector. When Cloudflare
+ // misses an upcoming matchup, recover only that game using the existing provider
+ // credential and the same cadence/budget rules; never substitute a stale quote.
+ const week=Number(schedule.active_week??schedule.week),expected=games.filter(g=>Number(g.week)===week&&ts(g.kickoff)>now),saved=propBoardQuotes([...(read(propPath).snapshots||[]),...(previous.snapshots||[])],{week,now}).snapshots;
+ let providerEvents=null,recoveryRequests=0;const recoveryFailures=[];
+ for(const g of expected){
+  if(ledger.snapshots.some(q=>q.game_id===g.game_id))continue;
+  const minutes=(ts(g.kickoff)-now)/60000,band=activeBand(minutes),fresh=saved.filter(q=>q.game_id===g.game_id&&now-ts(q.captured_at)<band.refresh_minutes*60000);
+  if(fresh.length){ledger.snapshots.push(...fresh);continue;}
+  const apiKey=process.env[contract.provider.api_key_env]||'';
+  if(!apiKey){recoveryFailures.push({game_id:g.game_id,reason:'Provider credential unavailable for missing matchup recovery'});continue;}
+  try{
+   const quota=state.quota??={requests_remaining:null};
+   if(!budgetAllows(minutes,Number.isFinite(quota.requests_remaining)?quota.requests_remaining:NaN)){recoveryFailures.push({game_id:g.game_id,reason:'QUOTA_RESERVE'});continue;}
+   providerEvents??=await getJson(apiUrl(`/v4/sports/${contract.provider.sport_key}/events`,{dateFormat:'iso'},apiKey),quota);
+   const candidates=providerEvents.filter(e=>matchEvent(e,[g]));if(candidates.length!==1)throw Error('Missing or ambiguous provider game identity');
+   if(!budgetAllows(minutes,Number.isFinite(quota.requests_remaining)?quota.requests_remaining:NaN))throw Error('QUOTA_RESERVE');
+   const e=candidates[0],keys=Object.keys(contract.provider.weekly_player_prop_markets||{});
+   if(runCost+keys.length>Number(contract.cadence.max_provider_market_credits_per_run||128))throw Error('Per-run provider budget reached');
+   const odds=await getJson(apiUrl(`/v4/sports/${contract.provider.sport_key}/events/${e.id}/odds`,{regions:contract.provider.regions,markets:keys.join(','),dateFormat:'iso',oddsFormat:'american'},apiKey),quota);
+   appendProps(odds,g,ledger,players,new Date().toISOString(),contract.provider.weekly_player_prop_markets||{});recoveryRequests++;
+  }catch(error){recoveryFailures.push({game_id:g.game_id,reason:error.message});}
+ }
+ ledger.snapshots=propBoardQuotes(ledger.snapshots,{week,now}).snapshots;
+ state.coverage={expected_games:expected.map(g=>g.game_id),covered_games:[...new Set(ledger.snapshots.map(q=>q.game_id))],recovery_provider_requests:recoveryRequests,recovery_failures:recoveryFailures,checked_at:nowIso};
  const changed=JSON.stringify(previous.snapshots)!==JSON.stringify(ledger.snapshots);
  if(changed){ledger.capture_id=feed.capture_id;ledger.history_url=contract.background_prop_feed_url+'?history=index';state.week=schedule.active_week??schedule.week;state.last_run_at=nowIso;state.collected_by='Cloudflare Cron Trigger';state.last_imported_capture_id=feed.capture_id;state.summary.background_quote_imports=(state.summary.background_quote_imports||0)+1;write(currentPath,ledger);write(statePath,state);}
- console.log(JSON.stringify({result:'PASS',collected_by:'Cloudflare Cron Trigger',capture_id:feed.capture_id,matched_games:matched,current_quotes:ledger.snapshots.length,current_quotes_changed:changed,paid_provider_requests:0,original_observation_times_preserved:true,historical_ledger_modified:false}));
+ console.log(JSON.stringify({result:'PASS',collected_by:'Cloudflare Cron Trigger',capture_id:feed.capture_id,matched_games:matched,current_quotes:ledger.snapshots.length,current_quotes_changed:changed,paid_provider_requests:recoveryRequests,coverage:state.coverage,original_observation_times_preserved:true,historical_ledger_modified:false}));
 }
 
 async function main(){if(process.argv.includes('--self-test'))return selfTest();if(contract.background_prop_feed_url)return importScheduledProps();const key=process.env[contract.provider.api_key_env]||'';if(!key)throw new Error(`${contract.provider.api_key_env} is required`);const nowIso=process.env.MARKET_INGEST_NOW||new Date().toISOString(),now=ts(nowIso);if(now==null)throw new Error('MARKET_INGEST_NOW invalid');const ledger=read(propPath);ledger.snapshots??=[];const state=exists(statePath)?read(statePath):initialState();state.games??={};state.summary??=initialState().summary;state.quota??=initialState().quota;const quota={...state.quota};const games=scheduleEntries();const players=loadPlayers();const desiredMap=contract.provider.weekly_player_prop_markets||{};const desiredSet=new Set(Object.keys(desiredMap));const events=await getJson(apiUrl(`/v4/sports/${contract.provider.sport_key}/events`,{dateFormat:contract.provider.date_format||'iso'},key),quota);const matched=[];for(const e of events||[]){const g=matchEvent(e,games);if(g)matched.push({e,g});}

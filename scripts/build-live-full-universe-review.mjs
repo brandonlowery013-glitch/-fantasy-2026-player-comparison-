@@ -1,3 +1,4 @@
+import {currentTeamPlayers} from './lib/current-team-players.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -19,6 +20,7 @@ const htmlDecode=s=>String(s||'').replace(/&nbsp;/gi,' ').replace(/&amp;/gi,'&')
 const stripHtml=s=>textNorm(htmlDecode(String(s||'').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ')));
 
 let active=[];for(let i=0;i<activeShards;i++)active.push(...read(`players${i}.json`));
+active=currentTeamPlayers(active);
 if(active.length!==activeCount)throw new Error(`active universe mismatch: expected ${activeCount}, found ${active.length}`);
 const activeByNorm=new Map(active.map(p=>[norm(p.n),p]));
 const surnameCounts=new Map();for(const p of active){const parts=textNorm(p.n).split(' ').filter(Boolean);const last=parts.at(-1);if(last)surnameCounts.set(last,(surnameCounts.get(last)||0)+1);}

@@ -35,6 +35,7 @@ jobs:
         with:
           ref: ${{ github.event_name == 'schedule' && 'main' || github.ref }}
           fetch-depth: 0
+          filter: blob:none
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -55,6 +56,11 @@ jobs:
       - name: Use protected main as the canonical starting state
         if: github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: echo 'Serialized production runs start from protected main; stale generated branches are never reconciled into the current-model layer.'
+
+      - name: Verify current roster identities without changing season model
+        run: |
+          node scripts/test-current-player-teams.mjs
+          node scripts/validate-canonical-team-identity.mjs
 
       - name: Collect current live football news and context
         run: |
@@ -158,7 +164,7 @@ jobs:
         run: |
           set -euo pipefail
           PATCH=$(node -p "require('./MODEL_SOURCE_OF_TRUTH.json').current_update_layer")
-          FILES=(data/weekly/player-detail-feed-2026.json "$PATCH" guardrails/live-news-model-application-report.json guardrails/current-football-review.json analysis/substantive-component-recalculation-current.json analysis/full-universe-reconciliation-taxonomy-current.json analysis/live-news-decision-audit-current.json)
+          FILES=(data/ingestion/current-player-teams-2026.json guardrails/canonical-team-identity-report.json data/weekly/player-detail-feed-2026.json "$PATCH" guardrails/live-news-model-application-report.json guardrails/current-football-review.json analysis/substantive-component-recalculation-current.json analysis/full-universe-reconciliation-taxonomy-current.json analysis/live-news-decision-audit-current.json)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -- "${FILES[@]}"
