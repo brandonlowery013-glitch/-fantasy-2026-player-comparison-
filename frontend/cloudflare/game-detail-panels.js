@@ -19,8 +19,12 @@
   return selection?{selection,probability:Math.max(a,b)}:null;
  }
  let comparisons={},current={};
- function setCurrent(payload){current=payload?.games||{};}
- function setComparisons(payload){comparisons=payload?.kind==='RECONSTRUCTED_NOT_LIVE'?payload.games||{}:{};}
+ try{const saved=JSON.parse(root.localStorage?.getItem('ctdSavedGameComparisons2026')||'null');if(saved?.season===2026)comparisons=saved.games||{};}catch{}
+ function setCurrent(payload){current=payload?.games||{};
+  for(const [id,g] of Object.entries(current)){if(!(Date.parse(g.kickoff)<=Date.now()))continue;const qs=(g.snapshot_evaluations||[]).filter(q=>q.eligible_for_current_recommendation&&Date.parse(q.captured_at)<=Date.parse(g.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));const q=qs.find(q=>q.book==='draftkings')||qs[0];if(!q)continue;const keys=['model_version','model_prediction','side_a','side_b','fair_market','recommendation','quote','context_validation','football_source','value_policy','thresholds'];const markets=Object.fromEntries(Object.entries(q.markets||{}).map(([k,m])=>[k,Object.fromEntries(Object.entries(m).filter(([key])=>keys.includes(key)))]));comparisons[id]={week:g.week,away_team:g.away_team,home_team:g.home_team,kickoff:g.kickoff,football_projection:g.football_projection,rerun:g.rerun,model_version:g.model_version,model_predictions:g.model_predictions,snapshot_evaluations:[{snapshot_id:q.snapshot_id,book:q.book,captured_at:q.captured_at,market:q.market,eligible_for_current_recommendation:true,markets}]};}
+  try{root.localStorage?.setItem('ctdSavedGameComparisons2026',JSON.stringify({season:2026,games:comparisons}));}catch{}
+ }
+ function setComparisons(payload){if(['RECONSTRUCTED_NOT_LIVE','SAVED_GAME_COMPARISONS'].includes(payload?.kind))comparisons={...comparisons,...payload.games};}
  function resolve(g){if(g?.snapshot_evaluations?.length)return g;return Object.values({...comparisons,...current}).find(x=>x.home_team===g?.home_team&&x.away_team===g?.away_team&&Date.parse(x.kickoff)===Date.parse(g?.kickoff||g?.event_start))||g;}
 
  const implied=o=>o<0?-o/(100-o):100/(100+o);
@@ -59,7 +63,7 @@
   return `<section class="ctdUpsetPanel"><h3>${started?'PREGAME ':''}UPSET PROBABILITY &amp; UNDERDOG VALUE</h3><div class="ctdUpsetGrid"><div><span>Sportsbook underdog</span><strong>${esc(u.team)} ${esc(odds(u.price))}</strong><small>${esc(u.book)} · ${esc(quote)}</small></div><div><span>Chance to win outright</span><strong>${esc(pct(u.probability))}</strong><small>Tie chance ${esc(pct(u.tie))}</small></div><div><span>${started?'Pregame underdog value':'Underdog moneyline value'}</span><strong class="${u.qualifies?'ctdValueYes':''}">${esc(u.status.replace('Positive EV','Positive return'))}</strong><small>Expected profit per $100: ${esc((u.ev<0?"−":u.ev>0?"+":"")+"$"+Math.abs(u.ev*100).toFixed(2))}</small></div></div><details data-reading-key="upset"><summary>How upset probability and value are measured</summary><div class="ctdUpsetCompare">Decided-game win chance: <b>${esc(pct(u.conditionalProbability))}</b> · Market without margin: <b>${esc(pct(u.marketProbability))}</b> · Break-even at ${esc(odds(u.price))}: <b>${esc(pct(u.breakEven))}</b> · Edge: <b>${esc((100*u.edge).toFixed(1))} percentage points</b></div><p>An upset is the sportsbook underdog winning outright. The underdog is identified from the two moneyline prices at the quoted sportsbook. Covering a spread is a separate event.</p><p>The upset chance is this team’s outright win probability from the selected moneyline forecast for this game. A tie is not an upset. For upcoming games, the current football model uses performance, quarterback and injury availability, matchup inputs and the existing football-only learning adjustment.</p><p>Moneyline comparisons exclude refunded ties: decided-game win chance = P(win) / [1 − P(tie)]. Market chance removes the margin by dividing the underdog’s implied probability by both teams’ implied probabilities added together. Break-even uses the offered price itself.</p><p>Expected return per $1 = P(win) × profit on a winning $1 bet − P(loss). A refunded tie returns the stake and contributes zero profit. Value qualifies at ${esc((100*u.minimumEdge).toFixed(1))} percentage points of edge and ${esc((100*u.minimumEV).toFixed(1))}% expected return with current verified inputs. No 50% minimum win chance is imposed.</p><p>The sportsbook prices identify the underdog and its payout. The current football forecast is calculated separately; saved pregame forecasts remain as recorded.</p></details></section>`;
  }
  function build(g,s,directions={},meta={},now=Date.now()){
-  g=resolve(g);if(!s&&g?.reconstruction)s=g.snapshot_evaluations?.[0];
+  g=resolve(g);if(!s){const qs=(g?.snapshot_evaluations||[]).filter(q=>q.eligible_for_current_recommendation&&Date.parse(q.captured_at)<=Date.parse(g.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));s=qs.find(q=>q.book==='draftkings')||qs[0]||(g?.reconstruction?g.snapshot_evaluations?.[0]:null);}
   const kickoff=Date.parse(g?.kickoff||g?.event_start),started=Number.isFinite(kickoff)&&kickoff<=now;
   const rows=kinds.map(kind=>{
    const e=s?.markets?.[kind],rec=e?.recommendation,dir=directions[kind]||direction(kind,e,s,g),quote=e?.quote||{},at=quote.captured_at||s?.captured_at;
@@ -140,7 +144,7 @@
   document.head.appendChild(style);
 
   async function get(url){const r=await fetch(url.startsWith(RAW)?`${url}?refresh=${Math.floor(Date.now()/60000)}`:url,{cache:'no-store',signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error(`Request failed (${r.status})`);return r.json()}
-  function marketGame(g){return Number(markets?.week)===Number(BET_FEED.week)?Object.values(markets.games||{}).find(x=>same(x,g)):null}
+  function marketGame(g){const live=Number(markets?.week)===Number(BET_FEED.week)?Object.values(markets.games||{}).find(x=>same(x,g)):null;if(live)return live;const saved=window.CTD_MARKET_PICKS?.comparisonGame?.(g);return saved?.snapshot_evaluations?.length?saved:null}
   function pregame(raw){return (raw?.snapshot_evaluations||[]).filter(s=>s.eligible_for_current_recommendation===true&&Date.parse(s.captured_at)<=Date.parse(raw.kickoff)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at))}
   function snapshot(raw){if(raw?.reconstruction?.kind==='RECONSTRUCTED_NOT_LIVE')return raw.snapshot_evaluations?.[0];const rows=pregame(raw);return rows.find(x=>x.book==='draftkings')||rows[0]}
   function modelDirection(kind,e,s,raw,g){
