@@ -1,0 +1,45 @@
+name: Finish guarded ranking publication repair
+on:
+  push:
+    branches: [maintenance/finish-guarded-ranking-3086]
+    paths: ['.github/workflows/finish-guarded-ranking-3086.yml']
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+  actions: write
+concurrency:
+  group: production-main-writer
+  cancel-in-progress: false
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Authenticate branch refreshes as the approved CTD App
+        id: automation-app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3
+        with:
+          client-id: Iv23liKb5t5sPohFHK3m
+          private-key: ${{ secrets.CTD_AUTOMATION_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.automation-app.outputs.token }}
+          ref: fix/guarded-ranking-publication
+          fetch-depth: 0
+          filter: blob:none
+      - name: Merge only the exact up-to-date protected candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/merge-guarded-production-pr.sh 3086 fix/guarded-ranking-publication merge
+      - name: Publish current model after the verified repair
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run publish-prepared-game-model.yml --ref main
+      - name: Verify the full outlook and ranking publication chain
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run weekly-player-outlook.yml --ref main
