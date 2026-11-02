@@ -1,0 +1,35 @@
+name: Verify automatic update access
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, fix/ctd-automatic-app-auth-20261101]
+    paths:
+      - '.github/workflows/verify-automatic-update-access.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate saved private key and repository installation
+        id: automation-app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3
+        with:
+          client-id: Iv23liKb5t5sPohFHK3m
+          private-key: ${{ secrets.CTD_AUTOMATION_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Verify token has access only to this repository
+        env:
+          GH_TOKEN: ${{ steps.automation-app.outputs.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api installation/repositories --jq '[.repositories[].full_name]' > /tmp/ctd-app-repositories.json
+          jq -e --arg repo "$GITHUB_REPOSITORY" 'length == 1 and .[0] == $repo' /tmp/ctd-app-repositories.json
+          gh api "repos/$GITHUB_REPOSITORY" --jq '{repository:.full_name,can_push:.permissions.push}' > /tmp/ctd-app-access.json
+          jq -e --arg repo "$GITHUB_REPOSITORY" '.repository == $repo and .can_push == true' /tmp/ctd-app-access.json
+          echo 'PASS: saved key authenticated; installation token is limited to the Fantasy repository with the requested write permissions.'
+          echo '### Automatic update access: PASS' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Saved key authenticated successfully. Token is limited to this repository; code and pull-request write access verified by token creation.' >> "$GITHUB_STEP_SUMMARY"

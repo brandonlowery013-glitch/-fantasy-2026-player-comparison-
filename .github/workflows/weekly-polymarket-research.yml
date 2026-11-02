@@ -36,8 +36,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Authenticate automatic repository updates
+        id: automation-app
+        if: github.event_name != 'pull_request'
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3
+        with:
+          client-id: Iv23liKb5t5sPohFHK3m
+          private-key: ${{ secrets.CTD_AUTOMATION_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
       - uses: actions/checkout@v4
         with:
+          token: ${{ steps.automation-app.outputs.token || github.token }}
           ref: main
           fetch-depth: 1
       - uses: actions/setup-node@v4
@@ -69,7 +79,7 @@ jobs:
         id: pr
         if: steps.persist.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.automation-app.outputs.token }}
         run: |
           url=$(gh pr create --base main --head '${{ steps.persist.outputs.branch }}' --title 'Production: fixed-weight market research capture and scoring' --body 'Append-only pregame research predictions and verified final scoring. Fixed Week 5 weights; no live pick changes, refitting, promotion or wagers. Required protected-candidate Guardrail QA must pass.')
           echo "number=${url##*/}" >> "$GITHUB_OUTPUT"

@@ -24,8 +24,18 @@ jobs:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
+      - name: Authenticate automatic repository updates
+        id: automation-app
+        if: github.event_name != 'pull_request'
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3
+        with:
+          client-id: Iv23liKb5t5sPohFHK3m
+          private-key: ${{ secrets.CTD_AUTOMATION_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
       - uses: actions/checkout@v4
         with:
+          token: ${{ steps.automation-app.outputs.token || github.token }}
           ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
           fetch-depth: 0
       - uses: actions/setup-node@v4
@@ -87,7 +97,7 @@ jobs:
         id: persist
         if: github.event_name == 'workflow_run' || github.event_name == 'workflow_dispatch'
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.automation-app.outputs.token }}
         shell: bash
         run: |
           FILES=(data/weekly/player-detail-feed-2026.json data/weekly/in-season-ranking-layer-2026.json guardrails/in-season-ranking-layer-report.json exports/fantasy-2026-current.xlsx exports/fantasy-2026-current.docx)
