@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   checks: read
+  actions: write
 
 concurrency:
   group: ctd-preview-season-history
@@ -209,6 +210,11 @@ jobs:
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Refresh preview season history and calibration"
           git push origin HEAD:refs/heads/frontend/ctd-cloudflare-work
+      - name: Refresh the prepared game model after a successful preview cycle
+        if: success() && steps.cadence.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run publish-prepared-game-model.yml --ref main
       - name: Upload weekly production lifecycle state
         if: always()
         uses: actions/upload-artifact@v4
