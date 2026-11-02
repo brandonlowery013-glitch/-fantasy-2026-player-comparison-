@@ -14,12 +14,16 @@ permissions:
   contents: write
   pull-requests: write
   checks: read
-  actions: read
+  statuses: read
+  actions: write
 
 jobs:
   weekly-player-outlook:
     if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.event_name == 'pull_request' && format('outlook-validation-pr-{0}', github.event.pull_request.number) || 'production-main-writer' }}
+      cancel-in-progress: false
     steps:
       - name: Authenticate automatic repository updates
         id: automation-app
@@ -155,13 +159,17 @@ jobs:
           PR_URL=$(gh pr create --base main --head "$BRANCH" --title "Refresh canonical weekly player outlook" --body "Automated weekly outlook refresh for the active ${EXPECTED_PLAYERS}-player source-of-truth universe. In-season outlook only; ADP is archival. Required guardrails must pass before merge. Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}.")
           echo 'changed=true' >> "$GITHUB_OUTPUT"
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "pr_number=${PR_URL##*/}" >> "$GITHUB_OUTPUT"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
       - name: Auto-merge generated outlook only after required checks
-        if: steps.persist.outputs.changed == 'true' && github.event_name == 'workflow_run'
+        if: steps.persist.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           PR_URL: ${{ steps.persist.outputs.pr_url }}
         shell: bash
         run: |
-          timeout 1800s gh pr checks "$PR_URL" --required --watch --interval 10
-          gh pr merge "$PR_URL" --merge --delete-branch
+          # The validated generated files are already committed in the PR.
+          # Clear only this ephemeral runner checkout before switching to its remote branch.
+          git reset --hard HEAD
+          bash scripts/merge-guarded-production-pr.sh "${{ steps.persist.outputs.pr_number }}" "${{ steps.persist.outputs.branch }}" merge
