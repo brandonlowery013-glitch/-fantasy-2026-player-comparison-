@@ -7,6 +7,7 @@ const opts={week:8,generated_at:at,player:'AJ Barner',athlete_id:'4576297',team:
 const p=fitUsage(games,opts);assert(p);assert.equal(p.sample.length,7);assert(Math.abs(p.projection.projections.receiving_yards.mean-27.340956576667043)<1e-9);
 for(const [stat,s]of Object.entries(p.distribution.distributions)){const q=lineProbabilities(s,stat==='receiving_yards'?28.5:3.5);assert(Math.abs(q.over+q.under+q.push-1)<1e-9);const x=p.projection.projections[stat];assert(x.floor<=x.median&&x.median<=x.ceiling);}
 assert.equal(fitUsage(games.slice(0,3),opts),null);
+assert.equal(fitUsage(games.map(g=>({...g,targets:0,receptions:0,receiving_yards:0})),opts),null,'zero receiving history must not become a certain under');
 assert.equal(fitUsage([...games,{...games[0],week:8,receiving_yards:9999}],opts).input_hash,p.input_hash,'current/future-week results cannot enter the forecast');
 const learned=fitUsage(games,{...opts,settled:[{player:'AJ Barner',week:7,stat:'receiving_yards',actual:40,mean:20,raw_mean:20,settled_at:'2026-11-01T00:00:00Z'}]});assert(learned.projection.projections.receiving_yards.mean>p.projection.projections.receiving_yards.mean);
 const future=fitUsage(games,{...opts,settled:[{player:'AJ Barner',week:8,stat:'receiving_yards',actual:1000,mean:20,settled_at:at}]});assert.equal(future.input_hash,p.input_hash);
