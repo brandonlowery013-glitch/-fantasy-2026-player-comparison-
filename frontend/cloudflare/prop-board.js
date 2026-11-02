@@ -1,6 +1,7 @@
 (()=>{
  'use strict';
  let liveHelpers=null;const liveReady=import(new URL('lib/live-prop-board.mjs',document.currentScript.src)).then(x=>liveHelpers=x);
+ let supplementalFeed=null;const supplementReady=import(new URL('lib/supplemental-prop-coverage.mjs',document.currentScript.src));
  let propModel=null,propPolicy=null;const propModelReady=import(new URL('lib/current-prop-model.mjs',document.currentScript.src)).then(x=>propModel=x);
  const RAW='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/';
  const esc=x=>String(x??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -92,6 +93,11 @@
   return [model,note+direction+(r?.decision==='PASS'?'Betting: pass. We do not see enough value at this price.':'Betting recommendation unavailable.')];
  }
  function explanation(s){
+  const extra=supplementalFeed?.players?.[s.player],extraStat=extra?.projection?.projections?.[s.stat];
+  if(extraStat&&projection?.players?.[s.player]===extra.projection&&Date.parse(extra.kickoff)>Date.now()){
+   const n=x=>Number(x).toFixed(1);
+   return '<details><summary>Numbers and sources</summary><p>Recent receiving usage model · '+esc(extra.sample.length)+' completed 2026 games.</p><p>Projected '+esc(label(s.stat))+': '+n(extraStat.mean)+' · Floor (10th percentile): '+n(extraStat.floor)+' · Median: '+n(extraStat.median)+' · Ceiling (90th percentile): '+n(extraStat.ceiling)+'.</p><p>More recent games carry more weight (0.8 per older game). Predictive uncertainty includes the limited sample size. Sportsbook prices do not set this projection.</p><p>Saved pregame forecasts are compared with final results and update the next weekly fit.</p><a href="'+esc(extra.source_url)+'" target="_blank" rel="noopener">ESPN game logs</a></details>';
+  }
   const e=s.evaluation;if(!e)return '';
   const matches=d=>d?.season===2026&&Number(d.week)===Number(s.week);
   if(!matches(projection)||!matches(distribution))return e.show_work?.reader?window.CTD_FORMATTED_WORK?.(e.show_work)||'':'';
@@ -117,8 +123,8 @@ function renderData(){
   }).join('')}</div>${visible.length>visibleLimit?'<button type="button" class="btn" data-prop-more>Show 36 more markets</button>':''}${!visible.length?`<p class="copy">${snapshots?'No sportsbook prop lines are available for this week and filter.':'Loading sportsbook prop lines…'}</p>`:''}</div>`;
  }
  async function refresh(){if(busy)return;busy=true;try{
-  await Promise.all([liveReady,availabilityReady,qbReady,propModelReady]);
-  const results=await Promise.allSettled(['/api/live/prop-quotes','data/market/player-prop-board-model-2026.json','data/ingestion/team-personnel-2026.json','data/probability/weekly-projection-inputs-2026.json','data/probability/generated/weekly-probability-distributions-2026.json','data/probability/weekly-football-context-inputs-2026.json','data/market/weekly-game-market-recommendations-2026.json','data/calibration/weekly-event-schedule-2026.json','/api/live/availability','/api/live/qb-projections'+(testTeam?'?verify='+encodeURIComponent(testTeam):''),'data/sources/player-prop-recommendation-layer-2026.json','data/market/player-prop-board-quotes-2026.json','/cloudflare/api/published/frontend/ctd-cloudflare-work/data/market/player-prop-board-quotes-2026.json'].map(async path=>{const r=await fetch(path.startsWith('/')?path:RAW+path+'?refresh='+Math.floor(Date.now()/300000),{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!r.ok){if(['data/market/player-prop-board-quotes-2026.json','data/market/player-prop-board-model-2026.json'].includes(path)){const fallback=await fetch('/cloudflare/api/published/frontend/ctd-cloudflare-work/'+path,{cache:'no-store'});if(fallback.ok)return fallback.json();}throw Error('HTTP '+r.status);}return r.json();}));
+  await Promise.all([liveReady,availabilityReady,qbReady,propModelReady,supplementReady]);
+  const results=await Promise.allSettled(['/api/live/prop-quotes','data/market/player-prop-board-model-2026.json','data/ingestion/team-personnel-2026.json','data/probability/weekly-projection-inputs-2026.json','data/probability/generated/weekly-probability-distributions-2026.json','data/probability/weekly-football-context-inputs-2026.json','data/market/weekly-game-market-recommendations-2026.json','data/calibration/weekly-event-schedule-2026.json','/api/live/availability','/api/live/qb-projections'+(testTeam?'?verify='+encodeURIComponent(testTeam):''),'data/sources/player-prop-recommendation-layer-2026.json','data/market/player-prop-board-quotes-2026.json','/cloudflare/api/published/frontend/ctd-cloudflare-work/data/market/player-prop-board-quotes-2026.json','data/market/supplemental-weekly-props-2026.json'].map(async path=>{const r=await fetch(path.startsWith('/')?path:RAW+path+'?refresh='+Math.floor(Date.now()/300000),{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!r.ok){if(['data/market/player-prop-board-quotes-2026.json','data/market/player-prop-board-model-2026.json','data/market/supplemental-weekly-props-2026.json'].includes(path)){const fallback=await fetch('/cloudflare/api/published/frontend/ctd-cloudflare-work/'+path,{cache:'no-store'});if(fallback.ok)return fallback.json();}throw Error('HTTP '+r.status);}return r.json();}));
   if(results[0].status==='fulfilled')snapshots=results[0].value;if(results[1].status==='fulfilled')recs=results[1].value;
   if(results[2].status==='fulfilled'){personnel=results[2].value;indexPersonnel();}
   if(results[3].status==='fulfilled')baseProjection=results[3].value;if(results[4].status==='fulfilled')baseDistribution=results[4].value;if(results[5].status==='fulfilled')context=results[5].value;if(results[6].status==='fulfilled')gameMarkets=results[6].value;
@@ -130,6 +136,10 @@ function renderData(){
   if(published.length)publishedSnapshots={season:2026,snapshots:published.flatMap(f=>f.snapshots||[])};
   qbState=qbHelpers.applyLiveQBFeed({projection:baseProjection,distribution:baseDistribution,feed:qbFeed,availability:availabilityFeed});
   projection=qbState.projection;distribution=qbState.distribution;
+  if(results[13]?.status==='fulfilled')supplementalFeed=results[13].value;
+  const blockedTeams=Object.values(qbFeed?.scenarios||{}).filter(q=>['BACKUP_EXPECTED','REVIEW_REQUIRED'].includes(q.status)).map(q=>q.team);
+  const merged=(await supplementReady).mergeSupplemental(projection,distribution,supplementalFeed,{week:currentSchedule?.week,blockedTeams});
+  projection=merged.projection;distribution=merged.distribution;
   window.CTD_QB_PROJECTION_FOR=(name,base)=>{if(!qbState.valid)return base;const team=context?.players?.[name]?.signals?.role?.evidence?.team,scenario=Object.values(qbFeed?.scenarios||{}).find(s=>s.team===team&&Date.parse(s.kickoff)>Date.now());if(qbState.holds?.has(scenario?.game_id+':'+team)||scenario?.status==='REVIEW_REQUIRED'&&scenario.report?.out)return {...base,status:'REVIEW_REQUIRED',projections:{},reason:scenario.reason};const p=qbState.projection.players?.[name]||base;return qbFeed.simulation?{...p,qb_simulation:true}:p;};
   window.dispatchEvent(new CustomEvent('ctd:qb-projections',{detail:{valid:qbState.valid,feed:qbFeed}}));
   window.dispatchEvent(new Event('ctd:availability-updated'));

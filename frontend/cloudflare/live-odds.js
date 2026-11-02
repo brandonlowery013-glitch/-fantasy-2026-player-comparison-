@@ -53,7 +53,7 @@
       const snapshots=(g.snapshot_evaluations||[]).filter(q=>q.eligible_for_current_recommendation===true&&Date.parse(q.captured_at)<=Date.parse(g.kickoff||g.event_start)).sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at));
       const selected=snapshots.find(q=>q.book==='draftkings')||snapshots[0],view=window.CTD_MARKET_PICKS?.build(g,selected),r=view?.rows.find(r=>r.kind===kind);
       const lines=[(kind==='moneyline'?'Model winner: ':'Model pick: ')+(r?.prediction||'Awaiting model analysis'),(view?.started?'Pregame value: ':'Value bet: ')+(r?.bet||'Awaiting model inputs')];
-      if(kind==='moneyline'){const u=view?.upset;lines.push(u?.ready?'Upset chance: '+u.team+' '+(100*u.probability).toFixed(1)+'%':'Upset: '+(u?.status||'Awaiting model'));if(u?.ready)lines.push('Underdog value: '+u.status.replace('Positive EV','Positive return'));}
+      if(kind==='moneyline'){const u=view?.upset;lines.push(u?.ready?'Upset chance: '+u.team+' '+(100*u.probability).toFixed(1)+'%':'Upset: '+(u?.status||'Awaiting model'));if(u?.ready)lines.push('Underdog value: '+window.CTD_MARKET_PICKS.underdogValueLabel(u));}
       for(const text of lines){const line=document.createElement('span');line.style.display='block';line.textContent=text;pick.appendChild(line);}
       row.append(market,pick);
     });

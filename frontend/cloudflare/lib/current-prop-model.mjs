@@ -13,6 +13,7 @@ export function evaluateCurrentProp(s,{projection,distribution,schedule,availabi
  if(!game||Date.parse(game.event_start||game.kickoff)!==kickoff||![game.home_team,game.away_team].map(canon).includes(canon(s.team))||s.position==='UNKNOWN')return null;
  if(![projection,distribution].every(d=>Number.isFinite(Date.parse(d.generated_at))&&Date.parse(d.generated_at)<=now&&Date.parse(d.generated_at)<kickoff))return null;
  const player=projection.players?.[s.player],spec=distribution.distributions?.[s.player]?.distributions?.[statKey(s.stat)];
+ if(spec?.generated_at&&(!Number.isFinite(Date.parse(spec.generated_at))||Date.parse(spec.generated_at)>now||Date.parse(spec.generated_at)>=kickoff))return null;
  if(!player||spec?.status!=='SHADOW_ONLY'||spec.market_price_used_in_probability!==false||!availability?.can_project||!policy)return null;
  if(!finite(s.line)||![s.over_price,s.under_price].every(o=>Number.isInteger(o)&&Math.abs(o)>=100))return null;
  const required=['minimum_probability_edge','minimum_expected_value','minimum_model_conditional_win_probability'];
@@ -27,5 +28,5 @@ export function evaluateCurrentProp(s,{projection,distribution,schedule,availabi
  });
  sides.sort((a,b)=>b.expected_value-a.expected_value);
  const best=sides[0],side=q.over>q.under?'OVER':q.under>q.over?'UNDER':null;
- return {...s,evaluated_at:new Date(now).toISOString(),evaluation_source:'CURRENT_QUOTE_EXISTING_FOOTBALL_DISTRIBUTION',model_generated_at:distribution.generated_at,model:{over_probability:q.over,under_probability:q.under,push_probability:q.push},model_pick:{status:side?'AVAILABLE':'EVEN',side,conditional_on_availability:!confirmed},eligibility:{eligible_for_projection:true,eligible_for_pick:confirmed},projection_availability:availability,sides,recommendation:{decision:confirmed?best.decision:'WAIT',side:confirmed&&best.decision==='PICK'?best.side:null,confidence:confirmed?best.confidence:null,expected_value:best.expected_value,probability_edge:best.probability_edge,...(!confirmed?{reason:'EXPLICIT_ACTIVE_STATUS_REQUIRED'}:{})}};
+ return {...s,evaluated_at:new Date(now).toISOString(),evaluation_source:'CURRENT_QUOTE_EXISTING_FOOTBALL_DISTRIBUTION',model_generated_at:spec.generated_at||distribution.generated_at,model:{over_probability:q.over,under_probability:q.under,push_probability:q.push},model_pick:{status:side?'AVAILABLE':'EVEN',side,conditional_on_availability:!confirmed},eligibility:{eligible_for_projection:true,eligible_for_pick:confirmed},projection_availability:availability,sides,recommendation:{decision:confirmed?best.decision:'WAIT',side:confirmed&&best.decision==='PICK'?best.side:null,confidence:confirmed?best.confidence:null,expected_value:best.expected_value,probability_edge:best.probability_edge,...(!confirmed?{reason:'EXPLICIT_ACTIVE_STATUS_REQUIRED'}:{})}};
 }
