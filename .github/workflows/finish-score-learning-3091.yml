@@ -1,0 +1,60 @@
+name: Finish validated football score learning
+on:
+  push:
+    branches: [maintenance/finish-score-learning-3091]
+    paths: ['.github/workflows/finish-score-learning-3091.yml']
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+  actions: write
+concurrency:
+  group: production-main-writer
+  cancel-in-progress: false
+jobs:
+  finish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Authenticate branch refreshes as the approved CTD App
+        id: automation-app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3
+        with:
+          client-id: Iv23liKb5t5sPohFHK3m
+          private-key: ${{ secrets.CTD_AUTOMATION_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.automation-app.outputs.token }}
+          ref: fix/football-score-learning-gated
+          fetch-depth: 0
+          filter: blob:none
+      - name: Merge only the exact up-to-date protected candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/merge-guarded-production-pr.sh 3091 fix/football-score-learning-gated merge
+      - name: Verify the real score refresh and held candidate
+        run: |
+          node scripts/refresh-current-game-scoring.mjs
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const v=JSON.parse(fs.readFileSync('data/probability/generated/football-score-learning-validation-2026.json'));
+          const c=JSON.parse(fs.readFileSync('data/probability/generated/candidate-football-score-learning-2026.json'));
+          const active=JSON.parse(fs.readFileSync('data/probability/generated/current-game-scoring-2026.json'));
+          assert.equal(v.status,'VALIDATION_FAILED');
+          assert.equal(c.published_to_page,false);
+          assert.equal(active.score_learning.status,'VALIDATION_FAILED');
+          assert(Object.values(c.games).every(g=>g.evidence.score_learning.sportsbook_inputs_used===false));
+          console.log(JSON.stringify({verification:'PASS',validation_status:v.status,candidate_published:c.published_to_page,training_games:c.learning_fit.n,candidate_games:Object.keys(c.games),results:v.results}));
+          NODE
+      - name: Save the real learning validation and candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-football-score-learning
+          path: |
+            data/probability/generated/football-score-learning-validation-2026.json
+            data/probability/generated/candidate-football-score-learning-2026.json
+          if-no-files-found: error
