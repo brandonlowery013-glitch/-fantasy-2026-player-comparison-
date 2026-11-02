@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {fitUsage,regularGames,mergeSupplemental,VERSION} from '../lib/supplemental-weekly-props.mjs';
+import {lineProbabilities} from '../lib/distribution-tail-math.mjs';
+const now=Date.parse('2026-11-02T04:00:00Z'),at=new Date(now).toISOString(),kickoff='2026-11-03T01:15:00Z';
+const games=Array.from({length:7},(_,i)=>({event_id:String(i+1),week:i+1,date:`2026-10-${String(10+i).padStart(2,'0')}T00:00:00Z`,targets:[2,1,9,3,5,4,5][i],receptions:[2,1,5,1,3,3,4][i],receiving_yards:[13,8,69,12,20,16,42][i]}));
+const opts={week:8,generated_at:at,player:'AJ Barner',athlete_id:'4576297',team:'SEA',position:'TE',game_id:'2026-W8-CHI-SEA',kickoff};
+const p=fitUsage(games,opts);assert(p);assert.equal(p.sample.length,7);assert(Math.abs(p.projection.projections.receiving_yards.mean-27.340956576667043)<1e-9);
+for(const [stat,s]of Object.entries(p.distribution.distributions)){const q=lineProbabilities(s,stat==='receiving_yards'?28.5:3.5);assert(Math.abs(q.over+q.under+q.push-1)<1e-9);const x=p.projection.projections[stat];assert(x.floor<=x.median&&x.median<=x.ceiling);}
+assert.equal(fitUsage(games.slice(0,3),opts),null);
+assert.equal(fitUsage(games.map(g=>({...g,targets:0,receptions:0,receiving_yards:0})),opts),null,'zero receiving history must not become a certain under');
+assert.equal(fitUsage([...games,{...games[0],week:8,receiving_yards:9999}],opts).input_hash,p.input_hash,'current/future-week results cannot enter the forecast');
+const learned=fitUsage(games,{...opts,settled:[{player:'AJ Barner',week:7,stat:'receiving_yards',actual:40,mean:20,raw_mean:20,settled_at:'2026-11-01T00:00:00Z'}]});assert(learned.projection.projections.receiving_yards.mean>p.projection.projections.receiving_yards.mean);
+const future=fitUsage(games,{...opts,settled:[{player:'AJ Barner',week:8,stat:'receiving_yards',actual:1000,mean:20,settled_at:at}]});assert.equal(future.input_hash,p.input_hash);
+const projection={season:2026,week:8,generated_at:at,sportsbook_inputs_used:false,players:{Locked:{value:1}}},distribution={season:2026,week:8,generated_at:at,sportsbook_inputs_used:false,distributions:{Locked:{value:1}}},feed={season:2026,week:8,sportsbook_inputs_used:false,players:{'AJ Barner':p}};
+const before=JSON.stringify({projection,distribution});const merged=mergeSupplemental(projection,distribution,feed,{week:8,now});assert(merged.projection.players['AJ Barner']);assert.equal(JSON.stringify({projection,distribution}),before,'locked model inputs must remain unchanged');
+assert(!mergeSupplemental(projection,distribution,feed,{week:9,now}).projection.players['AJ Barner']);assert(!mergeSupplemental(projection,distribution,feed,{week:8,now:Date.parse(kickoff)}).projection.players['AJ Barner']);assert(!mergeSupplemental(projection,distribution,feed,{week:8,now,blockedTeams:['SEA']}).projection.players['AJ Barner']);
+const a=regularGames({names:['receptions','receivingTargets','receivingYards'],seasonTypes:[{displayName:'2026 Regular Season',categories:[{events:[{eventId:'a',stats:['0','0','0']},{eventId:'b',stats:['-','1','2']}]}]}],events:{a:{week:1,gameDate:'2026-10-01',gameResult:'W',team:{abbreviation:'SEA'}},b:{week:2,gameDate:'2026-10-02',gameResult:'W',team:{abbreviation:'SEA'}}}},{season:2026,team:'SEA',now});assert.equal(a.length,1);assert.equal(a[0].receiving_yards,0,'reported zero is retained; absent/dash values are not fabricated as zero');
+console.log('PASS: AJ usage projection, probability mass, ordered floor/median/ceiling, minimum history, no future leakage, settled-error learning, locked-model preservation, week/kickoff/QB gates, missing-stat identity handling.');

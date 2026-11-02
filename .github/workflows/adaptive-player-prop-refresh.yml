@@ -3,6 +3,13 @@ name: Adaptive Player Prop Refresh
 on:
   pull_request:
     paths:
+      - 'scripts/prepared-model-publisher-loop.mjs'
+      - 'scripts/publish-prepared-model-cycle.sh'
+      - 'scripts/test-prepared-model-publisher-loop.mjs'
+      - '.github/workflows/publish-prepared-game-model.yml'
+      - 'lib/supplemental-weekly-props.mjs'
+      - 'scripts/build-supplemental-weekly-props.mjs'
+      - 'scripts/test-supplemental-weekly-props.mjs'
       - 'data/sources/live-market-ingestion-2026.json'
       - 'scripts/adaptive-player-prop-refresh.mjs'
       - 'lib/prop-player-identity.mjs'
@@ -28,6 +35,13 @@ on:
   push:
     branches: [main]
     paths:
+      - 'scripts/prepared-model-publisher-loop.mjs'
+      - 'scripts/publish-prepared-model-cycle.sh'
+      - 'scripts/test-prepared-model-publisher-loop.mjs'
+      - '.github/workflows/publish-prepared-game-model.yml'
+      - 'lib/supplemental-weekly-props.mjs'
+      - 'scripts/build-supplemental-weekly-props.mjs'
+      - 'scripts/test-supplemental-weekly-props.mjs'
       - 'data/sources/live-market-ingestion-2026.json'
       - 'scripts/adaptive-player-prop-refresh.mjs'
       - 'lib/prop-player-identity.mjs'
@@ -98,6 +112,10 @@ jobs:
           node scripts/test-prop-coverage-recovery.mjs
       - name: Validate live market ingestion contract
         run: node scripts/validate-live-market-ingestion-contract.mjs
+      - name: Validate supplemental receiving projections and preservation gates
+        run: |
+          node scripts/test-supplemental-weekly-props.mjs
+          node scripts/test-prepared-model-publisher-loop.mjs
       - name: Validate player prop snapshot contract
         run: node scripts/validate-player-prop-market-snapshots.mjs
 
@@ -171,6 +189,8 @@ jobs:
           node scripts/build-weekly-parlay-recommendations.mjs
           node scripts/build-final-betting-ui-feed.mjs
           node scripts/validate-final-betting-pipeline-step4.mjs
+      - name: Refresh supplemental weekly receiving coverage and settle saved forecasts
+        run: node scripts/build-supplemental-weekly-props.mjs
       - name: Persist adaptive player prop state through guarded PR
         id: persist
         env:
@@ -178,7 +198,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          paths=(data/market/player-prop-board-model-2026.json data/market/player-prop-board-quotes-2026.json data/ingestion/current-quarterback-scenarios-2026.json data/probability/weekly-projection-inputs-2026.json data/probability/generated/weekly-probability-distributions-2026.json data/market/cloudflare-player-prop-current-2026.json data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
+          paths=(data/market/supplemental-weekly-props-2026.json data/market/player-prop-board-model-2026.json data/market/player-prop-board-quotes-2026.json data/ingestion/current-quarterback-scenarios-2026.json data/probability/weekly-projection-inputs-2026.json data/probability/generated/weekly-probability-distributions-2026.json data/market/cloudflare-player-prop-current-2026.json data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${paths[@]}"
