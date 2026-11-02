@@ -1,158 +1,65 @@
-name: Final 166-player QA and publish sync
+name: Current 197-player read-only QA
+
+# Filename retained because universe reconciliation audits reference this contract.
 on:
+  pull_request:
+    paths:
+      - 'players*.json'
+      - 'guardrails/guardrails-config.json'
+      - 'MODEL_SOURCE_OF_TRUTH.json'
+      - '.github/workflows/final-162-qa-publish.yml'
   push:
     branches: [main]
     paths:
-      - '.trigger-final-162-qa-publish'
       - 'players*.json'
-      - 'injuryOverrides2026.json'
-      - 'lockedRanks2026.json'
-      - 'data/sources/season-phase-2026.json'
-      - 'scripts/build-rank-movement-context.mjs'
-      - 'scripts/validate-season-phase-transition.mjs'
-      - 'runtime-rank-movement-context-2026.js'
+      - 'guardrails/guardrails-config.json'
+      - '.github/workflows/final-162-qa-publish.yml'
   workflow_dispatch:
+
 permissions:
-  contents: write
+  contents: read
+
 jobs:
   qa:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - name: Validate season phase contract
-        run: node scripts/validate-season-phase-transition.mjs
-      - name: Build rank movement and news context from prior published state
+          node-version: '22'
+      - name: Validate complete locked player universe without publishing changes
         run: |
-          git rev-parse HEAD^ >/dev/null
-          node scripts/build-rank-movement-context.mjs HEAD HEAD^
-      - name: Apply current injury, phase and UI sync
-        run: |
-          python - <<'PY'
-          import json, re
+          python3 - <<'PY'
+          import json, math
           from pathlib import Path
-          p=Path('injuryOverrides2026.json')
-          d=json.loads(p.read_text())
-          d['updated']='2026-08-31'
-          p.write_text(json.dumps(d,indent=2,ensure_ascii=False)+'\n')
-
-          stamp='20260831-166-phase'
-          ib=Path('index-backup.html')
-          s=ib.read_text()
-          s=re.sub(r'players\$\{i\}\.json\?v=[^`\"\']+',f'players${{i}}.json?v={stamp}',s)
-          s=re.sub(r'injuryOverrides2026\.json\?v=[^\"\']+',f'injuryOverrides2026.json?v={stamp}',s)
-          s=re.sub(r'market2026\.json\?v=[^\"\']+',f'market2026.json?v={stamp}',s)
-          movement='<script src="runtime-rank-movement-context-2026.js?v=20260908-phase"></script>'
-          if 'runtime-rank-movement-context-2026.js' not in s:
-            s=s.replace('</body>',movement+'\n</body>')
-          ib.write_text(s)
-          idx=Path('index.html')
-          s=idx.read_text()
-          s=re.sub(r'index-backup\.html\?v=[^\"\']+',f'index-backup.html?v={stamp}',s,1)
-          idx.write_text(s)
-          PY
-      - name: Run cross-board QA
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          from collections import Counter,defaultdict
-
+          from collections import Counter
+          config=json.loads(Path('guardrails/guardrails-config.json').read_text())
+          if config['authoritative_player_count']!=197 or config['authoritative_player_shards']!=16:
+              raise SystemExit('Update this contract explicitly when the approved universe changes')
+          files=sorted(Path('.').glob('players*.json'),key=lambda p:int(p.stem[7:]))
+          if [p.name for p in files]!=[f'players{i}.json' for i in range(16)]:
+              raise SystemExit('Expected exactly 16 contiguous player shards')
           parts=[]
-          for i in range(14):
-            x=json.loads(Path(f'players{i}.json').read_text())
-            if not isinstance(x,list): raise SystemExit(f'players{i}.json is not a list')
-            parts.extend(x)
-          if len(parts)!=166: raise SystemExit(f'Expected 166 active players, found {len(parts)}')
+          for path in files:
+              shard=json.loads(path.read_text())
+              if not isinstance(shard,list): raise SystemExit(f'{path} is not a list')
+              parts.extend(shard)
+          if len(parts)!=197: raise SystemExit(f'Expected 197 active players, found {len(parts)}')
           names=[p.get('n') for p in parts]
-          dup=[n for n,c in Counter(names).items() if c>1]
-          if dup: raise SystemExit(f'Duplicate player names: {dup}')
-
-          ov=json.loads(Path('injuryOverrides2026.json').read_text())
-          missing_override=[n for n in ov.get('players',{}) if n not in set(names)]
-          if missing_override: raise SystemExit(f'Injury override names missing from 166-player pool: {missing_override}')
-
-          P=[dict(p) for p in parts]
-          by={p['n']:p for p in P}
-          for n,x in ov.get('players',{}).items(): by[n].update(x)
-          for p in P:
-            req=['n','p','o','tr','pd','ce','r','e','a','rl','su']
-            miss=[k for k in req if p.get(k) is None]
-            if miss: raise SystemExit(f"{p['n']} missing required fields {miss}")
-            p['s']=round(p['pd']*.35+p['ce']*.20+p['r']*.15+p['e']*.10+p['a']*.10+p['rl']*.05+p['su']*.05,3)
-
-          def apply(field,moves):
-            names=list((moves or {}).keys())
-            if not names:return
-            ordered=sorted(P,key=lambda p:p.get(field,9999))
-            picked={p['n']:p for p in ordered if p['n'] in names}
-            moved=set(names); slots=[None]*len(ordered)
-            for n in names:
-              if n in picked:
-                t=max(1,min(len(ordered),round(moves[n])))
-                if slots[t-1] is not None: raise SystemExit(f'Rank collision at {field} {t}')
-                slots[t-1]=picked[n]
-            rest=[p for p in ordered if p['n'] not in moved]; j=0
-            for i in range(len(slots)):
-              if slots[i] is None: slots[i]=rest[j];j+=1
-            for i,p in enumerate(slots,1):p[field]=i
-
-          rm=ov.get('rankMoves',{})
-          apply('o',rm.get('overall',{})); apply('tr',rm.get('trueValue',{}))
-          if sorted(p['o'] for p in P)!=list(range(1,167)): raise SystemExit('Overall ranks are not unique 1-166')
-          if sorted(p['tr'] for p in P)!=list(range(1,167)): raise SystemExit('Player Quality ranks are not unique 1-166')
-
-          pos_counts=defaultdict(int)
-          for p in P: pos_counts[p['p']]+=1
-          if set(pos_counts)!={'QB','RB','WR','TE'}: raise SystemExit(f'Unexpected positions: {dict(pos_counts)}')
-
-          html=Path('index-backup.html').read_text()
-          if 'Array.from({length:14}' not in html: raise SystemExit('Runtime loader is not configured for 14 shards')
-          if 'Player Quality Rank' not in html: raise SystemExit('Player Quality Rank label missing')
-          if 'Expected Fantasy Production' not in html: raise SystemExit('Projection comparison UI missing')
-          if 'runtime-rank-movement-context-2026.js' not in html: raise SystemExit('Rank movement runtime is not mounted')
-
-          movement=json.loads(Path('rankMovement2026.json').read_text())
-          if movement.get('active_players')!=166: raise SystemExit('Rank movement context is not built against all 166 players')
-
-          qa={
-            'updated':'2026-08-31','model':'single 166-player active model','passed':True,
-            'active_players':len(P),'unique_players':len(set(names)),'player_shards':14,
-            'positions':dict(pos_counts),'missing_required':[],'duplicate_names':[],'missing_override_players':[],
-            'overall_rank_range':[min(p['o'] for p in P),max(p['o'] for p in P)],
-            'player_quality_rank_range':[min(p['tr'] for p in P),max(p['tr'] for p in P)],
-            'runtime_checks':{'loader_14_shards':True,'player_quality_label':True,'projection_comparison_present':True,'rank_movement_context_present':True,'season_phase_contract_present':True,'cache_bust':stamp if False else '20260831-166-phase'},
-            'admissions':{n:{k:by[n].get(k) for k in ['p','o','tr','a','st','px','s7','mp']} for n in ['Kaleb Johnson','Corey Kiner','Tank Dell','Jonnu Smith']}
-          }
-          Path('final-cross-board-qa-2026-08-24.json').write_text(json.dumps(qa,indent=2,ensure_ascii=False)+'\n')
-
-          a=Path('comparison-sync-162-audit.json')
-          old=json.loads(a.read_text()); old['updated']='2026-08-31'; old['active_players']=166; old['unique_normalized']=166
-          old['missing_required']=[]; old['alias_duplicates']=[]
-          old['runtime']={'cross_board_qa_passed':True,'player_loader_shards':14,'active_players':166,'rank_movement_context':True,'season_phase_contract':True,'cache_bust':'20260831-166-phase'}
-          a.write_text(json.dumps(old,indent=2,ensure_ascii=False)+'\n')
+          if any(not n for n in names) or len(set(names))!=197:
+              raise SystemExit('Missing or duplicate player identities')
+          for field in ['o','tr']:
+              if sorted(p.get(field,0) for p in parts)!=list(range(1,198)):
+                  raise SystemExit(f'{field} ranks must be unique 1-197')
+          for p in parts:
+              for field in config['required_player_numeric_fields']:
+                  value=p.get(field)
+                  if not isinstance(value,(int,float)) or isinstance(value,bool) or not math.isfinite(value):
+                      raise SystemExit(f'{p["n"]}: invalid {field}')
+          source=json.loads(Path('MODEL_SOURCE_OF_TRUTH.json').read_text())
+          if source['active_player_model']!=197 or source['runtime_player_shards']!=16:
+              raise SystemExit('Source of truth must match the complete 197-player, 16-shard universe')
+          print(json.dumps({'status':'PASS','active_players':197,'shards':16,'model_modified':False}))
           PY
-      - name: Validate JavaScript syntax
-        run: |
-          node --check runtime-rank-movement-context-2026.js
-          node --check scripts/build-rank-movement-context.mjs
-          node --check scripts/validate-season-phase-transition.mjs
-          python - <<'PY'
-          from pathlib import Path
-          import re
-          s=Path('index-backup.html').read_text(); scripts=re.findall(r'<script>([\s\S]*?)</script>',s)
-          Path('/tmp/app.js').write_text(scripts[-1])
-          PY
-          node --check /tmp/app.js
-      - name: Commit final 166-player QA and context sync
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add injuryOverrides2026.json index.html index-backup.html rankMovement2026.json comparison-sync-162-audit.json final-cross-board-qa-2026-08-24.json guardrails/season-phase-transition-report.json
-          git diff --cached --quiet && exit 0
-          git commit -m "Publish 166-player rank movement and regular-season phase context"
-          git push
+      - name: Confirm validation leaves the model unchanged
+        run: git diff --exit-code
