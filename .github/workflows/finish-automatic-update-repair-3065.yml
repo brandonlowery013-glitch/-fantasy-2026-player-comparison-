@@ -1,0 +1,36 @@
+name: Finish protected automatic-update repair
+on:
+  push:
+    branches: ['maintenance/finish-automatic-update-repair-3065']
+    paths: ['.github/workflows/finish-automatic-update-repair-3065.yml']
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  checks: read
+  statuses: read
+concurrency:
+  group: production-main-writer
+  cancel-in-progress: false
+jobs:
+  finish-protected-repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/automatic-news-props-and-live-verification
+          fetch-depth: 0
+          filter: blob:none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate the requested repository and repair branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api repos/${GITHUB_REPOSITORY}/pulls/3065 --jq '.head.ref + "|" + .base.ref + "|" + .head.repo.full_name')" = "fix/automatic-news-props-and-live-verification|main|${GITHUB_REPOSITORY}"
+      - name: Preserve current production data and merge only the exact validated candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/merge-guarded-production-pr.sh 3065 fix/automatic-news-props-and-live-verification merge
