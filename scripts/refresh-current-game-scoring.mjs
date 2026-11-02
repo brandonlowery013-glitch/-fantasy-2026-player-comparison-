@@ -1,3 +1,6 @@
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import {scoreTrainingRows,fitScoreErrors,applyScoreLearning,scoreLearningGate,SCORE_LEARNING_VERSION} from '../lib/score-error-learning.mjs';
 import fs from 'node:fs';
 import {applyRestPolicy} from '../lib/scoring-rest-policy.mjs';
 import {createHash} from 'node:crypto';
@@ -23,14 +26,35 @@ const restRows=(artifact.rest_adjustment_enabled===false?[]:parseCSV(restText)).
 if(artifact.rest_adjustment_enabled!==false)sources.push({url:restUrl,sha256:createHash('sha256').update(restText).digest('hex')});
 const previousPath='data/probability/generated/current-game-scoring-2026.json';
 const previous=fs.existsSync(previousPath)?read(previousPath):null;
-const games={},unavailableGames={};
+const learningLedgerPath='data/market/postgame-model-learning-2026.json';
+const learningValidationPath='data/probability/generated/football-score-learning-validation-2026.json';
+const ledger=read(learningLedgerPath),learningAsOf=new Date().toISOString();
+const codeFiles=['../lib/score-error-learning.mjs','../lib/game-market-probability.mjs','./backtest-score-error-learning.mjs'];
+const codeHash=createHash('sha256').update(codeFiles.map(p=>fs.readFileSync(fileURLToPath(new URL(p,import.meta.url)),'utf8')).join('\n')).digest('hex');
+const ledgerHash=createHash('sha256').update(JSON.stringify({forecasts:ledger.forecasts,settlements:ledger.settlements})).digest('hex');
+let learningValidation=fs.existsSync(learningValidationPath)?read(learningValidationPath):null;
+if(learningValidation?.code_sha256!==codeHash||learningValidation?.ledger_sha256!==ledgerHash||learningValidation?.validation_through_week!==schedule.week-1){
+ const check=spawnSync(process.execPath,[fileURLToPath(new URL('./backtest-score-error-learning.mjs',import.meta.url)),learningLedgerPath,learningValidationPath,String(schedule.week)],{stdio:'inherit'});
+ if(check.error||check.status!==0)throw Error('Score learning validation execution failed');
+ learningValidation=read(learningValidationPath);
+}
+let learningGate=scoreLearningGate(learningValidation,codeHash,{week:schedule.week,ledgerHash});
+const training=scoreTrainingRows(ledger,{season:2026,week:schedule.week,asOf:learningAsOf});
+const learningFit=fitScoreErrors(training,{season:2026,week:schedule.week,asOf:learningAsOf});
+if(learningGate.passed&&learningFit.status!=='FITTED')learningGate={passed:false,reason:'NO_AVAILABLE_LIVE_LEARNING_EVIDENCE'};
+const candidatePath='data/probability/generated/candidate-football-score-learning-2026.json';
+const previousCandidate=fs.existsSync(candidatePath)?read(candidatePath):null;
+const candidateGames={},games={},unavailableGames={};
 for(const [id,g] of Object.entries(schedule.games||{})) {
   if(g.verified!==true||g.week!==schedule.week)throw Error(`Unverified game ${id}`);
   if(Date.parse(g.event_start)<=Date.now()){
     const saved=previous?.games?.[id];
     if(!saved){unavailableGames[id]={home_team:g.home_team,away_team:g.away_team,event_start:g.event_start,status:'NO_ORIGINAL_PREGAME_FORECAST',reason:'Kickoff passed before a valid forecast was saved; no retrospective prediction is published.'};continue;}
     if(saved.home_team!==g.home_team||saved.away_team!==g.away_team||saved.event_start!==g.event_start)throw Error(`Mismatched original started-game forecast ${id}`);
-    games[id]=saved;continue;
+    games[id]=saved;
+    const savedCandidate=previousCandidate?.games?.[id];
+    if(savedCandidate){if(savedCandidate.home_team!==g.home_team||savedCandidate.away_team!==g.away_team||savedCandidate.event_start!==g.event_start)throw Error('Saved learning candidate identity mismatch');candidateGames[id]=savedCandidate;}
+    continue;
   }
   const restEnabled=artifact.rest_adjustment_enabled!==false;
   const matches=restRows.filter(r=>r.home===canon(g.home_team)&&r.away===canon(g.away_team));
@@ -38,11 +62,17 @@ for(const [id,g] of Object.entries(schedule.games||{})) {
   // NFL schedule dates use the local game day, whereas ESPN kickoff is UTC.
   const day=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(g.event_start));
   if(restEnabled&&matches[0].date!==day)throw Error(`Rest schedule date mismatch ${id}`);
-  games[id]={home_team:g.home_team,away_team:g.away_team,event_start:g.event_start,...scoreCurrentGame(artifact,g,completed,restEnabled?{home:matches[0].home_rest,away:matches[0].away_rest}:null)};
+  const baseline={home_team:g.home_team,away_team:g.away_team,event_start:g.event_start,...scoreCurrentGame(artifact,g,completed,restEnabled?{home:matches[0].home_rest,away:matches[0].away_rest}:null)};
+  const candidate=applyScoreLearning(baseline,learningFit);
+  candidateGames[id]=candidate;
+  games[id]=learningGate.passed?candidate:baseline;
 }
 if(!Object.keys(games).length)throw Error('No verified games');
 const output={schema_version:1,season:2026,week:schedule.week,status:'READY',mode:'SHADOW_ONLY',actionable:false,sportsbook_inputs_used:false,
   generated_at:new Date().toISOString(),model_version:artifact.model_version,artifact_sha256:createHash('sha256').update(fs.readFileSync(modelPath)).digest('hex'),
-  sources,completed_games:completed.length,games,unavailable_games:unavailableGames};
+  sources,completed_games:completed.length,games,unavailable_games:unavailableGames,
+  score_learning:{version:SCORE_LEARNING_VERSION,status:learningGate.passed?'APPLIED':'VALIDATION_FAILED',reason:learningGate.reason,training_games:learningFit.n,validation_path:learningValidationPath,code_sha256:codeHash}};
+fs.writeFileSync(candidatePath,JSON.stringify({schema_version:1,season:2026,week:schedule.week,model_version:SCORE_LEARNING_VERSION,status:learningGate.passed?'READY':'VALIDATION_FAILED',published_to_page:learningGate.passed,generated_at:learningAsOf,sportsbook_inputs_used:false,learning_fit:learningFit,validation:{...learningGate,path:learningValidationPath,code_sha256:codeHash},games:candidateGames},null,2)+'\n');
 fs.writeFileSync('data/probability/generated/current-game-scoring-2026.json',JSON.stringify(output,null,2)+'\n');
 console.log(JSON.stringify({result:'PASS',week:schedule.week,game_count:Object.keys(games).length,completed_games:completed.length,model_version:artifact.model_version}));
+

@@ -81,3 +81,6 @@ assert.throws(()=>removeRestFromForecast(fixture,{...actual,home_score_mean:999}
 console.log('PASS: no-rest version, equal/unequal/missing rest invariance, exact conversion, original immutability and attribution');
 
 await import("./test-no-rest-refresh.mjs");
+
+
+await import('./test-score-error-learning.mjs');

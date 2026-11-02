@@ -11,6 +11,7 @@ const save=(p,v)=>{fs.mkdirSync(path.dirname(path.join(temp,p)),{recursive:true}
 try{
  save('data/probability/generated/game-scoring-model-2026.json',artifact);save(artifact.validation_path,read(artifact.validation_path));
  const contract=read('data/sources/weekly-game-projection-engine-2026.json');save('data/sources/weekly-game-projection-engine-2026.json',contract);
+ save('data/market/postgame-model-learning-2026.json',{forecasts:[],settlements:[]});
  const start=new Date(Date.now()-3600000).toISOString(),future=new Date(Date.now()+86400000).toISOString();
  const game={home_team:'GB',away_team:'CHI',week:2,verified:true};
  save('data/calibration/weekly-event-schedule-2026.json',{season:2026,week:2,sportsbook_inputs_used:false,games:{started:{...game,event_start:start},future:{...game,event_start:future},missed:{...game,event_start:start}}});
@@ -21,6 +22,10 @@ try{
  const script=`globalThis.fetch=async url=>{if(!String(url).startsWith('https://site.api.espn.com/')||!String(url).includes('week=1'))throw Error('Unexpected collection: '+url);return {ok:true,text:async()=>${JSON.stringify(JSON.stringify(fixture))}}};await import(${JSON.stringify(moduleUrl)});`;
  execFileSync(process.execPath,['--input-type=module','-e',script],{cwd:temp,stdio:'pipe'});
  const output=JSON.parse(fs.readFileSync(path.join(temp,'data/probability/generated/current-game-scoring-2026.json')));
+ assert.equal(output.score_learning.status,'VALIDATION_FAILED');
+ const candidate=readCandidate();
+ function readCandidate(){return JSON.parse(fs.readFileSync(path.join(temp,'data/probability/generated/candidate-football-score-learning-2026.json')));}
+ assert.equal(candidate.published_to_page,false);assert.equal(candidate.games.future.model_version,'football-score-error-learning-v1');assert.equal(candidate.games.started,undefined);
  assert.deepEqual(output.games.started,original);assert.equal(output.games.missed,undefined);assert.equal(output.unavailable_games.missed.status,'NO_ORIGINAL_PREGAME_FORECAST');assert.equal(output.unavailable_games.missed.home_score_mean,undefined);assert.equal(output.games.future.model_version,'scoring-decay-no-rest-2026-v2');assert.equal(output.games.future.evidence.rest_adjustment_applied,false);assert.equal(output.sources.length,1);assert.equal(output.games.future.distribution.calibration_status,'BASE_MODEL_RESIDUALS_NO_REST_VARIANT_NOT_REVALIDATED');
  save('data/probability/generated/game-team-scoring-priors-2023-2025.json',read('data/probability/generated/game-team-scoring-priors-2023-2025.json'));
  const priorProjection={...Object.values(read('data/probability/generated/weekly-game-projections-2026.json').games)[0],home_team:game.home_team,away_team:game.away_team,event_start:start};
