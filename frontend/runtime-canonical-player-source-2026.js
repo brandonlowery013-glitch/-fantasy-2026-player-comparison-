@@ -30,7 +30,7 @@
  const local=name=>new URL(name,document.baseURI).href;
  const SOURCES=[
   ['main-live-game-center',MAIN_LIVE],
-  ['cloudflare-live-score-poller',local('live-score-poller.js?v=20260917-live')],
+  ['cloudflare-live-score-poller',local('live-score-poller.js?v=same-origin-20261101')],
   ['cloudflare-game-detail-panels',local('game-detail-panels.js?v=public-copy-20261024')]
  ];
  window.CTD_LIVE_RUNTIME_LOADS=window.CTD_LIVE_RUNTIME_LOADS||{};
@@ -54,6 +54,7 @@
   return record;
  }
  async function start(){
+  if(document.querySelector('script[src*="live-score-poller.js"]')&&document.querySelector('script[src*="game-detail-panels.js"]')){document.documentElement.dataset.ctdLiveRuntimeBootstrap='ENTRYPOINT_MANAGED';return;}
   for(const source of SOURCES)await execute(...source);
   const ok=SOURCES.every(([name])=>window.CTD_LIVE_RUNTIME_LOADS[name]?.ok===true);
   document.documentElement.dataset.ctdLiveRuntimeBootstrap=ok?'READY':'DEGRADED';

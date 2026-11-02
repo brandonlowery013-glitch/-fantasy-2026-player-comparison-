@@ -1,6 +1,7 @@
 (()=>{
+  if(window.__CTD_SAME_ORIGIN_SCORE_POLLER__)return;
+  window.__CTD_SAME_ORIGIN_SCORE_POLLER__=true;
   const POLL_MS=20000;
-  const ESPN='https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
   const norm=t=>({LA:'LAR',WAS:'WSH'}[String(t||'').toUpperCase()]||String(t||'').toUpperCase());
   let timer=null,busy=false,lastApplied='';
 
@@ -8,29 +9,6 @@
     const w=Number(BET_FEED?.week);
     return Number.isInteger(w)&&w>0?w:1;
   }
-  function parseEvent(ev){
-    const comp=ev?.competitions?.[0];
-    if(!comp)return null;
-    const teams=comp.competitors||[];
-    const away=teams.find(x=>x.homeAway==='away');
-    const home=teams.find(x=>x.homeAway==='home');
-    if(!away||!home)return null;
-    const state=ev?.status?.type?.state||'pre';
-    return {
-      id:String(ev.id||''),
-      away_team:norm(away.team?.abbreviation),
-      home_team:norm(home.team?.abbreviation),
-      away_score:Number.isFinite(Number(away.score))?Number(away.score):null,
-      home_score:Number.isFinite(Number(home.score))?Number(home.score):null,
-      state,
-      completed:state==='post'||ev?.status?.type?.completed===true,
-      status:ev?.status?.type?.shortDetail||ev?.status?.type?.detail||'',
-      date:ev?.date||comp.date||null,
-      away_periods:(away.linescores||[]).map(x=>Number(x.value??x.displayValue)).filter(Number.isFinite),
-      home_periods:(home.linescores||[]).map(x=>Number(x.value??x.displayValue)).filter(Number.isFinite)
-    };
-  }
-  function ctStart(value){return CTD_TIME.kickoff(value);}
   function apply(rows){
     const feed=BET_FEED;
     if(!feed?.games?.length)return;
@@ -47,7 +25,7 @@
         state:s.state,
         event_start:s.date||g.event_start,
         completed:s.completed,
-        latest_scores:{away:[...s.away_periods.slice(0,4),s.away_score],home:[...s.home_periods.slice(0,4),s.home_score]}
+        latest_scores:{away:[...(s.away_periods.length?s.away_periods.slice(0,4):(g.latest_scores?.away||[]).slice(0,4)),s.away_score],home:[...(s.home_periods.length?s.home_periods.slice(0,4):(g.latest_scores?.home||[]).slice(0,4)),s.home_score]}
       });
       if(s.completed){
         g.model_summary=`Final: ${g.away_team} ${s.away_score}, ${g.home_team} ${s.home_score}. Pregame market analysis is archived.`;
@@ -66,11 +44,20 @@
     if(busy)return;busy=true;
     try{
       const week=currentWeek();
-      const url=`${ESPN}?seasontype=2&dates=2026&week=${week}&limit=100&_=${Date.now()}`;
+      const url=`/api/live/scoreboard?week=${week}&_=${Date.now()}`;
       const r=await fetch(url,{cache:'no-store'});
-      if(!r.ok)throw Error(`ESPN ${r.status}`);
+      if(!r.ok)throw Error(`Live scoreboard ${r.status}`);
       const data=await r.json();
-      const rows=(data.events||[]).map(parseEvent).filter(Boolean);
+      if(!['LIVE','FALLBACK'].includes(String(data.health?.status||'').toUpperCase()))throw Error('Live scoreboard provider is not fresh');
+      const rows=(data.games||[]).map(g=>({
+        id:String(g.event_id||g.provider_event_id||''),
+        away_team:norm(g.away?.team),home_team:norm(g.home?.team),
+        away_score:g.away?.score==null?null:Number(g.away.score),
+        home_score:g.home?.score==null?null:Number(g.home.score),
+        state:g.state,completed:g.completed===true||g.state==='post',
+        status:g.status||'',date:g.start_at||null,
+        away_periods:[],home_periods:[]
+      })).filter(g=>g.id&&g.away_team&&g.home_team&&Number.isFinite(g.away_score)&&Number.isFinite(g.home_score));
       if(rows.length&&currentWeek()===week)apply(rows);
     }catch(err){console.warn('Live score poll failed; keeping last known scores.',err)}
     finally{busy=false;}
