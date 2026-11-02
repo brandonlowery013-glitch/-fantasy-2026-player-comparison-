@@ -8,6 +8,8 @@ on:
     paths:
       - '.github/workflows/publish-prepared-game-model.yml'
       - 'scripts/publish-prepared-game-model.mjs'
+      - 'scripts/prepared-model-publisher-loop.mjs'
+      - 'scripts/publish-prepared-model-cycle.sh'
       - 'data/market/game-model-consumer-2026.json'
       - 'data/market/final-betting-ui-feed-2026.json'
       - 'data/market/unified-opportunities-2026.json'
@@ -19,20 +21,24 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: prepared-game-model
+  group: ${{ (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')) && 'prepared-game-model' || format('prepared-model-ignored-{0}', github.run_id) }}
   cancel-in-progress: false
 jobs:
   publish:
     if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 190
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
           path: producer
           sparse-checkout-cone-mode: false
-          sparse-checkout: /scripts/publish-prepared-game-model.mjs
+          sparse-checkout: |
+            /scripts/publish-prepared-game-model.mjs
+            /scripts/prepared-model-publisher-loop.mjs
+            /scripts/publish-prepared-model-cycle.sh
+            /scripts/test-prepared-model-publisher-loop.mjs
       - uses: actions/checkout@v4
         with:
           ref: frontend/ctd-cloudflare-work
@@ -50,29 +56,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Calculate with the deployed model engine
-        run: |
-          cp producer/scripts/publish-prepared-game-model.mjs engine/publish-model.mjs
-          export CTD_ENGINE_REF=$(git -C engine rev-parse HEAD)
-          node engine/publish-model.mjs "$GITHUB_WORKSPACE/prepared.json"
-      - name: Publish without overwriting concurrent changes
-        working-directory: publication
-        run: |
-          git config user.name 'CTD Model Publisher'
-          git config user.email 'ctd-model-publisher@users.noreply.github.com'
-          for attempt in 1 2 3; do
-            git fetch origin data/prepared-game-model
-            git reset --hard origin/data/prepared-game-model
-            mkdir -p data/market
-            cp "$GITHUB_WORKSPACE/prepared.json.gz" data/market/prepared-game-model-2026.json.gz
-            cp "$GITHUB_WORKSPACE/prepared.json.manifest.json" data/market/prepared-game-model-2026.manifest.json
-            cp "$GITHUB_WORKSPACE/prepared.json.moneyline.json" data/market/prepared-game-model-2026.moneyline.json
-            for kind in model betting model-envelope betting-envelope; do
-              cp "$GITHUB_WORKSPACE/prepared.json.$kind.json.gz" "data/market/prepared-game-model-2026.$kind.json.gz"
-            done
-            git add data/market/prepared-game-model-2026*
-            git diff --cached --quiet && exit 0
-            git commit -m 'Publish prepared game model [skip ci]'
-            git push origin HEAD:data/prepared-game-model && exit 0
-          done
-          exit 1
+      - name: Validate the bounded background publisher
+        run: node producer/scripts/test-prepared-model-publisher-loop.mjs
+      - name: Maintain five-minute model publication through schedule delays
+        run: node producer/scripts/prepared-model-publisher-loop.mjs

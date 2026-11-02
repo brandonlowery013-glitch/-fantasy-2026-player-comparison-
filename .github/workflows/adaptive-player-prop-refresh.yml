@@ -3,6 +3,10 @@ name: Adaptive Player Prop Refresh
 on:
   pull_request:
     paths:
+      - 'scripts/prepared-model-publisher-loop.mjs'
+      - 'scripts/publish-prepared-model-cycle.sh'
+      - 'scripts/test-prepared-model-publisher-loop.mjs'
+      - '.github/workflows/publish-prepared-game-model.yml'
       - 'lib/supplemental-weekly-props.mjs'
       - 'scripts/build-supplemental-weekly-props.mjs'
       - 'scripts/test-supplemental-weekly-props.mjs'
@@ -31,6 +35,10 @@ on:
   push:
     branches: [main]
     paths:
+      - 'scripts/prepared-model-publisher-loop.mjs'
+      - 'scripts/publish-prepared-model-cycle.sh'
+      - 'scripts/test-prepared-model-publisher-loop.mjs'
+      - '.github/workflows/publish-prepared-game-model.yml'
       - 'lib/supplemental-weekly-props.mjs'
       - 'scripts/build-supplemental-weekly-props.mjs'
       - 'scripts/test-supplemental-weekly-props.mjs'
@@ -105,7 +113,9 @@ jobs:
       - name: Validate live market ingestion contract
         run: node scripts/validate-live-market-ingestion-contract.mjs
       - name: Validate supplemental receiving projections and preservation gates
-        run: node scripts/test-supplemental-weekly-props.mjs
+        run: |
+          node scripts/test-supplemental-weekly-props.mjs
+          node scripts/test-prepared-model-publisher-loop.mjs
       - name: Validate player prop snapshot contract
         run: node scripts/validate-player-prop-market-snapshots.mjs
 
