@@ -25,6 +25,9 @@ jobs:
   in-season-rankings:
     if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.event_name == 'pull_request' && format('ranking-validation-pr-{0}', github.event.pull_request.number) || 'production-main-writer' }}
+      cancel-in-progress: false
     steps:
       - name: Authenticate automatic repository updates
         id: automation-app
