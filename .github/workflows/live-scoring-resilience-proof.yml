@@ -3,6 +3,12 @@ name: Live Scoring Resilience Proof
 # Basic live scoring is already considered passed. This observer validates the non-blocking
 # post-pass resilience requirements against the deployed Cloudflare APIs and ESPN.
 on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/live-scoring-resilience-proof.yml'
+      - 'scripts/verify-cloudflare-live-scoring-resilience.mjs'
   schedule:
     - cron: '43 * * * *'
   workflow_run:
@@ -36,7 +42,7 @@ jobs:
 
   resilience:
     if: >-
-      github.event_name == 'schedule' ||
+      github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.event == 'schedule' &&
        github.event.workflow_run.head_branch == 'main')

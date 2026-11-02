@@ -6,7 +6,7 @@ const SITE = String(process.env.CTD_PRODUCTION_URL || 'https://frontend-ctd-clou
 const OUT_DIR = process.env.CTD_RESILIENCE_DIR || 'artifacts/live-scoring-resilience-proof';
 const PREVIOUS_PROOF = process.env.CTD_PREVIOUS_PROOF || 'artifacts/live-scoring-resilience-state/proof.json';
 const ESPN_SCOREBOARD = 'https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard';
-const ESPN_SUMMARY = id => `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${encodeURIComponent(id)}`;
+const ESPN_SUMMARY = id => `https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${encodeURIComponent(id)}&ts=${Date.now()}`;
 const MAX_GAME_AGE_MS = 8 * 24 * 60 * 60 * 1000;
 const FRESH_MS = 2 * 60 * 1000;
 const normTeam = value => ({ LA: 'LAR', WAS: 'WSH', GNB: 'GB', JAC: 'JAX', KAN: 'KC', LVR: 'LV', NWE: 'NE', NOR: 'NO', SFO: 'SF', TAM: 'TB' }[String(value || '').toUpperCase()] || String(value || '').toUpperCase());
@@ -199,7 +199,7 @@ try {
     process.exitCode = 0;
   } else {
     const directSummaryResult = await getJson(ESPN_SUMMARY(recent.event_id));
-    const espn = normalizeEspnSummary(directSummaryResult.body, recent.event_id);
+    let espn = normalizeEspnSummary(directSummaryResult.body, recent.event_id);
     assert(espn.completed, `ESPN event ${recent.event_id} is not final.`);
     assert(espn.players.length > 0, `ESPN final ${recent.event_id} has no player-stat rows.`);
 
@@ -222,6 +222,19 @@ try {
     assert(healthyCloudflareProvider(detail?.health), `Cloudflare game-detail health is ${detail?.health?.status || 'missing'} / ${detail?.health?.provider || 'missing'}.`);
     assert(isFresh(detail?.generated_at), `Cloudflare game-detail generated_at is stale or missing: ${detail?.generated_at || 'missing'}.`);
     assert(/no-store/i.test(detailResult.response.headers.get('cache-control') || ''), 'Cloudflare game-detail response is missing cache-control no-store.');
+
+    // Compare independently with the exact ESPN surface reported by the live endpoint.
+    // The CDN and Site API can expose different analytics columns (for example QBR).
+    // Keep every player/stat field in the parity check; do not hide provider differences.
+    const parityProvider = detail.health.provider;
+    const parityUrl = parityProvider === 'espn-cdn'
+      ? `https://cdn.espn.com/core/nfl/game?xhr=1&gameId=${encodeURIComponent(recent.event_id)}&ts=${Date.now()}`
+      : ESPN_SUMMARY(recent.event_id);
+    const parityResult = await getJson(parityUrl);
+    const parityBody = parityResult.body;
+    const paritySummary = parityBody?.gamepackageJSON || parityBody?.content?.gamepackageJSON || parityBody?.content?.gamepackage || parityBody;
+    espn = normalizeEspnSummary(paritySummary, recent.event_id);
+    assert(espn.completed && espn.players.length > 0, 'The selected ESPN provider did not supply a final player/stat snapshot.');
 
     const cloudflare = cloudflareSnapshot(detail?.game);
     assert(cloudflare.event_id === recent.event_id && String(detail?.game?.provider_event_id) === recent.event_id, 'Cloudflare game detail did not preserve the ESPN event id.');
@@ -273,6 +286,7 @@ try {
       previous_espn_fingerprint: sameEventPrevious?.espn_fingerprint || null,
       correction_detected: correctionDetected,
       provider_row_count: espn.players.length,
+      parity_reference: { provider: parityProvider, url: parityUrl },
       cloudflare_health: { scoreboard: scoreboard.health, game: detail.health },
     };
     await writeProof(proof);
