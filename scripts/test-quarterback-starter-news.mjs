@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {quarterbackStarterNews as parse} from '../lib/quarterback-starter-news.mjs';
+const receivedAt='2026-10-02T18:00:00Z';
+const games=[{id:'g',verified:true,kickoff:'2026-10-04T17:00:00Z',home_team:'TB',away_team:'GB',matchup_aliases:['Packers'],opponent_aliases:{GB:['Packers']}}];
+const players=[{position:'QB',gsis_id:'qb',espn_id:'123',display_name:'Test Quarterback',latest_team:'TB'}];
+const a={headline:'Test Quarterback will start against Packers',description:'',published:'2026-10-02T17:00:00Z',links:{web:{href:'https://www.espn.com/nfl/story/_/id/123'}},categories:[{type:'team',team:{abbreviation:'TB'}},{type:'athlete',athleteId:123}]};
+const run=(article=a,extra={})=>parse({articles:[article],games,players,receivedAt,...extra}).reports;
+assert.equal(run().length,1);
+for(const headline of ['Test Quarterback might start against Packers','Test Quarterback will not start against Packers','Test Quarterback active against Packers','Test Quarterback listed first on depth chart against Packers','Test Quarterback will start if cleared against Packers','Test Quarterback will start against Bears'])assert.equal(run({...a,headline}).length,0,headline);
+assert.equal(run({...a,categories:[]}).length,0);
+assert.equal(run({...a,published:'2026-10-03T00:00:00Z'}).length,0);
+assert.equal(run(a,{receivedAt:'2026-10-04T18:00:00Z'}).length,0);
+assert.equal(run(a,{games:[...games,{...games[0],id:'other'}]}).length,0);
+assert.equal(run({...a,links:{web:{href:'https://example.com/news'}}}).length,0);
+console.log('PASS: dated, explicit, athlete-bound, opponent-bound announcements; speculation, active/depth, mismatches and postkickoff rejected.');
