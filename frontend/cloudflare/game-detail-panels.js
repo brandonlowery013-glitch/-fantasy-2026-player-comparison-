@@ -44,7 +44,7 @@
   const pricesMatch=(!finite(quotedHome)||quotedHome===h)&&(!finite(quotedAway)||quotedAway===a);
   const valid=[win,loss,tie,p].every(x=>finite(x)&&x>=0&&x<=1)&&Math.abs(win+loss+tie-1)<1e-5&&1-tie>0&&Math.abs(win/(1-tie)-p)<1e-5;
   const contextFresh=started||!e?.football_source?.generated_at||(now-Date.parse(e.football_source.generated_at)>=0&&now-Date.parse(e.football_source.generated_at)<=30*60000);
-  const modelHeld=e?.context_validation?.status==='HOLD'||!contextFresh||(!started&&e?.model_version!=='ctd-football-moneyline-v1');
+  const modelHeld=e?.context_validation?.status==='HOLD'||!contextFresh||(!started&&e?.model_version!=='ctd-football-moneyline-v1'&&!(e?.model_version==='ctd-week9-score-distribution-v1'&&e?.model_status==='UNVALIDATED_SCORING_VARIANT'));
   if(!valid||modelHeld||!pricesMatch)return {ready:false,team,price,status:'Awaiting current model inputs'};
   const profit=price>0?price/100:100/-price,calculatedEV=win*profit-loss,calculatedEdge=p-fair;
   if(finite(side.expected_value)&&Math.abs(side.expected_value-calculatedEV)>1e-6*(profit+2)||finite(side.probability_edge)&&Math.abs(side.probability_edge-calculatedEdge)>2e-6)return {ready:false,team,price,status:'Awaiting consistent model inputs'};
