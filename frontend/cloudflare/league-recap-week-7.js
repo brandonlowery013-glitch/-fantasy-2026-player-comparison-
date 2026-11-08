@@ -21,6 +21,6 @@
  page.addEventListener('click',e=>{const b=e.target.closest('[data-edition]');if(b)edition(b.dataset.edition);});
  page.querySelector('[role=tablist]').addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;const tabs=[...page.querySelectorAll('[role=tab]')],index=tabs.indexOf(document.activeElement);if(index<0)return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?tabs.length-1:(index+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length;edition(tabs[next].dataset.edition);tabs[next].focus();});
  button.addEventListener('click',()=>{showPage('leagueRecapPage',button);edition('forecast');window.scrollTo({top:0});});
- const hash=location.hash;edition(hash==='#league-archive-week7'?'archive':hash==='#league-week8-recap'?'recap':'forecast',false);if(['#league-recap-week-7','#league-week9-forecast','#league-week8-recap','#league-archive-week7'].includes(hash))showPage('leagueRecapPage',button);
+ const hash=location.hash;edition(hash==='#league-archive-week7'?'archive':hash==='#league-week8-recap'?'recap':'forecast',false);if(['#league-recap-week-7','#league-week9-forecast','#league-week8-recap','#league-archive-week7'].includes(hash)){showPage('leagueRecapPage',button);window.addEventListener('load',()=>{if(location.hash.startsWith('#league-'))showPage('leagueRecapPage',button);},{once:true});}
  for(const src of ['week-8-recap.js?v=20261108-2','week-9-preview-nav.js?v=20261108-2']){const s=document.createElement('script');s.src=src;document.body.append(s);}
 })();
