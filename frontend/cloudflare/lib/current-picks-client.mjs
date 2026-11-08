@@ -1,5 +1,6 @@
 import {evaluateCalibratedSpread} from './spread-feed.mjs';
 import {evaluateTwoWay,recommendation} from './current-market-evaluation.mjs';
+import {currentProps} from './week9-props.mjs';
 function outcomes(hist,threshold,direction){let win=0,push=0,loss=0;for(const [value,count]of Object.entries(hist)){const v=Number(value);if(v===threshold)push+=count;else if(direction==='OVER'?v>threshold:v<threshold)win+=count;else loss+=count;}const n=win+push+loss;return {win_probability:win/n,push_probability:push/n,loss_probability:loss/n,conditional_win_probability:win/(win+loss)};}
 
 const policy={minimum_probability_edge:.03,minimum_expected_value:.02,minimum_model_conditional_win_probability:.52,confidence:{HIGH:{minimum_probability_edge:.08,minimum_expected_value:.08},MODERATE:{minimum_probability_edge:.05,minimum_expected_value:.04}}};
@@ -25,15 +26,17 @@ export async function currentPicks(){
    const hm=Number(o.moneyline?.home?.close?.odds??o.homeTeamOdds?.moneyLine),am=Number(o.moneyline?.away?.close?.odds??o.awayTeamOdds?.moneyLine);
    if([hm,am].every(Number.isFinite)){
     const e=evaluateTwoWay({sideA:outcomes(hist.margin,0,'OVER'),sideB:outcomes(hist.margin,0,'UNDER'),sideAOdds:hm,sideBOdds:am});
-    for(const [team,side]of [[g.home_team,e.side_a],[g.away_team,e.side_b]])if(side.offered_odds>0&&side.probability_edge>=.03&&side.expected_value>=.02)upsets.push({game_id:id,selection:team+' ML',odds:side.offered_odds,probability:side.conditional_win_probability,expected_value:side.expected_value,model_status:'UNVALIDATED_SCORING_VARIANT',kickoff:g.kickoff});
+    for(const [team,side]of [[g.home_team,e.side_a],[g.away_team,e.side_b]])if(side.offered_odds>0)upsets.push({game_id:id,selection:team+' ML',odds:side.offered_odds,probability:side.conditional_win_probability,expected_value:side.expected_value,model_status:'UNVALIDATED_SCORING_VARIANT',kickoff:g.kickoff,rationale:'Underdog ranked by football-model win probability; price and expected value do not determine the shortlist.'});
    }
    const total=Number(o.overUnder),over=Number(o.total?.over?.close?.odds),under=Number(o.total?.under?.close?.odds);
    if([total,over,under].every(Number.isFinite)){
     const e=evaluateTwoWay({sideA:outcomes(hist.total,total,'OVER'),sideB:outcomes(hist.total,total,'UNDER'),sideAOdds:over,sideBOdds:under});
     const rec=recommendation(e,policy,{side_a:'Over '+total,side_b:'Under '+total});
-    if(rec.decision==='PICK')totals.push({game_id:id,selection:g.away_team+'–'+g.home_team+' '+rec.selection,odds:rec.selection.startsWith('Over')?over:under,probability:rec.model_conditional_win_probability,expected_value:rec.expected_value,model_status:'UNVALIDATED_SCORING_VARIANT',kickoff:g.kickoff});
+    if(rec.decision==='PICK')totals.push({game_id:id,selection:g.away_team+'–'+g.home_team+' '+rec.selection,odds:rec.selection.startsWith('Over')?over:under,probability:rec.model_conditional_win_probability,expected_value:rec.expected_value,model_status:'UNVALIDATED_SCORING_VARIANT',kickoff:g.kickoff,rationale:'Football scoring projection '+g.model.model_total.toFixed(1)+' vs sportsbook total '+total+'. Uses the simulated scoring distribution, including push probability.'});
    }
   }
-  return ({week:9,status:'CURRENT',checked_at:at,expires_at:new Date(now+5*60000).toISOString(),quote_source:'ESPN-listed sportsbook; current read',spread_model:'sportsbook-calibration-learning-v1',training_weeks:fit.training_weeks,training_records:seed.rows.length,training_non_push_games:fit.train_n,spreads:spreads.sort((a,b)=>b.expected_value-a.expected_value),upset_watchlist:upsets.filter(x=>!x.selection.startsWith('IND ')).sort((a,b)=>b.probability-a.probability).slice(0,3),total_candidates:totals.sort((a,b)=>b.expected_value-a.expected_value).slice(0,3),games,props_status:'WAITING_FOR_VERIFIED_WEEK_9_PROP_QUOTES',scoring_model_status:'UNVALIDATED_NO_REST_VARIANT',forecast_as_of:inputs.generated_at});
+  const propResult=await currentProps().catch(()=>({props:[],props_status:'PROP_INPUTS_UNAVAILABLE'}));
+  const forecasts=Object.entries(inputs.games).map(([id,g])=>({id,matchup:g.away_team+' @ '+g.home_team,kickoff:g.kickoff,away_score:g.model.away_score_mean,home_score:g.model.home_score_mean,total:g.model.model_total,home_probability:g.model.home_win_probability,away_probability:g.model.away_win_probability}));
+  return ({week:9,status:'CURRENT',checked_at:at,expires_at:new Date(now+5*60000).toISOString(),quote_source:'ESPN-listed sportsbook; current read',spread_model:'sportsbook-calibration-learning-v1',training_weeks:fit.training_weeks,training_records:seed.rows.length,training_non_push_games:fit.train_n,spreads:spreads.sort((a,b)=>b.expected_value-a.expected_value),upset_watchlist:upsets.filter(x=>!x.selection.startsWith('IND ')).sort((a,b)=>b.probability-a.probability).slice(0,3),total_candidates:totals.sort((a,b)=>b.expected_value-a.expected_value).slice(0,3),games,forecasts,...propResult,scoring_model_status:'UNVALIDATED_NO_REST_VARIANT',forecast_as_of:inputs.generated_at});
  }catch(e){throw e;}
 }
