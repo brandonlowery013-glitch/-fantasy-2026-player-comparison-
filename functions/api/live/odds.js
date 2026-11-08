@@ -1,5 +1,6 @@
 import {onRequestGet as publicSplits} from './splits.js';
-const SOURCE='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/data/market/current-game-lines-2026.json';
+import {sportsbookOdds} from '../../lib/sportsbook-odds.mjs';
+const SOURCE='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/frontend/ctd-cloudflare-work/data/market/current-game-lines-2026.json';
 const json=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'public, max-age=60'}});
 const american=value=>{const n=Number(String(value||'').replace(/−/g,'-').replace(/,/g,''));return Number.isInteger(n)&&Math.abs(n)>=100?n:null;};
 const point=label=>{const m=String(label||'').match(/([+-]?\d+(?:\.\d+)?)\s*$/);return m?Number(m[1]):null;};
@@ -32,6 +33,7 @@ export function publicQuotes(feed,now=Date.now()){
  });
 }
 export async function onRequestGet(context){
+ try{const direct=await sportsbookOdds(context);if(direct)return direct;}catch{/* Existing public/saved fallbacks retain their own timestamps. */}
  let published=null;
  try{
   const response=await fetch(SOURCE,{signal:AbortSignal.timeout(10000)});

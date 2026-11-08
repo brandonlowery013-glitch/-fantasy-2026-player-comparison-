@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {providerGames} from '../functions/lib/sportsbook-odds.mjs';
+import {sportsbookBoard} from '../frontend/cloudflare/lib/current-sportsbook.mjs';
+const now=Date.parse('2026-11-08T17:00:00Z'),at=new Date(now).toISOString(),kickoff='2026-11-08T18:00:00Z';
+const markets=[{key:'h2h',last_update:at,outcomes:[{name:'Dallas Cowboys',price:-150},{name:'Indianapolis Colts',price:130}]},{key:'spreads',last_update:at,outcomes:[{name:'Dallas Cowboys',point:-3,price:-110},{name:'Indianapolis Colts',point:3,price:-110}]},{key:'totals',last_update:at,outcomes:[{name:'Over',point:45.5,price:-105},{name:'Under',point:45.5,price:-115}]}];
+const row={id:'provider-id',sport_key:'americanfootball_nfl',home_team:'Indianapolis Colts',away_team:'Dallas Cowboys',commence_time:kickoff,bookmakers:[{key:'draftkings',title:'DraftKings',last_update:at,markets}]};
+const games=providerGames([row],now),feed={health:{status:'CURRENT'},fetched_at:at,games};
+const inputs={games:{g:{home_team:'IND',away_team:'DAL',kickoff,event_id:'espn-id'}}};
+const result=sportsbookBoard(feed,inputs,now);assert.equal(result.events[0].id,'espn-id');const quote=result.events[0].competitions[0].odds[0];assert.equal(quote.pointSpread.home.close.line,3);assert.equal(quote.moneyline.away.close.odds,-150);assert.equal(quote.overUnder,45.5);assert.equal(quote.total.under.close.odds,-115);
+const bad=structuredClone(row);bad.bookmakers[0].markets[1].outcomes[0].point=-4;assert(!providerGames([bad],now)[0].bookmakers[0].markets.some(m=>m.key==='spreads'));
+assert.equal(providerGames([row],Date.parse(kickoff)).length,0);
+assert.equal(sportsbookBoard(feed,{games:{g:{...inputs.games.g,kickoff:'2026-11-09T18:00:00Z'}}},now).events.length,0);
+assert.throws(()=>sportsbookBoard({...feed,fetched_at:'2026-11-08T16:44:59Z'},inputs,now));
+console.log('PASS: sportsbook prices/totals and team sides survive adaptation; started games, mismatched kickoff, stale and inconsistent markets are rejected.');
