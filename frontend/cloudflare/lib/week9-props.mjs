@@ -37,13 +37,23 @@ export function propCandidates(history,quotes,availability,rosters,now=Date.now(
 }
 async function json(url){const r=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error('Prop input unavailable');return r.json();}
 export async function currentProps(){
- const [history,quotes,availability]=await Promise.all([json(new URL('../data/week9-prop-history.json',import.meta.url)),json('/cloudflare/api/published/main/data/market/player-prop-board-quotes-2026.json'),json('/api/live/availability')]);
+ const [history,published,availability,relay]=await Promise.all([json(new URL('../data/week9-prop-history.json',import.meta.url)),json('/cloudflare/api/published/frontend/ctd-cloudflare-work/data/market/player-prop-board-quotes-2026.json').catch(()=>({week:9,snapshots:[]})),json('/api/live/availability'),json('/api/live/prop-quotes').catch(()=>null)]);
  const now=Date.now(),teams=[...new Set(Object.values(history.players).filter(p=>Date.parse(p.kickoff)>now&&Date.parse(p.kickoff)-now<=2*3600000).map(p=>p.team))];
  const rosters=Object.fromEntries(await Promise.all(teams.map(async team=>{try{
   const payload=await json(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${team==='LA'?'lar':team.toLowerCase()}/roster`),players=[];
   for(const group of payload.athletes||[])for(const a of group.items||[])players.push({name:a.displayName||a.fullName,team,captured_at:new Date().toISOString(),roster_status:a.status?.type||a.status?.abbreviation||a.status?.name,injury_reports:[]});
-  return [team,{players}];
+  return [team,{players,team_name:payload.team?.displayName}];
  }catch{return [team,{players:[]}];}})));
+ const statMap={player_pass_yds:'passing_yards',player_rush_yds:'rushing_yards',player_reception_yds:'receiving_yards'};
+ const live=[];
+ if(relay?.week===9)for(const q of relay.quotes||[]){
+  const entry=Object.entries(history.players).find(([name,p])=>playerKey(name)===playerKey(q.player)&&Date.parse(p.kickoff)===Date.parse(q.kickoff));if(!entry)continue;const [name,p]=entry;
+  const own=rosters[p.team]?.team_name,opp=rosters[p.opponent]?.team_name;
+  if(!own||!opp||!([q.home_team,q.away_team].includes(own)&&[q.home_team,q.away_team].includes(opp)))continue;
+  if(!statMap[q.market])continue;
+  live.push({player:name,week:9,game_id:p.game_id,book:q.book,stat:statMap[q.market],line:q.line,over_price:q.over,under_price:q.under,captured_at:q.provider_updated_at||q.observed_at,snapshot_kind:'CURRENT'});
+ }
+ const quotes={week:9,generated_at:live.length?relay.last_success_at:published.generated_at,snapshots:[...live,...(published.week===9?published.snapshots||[]:[])]};
  const props=propCandidates(history,quotes,availability,rosters,now);
  return {props,props_status:props.length?'CURRENT':'NO_VERIFIED_PROP_PICK',prop_quote_as_of:quotes.generated_at,prop_model:history.model_version,prop_method:history.method};
 }

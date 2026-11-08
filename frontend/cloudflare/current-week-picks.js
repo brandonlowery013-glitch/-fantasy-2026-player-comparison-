@@ -1,6 +1,7 @@
 (()=>{
  if(window.CTD_CURRENT_WEEK_PICKS)return;window.CTD_CURRENT_WEEK_PICKS=true;
  const start=()=>{const old=document.getElementById('ourPicksMount');if(!old)return;
+ const weekSelector=document.getElementById('liveWeekSelect');if(weekSelector&&weekSelector.value!=='9'){weekSelector.value='9';weekSelector.dispatchEvent(new Event('change',{bubbles:true}));}
  const panel=document.createElement('section');panel.id='currentWeekPicks';panel.className='panel';old.before(panel);
  const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const odds=x=>x>0?'+'+x:String(x),pct=x=>(x*100).toFixed(1)+'%';let current=null;
