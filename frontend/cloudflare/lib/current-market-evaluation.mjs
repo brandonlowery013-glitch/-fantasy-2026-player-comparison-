@@ -1,4 +1,4 @@
-import {fairTwoWayAmerican,americanNetProfitPerUnit} from '../../lib/fair-market-probability.mjs';
+import {fairTwoWayAmerican,americanNetProfitPerUnit} from './current-fair-market.mjs';
 const finite=x=>Number.isFinite(Number(x));
 const round=(x,d=6)=>Number(Number(x).toFixed(d));
 export function outcomeProbabilities(values,threshold,direction){
