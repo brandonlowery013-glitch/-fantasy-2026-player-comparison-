@@ -8,3 +8,6 @@ const x=parseFantasyProsInjuries(html,2026,5,canonical);assert.equal(x.records.l
 assert.equal(parseFantasyProsInjuries(html,2026,6,canonical).records.length,1);assert.equal(parseFantasyProsInjuries(html,2026,5,[{...canonical[0],team:'GB'}]).records.length,0);
 assert.throws(()=>parseFantasyProsInjuries(html,2025,5,canonical));assert.throws(()=>parseFantasyProsInjuries('<html>captcha</html>',2026,5,canonical));
 console.log('PASS: season/team/position binding, current-week IR, missing-row non-clearance, and provider-date honesty');
+
+assert.equal(parseFantasyProsInjuries(html.replace('Questionable','Not Starting'),2026,5,canonical).records.length,1);
+assert.throws(()=>parseFantasyProsInjuries(html.replace('Questionable','Unknown New Status'),2026,5,canonical));
