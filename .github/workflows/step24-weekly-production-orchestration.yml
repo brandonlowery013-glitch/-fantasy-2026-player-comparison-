@@ -2,6 +2,11 @@ name: Step 24 Weekly Production Orchestration
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/fantasypros-injury-source.mjs'
+      - '.github/workflows/step24-weekly-production-orchestration.yml'
   pull_request:
   schedule:
     - cron: '10 * * * *'
@@ -72,7 +77,7 @@ jobs:
     concurrency:
       group: production-main-writer
       cancel-in-progress: false
-    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && (needs.step24-contract-qa.result == 'success' || needs.step24-contract-qa.result == 'skipped')
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push') && (needs.step24-contract-qa.result == 'success' || needs.step24-contract-qa.result == 'skipped')
     needs: step24-contract-qa
     runs-on: ubuntu-latest
     steps:
