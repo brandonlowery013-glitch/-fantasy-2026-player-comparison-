@@ -19,6 +19,7 @@
   const p=Promise.resolve('main').then(async sha=>{
    // Recommendations are evaluated by the deployed server. Never replace them with a
    // raw producer, research replay, personnel model, or a second browser-side fit.
+   if(kind==='recommendations'&&typeof document!=='undefined'){const helper=await import('./lib/current-picks-client.mjs?v=20261108-detail');const current=await helper.currentPicks({includeProps:false});if(current.model_feed&&Object.keys(current.model_feed.games).length)return current.model_feed;}
    const base=await (kind==='recommendations'?read('/cloudflare/api/game-model/recommendations?ref='+sha):read('/cloudflare/api/game-model/'+kind+'?ref='+sha).catch(()=>read(ROOT+sha+'/'+normal)));
    const chosen=kind!=='recommendations'&&rerun?select(base,await read(rerun).catch(()=>null)):base;
    if(!['recommendations','projections'].includes(kind))return chosen;
