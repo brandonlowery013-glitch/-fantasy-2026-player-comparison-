@@ -43,6 +43,29 @@ body=f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="
 <h2>Same games. Same test window.</h2><p>Ranked by lower Brier score on the same <b>56 non-push games in Weeks 3–6</b>, with each calibration fit using earlier weeks only. Lower Brier means better probability accuracy. Directional win–loss is shown separately; it is not a filtered betting return. Weeks without a valid line-aware fit are excluded from every variant.</p><div class=scroll><table><thead><tr><th>Rank</th><th>Recovered variant</th><th>Direction W–L</th><th>Brier ↓</th></tr></thead><tbody>{ranking}</tbody></table></div>
 <h2>Every spread matchup</h2><p class=note>ESPN-listed DraftKings quotes captured {esc(d['generated_at'])}. Lines can move. PICK clears CTD’s 3-percentage-point probability-edge, 2% EV and 52% conditional-probability thresholds. PASS can still show a directional lean. Integer-spread calibration probabilities and EV are conditional on no push. Current calibration fits use the recovered seed through Week 6, not a claimed completed Week 8 learning update.</p><div class=scroll><table><thead><tr><th>Game</th>{heads}</tr></thead><tbody>{''.join(rows)}</tbody></table></div>
 <h2>The matchup roast</h2><div class=stories>{''.join(articles)}</div><footer>All 15 verified Week 9 matchups included. Started and completed games receive no new pregame pick. Humorous commentary is editorial; numerical results come from the accompanying saved comparison. No wagers are placed.</footer></main></body></html>'''
+# Public dispatch is editorial only; variant testing remains in the research data.
+import re
+body=re.sub(r'<h2>The picks with three signatures</h2>.*?<h2>The matchup roast</h2>', '<p class="notice">Week 9 matchup humor. Spread-variant testing is kept separate from the live board; no three-model ensemble or live model switch is applied.</p><h2>The matchup roast</h2>', body, flags=re.S)
+body=body.replace('Three models.<br>One very loud Sunday.', 'Week 9.<br>Everyone has a plan.')
+body=body.replace('The Jets get points. Minnesota gets consensus. Dallas–Indy stays in the meeting.', 'Fifteen matchups. Plenty of confidence. No shortage of material.')
+body=body.replace('Full NFL slate · Three recovered spread variants · Humorous matchup commentary', 'Full NFL slate · Humorous matchup commentary')
+editorial={
+'DAL-IND': 'Dallas brings the national spotlight; Indianapolis brings a fanbase asking whether the spotlight can also locate a defense. Brandon has already denied the Colts a character reference. The game remains on the schedule anyway.',
+'NYJ-KC': 'The Jets travel to Kansas City hoping the underdog role comes with complimentary snacks. Winning and covering are different assignments; New York would appreciate partial credit.',
+'DET-MIA': 'Detroit arrives with ambition. Miami arrives with humidity and the hope that the visitors packed the wrong shoes. Someone is leaving this game with an explanation that begins with “if you take away those two plays.”',
+'CLE-NO': 'Cleveland and New Orleans meet in a game whose postgame press conference may contain more promises than the action. Somebody has to win, unless both offenses negotiate an extension.',
+'NYG-PHI': 'An NFC East game: four quarters of football followed by six days of people arguing like the result settled a property dispute. The winner gets bragging rights; the loser gets a very loud local radio segment.',
+'LA-WAS': 'Los Angeles visits Washington for a game that will have one fanbase declaring the season back on and the other pricing coordinator replacements. Both reactions can happen before halftime.',
+'DEN-CAR': 'Denver and Carolina meet with every fan convinced this is the game their team should handle. That sentence is responsible for approximately half of Sunday’s emotional damage.',
+'HOU-LAC': 'Houston and the Chargers have been assigned a football game. Chargers fans have also been assigned a breathing exercise and a reminder not to celebrate before the clock reaches zero.',
+'GB-NE': 'Green Bay and New England bring enough history to open a museum. Unfortunately for both teams, the scoreboard does not accept championships from previous decades as legal tender.',
+'LV-SF': 'Las Vegas visits San Francisco, where optimism will be inspected at the door. The Raiders would like a competitive afternoon; their fans would settle for an afternoon that does not require an apology.',
+'ARI-SEA': 'Arizona travels to Seattle for the traditional divisional reminder that familiarity does not produce friendship. One fanbase will call it a statement win; the other will announce that division games are always weird.',
+'TB-CHI': 'Tampa Bay comes to Chicago for prime time, giving Bears fans a national audience for feelings they were going to have anyway. The weather, play-calling and offensive line are all available for blame.',
+'BUF-MIN': 'Buffalo and Minnesota close the slate with two fanbases who understand that hope should come with a waiver. Somebody gets a satisfying Monday night. Somebody gets to stare at the ceiling.',
+'CIN-ATL': 'The early game had already started when this dispatch was prepared. No new pregame pick is created after kickoff. The comedy department has a keyboard, not a time machine.',
+'JAX-BAL': 'Thursday’s game is already final in the verified schedule. It stays in the full-week roll call, but any brand-new “pregame lock” for this one deserves a fraud investigation.'}
+for key,(title,old) in stories.items(): body=body.replace(esc(old),esc(editorial[key]))
 (root/'week-9-preview.html').write_text(body)
 (root/'week-9-preview-nav.js').write_text("(()=>{const nav=document.getElementById('nav');if(!nav)return;const b=document.createElement('button');b.textContent='WEEK 9 PREVIEW';b.addEventListener('click',()=>{location.href='week-9-preview.html'});nav.append(b);})();\n")
 
