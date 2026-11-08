@@ -34,4 +34,4 @@
 })();
 
 
-(()=>{const s=document.createElement('script');s.src='current-week-picks.js?v=20261108';document.head.append(s);})();
+(()=>{if(typeof document==='undefined')return;const s=document.createElement('script');s.src='current-week-picks.js?v=20261108';document.head.append(s);})();
