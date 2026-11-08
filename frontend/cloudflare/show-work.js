@@ -88,7 +88,7 @@ function gameDirectionPrediction(game,snapshot,kind){
  const e=snapshot?.markets?.[kind],a=e?.side_a?.conditional_win_probability,b=e?.side_b?.conditional_win_probability;
  let home=a,away=b;
  const version=kind==='spread'?'sportsbook-calibration-learning-v1':past&&e?.model_version==='football-sportsbook-learning-v1'?'football-sportsbook-learning-v1':'ctd-football-moneyline-v1';
- if(kind!=='total'&&e?.model_version!==version)return {status:'UNAVAILABLE',selection:null,reason:'Waiting for current picks',betting_decision:'WAIT'};
+ if(kind!=='total'&&e?.model_version!==version&&!(kind==='moneyline'&&e?.model_version==='ctd-week9-score-distribution-v1'&&e?.model_status==='UNVALIDATED_SCORING_VARIANT'))return {status:'UNAVAILABLE',selection:null,reason:'Waiting for current picks',betting_decision:'WAIT'};
  if(!Number.isFinite(home)||!Number.isFinite(away))return {status:'UNAVAILABLE',selection:null,reason:'Matching model probability or spread line unavailable; no invented pick',betting_decision:e?.recommendation?.decision||'WAIT'};
  if(kind==='total'){
   const line=snapshot?.market?.total;
