@@ -11,3 +11,6 @@ button.addEventListener('click',()=>{open();history.replaceState(null,'','#leagu
 page.querySelectorAll('.rrJump a').forEach(a=>a.addEventListener('click',event=>{event.preventDefault();document.querySelector(a.getAttribute('href')).scrollIntoView({behavior:'smooth'});}));
 if(location.hash==='#league-recap-week-7'){open();window.addEventListener('load',open,{once:true});}
 })();
+
+/* Load subsequent dispatches beside the retained Week 7 archive. */
+for (const src of ["week-8-recap.js?v=20261108", "week-9-preview-nav.js?v=20261108"]) { const script=document.createElement("script");script.src=src;document.body.append(script); }

@@ -1,0 +1,1 @@
+(()=>{const nav=document.getElementById('nav');if(!nav)return;const b=document.createElement('button');b.textContent='WEEK 9 PREVIEW';b.addEventListener('click',()=>{location.href='week-9-preview.html'});nav.append(b);})();

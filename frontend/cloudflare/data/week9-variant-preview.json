@@ -1,0 +1,768 @@
+{
+  "season": 2026,
+  "week": 9,
+  "generated_at": "2026-11-08T15:57:10.020Z",
+  "status": "RESEARCH_PREVIEW",
+  "ranking_rule": "Lowest common-sample walk-forward Brier score; direction record is secondary",
+  "ranking": [
+    {
+      "id": "calibration",
+      "name": "Line-aware calibration",
+      "games": 56,
+      "wins": 35,
+      "losses": 21,
+      "brier": 0.2383500483582794,
+      "test_weeks": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "rank": 1
+    },
+    {
+      "id": "learning",
+      "name": "Calibration + learning",
+      "games": 56,
+      "wins": 37,
+      "losses": 19,
+      "brier": 0.23896990204335822,
+      "test_weeks": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "rank": 2
+    },
+    {
+      "id": "football",
+      "name": "Football scoring",
+      "games": 56,
+      "wins": 30,
+      "losses": 26,
+      "brier": 0.24732804029177127,
+      "test_weeks": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "rank": 3
+    }
+  ],
+  "training_through_week": 6,
+  "limitations": [
+    "Three recoverable variants, not proof that these were the original user-selected top three.",
+    "Historical sample is reconstructed; no prospective profitability claim.",
+    "Current scoring uses the requested no-rest ablation, which differs from older frozen football forecasts.",
+    "No live model selection, thresholds or wagering behavior is changed.",
+    "Calibration models use conditional non-push probabilities at integer spreads; their EV is conditional on no push."
+  ],
+  "games": [
+    {
+      "game_id": "2026-W9-CIN-ATL",
+      "away": "CIN",
+      "home": "ATL",
+      "kickoff": "2026-11-08T14:30:00.000Z",
+      "variants": {},
+      "status": "STARTED"
+    },
+    {
+      "game_id": "2026-W9-DAL-IND",
+      "away": "DAL",
+      "home": "IND",
+      "kickoff": "2026-11-08T18:00:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "IND +4.5",
+          "cover_probability": 0.629852294921875,
+          "decision": "PICK",
+          "selection": "IND +4.5",
+          "confidence": "HIGH",
+          "probability_edge": 0.140687,
+          "expected_value": 0.229712,
+          "model_conditional_win_probability": 0.629852,
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "IND +4.5",
+          "cover_probability": 0.5194535327408263,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        },
+        "learning": {
+          "direction": "IND +4.5",
+          "cover_probability": 0.5174598702991052,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": 4.5,
+          "home_spread_price": -105,
+          "away_spread_price": -115
+        }
+      },
+      "projected_score": {
+        "away": 24.76,
+        "home": 24.68
+      },
+      "agreement": 3
+    },
+    {
+      "game_id": "2026-W9-NYJ-KC",
+      "away": "NYJ",
+      "home": "KC",
+      "kickoff": "2026-11-08T18:00:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "NYJ +9.5",
+          "cover_probability": 0.5321044921875,
+          "decision": "PICK",
+          "selection": "NYJ +9.5",
+          "confidence": "LEAN",
+          "probability_edge": 0.036434,
+          "expected_value": 0.024794,
+          "model_conditional_win_probability": 0.532104,
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "NYJ +9.5",
+          "cover_probability": 0.534248031565513,
+          "decision": "PICK",
+          "selection": "NYJ +9.5",
+          "confidence": "LEAN",
+          "probability_edge": 0.038578,
+          "expected_value": 0.028922,
+          "model_conditional_win_probability": 0.534248,
+          "integer_line_conditional": false
+        },
+        "learning": {
+          "direction": "NYJ +9.5",
+          "cover_probability": 0.5413445948855873,
+          "decision": "PICK",
+          "selection": "NYJ +9.5",
+          "confidence": "LEAN",
+          "probability_edge": 0.045674,
+          "expected_value": 0.04259,
+          "model_conditional_win_probability": 0.541345,
+          "integer_line_conditional": false
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": -9.5,
+          "home_spread_price": -112,
+          "away_spread_price": -108
+        }
+      },
+      "projected_score": {
+        "away": 17.77,
+        "home": 26.187
+      },
+      "agreement": 3
+    },
+    {
+      "game_id": "2026-W9-DET-MIA",
+      "away": "DET",
+      "home": "MIA",
+      "kickoff": "2026-11-08T18:00:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "MIA +6.5",
+          "cover_probability": 0.57305908203125,
+          "decision": "PICK",
+          "selection": "MIA +6.5",
+          "confidence": "MODERATE",
+          "probability_edge": 0.077389,
+          "expected_value": 0.103669,
+          "model_conditional_win_probability": 0.573059,
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "MIA +6.5",
+          "cover_probability": 0.5186607526173829,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        },
+        "learning": {
+          "direction": "MIA +6.5",
+          "cover_probability": 0.5265155349749413,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": 6.5,
+          "home_spread_price": -108,
+          "away_spread_price": -112
+        }
+      },
+      "projected_score": {
+        "away": 25.675,
+        "home": 21.667
+      },
+      "agreement": 3
+    },
+    {
+      "game_id": "2026-W9-CLE-NO",
+      "away": "CLE",
+      "home": "NO",
+      "kickoff": "2026-11-08T18:00:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "CLE +3.5",
+          "cover_probability": 0.517333984375,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "CLE +3.5",
+          "cover_probability": 0.5133766042938859,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        },
+        "learning": {
+          "direction": "CLE +3.5",
+          "cover_probability": 0.51451135004926,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": -3.5,
+          "home_spread_price": -110,
+          "away_spread_price": -110
+        }
+      },
+      "projected_score": {
+        "away": 20.371,
+        "home": 23.373
+      },
+      "agreement": 3
+    },
+    {
+      "game_id": "2026-W9-NYG-PHI",
+      "away": "NYG",
+      "home": "PHI",
+      "kickoff": "2026-11-08T18:00:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "PHI +3",
+          "cover_probability": 0.5966861231406515,
+          "decision": "PICK",
+          "selection": "PHI +3",
+          "confidence": "HIGH",
+          "probability_edge": 0.096686,
+          "expected_value": 0.135298,
+          "model_conditional_win_probability": 0.596686,
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "PHI +3",
+          "cover_probability": 0.504701885612943,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": true
+        },
+        "learning": {
+          "direction": "PHI +3",
+          "cover_probability": 0.5195228266660079,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": true
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": 3,
+          "home_spread_price": -110,
+          "away_spread_price": -110
+        }
+      },
+      "projected_score": {
+        "away": 22.166,
+        "home": 22.341
+      },
+      "agreement": 3
+    },
+    {
+      "game_id": "2026-W9-LA-WAS",
+      "away": "LA",
+      "home": "WAS",
+      "kickoff": "2026-11-08T18:00:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "WAS +4.5",
+          "cover_probability": 0.560333251953125,
+          "decision": "PICK",
+          "selection": "WAS +4.5",
+          "confidence": "MODERATE",
+          "probability_edge": 0.071167,
+          "expected_value": 0.093984,
+          "model_conditional_win_probability": 0.560333,
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "WAS +4.5",
+          "cover_probability": 0.5194535327408263,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        },
+        "learning": {
+          "direction": "WAS +4.5",
+          "cover_probability": 0.5216567020895684,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": 4.5,
+          "home_spread_price": -105,
+          "away_spread_price": -115
+        }
+      },
+      "projected_score": {
+        "away": 24.539,
+        "home": 21.969
+      },
+      "agreement": 3
+    },
+    {
+      "game_id": "2026-W9-DEN-CAR",
+      "away": "DEN",
+      "home": "CAR",
+      "kickoff": "2026-11-08T18:00:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "CAR +2.5",
+          "cover_probability": 0.58056640625,
+          "decision": "PICK",
+          "selection": "CAR +2.5",
+          "confidence": "HIGH",
+          "probability_edge": 0.102306,
+          "expected_value": 0.161133,
+          "model_conditional_win_probability": 0.580566,
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "CAR +2.5",
+          "cover_probability": 0.5245477056103243,
+          "decision": "PICK",
+          "selection": "CAR +2.5",
+          "confidence": "LEAN",
+          "probability_edge": 0.046287,
+          "expected_value": 0.049095,
+          "model_conditional_win_probability": 0.524548,
+          "integer_line_conditional": false
+        },
+        "learning": {
+          "direction": "CAR +2.5",
+          "cover_probability": 0.5111704516114909,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": 2.5,
+          "home_spread_price": 100,
+          "away_spread_price": -120
+        }
+      },
+      "projected_score": {
+        "away": 22.63,
+        "home": 22.677
+      },
+      "agreement": 3
+    },
+    {
+      "game_id": "2026-W9-HOU-LAC",
+      "away": "HOU",
+      "home": "LAC",
+      "kickoff": "2026-11-08T21:05:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "LAC +5.5",
+          "cover_probability": 0.594512939453125,
+          "decision": "PICK",
+          "selection": "LAC +5.5",
+          "confidence": "HIGH",
+          "probability_edge": 0.098843,
+          "expected_value": 0.144988,
+          "model_conditional_win_probability": 0.594513,
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "LAC +5.5",
+          "cover_probability": 0.5158822604777552,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        },
+        "learning": {
+          "direction": "LAC +5.5",
+          "cover_probability": 0.5130757314411843,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": 5.5,
+          "home_spread_price": -108,
+          "away_spread_price": -112
+        }
+      },
+      "projected_score": {
+        "away": 22.873,
+        "home": 20.545
+      },
+      "agreement": 3
+    },
+    {
+      "game_id": "2026-W9-GB-NE",
+      "away": "GB",
+      "home": "NE",
+      "kickoff": "2026-11-08T21:25:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "NE -3",
+          "cover_probability": 0.5704575492479074,
+          "decision": "PICK",
+          "selection": "NE -3",
+          "confidence": "MODERATE",
+          "probability_edge": 0.066128,
+          "expected_value": 0.077384,
+          "model_conditional_win_probability": 0.570458,
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "GB +3",
+          "cover_probability": 0.5162142349692072,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": true
+        },
+        "learning": {
+          "direction": "GB +3",
+          "cover_probability": 0.5310783219850319,
+          "decision": "PICK",
+          "selection": "GB +3",
+          "confidence": "LEAN",
+          "probability_edge": 0.035408,
+          "expected_value": 0.022818,
+          "model_conditional_win_probability": 0.531078,
+          "integer_line_conditional": true
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": -3,
+          "home_spread_price": -112,
+          "away_spread_price": -108
+        }
+      },
+      "projected_score": {
+        "away": 19.352,
+        "home": 24.42
+      },
+      "agreement": 2
+    },
+    {
+      "game_id": "2026-W9-LV-SF",
+      "away": "LV",
+      "home": "SF",
+      "kickoff": "2026-11-08T21:25:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "SF -9.5",
+          "cover_probability": 0.501251220703125,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "LV +9.5",
+          "cover_probability": 0.5300345061741107,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        },
+        "learning": {
+          "direction": "LV +9.5",
+          "cover_probability": 0.5484710227815239,
+          "decision": "PICK",
+          "selection": "LV +9.5",
+          "confidence": "LEAN",
+          "probability_edge": 0.048471,
+          "expected_value": 0.047081,
+          "model_conditional_win_probability": 0.548471,
+          "integer_line_conditional": false
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": -9.5,
+          "home_spread_price": -110,
+          "away_spread_price": -110
+        }
+      },
+      "projected_score": {
+        "away": 19.351,
+        "home": 28.845
+      },
+      "agreement": 2
+    },
+    {
+      "game_id": "2026-W9-ARI-SEA",
+      "away": "ARI",
+      "home": "SEA",
+      "kickoff": "2026-11-08T21:25:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "SEA -8.5",
+          "cover_probability": 0.575531005859375,
+          "decision": "PICK",
+          "selection": "SEA -8.5",
+          "confidence": "MODERATE",
+          "probability_edge": 0.075531,
+          "expected_value": 0.098741,
+          "model_conditional_win_probability": 0.575531,
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "ARI +8.5",
+          "cover_probability": 0.5272618270917648,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        },
+        "learning": {
+          "direction": "ARI +8.5",
+          "cover_probability": 0.5341313888646856,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": false
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": -8.5,
+          "home_spread_price": -110,
+          "away_spread_price": -110
+        }
+      },
+      "projected_score": {
+        "away": 17.705,
+        "home": 28.728
+      },
+      "agreement": 2
+    },
+    {
+      "game_id": "2026-W9-TB-CHI",
+      "away": "TB",
+      "home": "CHI",
+      "kickoff": "2026-11-09T01:20:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "TB +6",
+          "cover_probability": 0.5339306558980346,
+          "decision": "PICK",
+          "selection": "TB +6",
+          "confidence": "LEAN",
+          "probability_edge": 0.03826,
+          "expected_value": 0.027386,
+          "model_conditional_win_probability": 0.533931,
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "TB +6",
+          "cover_probability": 0.524545631685402,
+          "decision": "PASS",
+          "selection": null,
+          "confidence": null,
+          "reason": "No side clears locked probability-edge, EV, and model-probability minimums",
+          "integer_line_conditional": true
+        },
+        "learning": {
+          "direction": "TB +6",
+          "cover_probability": 0.5365142978699455,
+          "decision": "PICK",
+          "selection": "TB +6",
+          "confidence": "LEAN",
+          "probability_edge": 0.040844,
+          "expected_value": 0.033287,
+          "model_conditional_win_probability": 0.536514,
+          "integer_line_conditional": true
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": -6,
+          "home_spread_price": -112,
+          "away_spread_price": -108
+        }
+      },
+      "projected_score": {
+        "away": 19.933,
+        "home": 24.951
+      },
+      "agreement": 3
+    },
+    {
+      "game_id": "2026-W9-JAX-BAL",
+      "away": "JAX",
+      "home": "BAL",
+      "kickoff": "2026-11-06T01:15:00.000Z",
+      "variants": {},
+      "status": "FINAL"
+    },
+    {
+      "game_id": "2026-W9-BUF-MIN",
+      "away": "BUF",
+      "home": "MIN",
+      "kickoff": "2026-11-10T01:15:00.000Z",
+      "variants": {
+        "football": {
+          "direction": "MIN +3",
+          "cover_probability": 0.6389019755645592,
+          "decision": "PICK",
+          "selection": "MIN +3",
+          "confidence": "HIGH",
+          "probability_edge": 0.156266,
+          "expected_value": 0.257756,
+          "model_conditional_win_probability": 0.638902,
+          "integer_line_conditional": false
+        },
+        "calibration": {
+          "direction": "MIN +3",
+          "cover_probability": 0.5216630750815783,
+          "decision": "PICK",
+          "selection": "MIN +3",
+          "confidence": "LEAN",
+          "probability_edge": 0.039027,
+          "expected_value": 0.033097,
+          "model_conditional_win_probability": 0.521663,
+          "integer_line_conditional": true
+        },
+        "learning": {
+          "direction": "MIN +3",
+          "cover_probability": 0.5279971699906012,
+          "decision": "PICK",
+          "selection": "MIN +3",
+          "confidence": "LEAN",
+          "probability_edge": 0.045361,
+          "expected_value": 0.045641,
+          "model_conditional_win_probability": 0.527997,
+          "integer_line_conditional": true
+        }
+      },
+      "status": "PREVIEW",
+      "quote": {
+        "book": "Draft Kings",
+        "captured_at": "2026-11-08T15:57:10.020Z",
+        "market": {
+          "home_spread": 3,
+          "home_spread_price": -102,
+          "away_spread_price": -118
+        }
+      },
+      "projected_score": {
+        "away": 21.936,
+        "home": 23.435
+      },
+      "agreement": 3
+    }
+  ]
+}
