@@ -2,6 +2,10 @@ name: CTD Preview Season History
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ctd-preview-season.yml'
   schedule:
     - cron: '10 * * * *'
 
@@ -68,7 +72,7 @@ jobs:
           if-no-files-found: error
 
   weekly-production-cycle:
-    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && (needs.step24-contract-qa.result == 'success' || needs.step24-contract-qa.result == 'skipped')
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push') && (needs.step24-contract-qa.result == 'success' || needs.step24-contract-qa.result == 'skipped')
     needs: step24-contract-qa
     runs-on: ubuntu-latest
     steps:
@@ -142,7 +146,7 @@ jobs:
         run: node scripts/build-in-season-ranking-layer.mjs
       - name: Stage 3 - freeze first valid pregame forecasts
         if: steps.context.outputs.ready == 'true'
-        run: node scripts/capture-weekly-forecast-snapshots.mjs
+        run: node scripts/capture-weekly-forecast-snapshots.mjs --preserve-existing
       - name: Stage 4 - build football-only team scoring priors
         if: steps.context.outputs.ready == 'true'
         run: node scripts/build-game-team-scoring-priors.mjs
@@ -172,6 +176,11 @@ jobs:
       - name: Stage 7 - build freshness-filtered opportunity board
         if: steps.context.outputs.ready == 'true'
         run: node scripts/build-unified-opportunity-engine.mjs
+      - name: Rebuild current betting feed before publication
+        if: steps.context.outputs.ready == 'true'
+        run: |
+          node scripts/build-weekly-parlay-recommendations.mjs
+          node scripts/build-final-betting-ui-feed.mjs
       - name: Stage 8 - settle any newly final frozen forecasts
         if: steps.cadence.outputs.run == 'true'
         run: node scripts/settle-weekly-forecast-results.mjs
