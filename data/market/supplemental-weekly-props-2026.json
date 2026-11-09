@@ -3,7 +3,7 @@
   "model_version": "weekly-receiving-usage-v1",
   "season": 2026,
   "week": 9,
-  "generated_at": "2026-11-09T11:41:48.958Z",
+  "generated_at": "2026-11-09T21:40:43.117Z",
   "sportsbook_inputs_used": false,
   "canonical_players_changed": false,
   "players": {
@@ -574,6 +574,198 @@
       "model_version": "weekly-receiving-usage-v1",
       "sportsbook_inputs_used": false,
       "source_url": "https://www.espn.com/nfl/player/gamelog/_/id/3930086/type/nfl/year/2026",
+      "assumptions": [
+        "Conditional on playing with the recent receiving role.",
+        "Last seven reported regular-season games; recency weight is 0.8 per older game.",
+        "Counts use a negative-binomial predictive distribution; receiving yards use a positive lognormal predictive distribution.",
+        "Sampling uncertainty is inflated by 1 + 1/effective sample size.",
+        "No unsourced opponent, injury, or morale adjustment is applied.",
+        "Verified pregame forecast errors update the mean with 20 prior observations and a 20% correction cap."
+      ]
+    },
+    "Tai Felton": {
+      "player": "Tai Felton",
+      "athlete_id": "4565185",
+      "team": "MIN",
+      "position": "WR",
+      "week": 9,
+      "game_id": "2026-W9-BUF-MIN",
+      "kickoff": "2026-11-10T01:15:00.000Z",
+      "generated_at": "2026-11-09T21:40:43.117Z",
+      "input_hash": "fb9040e28fbd3aaa08f088f6c47622c23777f3d5c904b28f14ac0540a1bb9dfd",
+      "status": "SHADOW_ONLY",
+      "projection": {
+        "position": "WR",
+        "status": "SHADOW_ONLY",
+        "projections": {
+          "targets": {
+            "status": "SHADOW_ONLY",
+            "mean": 1.0252506438185323,
+            "sd": 1.2751124058455339,
+            "floor": 0,
+            "median": 1,
+            "ceiling": 3,
+            "sportsbook_inputs_used": false,
+            "baseline": {
+              "source": "2026 reported regular-season game logs",
+              "games": 7,
+              "recency_decay": 0.8,
+              "unadjusted_mean": 1.0252506438185323
+            },
+            "learning": {
+              "settled_forecasts": 0,
+              "mean_correction": 0,
+              "prior_strength": 20
+            }
+          },
+          "receptions": {
+            "status": "SHADOW_ONLY",
+            "mean": 0.4535073937901881,
+            "sd": 0.8978460411145948,
+            "floor": 0,
+            "median": 0,
+            "ceiling": 2,
+            "sportsbook_inputs_used": false,
+            "baseline": {
+              "source": "2026 reported regular-season game logs",
+              "games": 7,
+              "recency_decay": 0.8,
+              "unadjusted_mean": 0.4535073937901881
+            },
+            "learning": {
+              "settled_forecasts": 0,
+              "mean_correction": 0,
+              "prior_strength": 20
+            }
+          },
+          "receiving_yards": {
+            "status": "SHADOW_ONLY",
+            "mean": 6.187136586708995,
+            "sd": 12.178023645532065,
+            "floor": 0.5585604711210508,
+            "median": 2.8024710691112587,
+            "ceiling": 14.060866279066719,
+            "sportsbook_inputs_used": false,
+            "baseline": {
+              "source": "2026 reported regular-season game logs",
+              "games": 7,
+              "recency_decay": 0.8,
+              "unadjusted_mean": 6.187136586708995
+            },
+            "learning": {
+              "settled_forecasts": 0,
+              "mean_correction": 0,
+              "prior_strength": 20
+            }
+          }
+        }
+      },
+      "distribution": {
+        "distributions": {
+          "targets": {
+            "family": "negative_binomial",
+            "parameters": {
+              "r": 1.74997024300859,
+              "p": 0.6305697147621683
+            },
+            "status": "SHADOW_ONLY",
+            "market_price_used_in_probability": false,
+            "generated_at": "2026-11-09T21:40:43.117Z",
+            "supplemental_model": "weekly-receiving-usage-v1"
+          },
+          "receptions": {
+            "family": "negative_binomial",
+            "parameters": {
+              "r": 0.5832592773358738,
+              "p": 0.5625752578469553
+            },
+            "status": "SHADOW_ONLY",
+            "market_price_used_in_probability": false,
+            "generated_at": "2026-11-09T21:40:43.117Z",
+            "supplemental_model": "weekly-receiving-usage-v1"
+          },
+          "receiving_yards": {
+            "family": "lognormal_shifted",
+            "parameters": {
+              "shift": 0,
+              "log_mu": 1.0305015526678096,
+              "log_sigma": 1.2585474484825347
+            },
+            "status": "SHADOW_ONLY",
+            "market_price_used_in_probability": false,
+            "generated_at": "2026-11-09T21:40:43.117Z",
+            "supplemental_model": "weekly-receiving-usage-v1"
+          }
+        }
+      },
+      "sample": [
+        {
+          "event_id": "401872927",
+          "week": 1,
+          "date": "2026-09-13T20:25:00.000+00:00",
+          "opponent": "GB",
+          "targets": 0,
+          "receptions": 0,
+          "receiving_yards": 0
+        },
+        {
+          "event_id": "401872937",
+          "week": 2,
+          "date": "2026-09-20T17:00:00.000+00:00",
+          "opponent": "CHI",
+          "targets": 0,
+          "receptions": 0,
+          "receiving_yards": 0
+        },
+        {
+          "event_id": "401872959",
+          "week": 3,
+          "date": "2026-09-27T20:05:00.000+00:00",
+          "opponent": "TB",
+          "targets": 2,
+          "receptions": 0,
+          "receiving_yards": 0
+        },
+        {
+          "event_id": "401872974",
+          "week": 4,
+          "date": "2026-10-04T20:05:00.000+00:00",
+          "opponent": "MIA",
+          "targets": 1,
+          "receptions": 1,
+          "receiving_yards": 14
+        },
+        {
+          "event_id": "401872987",
+          "week": 5,
+          "date": "2026-10-11T17:00:00.000+00:00",
+          "opponent": "NO",
+          "targets": 3,
+          "receptions": 2,
+          "receiving_yards": 27
+        },
+        {
+          "event_id": "401873014",
+          "week": 7,
+          "date": "2026-10-25T17:00:00.000+00:00",
+          "opponent": "IND",
+          "targets": 1,
+          "receptions": 0,
+          "receiving_yards": 0
+        },
+        {
+          "event_id": "401873030",
+          "week": 8,
+          "date": "2026-11-01T18:00:00.000+00:00",
+          "opponent": "DET",
+          "targets": 0,
+          "receptions": 0,
+          "receiving_yards": 0
+        }
+      ],
+      "model_version": "weekly-receiving-usage-v1",
+      "sportsbook_inputs_used": false,
+      "source_url": "https://www.espn.com/nfl/player/gamelog/_/id/4565185/type/nfl/year/2026",
       "assumptions": [
         "Conditional on playing with the recent receiving role.",
         "Last seven reported regular-season games; recency weight is 0.8 per older game.",
@@ -1374,6 +1566,85 @@
       },
       "generated_at": "2026-11-08T23:37:16.211Z",
       "input_hash": "15bb047ca17c2c21c61941a64e79dd9d8bf3f400f06c21c384785998ef04c474"
+    },
+    {
+      "player": "Tai Felton",
+      "athlete_id": "4565185",
+      "team": "MIN",
+      "position": "WR",
+      "game_id": "2026-W9-BUF-MIN",
+      "kickoff": "2026-11-10T01:15:00.000Z",
+      "forecast_id": "weekly-receiving-usage-v1:2026-W9-BUF-MIN:4565185:targets:fb9040e28fbd3aaa08f088f6c47622c23777f3d5c904b28f14ac0540a1bb9dfd",
+      "week": 9,
+      "stat": "targets",
+      "mean": 1.0252506438185323,
+      "raw_mean": 1.0252506438185323,
+      "distribution": {
+        "family": "negative_binomial",
+        "parameters": {
+          "r": 1.74997024300859,
+          "p": 0.6305697147621683
+        },
+        "status": "SHADOW_ONLY",
+        "market_price_used_in_probability": false,
+        "generated_at": "2026-11-09T21:40:43.117Z",
+        "supplemental_model": "weekly-receiving-usage-v1"
+      },
+      "generated_at": "2026-11-09T21:40:43.117Z",
+      "input_hash": "fb9040e28fbd3aaa08f088f6c47622c23777f3d5c904b28f14ac0540a1bb9dfd"
+    },
+    {
+      "player": "Tai Felton",
+      "athlete_id": "4565185",
+      "team": "MIN",
+      "position": "WR",
+      "game_id": "2026-W9-BUF-MIN",
+      "kickoff": "2026-11-10T01:15:00.000Z",
+      "forecast_id": "weekly-receiving-usage-v1:2026-W9-BUF-MIN:4565185:receptions:fb9040e28fbd3aaa08f088f6c47622c23777f3d5c904b28f14ac0540a1bb9dfd",
+      "week": 9,
+      "stat": "receptions",
+      "mean": 0.4535073937901881,
+      "raw_mean": 0.4535073937901881,
+      "distribution": {
+        "family": "negative_binomial",
+        "parameters": {
+          "r": 0.5832592773358738,
+          "p": 0.5625752578469553
+        },
+        "status": "SHADOW_ONLY",
+        "market_price_used_in_probability": false,
+        "generated_at": "2026-11-09T21:40:43.117Z",
+        "supplemental_model": "weekly-receiving-usage-v1"
+      },
+      "generated_at": "2026-11-09T21:40:43.117Z",
+      "input_hash": "fb9040e28fbd3aaa08f088f6c47622c23777f3d5c904b28f14ac0540a1bb9dfd"
+    },
+    {
+      "player": "Tai Felton",
+      "athlete_id": "4565185",
+      "team": "MIN",
+      "position": "WR",
+      "game_id": "2026-W9-BUF-MIN",
+      "kickoff": "2026-11-10T01:15:00.000Z",
+      "forecast_id": "weekly-receiving-usage-v1:2026-W9-BUF-MIN:4565185:receiving_yards:fb9040e28fbd3aaa08f088f6c47622c23777f3d5c904b28f14ac0540a1bb9dfd",
+      "week": 9,
+      "stat": "receiving_yards",
+      "mean": 6.187136586708995,
+      "raw_mean": 6.187136586708995,
+      "distribution": {
+        "family": "lognormal_shifted",
+        "parameters": {
+          "shift": 0,
+          "log_mu": 1.0305015526678096,
+          "log_sigma": 1.2585474484825347
+        },
+        "status": "SHADOW_ONLY",
+        "market_price_used_in_probability": false,
+        "generated_at": "2026-11-09T21:40:43.117Z",
+        "supplemental_model": "weekly-receiving-usage-v1"
+      },
+      "generated_at": "2026-11-09T21:40:43.117Z",
+      "input_hash": "fb9040e28fbd3aaa08f088f6c47622c23777f3d5c904b28f14ac0540a1bb9dfd"
     }
   ],
   "settled": [
@@ -1632,11 +1903,15 @@
   ],
   "errors": [
     {
+      "player": "Ben Yurosek",
+      "reason": "At least four verified receiving games with recorded receiving production are required"
+    },
+    {
       "player": "Skyler Bell",
       "reason": "At least four verified receiving games with recorded receiving production are required"
     },
     {
-      "player": "Ben Yurosek",
+      "player": "Odell Beckham Jr.",
       "reason": "At least four verified receiving games with recorded receiving production are required"
     }
   ]
