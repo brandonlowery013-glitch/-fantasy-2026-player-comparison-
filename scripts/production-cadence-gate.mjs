@@ -13,13 +13,12 @@ function chicagoParts(d){
   return {weekday:get('weekday'),hour:Number(get('hour')),minute:Number(get('minute')),date:`${get('year')}-${get('month')}-${get('day')}`};
 }
 function readJson(p){try{return JSON.parse(fs.readFileSync(path.join(process.cwd(),p),'utf8'));}catch{return null;}}
-function gameWindowReason(d){
-  const schedule=readJson('data/calibration/weekly-event-schedule-2026.json');
+function gameWindowReason(d,schedule=readJson('data/calibration/weekly-event-schedule-2026.json')){
   const games=Object.values(schedule?.games||{});
   if(!games.length)return null;
   const t=d.getTime();
   for(const g of games){
-    const k=Date.parse(g.kickoff_utc||g.start_time_utc||g.date||'');
+    const k=Date.parse(g.event_start||g.kickoff_utc||g.start_time_utc||g.date||'');
     if(!Number.isFinite(k))continue;
     const delta=(k-t)/3600000;
     if(delta>=0&&delta<=6)return 'GAME_WITHIN_6_HOURS';
@@ -55,6 +54,7 @@ if(process.argv.includes('--self-test')){
     ['2026-09-12T13:10:00Z',true,'Sat 4-hour']
   ];
   for(const [iso,expected,label] of cases){const r=decide(new Date(iso),{injuryChanged:false,eventName:'schedule',gameReason:null});if(r.run!==expected)throw new Error(`${label} expected ${expected} got ${r.run} (${r.reason})`);}
+  for(const [event_start,expected] of [['2026-11-10T20:00:00Z','GAME_WITHIN_6_HOURS'],['2026-11-10T16:00:00Z','RECENT_GAME_SETTLEMENT_WINDOW']]){if(gameWindowReason(new Date('2026-11-10T18:00:00Z'),{games:{game:{event_start}}})!==expected)throw Error('Canonical event_start game-window detection failed');}
   const forced=decide(new Date('2026-09-08T13:10:00Z'),{injuryChanged:true,eventName:'schedule',gameReason:null});
   if(!forced.run||forced.reason!=='INJURY_STATE_CHANGED')throw new Error('injury change did not override cadence skip');
   const manual=decide(new Date('2026-09-08T13:10:00Z'),{injuryChanged:false,eventName:'workflow_dispatch',gameReason:null});
