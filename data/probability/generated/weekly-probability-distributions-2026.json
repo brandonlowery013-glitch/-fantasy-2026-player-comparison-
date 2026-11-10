@@ -1,9 +1,9 @@
 {
-  "quarterback_revision_id": "c03b899ac9e0fb1f77c346d7013f7b61c41f3b06176d505ce73cf7242ebbf589",
+  "quarterback_revision_id": "35ed837b349aea69e205c6a8f86244e2295165924ef89588bb91bb1e858d93cb",
   "schema_version": "1.2.0",
   "season": 2026,
   "week": 9,
-  "generated_at": "2026-11-09T21:40:35.277Z",
+  "generated_at": "2026-11-10T03:52:38.879Z",
   "mode": "SHADOW_ONLY",
   "actionable": false,
   "input_status": "SHADOW_ONLY",
@@ -218,41 +218,6 @@
             "variance": 9.911679551524001,
             "r": 91.24411246737397,
             "p": 0.9100375928329022
-          },
-          "qb_baseline_spec": {
-            "status": "SHADOW_ONLY",
-            "actionable": false,
-            "position": "WR",
-            "stat": "targets",
-            "family": "negative_binomial",
-            "mean": 9.2123,
-            "sd": 3.1935,
-            "market_price_used_in_probability": false,
-            "source": "2021-2025 football-only distribution-family calibration",
-            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-            "parameters": {
-              "mean": 9.2123,
-              "variance": 10.19844225,
-              "r": 86.05905617571922,
-              "p": 0.9033046198795704
-            }
-          },
-          "qb_adjustment": {
-            "multiplier": 0.9791258495671323,
-            "multiplier_variance": 0.0015855756800117503,
-            "beta": 0.7212483084415489,
-            "shrinkage_games": 3,
-            "starter_games": 53,
-            "backup_games": 29,
-            "baseline_before_qb": {
-              "mean": 9.2123,
-              "sd": 3.1935,
-              "performance_sd": 3.1935,
-              "projection_error_sd": 0
-            },
-            "starter": "Kyler Murray",
-            "expected_qb": "Carson Wentz",
-            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receiving_yards": {
@@ -270,40 +235,6 @@
             "mu": 83.990603,
             "df": 8,
             "scale": 40.79795794165232
-          },
-          "qb_baseline_spec": {
-            "status": "SHADOW_ONLY",
-            "actionable": false,
-            "position": "WR",
-            "stat": "receiving_yards",
-            "family": "student_t",
-            "mean": 87.0784,
-            "sd": 48.6677,
-            "market_price_used_in_probability": false,
-            "source": "2021-2025 football-only distribution-family calibration",
-            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-            "parameters": {
-              "mu": 87.0784,
-              "df": 8,
-              "scale": 42.147464543759924
-            }
-          },
-          "qb_adjustment": {
-            "multiplier": 0.9645400376249069,
-            "multiplier_variance": 0.0020773205979293524,
-            "beta": 0.6729502310605644,
-            "shrinkage_games": 3,
-            "starter_games": 53,
-            "backup_games": 29,
-            "baseline_before_qb": {
-              "mean": 87.0784,
-              "sd": 48.6677,
-              "performance_sd": 48.6677,
-              "projection_error_sd": 0
-            },
-            "starter": "Kyler Murray",
-            "expected_qb": "Carson Wentz",
-            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -337,41 +268,6 @@
                 "variance": 9.911679551524001,
                 "r": 91.24411246737397,
                 "p": 0.9100375928329022
-              },
-              "qb_baseline_spec": {
-                "status": "SHADOW_ONLY",
-                "actionable": false,
-                "position": "WR",
-                "stat": "targets",
-                "family": "negative_binomial",
-                "mean": 9.2123,
-                "sd": 3.1935,
-                "market_price_used_in_probability": false,
-                "source": "2021-2025 football-only distribution-family calibration",
-                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-                "parameters": {
-                  "mean": 9.2123,
-                  "variance": 10.19844225,
-                  "r": 86.05905617571922,
-                  "p": 0.9033046198795704
-                }
-              },
-              "qb_adjustment": {
-                "multiplier": 0.9791258495671323,
-                "multiplier_variance": 0.0015855756800117503,
-                "beta": 0.7212483084415489,
-                "shrinkage_games": 3,
-                "starter_games": 53,
-                "backup_games": 29,
-                "baseline_before_qb": {
-                  "mean": 9.2123,
-                  "sd": 3.1935,
-                  "performance_sd": 3.1935,
-                  "projection_error_sd": 0
-                },
-                "starter": "Kyler Murray",
-                "expected_qb": "Carson Wentz",
-                "model_version": "qb-receiver-effects-2026-v1"
               }
             },
             "pmf": [
@@ -432,118 +328,7 @@
             "sd": 2.572131,
             "mean_gap_pct": -0.0018761951616591995
           },
-          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.",
-          "qb_baseline_spec": {
-            "status": "SHADOW_ONLY",
-            "actionable": false,
-            "position": "WR",
-            "stat": "receptions",
-            "family": "compound_receptions",
-            "conditional_family": "beta_binomial",
-            "mean": 6.045735653379551,
-            "sd": 2.5913552329518335,
-            "market_price_used_in_probability": false,
-            "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
-            "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
-            "parameters": {
-              "catch_rate": 0.6562677783404318,
-              "rho": 0.012633422760818603,
-              "target_distribution": {
-                "status": "SHADOW_ONLY",
-                "actionable": false,
-                "position": "WR",
-                "stat": "targets",
-                "family": "negative_binomial",
-                "mean": 9.2123,
-                "sd": 3.1935,
-                "market_price_used_in_probability": false,
-                "source": "2021-2025 football-only distribution-family calibration",
-                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-                "parameters": {
-                  "mean": 9.2123,
-                  "variance": 10.19844225,
-                  "r": 86.05905617571922,
-                  "p": 0.9033046198795704
-                }
-              },
-              "pmf": [
-                0.003236092356281931,
-                0.017609968284184763,
-                0.04879617281267296,
-                0.09176836349360594,
-                0.13173164194494552,
-                0.15391055658477176,
-                0.15241376465764678,
-                0.13154190352772607,
-                0.10097635889558527,
-                0.07001824836652604,
-                0.04439342326054022,
-                0.02598934708846088,
-                0.014162432662375015,
-                0.00723216436546711,
-                0.0034806719201378334,
-                0.001586521110123224,
-                0.0006877905358450965,
-                0.0002846438805694773,
-                0.00011282331359337955,
-                0.000042953934146802514,
-                0.000015748332480950614,
-                0.000005573126163944348,
-                0.0000019076637571310814,
-                6.327949903562607e-7,
-                2.0376270704266454e-7,
-                6.379026586934178e-8,
-                1.9441679527869543e-8,
-                5.7744842975451346e-9,
-                1.672202138507136e-9,
-                4.717585861499896e-10,
-                1.2923157469949993e-10,
-                3.409960930018018e-11,
-                8.530151134036494e-12,
-                1.9675269957851776e-12,
-                4.00015319381042e-13,
-                6.668443518802394e-14,
-                8.026263828584541e-15,
-                5.182658500248688e-16
-              ],
-              "support_max": 37,
-              "target_truncated_tail": 5.3554161105751064e-11,
-              "normalized_mass": 1.0000000000000002,
-              "marginal_mean": 6.045735653379551,
-              "marginal_variance": 6.715121943346851,
-              "marginal_sd": 2.5913552329518335
-            },
-            "catch_rate_prior": {
-              "catch_rate": 0.6562677783404318,
-              "rho": 0.012633422760818603,
-              "source": "player_shrunk_catch_rate",
-              "prior_player": "Justin Jefferson",
-              "games": 78
-            },
-            "standalone_reception_projection": {
-              "mean": 6.0571,
-              "sd": 2.7234,
-              "mean_gap_pct": -0.0018762025755640753
-            },
-            "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
-          },
-          "qb_adjustment": {
-            "multiplier": 0.9419382350272442,
-            "multiplier_variance": 0.0009600632477413638,
-            "beta": 0.5992222213519792,
-            "shrinkage_games": 3,
-            "starter_games": 53,
-            "backup_games": 29,
-            "baseline_before_qb": {
-              "mean": 6.0571,
-              "sd": 2.7234,
-              "performance_sd": 2.7234,
-              "projection_error_sd": 0
-            },
-            "starter": "Kyler Murray",
-            "expected_qb": "Carson Wentz",
-            "model_version": "qb-receiver-effects-2026-v1"
-          }
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
         }
       }
     },
@@ -1290,41 +1075,6 @@
             "variance": 8.236320270201,
             "r": 14.321719909893998,
             "p": 0.7100526458592022
-          },
-          "qb_baseline_spec": {
-            "status": "SHADOW_ONLY",
-            "actionable": false,
-            "position": "WR",
-            "stat": "targets",
-            "family": "negative_binomial",
-            "mean": 5.9729,
-            "sd": 2.921,
-            "market_price_used_in_probability": false,
-            "source": "2021-2025 football-only distribution-family calibration",
-            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-            "parameters": {
-              "mean": 5.9729,
-              "variance": 8.532240999999999,
-              "r": 13.93934392095466,
-              "p": 0.7000388291891897
-            }
-          },
-          "qb_adjustment": {
-            "multiplier": 0.9791258495671323,
-            "multiplier_variance": 0.0015855756800117503,
-            "beta": 0.7212483084415489,
-            "shrinkage_games": 3,
-            "starter_games": 53,
-            "backup_games": 29,
-            "baseline_before_qb": {
-              "mean": 5.9729,
-              "sd": 2.921,
-              "performance_sd": 2.921,
-              "projection_error_sd": 0
-            },
-            "starter": "Kyler Murray",
-            "expected_qb": "Carson Wentz",
-            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receiving_yards": {
@@ -1342,40 +1092,6 @@
             "mu": 48.104216,
             "df": 8,
             "scale": 31.151475906029027
-          },
-          "qb_baseline_spec": {
-            "status": "SHADOW_ONLY",
-            "actionable": false,
-            "position": "WR",
-            "stat": "receiving_yards",
-            "family": "student_t",
-            "mean": 49.8727,
-            "sd": 37.2185,
-            "market_price_used_in_probability": false,
-            "source": "2021-2025 football-only distribution-family calibration",
-            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-            "parameters": {
-              "mu": 49.8727,
-              "df": 8,
-              "scale": 32.232166490751126
-            }
-          },
-          "qb_adjustment": {
-            "multiplier": 0.9645400376249069,
-            "multiplier_variance": 0.0020773205979293524,
-            "beta": 0.6729502310605644,
-            "shrinkage_games": 3,
-            "starter_games": 53,
-            "backup_games": 29,
-            "baseline_before_qb": {
-              "mean": 49.8727,
-              "sd": 37.2185,
-              "performance_sd": 37.2185,
-              "projection_error_sd": 0
-            },
-            "starter": "Kyler Murray",
-            "expected_qb": "Carson Wentz",
-            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -1409,41 +1125,6 @@
                 "variance": 8.236320270201,
                 "r": 14.321719909893998,
                 "p": 0.7100526458592022
-              },
-              "qb_baseline_spec": {
-                "status": "SHADOW_ONLY",
-                "actionable": false,
-                "position": "WR",
-                "stat": "targets",
-                "family": "negative_binomial",
-                "mean": 5.9729,
-                "sd": 2.921,
-                "market_price_used_in_probability": false,
-                "source": "2021-2025 football-only distribution-family calibration",
-                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-                "parameters": {
-                  "mean": 5.9729,
-                  "variance": 8.532240999999999,
-                  "r": 13.93934392095466,
-                  "p": 0.7000388291891897
-                }
-              },
-              "qb_adjustment": {
-                "multiplier": 0.9791258495671323,
-                "multiplier_variance": 0.0015855756800117503,
-                "beta": 0.7212483084415489,
-                "shrinkage_games": 3,
-                "starter_games": 53,
-                "backup_games": 29,
-                "baseline_before_qb": {
-                  "mean": 5.9729,
-                  "sd": 2.921,
-                  "performance_sd": 2.921,
-                  "projection_error_sd": 0
-                },
-                "starter": "Kyler Murray",
-                "expected_qb": "Carson Wentz",
-                "model_version": "qb-receiver-effects-2026-v1"
               }
             },
             "pmf": [
@@ -1504,118 +1185,7 @@
             "sd": 2.121831,
             "mean_gap_pct": 0.006732878932854702
           },
-          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.",
-          "qb_baseline_spec": {
-            "status": "SHADOW_ONLY",
-            "actionable": false,
-            "position": "WR",
-            "stat": "receptions",
-            "family": "compound_receptions",
-            "conditional_family": "beta_binomial",
-            "mean": 3.6862529312543115,
-            "sd": 2.1852252414727364,
-            "market_price_used_in_probability": false,
-            "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
-            "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
-            "parameters": {
-              "catch_rate": 0.6171630083587105,
-              "rho": 0.012633422760818603,
-              "target_distribution": {
-                "status": "SHADOW_ONLY",
-                "actionable": false,
-                "position": "WR",
-                "stat": "targets",
-                "family": "negative_binomial",
-                "mean": 5.9729,
-                "sd": 2.921,
-                "market_price_used_in_probability": false,
-                "source": "2021-2025 football-only distribution-family calibration",
-                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-                "parameters": {
-                  "mean": 5.9729,
-                  "variance": 8.532240999999999,
-                  "r": 13.93934392095466,
-                  "p": 0.7000388291891897
-                }
-              },
-              "pmf": [
-                0.03938237042823585,
-                0.11253044811481709,
-                0.17323449346642758,
-                0.19068314325139415,
-                0.16814191681668691,
-                0.12623318904132377,
-                0.08377620216808737,
-                0.050405814929976395,
-                0.027993581951991323,
-                0.014542808382239224,
-                0.00713987355732394,
-                0.0033394479935796675,
-                0.0014976118249036823,
-                0.0006473611688366459,
-                0.00027089744045312767,
-                0.00011014250367315183,
-                0.000043644997838364126,
-                0.000016899966550909898,
-                0.000006409032633238308,
-                0.000002385102353729573,
-                8.725152911189228e-7,
-                3.1422551776426223e-7,
-                1.1155289596536489e-7,
-                3.908218459188778e-8,
-                1.3524627688246325e-8,
-                4.6255103757213555e-9,
-                1.5633251484641522e-9,
-                5.215019328165505e-10,
-                1.711390924512576e-10,
-                5.4886816639261645e-11,
-                1.7009570911637335e-11,
-                5.005316602271744e-12,
-                1.3640082215024014e-12,
-                3.325732276022007e-13,
-                6.915673489510982e-14,
-                1.1418897949523367e-14,
-                1.3226848161903889e-15,
-                8.021133781386126e-17
-              ],
-              "support_max": 37,
-              "target_truncated_tail": 6.798939189422981e-11,
-              "normalized_mass": 1,
-              "marginal_mean": 3.6862529312543115,
-              "marginal_variance": 4.7752093559695785,
-              "marginal_sd": 2.1852252414727364
-            },
-            "catch_rate_prior": {
-              "catch_rate": 0.6171630083587105,
-              "rho": 0.012633422760818603,
-              "source": "player_shrunk_catch_rate",
-              "prior_player": "Jordan Addison",
-              "games": 46
-            },
-            "standalone_reception_projection": {
-              "mean": 3.6616,
-              "sd": 2.2494,
-              "mean_gap_pct": 0.0067328302529799985
-            },
-            "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
-          },
-          "qb_adjustment": {
-            "multiplier": 0.9419382350272442,
-            "multiplier_variance": 0.0009600632477413638,
-            "beta": 0.5992222213519792,
-            "shrinkage_games": 3,
-            "starter_games": 53,
-            "backup_games": 29,
-            "baseline_before_qb": {
-              "mean": 3.6616,
-              "sd": 2.2494,
-              "performance_sd": 2.2494,
-              "projection_error_sd": 0
-            },
-            "starter": "Kyler Murray",
-            "expected_qb": "Carson Wentz",
-            "model_version": "qb-receiver-effects-2026-v1"
-          }
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
         }
       }
     },
@@ -2014,41 +1584,6 @@
             "variance": 1.2537280899999999,
             "r": 0.9480653346534602,
             "p": 0.5701395746824178
-          },
-          "qb_baseline_spec": {
-            "status": "SHADOW_ONLY",
-            "actionable": false,
-            "position": "RB",
-            "stat": "targets",
-            "family": "negative_binomial",
-            "mean": 0.7148,
-            "sd": 1.1197,
-            "market_price_used_in_probability": false,
-            "source": "2021-2025 football-only distribution-family calibration",
-            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-            "parameters": {
-              "mean": 0.7148,
-              "variance": 1.2537280899999999,
-              "r": 0.9480653346534602,
-              "p": 0.5701395746824178
-            }
-          },
-          "qb_adjustment": {
-            "multiplier": 1,
-            "multiplier_variance": 0,
-            "beta": 0,
-            "shrinkage_games": 3,
-            "starter_games": 53,
-            "backup_games": 29,
-            "baseline_before_qb": {
-              "mean": 0.7148,
-              "sd": 1.1197,
-              "performance_sd": 1.1197,
-              "projection_error_sd": 0
-            },
-            "starter": "Kyler Murray",
-            "expected_qb": "Carson Wentz",
-            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "rush_yards": {
@@ -2083,40 +1618,6 @@
             "shift": 0,
             "log_mu": 0.4740086590416943,
             "log_sigma": 1.277291513618397
-          },
-          "qb_baseline_spec": {
-            "status": "SHADOW_ONLY",
-            "actionable": false,
-            "position": "RB",
-            "stat": "receiving_yards",
-            "family": "lognormal_shifted",
-            "mean": 3.743,
-            "sd": 7.5881,
-            "market_price_used_in_probability": false,
-            "source": "2021-2025 football-only distribution-family calibration",
-            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-            "parameters": {
-              "shift": 0,
-              "log_mu": 0.5043019730121624,
-              "log_sigma": 1.2771730156170147
-            }
-          },
-          "qb_adjustment": {
-            "multiplier": 0.9703077984356224,
-            "multiplier_variance": 0.0014565043521851755,
-            "beta": 0.5634911197051803,
-            "shrinkage_games": 3,
-            "starter_games": 53,
-            "backup_games": 29,
-            "baseline_before_qb": {
-              "mean": 3.743,
-              "sd": 7.5881,
-              "performance_sd": 7.5881,
-              "projection_error_sd": 0
-            },
-            "starter": "Kyler Murray",
-            "expected_qb": "Carson Wentz",
-            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -2150,41 +1651,6 @@
                 "variance": 1.2537280899999999,
                 "r": 0.9480653346534602,
                 "p": 0.5701395746824178
-              },
-              "qb_baseline_spec": {
-                "status": "SHADOW_ONLY",
-                "actionable": false,
-                "position": "RB",
-                "stat": "targets",
-                "family": "negative_binomial",
-                "mean": 0.7148,
-                "sd": 1.1197,
-                "market_price_used_in_probability": false,
-                "source": "2021-2025 football-only distribution-family calibration",
-                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-                "parameters": {
-                  "mean": 0.7148,
-                  "variance": 1.2537280899999999,
-                  "r": 0.9480653346534602,
-                  "p": 0.5701395746824178
-                }
-              },
-              "qb_adjustment": {
-                "multiplier": 1,
-                "multiplier_variance": 0,
-                "beta": 0,
-                "shrinkage_games": 3,
-                "starter_games": 53,
-                "backup_games": 29,
-                "baseline_before_qb": {
-                  "mean": 0.7148,
-                  "sd": 1.1197,
-                  "performance_sd": 1.1197,
-                  "projection_error_sd": 0
-                },
-                "starter": "Kyler Murray",
-                "expected_qb": "Carson Wentz",
-                "model_version": "qb-receiver-effects-2026-v1"
               }
             },
             "pmf": [
@@ -2236,108 +1702,7 @@
             "sd": 0.9154,
             "mean_gap_pct": -0.039061653297274734
           },
-          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.",
-          "qb_baseline_spec": {
-            "status": "SHADOW_ONLY",
-            "actionable": false,
-            "position": "RB",
-            "stat": "receptions",
-            "family": "compound_receptions",
-            "conditional_family": "beta_binomial",
-            "mean": 0.5589778362769753,
-            "sd": 0.9437917918781082,
-            "market_price_used_in_probability": false,
-            "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
-            "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
-            "parameters": {
-              "catch_rate": 0.7820059279089779,
-              "rho": 0.012251375947309196,
-              "target_distribution": {
-                "status": "SHADOW_ONLY",
-                "actionable": false,
-                "position": "RB",
-                "stat": "targets",
-                "family": "negative_binomial",
-                "mean": 0.7148,
-                "sd": 1.1197,
-                "market_price_used_in_probability": false,
-                "source": "2021-2025 football-only distribution-family calibration",
-                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-                "parameters": {
-                  "mean": 0.7148,
-                  "variance": 1.2537280899999999,
-                  "r": 0.9480653346534602,
-                  "p": 0.5701395746824178
-                }
-              },
-              "pmf": [
-                0.6446978570585594,
-                0.2263500418572277,
-                0.08176051811117377,
-                0.02983598139102775,
-                0.0109502761225542,
-                0.004034772708932807,
-                0.0014911773251294535,
-                0.0005524937224720489,
-                0.0002051479095695745,
-                0.00007632170976231688,
-                0.000028444439128434493,
-                0.000010618411535141274,
-                0.0000039700046158461245,
-                0.000001486470695804514,
-                5.573475186425282e-7,
-                2.0925452444604633e-7,
-                7.866464312736231e-8,
-                2.9608340590655002e-8,
-                1.1156547333625433e-8,
-                4.207129573886607e-9,
-                1.5860763579692074e-9,
-                5.958720474818479e-10,
-                2.2118364652939826e-10,
-                7.953047725468456e-11,
-                2.662289994250134e-11,
-                7.718914850905783e-12,
-                1.6983815143895935e-12,
-                2.0916405906756988e-13
-              ],
-              "support_max": 27,
-              "target_truncated_tail": 4.5260462044893757e-11,
-              "normalized_mass": 1,
-              "marginal_mean": 0.5589778362769753,
-              "marginal_variance": 0.8907429464164903,
-              "marginal_sd": 0.9437917918781082
-            },
-            "catch_rate_prior": {
-              "catch_rate": 0.7820059279089779,
-              "rho": 0.012251375947309196,
-              "source": "position_catch_rate_prior",
-              "prior_player": null,
-              "games": 2992
-            },
-            "standalone_reception_projection": {
-              "mean": 0.5817,
-              "sd": 0.9154,
-              "mean_gap_pct": -0.039061653297274734
-            },
-            "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
-          },
-          "qb_adjustment": {
-            "multiplier": 1,
-            "multiplier_variance": 0,
-            "beta": 0,
-            "shrinkage_games": 40,
-            "starter_games": 53,
-            "backup_games": 29,
-            "baseline_before_qb": {
-              "mean": 0.5817,
-              "sd": 0.9154,
-              "performance_sd": 0.9154,
-              "projection_error_sd": 0
-            },
-            "starter": "Kyler Murray",
-            "expected_qb": "Carson Wentz",
-            "model_version": "qb-receiver-effects-2026-v1"
-          }
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
         }
       }
     },
@@ -2671,41 +2036,6 @@
             "variance": 4.103055359999999,
             "r": 2.5124421455416295,
             "p": 0.5341141680330631
-          },
-          "qb_baseline_spec": {
-            "status": "SHADOW_ONLY",
-            "actionable": false,
-            "position": "RB",
-            "stat": "targets",
-            "family": "negative_binomial",
-            "mean": 2.1915,
-            "sd": 2.0256,
-            "market_price_used_in_probability": false,
-            "source": "2021-2025 football-only distribution-family calibration",
-            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-            "parameters": {
-              "mean": 2.1915,
-              "variance": 4.103055359999999,
-              "r": 2.5124421455416295,
-              "p": 0.5341141680330631
-            }
-          },
-          "qb_adjustment": {
-            "multiplier": 1,
-            "multiplier_variance": 0,
-            "beta": 0,
-            "shrinkage_games": 3,
-            "starter_games": 53,
-            "backup_games": 29,
-            "baseline_before_qb": {
-              "mean": 2.1915,
-              "sd": 2.0256,
-              "performance_sd": 2.0256,
-              "projection_error_sd": 0
-            },
-            "starter": "Kyler Murray",
-            "expected_qb": "Carson Wentz",
-            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "rush_yards": {
@@ -2740,40 +2070,6 @@
             "shift": 0,
             "log_mu": 1.989850552007319,
             "log_sigma": 0.9895686252488596
-          },
-          "qb_baseline_spec": {
-            "status": "SHADOW_ONLY",
-            "actionable": false,
-            "position": "RB",
-            "stat": "receiving_yards",
-            "family": "lognormal_shifted",
-            "mean": 12.3002,
-            "sd": 15.852,
-            "market_price_used_in_probability": false,
-            "source": "2021-2025 football-only distribution-family calibration",
-            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-            "parameters": {
-              "shift": 0,
-              "log_mu": 2.020283103933406,
-              "log_sigma": 0.9892749046401335
-            }
-          },
-          "qb_adjustment": {
-            "multiplier": 0.9703077984356224,
-            "multiplier_variance": 0.0014565043521851755,
-            "beta": 0.5634911197051803,
-            "shrinkage_games": 3,
-            "starter_games": 53,
-            "backup_games": 29,
-            "baseline_before_qb": {
-              "mean": 12.3002,
-              "sd": 15.852,
-              "performance_sd": 15.852,
-              "projection_error_sd": 0
-            },
-            "starter": "Kyler Murray",
-            "expected_qb": "Carson Wentz",
-            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -2807,41 +2103,6 @@
                 "variance": 4.103055359999999,
                 "r": 2.5124421455416295,
                 "p": 0.5341141680330631
-              },
-              "qb_baseline_spec": {
-                "status": "SHADOW_ONLY",
-                "actionable": false,
-                "position": "RB",
-                "stat": "targets",
-                "family": "negative_binomial",
-                "mean": 2.1915,
-                "sd": 2.0256,
-                "market_price_used_in_probability": false,
-                "source": "2021-2025 football-only distribution-family calibration",
-                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-                "parameters": {
-                  "mean": 2.1915,
-                  "variance": 4.103055359999999,
-                  "r": 2.5124421455416295,
-                  "p": 0.5341141680330631
-                }
-              },
-              "qb_adjustment": {
-                "multiplier": 1,
-                "multiplier_variance": 0,
-                "beta": 0,
-                "shrinkage_games": 3,
-                "starter_games": 53,
-                "backup_games": 29,
-                "baseline_before_qb": {
-                  "mean": 2.1915,
-                  "sd": 2.0256,
-                  "performance_sd": 2.0256,
-                  "projection_error_sd": 0
-                },
-                "starter": "Kyler Murray",
-                "expected_qb": "Carson Wentz",
-                "model_version": "qb-receiver-effects-2026-v1"
               }
             },
             "pmf": [
@@ -2901,116 +2162,7 @@
             "sd": 1.7261,
             "mean_gap_pct": -0.004029761839990198
           },
-          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.",
-          "qb_baseline_spec": {
-            "status": "SHADOW_ONLY",
-            "actionable": false,
-            "position": "RB",
-            "stat": "receptions",
-            "family": "compound_receptions",
-            "conditional_family": "beta_binomial",
-            "mean": 1.7137659888019288,
-            "sd": 1.7019895600337183,
-            "market_price_used_in_probability": false,
-            "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
-            "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
-            "parameters": {
-              "catch_rate": 0.7820059279089779,
-              "rho": 0.012251375947309196,
-              "target_distribution": {
-                "status": "SHADOW_ONLY",
-                "actionable": false,
-                "position": "RB",
-                "stat": "targets",
-                "family": "negative_binomial",
-                "mean": 2.1915,
-                "sd": 2.0256,
-                "market_price_used_in_probability": false,
-                "source": "2021-2025 football-only distribution-family calibration",
-                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
-                "parameters": {
-                  "mean": 2.1915,
-                  "variance": 4.103055359999999,
-                  "r": 2.5124421455416295,
-                  "p": 0.5341141680330631
-                }
-              },
-              "pmf": [
-                0.27142077046110313,
-                0.27571207679735693,
-                0.19602081748434283,
-                0.1195087464014055,
-                0.06683752457609164,
-                0.035371241290851715,
-                0.0180154854723309,
-                0.00892212149235401,
-                0.004325409961076457,
-                0.002062185117673227,
-                0.0009700807324880959,
-                0.00045137255067731534,
-                0.00020812418146135632,
-                0.00009523651015227094,
-                0.00004329927773609777,
-                0.00001957760162832651,
-                0.000008809909266217693,
-                0.000003948123778601254,
-                0.0000017629775842256886,
-                7.847531228915793e-7,
-                3.483486219758025e-7,
-                1.542518549897041e-7,
-                6.815549130966132e-8,
-                3.0055252809332624e-8,
-                1.322953197904033e-8,
-                5.81218372540005e-9,
-                2.547119518279073e-9,
-                1.1114562601368067e-9,
-                4.807931706554015e-10,
-                2.0427108344105838e-10,
-                8.376777354759729e-11,
-                3.2196049302564686e-11,
-                1.1071971244215705e-11,
-                3.1666607018091395e-12,
-                6.632343393256321e-13,
-                7.563679952498703e-14
-              ],
-              "support_max": 35,
-              "target_truncated_tail": 8.135547790999453e-11,
-              "normalized_mass": 0.9999999999999997,
-              "marginal_mean": 1.7137659888019288,
-              "marginal_variance": 2.8967684624637697,
-              "marginal_sd": 1.7019895600337183
-            },
-            "catch_rate_prior": {
-              "catch_rate": 0.7820059279089779,
-              "rho": 0.012251375947309196,
-              "source": "position_catch_rate_prior",
-              "prior_player": null,
-              "games": 2992
-            },
-            "standalone_reception_projection": {
-              "mean": 1.7207,
-              "sd": 1.7261,
-              "mean_gap_pct": -0.004029761839990198
-            },
-            "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
-          },
-          "qb_adjustment": {
-            "multiplier": 1,
-            "multiplier_variance": 0,
-            "beta": 0,
-            "shrinkage_games": 40,
-            "starter_games": 53,
-            "backup_games": 29,
-            "baseline_before_qb": {
-              "mean": 1.7207,
-              "sd": 1.7261,
-              "performance_sd": 1.7261,
-              "projection_error_sd": 0
-            },
-            "starter": "Kyler Murray",
-            "expected_qb": "Carson Wentz",
-            "model_version": "qb-receiver-effects-2026-v1"
-          }
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
         }
       }
     },
