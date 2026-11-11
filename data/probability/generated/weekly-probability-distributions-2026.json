@@ -1,9 +1,9 @@
 {
-  "quarterback_revision_id": "bd60b772143e6ff7b10db8ae28949e7aeda8ca999e875e5513f82c6cc922bfff",
+  "quarterback_revision_id": "6805025d3734a4796023d63d08b6488ae7e45bbe2b769145742ceb3d564749bb",
   "schema_version": "1.2.0",
   "season": 2026,
   "week": 10,
-  "generated_at": "2026-11-11T07:16:19.086Z",
+  "generated_at": "2026-11-11T22:22:45.598Z",
   "mode": "SHADOW_ONLY",
   "actionable": false,
   "input_status": "SHADOW_ONLY",
@@ -7404,6 +7404,41 @@
             "variance": 8.88099601,
             "r": 9.837569575877255,
             "p": 0.6354580042199569
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "TE",
+            "stat": "targets",
+            "family": "negative_binomial",
+            "mean": 5.6435,
+            "sd": 2.9801,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "mean": 5.6435,
+              "variance": 8.88099601,
+              "r": 9.837569575877255,
+              "p": 0.6354580042199569
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 40,
+            "starter_games": 17,
+            "backup_games": 7,
+            "baseline_before_qb": {
+              "mean": 5.6435,
+              "sd": 2.9801,
+              "performance_sd": 2.9801,
+              "projection_error_sd": 0
+            },
+            "starter": "Deshaun Watson",
+            "expected_qb": "Shedeur Sanders",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receiving_yards": {
@@ -7421,6 +7456,40 @@
             "shift": 0,
             "log_mu": 3.487523013340176,
             "log_sigma": 0.5847949889785983
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "TE",
+            "stat": "receiving_yards",
+            "family": "lognormal_shifted",
+            "mean": 38.8037,
+            "sd": 24.7779,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "shift": 0,
+              "log_mu": 3.487523013340176,
+              "log_sigma": 0.5847949889785983
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 5,
+            "starter_games": 17,
+            "backup_games": 7,
+            "baseline_before_qb": {
+              "mean": 38.8037,
+              "sd": 24.7779,
+              "performance_sd": 24.7779,
+              "projection_error_sd": 0
+            },
+            "starter": "Deshaun Watson",
+            "expected_qb": "Shedeur Sanders",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -7454,6 +7523,41 @@
                 "variance": 8.88099601,
                 "r": 9.837569575877255,
                 "p": 0.6354580042199569
+              },
+              "qb_baseline_spec": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "TE",
+                "stat": "targets",
+                "family": "negative_binomial",
+                "mean": 5.6435,
+                "sd": 2.9801,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 5.6435,
+                  "variance": 8.88099601,
+                  "r": 9.837569575877255,
+                  "p": 0.6354580042199569
+                }
+              },
+              "qb_adjustment": {
+                "multiplier": 1,
+                "multiplier_variance": 0,
+                "beta": 0,
+                "shrinkage_games": 40,
+                "starter_games": 17,
+                "backup_games": 7,
+                "baseline_before_qb": {
+                  "mean": 5.6435,
+                  "sd": 2.9801,
+                  "performance_sd": 2.9801,
+                  "projection_error_sd": 0
+                },
+                "starter": "Deshaun Watson",
+                "expected_qb": "Shedeur Sanders",
+                "model_version": "qb-receiver-effects-2026-v1"
               }
             },
             "pmf": [
@@ -7517,7 +7621,120 @@
             "sd": 2.0066,
             "mean_gap_pct": 0.01702755047349454
           },
-          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.",
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "TE",
+            "stat": "receptions",
+            "family": "compound_receptions",
+            "conditional_family": "beta_binomial",
+            "mean": 3.881485646382092,
+            "sd": 2.344504228677298,
+            "market_price_used_in_probability": false,
+            "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
+            "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
+            "parameters": {
+              "catch_rate": 0.6877798615574262,
+              "rho": 0.011115038092221323,
+              "target_distribution": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "TE",
+                "stat": "targets",
+                "family": "negative_binomial",
+                "mean": 5.6435,
+                "sd": 2.9801,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 5.6435,
+                  "variance": 8.88099601,
+                  "r": 9.837569575877255,
+                  "p": 0.6354580042199569
+                }
+              },
+              "pmf": [
+                0.03878079939923421,
+                0.10670607279205387,
+                0.16218154778786315,
+                0.179990934411044,
+                0.16291142749380597,
+                0.12748624869244574,
+                0.08937485309488352,
+                0.057469885088084684,
+                0.03446153402917322,
+                0.019506536755266406,
+                0.01051920454897105,
+                0.005443279959231507,
+                0.002718266179022314,
+                0.00131607899670457,
+                0.0006201218590703135,
+                0.0002852636792554593,
+                0.00012845223779546426,
+                0.000056746656163255785,
+                0.000024642204474529823,
+                0.000010536153208054215,
+                0.000004441970464739769,
+                0.0000018488817733149477,
+                7.606145219889875e-7,
+                3.0957555595678864e-7,
+                1.247634991281328e-7,
+                4.982476877363896e-8,
+                1.9728155816544992e-8,
+                7.747049253138626e-9,
+                3.016366557740245e-9,
+                1.1629439602216755e-9,
+                4.4253627096962435e-10,
+                1.651419526896369e-10,
+                5.976544346415247e-11,
+                2.0615819183879697e-11,
+                6.61088906243855e-12,
+                1.903804031404217e-12,
+                4.692364925462725e-13,
+                9.213597779161328e-14,
+                1.2730286942878928e-14,
+                9.235302121974494e-16
+              ],
+              "support_max": 39,
+              "target_truncated_tail": 9.58786383620236e-11,
+              "normalized_mass": 0.9999999999999999,
+              "marginal_mean": 3.881485646382092,
+              "marginal_variance": 5.496700078285732,
+              "marginal_sd": 2.344504228677298
+            },
+            "catch_rate_prior": {
+              "catch_rate": 0.6877798615574262,
+              "rho": 0.011115038092221323,
+              "source": "player_shrunk_catch_rate",
+              "prior_player": "Harold Fannin Jr.",
+              "games": 16
+            },
+            "standalone_reception_projection": {
+              "mean": 3.8165,
+              "sd": 2.0066,
+              "mean_gap_pct": 0.01702755047349454
+            },
+            "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 3,
+            "starter_games": 17,
+            "backup_games": 7,
+            "baseline_before_qb": {
+              "mean": 3.8165,
+              "sd": 2.0066,
+              "performance_sd": 1.9916,
+              "projection_error_sd": 0.2446
+            },
+            "starter": "Deshaun Watson",
+            "expected_qb": "Shedeur Sanders",
+            "model_version": "qb-receiver-effects-2026-v1"
+          }
         }
       }
     },
@@ -11770,6 +11987,41 @@
             "variance": 3.1676880400000003,
             "r": 7.506253830352844,
             "p": 0.7577135026212997
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "RB",
+            "stat": "targets",
+            "family": "negative_binomial",
+            "mean": 2.4002,
+            "sd": 1.7798,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "mean": 2.4002,
+              "variance": 3.1676880400000003,
+              "r": 7.506253830352844,
+              "p": 0.7577135026212997
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 3,
+            "starter_games": 17,
+            "backup_games": 7,
+            "baseline_before_qb": {
+              "mean": 2.4002,
+              "sd": 1.7798,
+              "performance_sd": 1.7798,
+              "projection_error_sd": 0
+            },
+            "starter": "Deshaun Watson",
+            "expected_qb": "Shedeur Sanders",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "rush_yards": {
@@ -11795,15 +12047,49 @@
           "position": "RB",
           "stat": "receiving_yards",
           "family": "lognormal_shifted",
-          "mean": 11.9119,
-          "sd": 17.4289,
+          "mean": 12.222918,
+          "sd": 17.908091,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
             "shift": 0,
-            "log_mu": 1.905297729493996,
-            "log_sigma": 1.0698038801168852
+            "log_mu": 1.9301532966318247,
+            "log_sigma": 1.070662801704443
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "RB",
+            "stat": "receiving_yards",
+            "family": "lognormal_shifted",
+            "mean": 11.9119,
+            "sd": 17.4289,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "shift": 0,
+              "log_mu": 1.905297729493996,
+              "log_sigma": 1.0698038801168852
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 1.026109880011716,
+            "multiplier_variance": 0.006085285462092326,
+            "beta": 0.5634911197051803,
+            "shrinkage_games": 3,
+            "starter_games": 17,
+            "backup_games": 7,
+            "baseline_before_qb": {
+              "mean": 11.9119,
+              "sd": 17.4289,
+              "performance_sd": 17.4289,
+              "projection_error_sd": 0
+            },
+            "starter": "Deshaun Watson",
+            "expected_qb": "Shedeur Sanders",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -11837,6 +12123,41 @@
                 "variance": 3.1676880400000003,
                 "r": 7.506253830352844,
                 "p": 0.7577135026212997
+              },
+              "qb_baseline_spec": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "RB",
+                "stat": "targets",
+                "family": "negative_binomial",
+                "mean": 2.4002,
+                "sd": 1.7798,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 2.4002,
+                  "variance": 3.1676880400000003,
+                  "r": 7.506253830352844,
+                  "p": 0.7577135026212997
+                }
+              },
+              "qb_adjustment": {
+                "multiplier": 1,
+                "multiplier_variance": 0,
+                "beta": 0,
+                "shrinkage_games": 3,
+                "starter_games": 17,
+                "backup_games": 7,
+                "baseline_before_qb": {
+                  "mean": 2.4002,
+                  "sd": 1.7798,
+                  "performance_sd": 1.7798,
+                  "projection_error_sd": 0
+                },
+                "starter": "Deshaun Watson",
+                "expected_qb": "Shedeur Sanders",
+                "model_version": "qb-receiver-effects-2026-v1"
               }
             },
             "pmf": [
@@ -11886,7 +12207,106 @@
             "sd": 1.7008,
             "mean_gap_pct": 0.03877896020283275
           },
-          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.",
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "RB",
+            "stat": "receptions",
+            "family": "compound_receptions",
+            "conditional_family": "beta_binomial",
+            "mean": 1.8304324057734116,
+            "sd": 1.5136943772802425,
+            "market_price_used_in_probability": false,
+            "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
+            "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
+            "parameters": {
+              "catch_rate": 0.7626166179565167,
+              "rho": 0.012251375947309196,
+              "target_distribution": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "RB",
+                "stat": "targets",
+                "family": "negative_binomial",
+                "mean": 2.4002,
+                "sd": 1.7798,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 2.4002,
+                  "variance": 3.1676880400000003,
+                  "r": 7.506253830352844,
+                  "p": 0.7577135026212997
+                }
+              },
+              "pmf": [
+                0.19529541818655968,
+                0.2858966431583932,
+                0.23775681963937007,
+                0.14768310164546394,
+                0.07622470885036407,
+                0.03455242323307034,
+                0.014219694897935863,
+                0.005429453097773216,
+                0.001952632463454771,
+                0.0006687011373666141,
+                0.00021986415344602483,
+                0.0000698449237671417,
+                0.000021544583810695587,
+                0.0000064789028518429615,
+                0.0000019056396398409728,
+                5.496991771665814e-7,
+                1.558579850967495e-7,
+                4.35174898206839e-8,
+                1.1982955598203886e-8,
+                3.2563526634546943e-9,
+                8.720128501733254e-10,
+                2.2831404164782354e-10,
+                5.70652482882071e-11,
+                1.2846319744981488e-11,
+                2.2950178609258054e-12,
+                2.3893136987744455e-13
+              ],
+              "support_max": 25,
+              "target_truncated_tail": 3.524691649658962e-11,
+              "normalized_mass": 1,
+              "marginal_mean": 1.8304324057734116,
+              "marginal_variance": 2.291270667809821,
+              "marginal_sd": 1.5136943772802425
+            },
+            "catch_rate_prior": {
+              "catch_rate": 0.7626166179565167,
+              "rho": 0.012251375947309196,
+              "source": "player_shrunk_catch_rate",
+              "prior_player": "Quinshon Judkins",
+              "games": 14
+            },
+            "standalone_reception_projection": {
+              "mean": 1.7621,
+              "sd": 1.7008,
+              "mean_gap_pct": 0.03877896020283275
+            },
+            "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          },
+          "qb_adjustment": {
+            "multiplier": 1,
+            "multiplier_variance": 0,
+            "beta": 0,
+            "shrinkage_games": 40,
+            "starter_games": 17,
+            "backup_games": 7,
+            "baseline_before_qb": {
+              "mean": 1.7621,
+              "sd": 1.7008,
+              "performance_sd": 1.7008,
+              "projection_error_sd": 0
+            },
+            "starter": "Deshaun Watson",
+            "expected_qb": "Shedeur Sanders",
+            "model_version": "qb-receiver-effects-2026-v1"
+          }
         }
       }
     },
@@ -12641,16 +13061,51 @@
           "position": "WR",
           "stat": "targets",
           "family": "negative_binomial",
-          "mean": 5.5392,
-          "sd": 3.1415,
+          "mean": 5.26469,
+          "sd": 3.008066,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
+            "mean": 5.26469,
+            "variance": 9.048461060355999,
+            "r": 7.325221413763925,
+            "p": 0.5818326414716171
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "WR",
+            "stat": "targets",
+            "family": "negative_binomial",
             "mean": 5.5392,
-            "variance": 9.86902225,
-            "r": 7.086373266246668,
-            "p": 0.5612714065975482
+            "sd": 3.1415,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "mean": 5.5392,
+              "variance": 9.86902225,
+              "r": 7.086373266246668,
+              "p": 0.5612714065975482
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 0.9504422778680629,
+            "multiplier_variance": 0.004346936610994758,
+            "beta": 0.7212483084415489,
+            "shrinkage_games": 3,
+            "starter_games": 17,
+            "backup_games": 7,
+            "baseline_before_qb": {
+              "mean": 5.5392,
+              "sd": 3.1415,
+              "performance_sd": 3.1415,
+              "projection_error_sd": 0
+            },
+            "starter": "Deshaun Watson",
+            "expected_qb": "Shedeur Sanders",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receiving_yards": {
@@ -12659,15 +13114,49 @@
           "position": "WR",
           "stat": "receiving_yards",
           "family": "student_t",
-          "mean": 43.3039,
-          "sd": 34.7909,
+          "mean": 44.654192,
+          "sd": 36.101857,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
-            "mu": 43.3039,
+            "mu": 44.654192,
             "df": 8,
-            "scale": 30.129803220524025
+            "scale": 31.26512528579306
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "WR",
+            "stat": "receiving_yards",
+            "family": "student_t",
+            "mean": 43.3039,
+            "sd": 34.7909,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "mu": 43.3039,
+              "df": 8,
+              "scale": 30.129803220524025
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 1.0311817687491525,
+            "multiplier_variance": 0.008679060117959247,
+            "beta": 0.6729502310605644,
+            "shrinkage_games": 3,
+            "starter_games": 17,
+            "backup_games": 7,
+            "baseline_before_qb": {
+              "mean": 43.3039,
+              "sd": 34.7909,
+              "performance_sd": 34.7909,
+              "projection_error_sd": 0
+            },
+            "starter": "Deshaun Watson",
+            "expected_qb": "Shedeur Sanders",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -12677,13 +13166,13 @@
           "stat": "receptions",
           "family": "compound_receptions",
           "conditional_family": "beta_binomial",
-          "mean": 3.530010002013898,
-          "sd": 2.3217875622565907,
+          "mean": 3.381713719767085,
+          "sd": 2.243729301682131,
           "market_price_used_in_probability": false,
           "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
           "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
           "parameters": {
-            "catch_rate": 0.6372779468999268,
+            "catch_rate": 0.6423386222224606,
             "rho": 0.012633422760818603,
             "target_distribution": {
               "status": "SHADOW_ONLY",
@@ -12691,71 +13180,104 @@
               "position": "WR",
               "stat": "targets",
               "family": "negative_binomial",
-              "mean": 5.5392,
-              "sd": 3.1415,
+              "mean": 5.26469,
+              "sd": 3.008066,
               "market_price_used_in_probability": false,
               "source": "2021-2025 football-only distribution-family calibration",
               "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
               "parameters": {
+                "mean": 5.26469,
+                "variance": 9.048461060355999,
+                "r": 7.325221413763925,
+                "p": 0.5818326414716171
+              },
+              "qb_baseline_spec": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "WR",
+                "stat": "targets",
+                "family": "negative_binomial",
                 "mean": 5.5392,
-                "variance": 9.86902225,
-                "r": 7.086373266246668,
-                "p": 0.5612714065975482
+                "sd": 3.1415,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 5.5392,
+                  "variance": 9.86902225,
+                  "r": 7.086373266246668,
+                  "p": 0.5612714065975482
+                }
+              },
+              "qb_adjustment": {
+                "multiplier": 0.9504422778680629,
+                "multiplier_variance": 0.004346936610994758,
+                "beta": 0.7212483084415489,
+                "shrinkage_games": 3,
+                "starter_games": 17,
+                "backup_games": 7,
+                "baseline_before_qb": {
+                  "mean": 5.5392,
+                  "sd": 3.1415,
+                  "performance_sd": 3.1415,
+                  "projection_error_sd": 0
+                },
+                "starter": "Deshaun Watson",
+                "expected_qb": "Shedeur Sanders",
+                "model_version": "qb-receiver-effects-2026-v1"
               }
             },
             "pmf": [
-              0.05834932406400365,
-              0.13565858844662446,
-              0.18058531026369817,
-              0.18069483743401335,
-              0.1510281944328778,
-              0.11135769933527928,
-              0.07483022512667471,
-              0.0468106873466007,
-              0.02766319364089846,
-              0.015608537288759963,
-              0.008475721462473424,
-              0.004456557293433618,
-              0.002279902462259195,
-              0.0011391907997845717,
-              0.0005576958548101846,
-              0.0002681868475819311,
-              0.00012695472533174275,
-              0.00005926749965159345,
-              0.000027327989567855763,
-              0.000012462161926644606,
-              0.0000056268656919836784,
-              0.000002517995946582874,
-              0.0000011177183748314753,
-              4.925227459201264e-7,
-              2.155881085324847e-7,
-              9.379516227456505e-8,
-              4.057987671472994e-8,
-              1.746595979744545e-8,
-              7.48073265923208e-9,
-              3.188503585187381e-9,
-              1.3519797972400373e-9,
-              5.69700151320973e-10,
-              2.3805871840931306e-10,
-              9.827150892792444e-11,
-              3.983189961894704e-11,
-              1.5711382174660953e-11,
-              5.9576354654918156e-12,
-              2.1376054038284924e-12,
-              7.113838692413094e-13,
-              2.1414157107526895e-13,
-              5.644405284597333e-14,
-              1.245885498908896e-14,
-              2.152242118457822e-15,
-              2.5801895381293694e-16,
-              1.6071780306967344e-17
+              0.06337664396772516,
+              0.14472057441742212,
+              0.18846762484124088,
+              0.18392183575286145,
+              0.1495576641637584,
+              0.10706804489735167,
+              0.06973954896003502,
+              0.04222764955259044,
+              0.024125760479393604,
+              0.01314669271065327,
+              0.006888327401562607,
+              0.003492003505075985,
+              0.001721174264362206,
+              0.000828070808347225,
+              0.00039011126986634895,
+              0.00018043914603977553,
+              0.00008211974824193565,
+              0.00003684192874719154,
+              0.00001631916751057809,
+              0.000007146606203510441,
+              0.000003097797998456671,
+              0.0000013304436633283537,
+              5.666476802824625e-7,
+              2.395182235385956e-7,
+              1.0054637456747486e-7,
+              4.194206788920336e-8,
+              1.739386316806163e-8,
+              7.17376209500724e-9,
+              2.942618347655257e-9,
+              1.2000191636380292e-9,
+              4.859433164039161e-10,
+              1.948997675026539e-10,
+              7.706400270009382e-11,
+              2.9816296587322114e-11,
+              1.116382669562998e-11,
+              3.983998114075031e-12,
+              1.3283434966061716e-12,
+              4.0333885365558645e-13,
+              1.0787964913719985e-13,
+              2.4284253807868417e-14,
+              4.295632577145395e-15,
+              5.290274475865748e-16,
+              3.3937620078942173e-17
             ],
-            "support_max": 44,
-            "target_truncated_tail": 5.6429860784135144e-11,
-            "normalized_mass": 0.9999999999999996,
-            "marginal_mean": 3.530010002013898,
-            "marginal_variance": 5.390697484249402,
-            "marginal_sd": 2.3217875622565907
+            "support_max": 42,
+            "target_truncated_tail": 5.081379761406879e-11,
+            "normalized_mass": 1.0000000000000004,
+            "marginal_mean": 3.381713719767085,
+            "marginal_variance": 5.034321179226984,
+            "marginal_sd": 2.243729301682131
           },
           "catch_rate_prior": {
             "catch_rate": 0.6372779468999268,
@@ -12765,11 +13287,129 @@
             "games": 3618
           },
           "standalone_reception_projection": {
-            "mean": 3.3987,
-            "sd": 2.1678,
-            "mean_gap_pct": 0.038635361171594426
+            "mean": 3.25592,
+            "sd": 2.086473,
+            "mean_gap_pct": 0.038635384090237125
           },
-          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.",
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "WR",
+            "stat": "receptions",
+            "family": "compound_receptions",
+            "conditional_family": "beta_binomial",
+            "mean": 3.530010002013898,
+            "sd": 2.3217875622565907,
+            "market_price_used_in_probability": false,
+            "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
+            "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
+            "parameters": {
+              "catch_rate": 0.6372779468999268,
+              "rho": 0.012633422760818603,
+              "target_distribution": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "WR",
+                "stat": "targets",
+                "family": "negative_binomial",
+                "mean": 5.5392,
+                "sd": 3.1415,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 5.5392,
+                  "variance": 9.86902225,
+                  "r": 7.086373266246668,
+                  "p": 0.5612714065975482
+                }
+              },
+              "pmf": [
+                0.05834932406400365,
+                0.13565858844662446,
+                0.18058531026369817,
+                0.18069483743401335,
+                0.1510281944328778,
+                0.11135769933527928,
+                0.07483022512667471,
+                0.0468106873466007,
+                0.02766319364089846,
+                0.015608537288759963,
+                0.008475721462473424,
+                0.004456557293433618,
+                0.002279902462259195,
+                0.0011391907997845717,
+                0.0005576958548101846,
+                0.0002681868475819311,
+                0.00012695472533174275,
+                0.00005926749965159345,
+                0.000027327989567855763,
+                0.000012462161926644606,
+                0.0000056268656919836784,
+                0.000002517995946582874,
+                0.0000011177183748314753,
+                4.925227459201264e-7,
+                2.155881085324847e-7,
+                9.379516227456505e-8,
+                4.057987671472994e-8,
+                1.746595979744545e-8,
+                7.48073265923208e-9,
+                3.188503585187381e-9,
+                1.3519797972400373e-9,
+                5.69700151320973e-10,
+                2.3805871840931306e-10,
+                9.827150892792444e-11,
+                3.983189961894704e-11,
+                1.5711382174660953e-11,
+                5.9576354654918156e-12,
+                2.1376054038284924e-12,
+                7.113838692413094e-13,
+                2.1414157107526895e-13,
+                5.644405284597333e-14,
+                1.245885498908896e-14,
+                2.152242118457822e-15,
+                2.5801895381293694e-16,
+                1.6071780306967344e-17
+              ],
+              "support_max": 44,
+              "target_truncated_tail": 5.6429860784135144e-11,
+              "normalized_mass": 0.9999999999999996,
+              "marginal_mean": 3.530010002013898,
+              "marginal_variance": 5.390697484249402,
+              "marginal_sd": 2.3217875622565907
+            },
+            "catch_rate_prior": {
+              "catch_rate": 0.6372779468999268,
+              "rho": 0.012633422760818603,
+              "source": "position_catch_rate_prior",
+              "prior_player": null,
+              "games": 3618
+            },
+            "standalone_reception_projection": {
+              "mean": 3.3987,
+              "sd": 2.1678,
+              "mean_gap_pct": 0.038635361171594426
+            },
+            "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          },
+          "qb_adjustment": {
+            "multiplier": 0.9579898162765356,
+            "multiplier_variance": 0.0035112383791811516,
+            "beta": 0.5992222213519792,
+            "shrinkage_games": 3,
+            "starter_games": 17,
+            "backup_games": 7,
+            "baseline_before_qb": {
+              "mean": 3.3987,
+              "sd": 2.1678,
+              "performance_sd": 2.1678,
+              "projection_error_sd": 0
+            },
+            "starter": "Deshaun Watson",
+            "expected_qb": "Shedeur Sanders",
+            "model_version": "qb-receiver-effects-2026-v1"
+          }
         }
       }
     },
@@ -21069,16 +21709,51 @@
           "position": "WR",
           "stat": "targets",
           "family": "negative_binomial",
-          "mean": 5.2674,
-          "sd": 3.0963,
+          "mean": 5.00636,
+          "sd": 2.963275,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
+            "mean": 5.00636,
+            "variance": 8.780998725624999,
+            "r": 6.64001041462584,
+            "p": 0.5701356026154834
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "WR",
+            "stat": "targets",
+            "family": "negative_binomial",
             "mean": 5.2674,
-            "variance": 9.587073689999999,
-            "r": 6.423055247027239,
-            "p": 0.5494272987068279
+            "sd": 3.0963,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "mean": 5.2674,
+              "variance": 9.587073689999999,
+              "r": 6.423055247027239,
+              "p": 0.5494272987068279
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 0.9504422778680629,
+            "multiplier_variance": 0.004346936610994758,
+            "beta": 0.7212483084415489,
+            "shrinkage_games": 3,
+            "starter_games": 17,
+            "backup_games": 7,
+            "baseline_before_qb": {
+              "mean": 5.2674,
+              "sd": 3.0963,
+              "performance_sd": 3.0963,
+              "projection_error_sd": 0
+            },
+            "starter": "Deshaun Watson",
+            "expected_qb": "Shedeur Sanders",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receiving_yards": {
@@ -21087,15 +21762,49 @@
           "position": "WR",
           "stat": "receiving_yards",
           "family": "student_t",
-          "mean": 42.1161,
-          "sd": 35.2159,
+          "mean": 43.429354,
+          "sd": 36.525344,
           "market_price_used_in_probability": false,
           "source": "2021-2025 football-only distribution-family calibration",
           "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
           "parameters": {
-            "mu": 42.1161,
+            "mu": 43.429354,
             "df": 8,
-            "scale": 30.49786401713241
+            "scale": 31.63187578596552
+          },
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "WR",
+            "stat": "receiving_yards",
+            "family": "student_t",
+            "mean": 42.1161,
+            "sd": 35.2159,
+            "market_price_used_in_probability": false,
+            "source": "2021-2025 football-only distribution-family calibration",
+            "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+            "parameters": {
+              "mu": 42.1161,
+              "df": 8,
+              "scale": 30.49786401713241
+            }
+          },
+          "qb_adjustment": {
+            "multiplier": 1.0311817687491525,
+            "multiplier_variance": 0.008679060117959247,
+            "beta": 0.6729502310605644,
+            "shrinkage_games": 3,
+            "starter_games": 17,
+            "backup_games": 7,
+            "baseline_before_qb": {
+              "mean": 42.1161,
+              "sd": 35.2159,
+              "performance_sd": 35.2159,
+              "projection_error_sd": 0
+            },
+            "starter": "Deshaun Watson",
+            "expected_qb": "Shedeur Sanders",
+            "model_version": "qb-receiver-effects-2026-v1"
           }
         },
         "receptions": {
@@ -21105,13 +21814,13 @@
           "stat": "receptions",
           "family": "compound_receptions",
           "conditional_family": "beta_binomial",
-          "mean": 3.3567978559390608,
-          "sd": 2.2813935653129542,
+          "mean": 3.2157783834230247,
+          "sd": 2.2038353726687623,
           "market_price_used_in_probability": false,
           "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
           "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
           "parameters": {
-            "catch_rate": 0.6372779468999268,
+            "catch_rate": 0.6423386222224606,
             "rho": 0.012633422760818603,
             "target_distribution": {
               "status": "SHADOW_ONLY",
@@ -21119,71 +21828,104 @@
               "position": "WR",
               "stat": "targets",
               "family": "negative_binomial",
-              "mean": 5.2674,
-              "sd": 3.0963,
+              "mean": 5.00636,
+              "sd": 2.963275,
               "market_price_used_in_probability": false,
               "source": "2021-2025 football-only distribution-family calibration",
               "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
               "parameters": {
+                "mean": 5.00636,
+                "variance": 8.780998725624999,
+                "r": 6.64001041462584,
+                "p": 0.5701356026154834
+              },
+              "qb_baseline_spec": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "WR",
+                "stat": "targets",
+                "family": "negative_binomial",
                 "mean": 5.2674,
-                "variance": 9.587073689999999,
-                "r": 6.423055247027239,
-                "p": 0.5494272987068279
+                "sd": 3.0963,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 5.2674,
+                  "variance": 9.587073689999999,
+                  "r": 6.423055247027239,
+                  "p": 0.5494272987068279
+                }
+              },
+              "qb_adjustment": {
+                "multiplier": 0.9504422778680629,
+                "multiplier_variance": 0.004346936610994758,
+                "beta": 0.7212483084415489,
+                "shrinkage_games": 3,
+                "starter_games": 17,
+                "backup_games": 7,
+                "baseline_before_qb": {
+                  "mean": 5.2674,
+                  "sd": 3.0963,
+                  "performance_sd": 3.0963,
+                  "projection_error_sd": 0
+                },
+                "starter": "Deshaun Watson",
+                "expected_qb": "Shedeur Sanders",
+                "model_version": "qb-receiver-effects-2026-v1"
               }
             },
             "pmf": [
-              0.0685694051470416,
-              0.14929779760573927,
-              0.18847661627744733,
-              0.18058759696826385,
-              0.14564471686169816,
-              0.1042681845833874,
-              0.06838129181516851,
-              0.041928702763813566,
-              0.0243766516762019,
-              0.013574285873117136,
-              0.007294796569094897,
-              0.003805130963603439,
-              0.0019353078137944037,
-              0.0009632118095576877,
-              0.00047049567977713137,
-              0.00022609764121146235,
-              0.00010710545435951614,
-              0.00005009936074848529,
-              0.000023172705391081142,
-              0.000010611441009891995,
-              0.000004815935716177788,
-              0.00000216815629769648,
-              9.690546583289988e-7,
-              4.3028387230382985e-7,
-              1.899219807702722e-7,
-              8.33756745698451e-8,
-              3.642034422824395e-8,
-              1.5835968925202782e-8,
-              6.855436668150928e-9,
-              2.954642898256879e-9,
-              1.2672411855038316e-9,
-              5.402401362937578e-10,
-              2.2838610473049736e-10,
-              9.535492944183653e-11,
-              3.90697553946633e-11,
-              1.5565669267436806e-11,
-              5.955686700177631e-12,
-              2.15378058289204e-12,
-              7.216029889316035e-13,
-              2.1844783299818653e-13,
-              5.78494585752287e-14,
-              1.2818435874664762e-14,
-              2.221391527015557e-15,
-              2.670044799578222e-16,
-              1.6667353169582308e-17
+              0.07404123124643379,
+              0.1584640478208553,
+              0.1957902225019669,
+              0.18299855111441066,
+              0.1436009433429801,
+              0.09981889578506888,
+              0.06345326046883817,
+              0.03765857283410429,
+              0.021165949326739212,
+              0.01138263906743722,
+              0.005902190568826794,
+              0.002968281910084198,
+              0.0014545328291045133,
+              0.0006970596487263413,
+              0.000327675595683268,
+              0.000151465966660283,
+              0.00006898784120849156,
+              0.00003101449288448998,
+              0.00001378244314666893,
+              0.000006061778766047081,
+              0.000002641521021212537,
+              0.0000011415468180387416,
+              4.896350307194017e-7,
+              2.085927603239819e-7,
+              8.831676628282465e-8,
+              3.718213830845311e-8,
+              1.5572442697690812e-8,
+              6.4897187889446825e-9,
+              2.6911579607703563e-9,
+              1.1098898686021568e-9,
+              4.546261248915555e-10,
+              1.844385682449194e-10,
+              7.374587089127611e-11,
+              2.8835503810135405e-11,
+              1.0901713694073768e-11,
+              3.9240993680223776e-12,
+              1.3181343533310505e-12,
+              4.0275536037712153e-13,
+              1.0828439973248607e-13,
+              2.4479281686576904e-14,
+              4.345167317235207e-15,
+              5.366405698642753e-16,
+              3.4505466201631975e-17
             ],
-            "support_max": 44,
-            "target_truncated_tail": 6.01515504072836e-11,
-            "normalized_mass": 1.0000000000000002,
-            "marginal_mean": 3.3567978559390608,
-            "marginal_variance": 5.204756599851352,
-            "marginal_sd": 2.2813935653129542
+            "support_max": 42,
+            "target_truncated_tail": 5.3056337101509143e-11,
+            "normalized_mass": 0.9999999999999999,
+            "marginal_mean": 3.2157783834230247,
+            "marginal_variance": 4.856890349826061,
+            "marginal_sd": 2.2038353726687623
           },
           "catch_rate_prior": {
             "catch_rate": 0.6372779468999268,
@@ -21193,11 +21935,129 @@
             "games": 3618
           },
           "standalone_reception_projection": {
-            "mean": 3.3839,
-            "sd": 2.3695,
-            "mean_gap_pct": -0.008009144496273341
+            "mean": 3.241742,
+            "sd": 2.278796,
+            "mean_gap_pct": -0.008009155749277769
           },
-          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used.",
+          "qb_baseline_spec": {
+            "status": "SHADOW_ONLY",
+            "actionable": false,
+            "position": "WR",
+            "stat": "receptions",
+            "family": "compound_receptions",
+            "conditional_family": "beta_binomial",
+            "mean": 3.3567978559390608,
+            "sd": 2.2813935653129542,
+            "market_price_used_in_probability": false,
+            "source": "pregame target distribution + 2021-2025 football-only catch-rate prior",
+            "tail_math": "EXACT_COMPOUND_TARGET_CATCH_PMF",
+            "parameters": {
+              "catch_rate": 0.6372779468999268,
+              "rho": 0.012633422760818603,
+              "target_distribution": {
+                "status": "SHADOW_ONLY",
+                "actionable": false,
+                "position": "WR",
+                "stat": "targets",
+                "family": "negative_binomial",
+                "mean": 5.2674,
+                "sd": 3.0963,
+                "market_price_used_in_probability": false,
+                "source": "2021-2025 football-only distribution-family calibration",
+                "tail_math": "EXACT_SELECTED_FAMILY_CDF_PMF",
+                "parameters": {
+                  "mean": 5.2674,
+                  "variance": 9.587073689999999,
+                  "r": 6.423055247027239,
+                  "p": 0.5494272987068279
+                }
+              },
+              "pmf": [
+                0.0685694051470416,
+                0.14929779760573927,
+                0.18847661627744733,
+                0.18058759696826385,
+                0.14564471686169816,
+                0.1042681845833874,
+                0.06838129181516851,
+                0.041928702763813566,
+                0.0243766516762019,
+                0.013574285873117136,
+                0.007294796569094897,
+                0.003805130963603439,
+                0.0019353078137944037,
+                0.0009632118095576877,
+                0.00047049567977713137,
+                0.00022609764121146235,
+                0.00010710545435951614,
+                0.00005009936074848529,
+                0.000023172705391081142,
+                0.000010611441009891995,
+                0.000004815935716177788,
+                0.00000216815629769648,
+                9.690546583289988e-7,
+                4.3028387230382985e-7,
+                1.899219807702722e-7,
+                8.33756745698451e-8,
+                3.642034422824395e-8,
+                1.5835968925202782e-8,
+                6.855436668150928e-9,
+                2.954642898256879e-9,
+                1.2672411855038316e-9,
+                5.402401362937578e-10,
+                2.2838610473049736e-10,
+                9.535492944183653e-11,
+                3.90697553946633e-11,
+                1.5565669267436806e-11,
+                5.955686700177631e-12,
+                2.15378058289204e-12,
+                7.216029889316035e-13,
+                2.1844783299818653e-13,
+                5.78494585752287e-14,
+                1.2818435874664762e-14,
+                2.221391527015557e-15,
+                2.670044799578222e-16,
+                1.6667353169582308e-17
+              ],
+              "support_max": 44,
+              "target_truncated_tail": 6.01515504072836e-11,
+              "normalized_mass": 1.0000000000000002,
+              "marginal_mean": 3.3567978559390608,
+              "marginal_variance": 5.204756599851352,
+              "marginal_sd": 2.2813935653129542
+            },
+            "catch_rate_prior": {
+              "catch_rate": 0.6372779468999268,
+              "rho": 0.012633422760818603,
+              "source": "position_catch_rate_prior",
+              "prior_player": null,
+              "games": 3618
+            },
+            "standalone_reception_projection": {
+              "mean": 3.3839,
+              "sd": 2.3695,
+              "mean_gap_pct": -0.008009144496273341
+            },
+            "note": "Exact reception PMF marginalizes the pregame target distribution over the calibrated conditional catch process; observed same-game targets are not used."
+          },
+          "qb_adjustment": {
+            "multiplier": 0.9579898162765356,
+            "multiplier_variance": 0.0035112383791811516,
+            "beta": 0.5992222213519792,
+            "shrinkage_games": 3,
+            "starter_games": 17,
+            "backup_games": 7,
+            "baseline_before_qb": {
+              "mean": 3.3839,
+              "sd": 2.3695,
+              "performance_sd": 2.3695,
+              "projection_error_sd": 0
+            },
+            "starter": "Deshaun Watson",
+            "expected_qb": "Shedeur Sanders",
+            "model_version": "qb-receiver-effects-2026-v1"
+          }
         }
       }
     },
