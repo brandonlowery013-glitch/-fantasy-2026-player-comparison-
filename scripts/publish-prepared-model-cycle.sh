@@ -7,6 +7,9 @@ git -C producer reset --hard FETCH_HEAD
 git -C engine fetch --depth=1 --filter=blob:none origin frontend/ctd-cloudflare-work
 git -C engine reset --hard FETCH_HEAD
 cp producer/scripts/publish-prepared-game-model.mjs engine/publish-model.mjs
+mkdir -p engine/scripts engine/lib
+cp producer/scripts/live-market-publication.mjs engine/scripts/
+cp producer/lib/game-market-probability.mjs producer/lib/fair-market-probability.mjs engine/lib/
 export CTD_ENGINE_REF
 CTD_ENGINE_REF=$(git -C engine rev-parse HEAD)
 node engine/publish-model.mjs "$GITHUB_WORKSPACE/prepared.json"

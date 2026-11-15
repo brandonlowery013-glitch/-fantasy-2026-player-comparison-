@@ -1,3 +1,4 @@
+import {refreshMarketQuotes,replaceTotalOutputs} from './scripts/live-market-publication.mjs';
 import {writeFile} from 'node:fs/promises';
 import {gzipSync} from 'node:zlib';
 import {overlayGameFeed} from './workers/betting-splits/lib/personnel-matchup.mjs';
@@ -12,10 +13,12 @@ const read=async url=>{const r=await fetch(url,{signal:AbortSignal.timeout(30000
 const release=await read('https://api.github.com/repos/'+repo+'/git/ref/heads/main');
 const ref=release.object.sha,root='https://raw.githubusercontent.com/'+repo+'/'+ref+'/';
 const worker='https://ctd-background-splits.brandonlowery013.workers.dev';
-const [base,live,moneyline,rawProjections,learning,personnel]=await Promise.all([
+const [savedBase,live,moneyline,rawProjections,learning,personnel,odds]=await Promise.all([
  read(root+'data/market/game-model-consumer-2026.json'),read(worker+'/spread-projections/latest.json'),
  read(worker+'/moneyline-projections/latest.json'),read(root+'data/probability/generated/weekly-game-projections-2026.json'),
- read(root+'data/market/football-moneyline-learning-2026.json'),read(worker+'/game-projections/latest.json')]);
+ read(root+'data/market/football-moneyline-learning-2026.json'),read(worker+'/game-projections/latest.json'),
+ read('https://frontend-ctd-cloudflare-work.chuck-the-duke-preview.pages.dev/api/live/odds').catch(()=>null)]);
+const base=refreshMarketQuotes(savedBase,odds,rawProjections);
 for(const game of Object.values(base.games||{}))delete game.behavior_learning_context;
 const projections=overlayGameFeed(rawProjections,personnel,'projections');
 if(projections?.personnel_matchup_status==='EXPERIMENTAL_CONDITIONAL')projections.generated_at=personnel.checked_at;
@@ -37,7 +40,7 @@ for(const [id,g]of Object.entries(result.games)){
 await writeFile(output+'.moneyline.json',JSON.stringify({season:result.season,week:result.week,status:result.moneyline_model_status,model_version:FOOTBALL_MONEYLINE_VERSION,checked_at:result.delivery.generated_at,sportsbook_inputs_used_for_win_probability:false,learned_correction_enabled:true,automatic_upset_override_enabled:false,games,delivery:result.delivery}));
 for(const [kind,path]of [['model','data/market/unified-opportunities-2026.json'],['betting','data/market/final-betting-ui-feed-2026.json']]){
  const source=await read(root+path);
- const data=applyHistoricalFinal(replaceMoneylineOutputs(replaceSpreadOutputs(source,result,live,now),result,null,now,{evaluated:result,version:FOOTBALL_MONEYLINE_VERSION}),historicalSelection);
+ const data=applyHistoricalFinal(replaceTotalOutputs(replaceMoneylineOutputs(replaceSpreadOutputs(source,result,live,now),result,null,now,{evaluated:result,version:FOOTBALL_MONEYLINE_VERSION}),result,now),historicalSelection);
  await writeFile(output+'.'+kind+'.json.gz',gzipSync(JSON.stringify(data)));
  await writeFile(output+'.'+kind+'-envelope.json.gz',gzipSync(JSON.stringify({generated_at:result.delivery.generated_at,data})));
 }
