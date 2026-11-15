@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import {csvRecords} from '../lib/csv-records.mjs';
 
 const root=process.cwd();
 const seasons=[2021,2022,2023,2024,2025];
@@ -17,17 +18,7 @@ const modelUniverse=Number(sourceOfTruth.active_player_model);
 const finite=x=>Number.isFinite(Number(x));
 const truth=v=>v===1||v==='1'||v===true||String(v).toLowerCase()==='true';
 const val=(r,...ks)=>{for(const k of ks){if(r[k]!==undefined&&r[k]!==null&&r[k]!=='')return r[k]}return null};
-function parseCsv(text){
-  const rs=[];let row=[],f='',q=false;
-  for(let i=0;i<text.length;i++){
-    const c=text[i];
-    if(q){if(c==='"'&&text[i+1]==='"'){f+='"';i++;}else if(c==='"')q=false;else f+=c;}
-    else if(c==='"')q=true;else if(c===','){row.push(f);f='';}else if(c==='\n'){row.push(f.replace(/\r$/,''));rs.push(row);row=[];f='';}else f+=c;
-  }
-  if(f.length||row.length){row.push(f);rs.push(row)}
-  const h=rs.shift()||[];
-  return rs.filter(r=>r.length>1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]??''])));
-}
+
 function packed(v){
   let s=String(v??'').trim();if(!s)return [];
   s=s.replace(/^\[|\]$/g,'').replace(/["']/g,'');
@@ -39,7 +30,7 @@ const playersUrl='https://github.com/nflverse/nflverse-data/releases/download/pl
 const playersRes=await fetch(playersUrl,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});
 if(!playersRes.ok)throw new Error(`Failed nflverse player master: ${playersRes.status}`);
 const playersText=await playersRes.text();
-const playerMaster=parseCsv(playersText);
+const playerMaster=csvRecords(playersText);
 const positionByGsis=new Map();
 for(const p of playerMaster){const id=String(val(p,'gsis_id')||'');const pos=String(val(p,'position','position_group')||'').toUpperCase();if(id&&pos)positionByGsis.set(id,pos);}
 
@@ -56,7 +47,7 @@ let emptyOffensePlayerRows=0,unmappedOffensePlayerIds=0,dropbackPlays=0,matchedP
 for(const season of seasons){
   const pbpUrl=`https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_${season}.csv.gz`;
   const pbpRes=await fetch(pbpUrl,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});if(!pbpRes.ok)throw new Error(`Failed nflverse PBP ${season}: ${pbpRes.status}`);
-  const pbpBuf=Buffer.from(await pbpRes.arrayBuffer());const pbp=parseCsv(zlib.gunzipSync(pbpBuf).toString('utf8'));
+  const pbpBuf=Buffer.from(await pbpRes.arrayBuffer());const pbp=csvRecords(zlib.gunzipSync(pbpBuf).toString('utf8'));
   const dropbackMeta=new Map(),teamWeekDropbacks=new Map();
   for(const p of pbp){
     if(String(val(p,'season_type')||'REG').toUpperCase()!=='REG')continue;
@@ -69,7 +60,7 @@ for(const season of seasons){
 
   const partUrl=`https://github.com/nflverse/nflverse-data/releases/download/pbp_participation/pbp_participation_${season}.csv`;
   const partRes=await fetch(partUrl,{headers:{'user-agent':'fantasy-2026-probability-pipeline'}});if(!partRes.ok)throw new Error(`Failed nflverse participation ${season}: ${partRes.status}`);
-  const partText=await partRes.text();const part=parseCsv(partText);const playerWeek=new Map();
+  const partText=await partRes.text();const part=csvRecords(partText);const playerWeek=new Map();
   let seasonEmpty=0,seasonUnmapped=0,seasonMatched=0;
   for(const p of part){
     const game=String(val(p,'nflverse_game_id')||''),play=String(val(p,'play_id')||'');const meta=dropbackMeta.get(`${game}|${play}`);if(!meta)continue;
