@@ -94,6 +94,7 @@
   return [model,note+direction+(r?.decision==='PASS'?'Betting: pass. We do not see enough value at this price.':'Betting recommendation unavailable.')];
  }
  function explanation(s){
+  if(s.evaluation?.model_version==='ctd-opportunity-props-v1'){const reader=s.evaluation.show_work?.reader;return reader?'<p>'+esc(reader.summary)+'</p><details><summary>Numbers and sources</summary>'+reader.details.map(text=>'<p>'+esc(text)+'</p>').join('')+'<p>'+esc(reader.verdict)+'</p></details>':'';}
   const extra=supplementalFeed?.players?.[s.player],extraStat=extra?.projection?.projections?.[s.stat];
   if(extraStat&&projection?.players?.[s.player]===extra.projection&&Date.parse(extra.kickoff)>Date.now()){
    const n=x=>Number(x).toFixed(1);
