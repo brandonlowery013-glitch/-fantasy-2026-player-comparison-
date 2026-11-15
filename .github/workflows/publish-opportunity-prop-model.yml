@@ -1,0 +1,43 @@
+name: Complete requested opportunity prop model release
+on:
+  push:
+    branches: [frontend/ctd-cloudflare-work]
+    paths: ['.github/workflows/publish-opportunity-prop-model.yml']
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  checks: read
+  statuses: read
+jobs:
+  release:
+    if: github.ref == 'refs/heads/frontend/ctd-cloudflare-work'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: production-main-writer
+      cancel-in-progress: false
+      queue: max
+    steps:
+      - name: Authenticate existing automatic repository updates
+        id: automation-app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510
+        with:
+          client-id: Iv23liKb5t5sPohFHK3m
+          private-key: ${{ secrets.CTD_AUTOMATION_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.automation-app.outputs.token }}
+          ref: model/joint-opportunity-props-20261115
+          fetch-depth: 0
+      - name: Verify the exact requested release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test "$(gh api repos/${GITHUB_REPOSITORY}/pulls/3485 --jq '.head.ref + "|" + .base.ref + "|" + .head.repo.full_name')" = "model/joint-opportunity-props-20261115|main|${GITHUB_REPOSITORY}"
+      - name: Complete merge only after exact protected checks pass
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/merge-guarded-production-pr.sh 3485 model/joint-opportunity-props-20261115 merge
