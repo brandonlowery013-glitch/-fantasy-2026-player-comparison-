@@ -1,3 +1,4 @@
+import {decodeIssuedResults} from '../lib/issued-results-storage.mjs';
 import {removeRestFromForecast,NO_REST_VERSION} from '../lib/scoring-rest-policy.mjs';
 import {behaviorState} from '../lib/football-learning.mjs';
 import {matchupPersonnel} from '../lib/team-personnel.mjs';
@@ -16,7 +17,7 @@ const priors=read('data/probability/generated/game-team-scoring-priors-2023-2025
 const personnelPath=path.join(root,'data/ingestion/team-personnel-2026.json');
 const personnel=fs.existsSync(personnelPath)?JSON.parse(fs.readFileSync(personnelPath,'utf8')):null;
 const learningPath=path.join(root,'data/market/issued-pick-results-2026.json');
-const learning=fs.existsSync(learningPath)?JSON.parse(fs.readFileSync(learningPath,'utf8')).football_learning:null;
+const learning=fs.existsSync(learningPath)?decodeIssuedResults(JSON.parse(fs.readFileSync(learningPath,'utf8'))).football_learning:null;
 const learningAsOf=new Date().toISOString();
 const round=(x,d=6)=>Number(Number(x).toFixed(d));
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
