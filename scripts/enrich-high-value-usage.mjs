@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import {csvRecords} from '../lib/csv-records.mjs';
 
 const root=process.cwd();
 const seasons=[2021,2022,2023,2024,2025];
@@ -11,7 +12,7 @@ const rows=data.rows.map(r=>({...r}));
 
 const norm=s=>String(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/\b(jr|sr|ii|iii|iv)\b/g,'').replace(/[^a-z0-9]/g,'');
 const aliases={kennygainwell:'kennethgainwell'};
-function parseCsv(text){const rs=[];let row=[],f='',q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c==='"'&&text[i+1]==='"'){f+='"';i++;}else if(c==='"')q=false;else f+=c;}else{if(c==='"')q=true;else if(c===','){row.push(f);f='';}else if(c==='\n'){row.push(f.replace(/\r$/,''));rs.push(row);row=[];f='';}else f+=c;}}if(f.length||row.length){row.push(f);rs.push(row)}const h=rs.shift()||[];return rs.filter(r=>r.length>1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]??''])))}
+
 const num=v=>v===''||v==null||Number.isNaN(Number(v))?null:Number(v);
 const truth=v=>v===1||v==='1'||v===true||String(v).toLowerCase()==='true';
 const val=(r,...ks)=>{for(const k of ks){if(r[k]!==undefined&&r[k]!==null&&r[k]!=='')return r[k]}return null};
@@ -43,7 +44,7 @@ const canonical=name=>{const k=norm(name);return canonicalByNorm.get(k)||canonic
 
 const playersUrl='https://github.com/nflverse/nflverse-data/releases/download/players/players.csv';
 const playersRes=await fetchWithRetry(playersUrl,'nflverse players');
-const playersCsv=parseCsv(await playersRes.text());
+const playersCsv=csvRecords(await playersRes.text());
 const idToCanon=new Map();
 const shortToCanon=new Map();
 for(const p of playersCsv){
@@ -77,7 +78,7 @@ for(const season of seasons){
   const buf=Buffer.from(await res.arrayBuffer());
   const text=zlib.gunzipSync(buf).toString('utf8');
   sourceFiles.push({type:'pbp',season,url,compressed_bytes:buf.length});
-  const pbp=parseCsv(text);
+  const pbp=csvRecords(text);
   for(const p of pbp){
     if(String(val(p,'season_type')||'REG').toUpperCase()!=='REG') continue;
     const week=Number(val(p,'week')); if(!Number.isFinite(week)||week<1||week>18) continue;
