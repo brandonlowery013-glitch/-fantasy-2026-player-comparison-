@@ -28,3 +28,5 @@ assert.equal(loaded.games.x.snapshot_evaluations[0].markets.spread.side_a,undefi
 assert.equal(loaded.games.x.snapshot_evaluations[0].markets.moneyline.side_a.conditional_win_probability,.61);
 assert(!requests.some(x=>x.includes('raw.githubusercontent.com')||x.includes('all-game')));
 console.log('Future-week server predictions preserved; unselected inputs blocked without raw/research fallback.');
+
+await import('./test-current-picks-rollover.mjs');

@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {publishedPicks} from '../frontend/cloudflare/lib/current-picks-client.mjs';
+const now=Date.parse('2026-11-15T14:00:00Z'),at=new Date(now-60000).toISOString(),kickoff=new Date(now+3600000).toISOString();
+const schedule={season:2026,week:10,games:{g:{home_team:'NYJ',away_team:'BUF',event_start:kickoff}}};
+const evaluation={model_version:'ctd-football-moneyline-v1',side_a:{conditional_win_probability:.4},side_b:{conditional_win_probability:.6},recommendation:{decision:'PICK',selection:'NYJ ML'}};
+const g={home_team:'NYJ',away_team:'BUF',kickoff,moneyline_model:{status:'CURRENT'},snapshot_evaluations:[{book:'draftkings',captured_at:at,eligible_for_current_recommendation:true,market:{home_moneyline:180,away_moneyline:-210},markets:{moneyline:evaluation}}]};
+const feed={season:2026,week:10,actionable:false,delivery:{kind:'PRECOMPUTED_SERVER_MODEL',generated_at:at,expires_at:new Date(now+600000).toISOString()},games:{g}};
+const before=JSON.stringify(feed);let x=publishedPicks(feed,schedule,{now});
+assert.equal(x.week,10);assert.equal(x.upset_watchlist[0].probability,.4);assert.equal(x.upset_watchlist[0].odds,180);assert.equal(x.research_only,true);assert.equal(JSON.stringify(feed),before,'Never mutate saved server forecasts');
+assert.throws(()=>publishedPicks({...feed,week:9},schedule,{now}),/current schedule/);
+assert.throws(()=>publishedPicks(feed,schedule,{now:now+700000}),/expired/);
+const stale=structuredClone(feed);stale.games.g.snapshot_evaluations[0].captured_at=new Date(now-7200000).toISOString();x=publishedPicks(stale,schedule,{now});assert.equal(x.upset_watchlist.length,0);assert.equal(x.model_feed.games.g.snapshot_evaluations.length,0);assert.equal(x.games[0].spread_decision,'WAIT');
+const legacy=structuredClone(feed);legacy.games.g.snapshot_evaluations[0].markets.moneyline.model_version='legacy';assert.equal(publishedPicks(legacy,schedule,{now}).upset_watchlist.length,0);
+const started=structuredClone(feed),past=new Date(now-60000).toISOString();started.games.g.kickoff=past;const pastSchedule={...schedule,games:{g:{...schedule.games.g,event_start:past}}};x=publishedPicks(started,pastSchedule,{now});assert.equal(x.upset_watchlist.length,0);assert.deepEqual(x.model_feed.games.g,started.games.g,'Started-game history unchanged');
+const nextFeed={...feed,week:11},nextSchedule={...schedule,week:11};assert.equal(publishedPicks(nextFeed,nextSchedule,{now}).week,11,'No week-specific browser state');
+const betting={week:10,props:[{event_id:'g',player:'Test Player',side:'OVER',line:10.5,stat:'receiving_yards',odds:-110,captured_at:at,eligibility:{eligible_for_pick:true,expected_active:null},recommendation:{decision:'PICK'},model_pick:{conditional_win_probability:.6}}]};assert.equal(publishedPicks(feed,schedule,{now,betting}).props.length,0,'Unconfirmed availability cannot become a prop pick');
+betting.props[0].eligibility.expected_active=true;assert.equal(publishedPicks(feed,schedule,{now,betting}).props[0].probability,.6);betting.week=9;assert.equal(publishedPicks(feed,schedule,{now,betting}).props.length,0);
+console.log('PASS: automatic current/next week, mismatched/expired release rejection, exact server probabilities, stale quote suppression, started-game immutability, and prop availability/week gates.');
