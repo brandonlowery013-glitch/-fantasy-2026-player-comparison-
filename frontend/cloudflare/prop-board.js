@@ -2,7 +2,7 @@
  'use strict';
  let liveHelpers=null;const liveReady=import(new URL('lib/live-prop-board.mjs',document.currentScript.src)).then(x=>liveHelpers=x);
  let supplementalFeed=null;const supplementReady=import(new URL('lib/supplemental-prop-coverage.mjs',document.currentScript.src));
- let propModel=null,propPolicy=null;const propModelReady=import(new URL('lib/current-prop-model.mjs',document.currentScript.src)).then(x=>propModel=x);
+ let propModel=null,propPolicy=null,opportunity=null;const propModelReady=import(new URL('lib/current-prop-model.mjs',document.currentScript.src)).then(x=>propModel=x);
  const RAW='https://raw.githubusercontent.com/brandonlowery013-glitch/-fantasy-2026-player-comparison-/main/';
  const esc=x=>String(x??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const label=x=>String(x||'').replaceAll('_',' ').replace(/^pass /,'passing ').replace(/^rush /,'rushing ');
@@ -43,8 +43,8 @@
   const grouped=new Map();
   for(const s of byBook.values()){
    const k=[s.game_id,s.player,s.stat].join('|');if(!grouped.has(k))grouped.set(k,[]);
-   const original=(live?exactQuotes.get(liveHelpers?.propEvaluationKey(s)):evaluations.get(s.snapshot_id))||propModel?.evaluateCurrentProp(s,{projection,distribution,schedule:currentSchedule,availability:window.CTD_PROP_AVAILABILITY?.(s.player,s.week),policy:propPolicy})||null;
-   grouped.get(k).push({...s,evaluation:qbHelpers?qbHelpers.liveQBQuote(s,original,qbState):original});
+   const saved=(live?exactQuotes.get(liveHelpers?.propEvaluationKey(s)):evaluations.get(s.snapshot_id));const original=Date.parse(s.kickoff)<=Date.now()?saved:propModel?.evaluateCurrentProp(s,{schedule:currentSchedule,availability:window.CTD_PROP_AVAILABILITY?.(s.player,s.week),policy:propPolicy,opportunity})||null;
+   grouped.get(k).push({...s,evaluation:original?.model_version==='ctd-opportunity-props-v1'?original:qbHelpers?qbHelpers.liveQBQuote(s,original,qbState):original});
   }
   return [...grouped.values()].map(books=>books.sort((a,b)=>Date.parse(b.captured_at)-Date.parse(a.captured_at)||a.book.localeCompare(b.book))).sort((a,b)=>a[0].player.localeCompare(b[0].player)||a[0].stat.localeCompare(b[0].stat));
  }
@@ -88,6 +88,7 @@
   const note=(qb?(qb.restored?'Starter '+qb.expected_qb+' cleared; original projection restored. ':'Assumes '+qb.expected_qb+' starts. '):availability.label+'. ');
   if(qb)return [model,note+direction+(availability.state==='INJURY_CONCERN'?availability.label+'. ':'')+'Updated for the quarterback change; assumes the listed quarterback starts.'];
   if(availability.state==='INJURY_CONCERN')return [model,note+direction+'Injury concern remains.'];
+  if(e.model_version==='ctd-opportunity-props-v1')return [model,direction+'Research projection from shared team opportunities and opponent adjustments. Betting: hold; validation or verified current inputs are incomplete.'];
   if(r?.decision==='WAIT')return [model,note+direction+'Projection shown under this availability assumption.'];
   if(r?.decision==='PICK')return [model,note+direction+`Betting: recommended ${r.side} at this quote · analysis only.`];
   return [model,note+direction+(r?.decision==='PASS'?'Betting: pass. We do not see enough value at this price.':'Betting recommendation unavailable.')];
@@ -124,7 +125,7 @@ function renderData(){
  }
  async function refresh(){if(busy)return;busy=true;try{
   await Promise.all([liveReady,availabilityReady,qbReady,propModelReady,supplementReady]);
-  const results=await Promise.allSettled(['/api/live/prop-quotes','data/market/player-prop-board-model-2026.json','data/ingestion/team-personnel-2026.json','data/probability/weekly-projection-inputs-2026.json','data/probability/generated/weekly-probability-distributions-2026.json','data/probability/weekly-football-context-inputs-2026.json','data/market/weekly-game-market-recommendations-2026.json','data/calibration/weekly-event-schedule-2026.json','/api/live/availability','/api/live/qb-projections'+(testTeam?'?verify='+encodeURIComponent(testTeam):''),'data/sources/player-prop-recommendation-layer-2026.json','data/market/player-prop-board-quotes-2026.json','/cloudflare/api/published/frontend/ctd-cloudflare-work/data/market/player-prop-board-quotes-2026.json','data/market/supplemental-weekly-props-2026.json'].map(async path=>{const r=await fetch(path.startsWith('/')?path:RAW+path+'?refresh='+Math.floor(Date.now()/300000),{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!r.ok){if(['data/market/player-prop-board-quotes-2026.json','data/market/player-prop-board-model-2026.json','data/market/supplemental-weekly-props-2026.json'].includes(path)){const fallback=await fetch('/cloudflare/api/published/frontend/ctd-cloudflare-work/'+path,{cache:'no-store'});if(fallback.ok)return fallback.json();}throw Error('HTTP '+r.status);}return r.json();}));
+  const results=await Promise.allSettled(['/api/live/prop-quotes','data/market/player-prop-board-model-2026.json','data/ingestion/team-personnel-2026.json','data/probability/weekly-projection-inputs-2026.json','data/probability/generated/weekly-probability-distributions-2026.json','data/probability/weekly-football-context-inputs-2026.json','data/market/weekly-game-market-recommendations-2026.json','data/calibration/weekly-event-schedule-2026.json','/api/live/availability','/api/live/qb-projections'+(testTeam?'?verify='+encodeURIComponent(testTeam):''),'data/sources/player-prop-recommendation-layer-2026.json','data/market/player-prop-board-quotes-2026.json','/cloudflare/api/published/frontend/ctd-cloudflare-work/data/market/player-prop-board-quotes-2026.json','data/market/supplemental-weekly-props-2026.json','data/market/opportunity-props-2026.json'].map(async path=>{const r=await fetch(path.startsWith('/')?path:RAW+path+'?refresh='+Math.floor(Date.now()/300000),{cache:'no-store',signal:AbortSignal.timeout(20000)});if(!r.ok){if(['data/market/player-prop-board-quotes-2026.json','data/market/player-prop-board-model-2026.json','data/market/supplemental-weekly-props-2026.json','data/market/opportunity-props-2026.json'].includes(path)){const fallback=await fetch('/cloudflare/api/published/frontend/ctd-cloudflare-work/'+path,{cache:'no-store'});if(fallback.ok)return fallback.json();}throw Error('HTTP '+r.status);}return r.json();}));
   if(results[0].status==='fulfilled')snapshots=results[0].value;if(results[1].status==='fulfilled')recs=results[1].value;
   if(results[2].status==='fulfilled'){personnel=results[2].value;indexPersonnel();}
   if(results[3].status==='fulfilled')baseProjection=results[3].value;if(results[4].status==='fulfilled')baseDistribution=results[4].value;if(results[5].status==='fulfilled')context=results[5].value;if(results[6].status==='fulfilled')gameMarkets=results[6].value;
@@ -136,7 +137,7 @@ function renderData(){
   if(published.length)publishedSnapshots={season:2026,snapshots:published.flatMap(f=>f.snapshots||[])};
   qbState=qbHelpers.applyLiveQBFeed({projection:baseProjection,distribution:baseDistribution,feed:qbFeed,availability:availabilityFeed});
   projection=qbState.projection;distribution=qbState.distribution;
-  if(results[13]?.status==='fulfilled')supplementalFeed=results[13].value;
+  if(results[13]?.status==='fulfilled')supplementalFeed=results[13].value;opportunity=results[14]?.status==='fulfilled'?results[14].value:null;
   const blockedTeams=Object.values(qbFeed?.scenarios||{}).filter(q=>['BACKUP_EXPECTED','REVIEW_REQUIRED'].includes(q.status)).map(q=>q.team);
   const merged=(await supplementReady).mergeSupplemental(projection,distribution,supplementalFeed,{week:currentSchedule?.week,blockedTeams});
   projection=merged.projection;distribution=merged.distribution;

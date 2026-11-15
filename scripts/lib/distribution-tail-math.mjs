@@ -1,3 +1,4 @@
+import {empiricalTails} from '../../lib/opportunity-props.mjs';
 const EPS=1e-12;
 export const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export const finite=x=>Number.isFinite(Number(x));
@@ -102,6 +103,9 @@ export function compoundReceptionPmf(targetSpec,{catch_rate,rho=0,conditional_fa
 
 export function lineProbabilities(spec,line){
   const x=Number(line);if(!Number.isFinite(x))throw new Error('Line must be finite');const f=spec?.family;
+  if(f==='empirical_joint'){
+    return empiricalTails(spec.parameters?.samples||spec.parameters,x);
+  }
   if(['normal','student_t','lognormal_shifted'].includes(f)){
     let c;
     if(f==='normal')c=normalCdf((x-Number(spec.parameters?.mu))/Number(spec.parameters?.sigma));
