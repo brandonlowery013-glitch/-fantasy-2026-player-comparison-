@@ -31,3 +31,5 @@ assert.deepEqual(compactRevision.result,correction.settlements.at(-1));
 assert.equal(settlePicks({history:{records:[{...p,captured_at:p.kickoff}]},ledger:empty,results:{g:result},now}).settlements.length,0);
 assert.equal(settlePicks({history,ledger:empty,results:{g:result},now:p.kickoff}).settlements.length,0);
 console.log('PASS: settlement sides, payouts, missing stats, event identity, cutoff, immutable corrections and first-pick accounting');
+
+await import('./test-issued-results-storage.mjs');
