@@ -1,3 +1,4 @@
+import {decodeIssuedResults} from '../lib/issued-results-storage.mjs';
 import {encodeIssuedHistory,decodeIssuedHistory} from '../lib/issued-history-storage.mjs';
 import {browserPickHistory} from '../lib/browser-pick-history.mjs';
 import {modelPropPick} from '../lib/model-prop-pick.mjs';
@@ -94,7 +95,7 @@ if(!self){
  if(out.status==='READY'){
   const history=captureHistory({...src,ledger:fs.existsSync(historyPath)?decodeIssuedHistory(read(historyPath)):null,propSnapshots:read('data/market/player-prop-market-snapshots-2026.json'),now:out.generated_at,sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()});
   write(historyPath,encodeIssuedHistory(history.ledger));
-  write('data/market/browser-pick-history-2026.json',browserPickHistory(history.ledger,read('data/market/issued-pick-results-2026.json')));
+  write('data/market/browser-pick-history-2026.json',browserPickHistory(history.ledger,decodeIssuedResults(read('data/market/issued-pick-results-2026.json'))));
  }
  write('data/market/final-betting-ui-feed-2026.json',out);
 }
