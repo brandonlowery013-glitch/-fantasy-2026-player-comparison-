@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import {csvRecords} from '../lib/csv-records.mjs';
 
 const root=process.cwd();
 const seasons=[2021,2022,2023,2024,2025];
@@ -9,7 +10,7 @@ if(!fs.existsSync(inputPath)) throw new Error('Run prior historical enrichment s
 const data=JSON.parse(fs.readFileSync(inputPath,'utf8'));
 const rows=data.rows.map(r=>({...r}));
 
-function parseCsv(text){const rs=[];let row=[],f='',q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c==='"'&&text[i+1]==='"'){f+='"';i++;}else if(c==='"')q=false;else f+=c;}else{if(c==='"')q=true;else if(c===','){row.push(f);f='';}else if(c==='\n'){row.push(f.replace(/\r$/,''));rs.push(row);row=[];f='';}else f+=c;}}if(f.length||row.length){row.push(f);rs.push(row)}const h=rs.shift()||[];return rs.filter(r=>r.length>1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]??''])))}
+
 const num=v=>v===''||v==null||Number.isNaN(Number(v))?null:Number(v);
 const truth=v=>v===1||v==='1'||v===true||String(v).toLowerCase()==='true';
 const val=(r,...ks)=>{for(const k of ks){if(r[k]!==undefined&&r[k]!==null&&r[k]!=='')return r[k]}return null};
@@ -41,7 +42,7 @@ async function fetchWithRetry(url,{attempts=4,label=url}={}){
 
 const playersUrl='https://github.com/nflverse/nflverse-data/releases/download/players/players.csv';
 const pr=await fetchWithRetry(playersUrl,{label:'nflverse players'});
-const playerMaster=parseCsv(await pr.text());
+const playerMaster=csvRecords(await pr.text());
 const playerById=new Map();
 for(const p of playerMaster){const id=val(p,'gsis_id');if(id)playerById.set(String(id),val(p,'display_name','full_name','football_name')||null);}
 
@@ -54,7 +55,7 @@ for(const season of seasons){
   const url=`https://github.com/nflverse/nflverse-data/releases/download/pbp/play_by_play_${season}.csv.gz`;
   const res=await fetchWithRetry(url,{label:`nflverse PBP ${season}`});
   const buf=Buffer.from(await res.arrayBuffer());
-  const pbp=parseCsv(zlib.gunzipSync(buf).toString('utf8'));
+  const pbp=csvRecords(zlib.gunzipSync(buf).toString('utf8'));
   sourceFiles.push({type:'pbp',season,url,compressed_bytes:buf.length});
   for(const p of pbp){
     if(String(val(p,'season_type')||'REG').toUpperCase()!=='REG') continue;
