@@ -29,6 +29,11 @@ on:
       - 'scripts/test-cloudflare-prop-import.mjs'
       - 'scripts/test-current-prop-quotes.mjs'
       - 'scripts/build-player-prop-recommendations.mjs'
+      - 'lib/opportunity-props.mjs'
+      - 'lib/opportunity-prop-selection.mjs'
+      - 'scripts/build-opportunity-props.mjs'
+      - 'scripts/test-opportunity-props.mjs'
+      - 'data/probability/generated/opportunity-prop-priors-2021-2025.json'
       - 'scripts/test-prop-player-identity.mjs'
       - 'scripts/merge-guarded-production-pr.sh'
       - '.github/workflows/adaptive-player-prop-refresh.yml'
@@ -61,6 +66,11 @@ on:
       - 'scripts/test-cloudflare-prop-import.mjs'
       - 'scripts/test-current-prop-quotes.mjs'
       - 'scripts/build-player-prop-recommendations.mjs'
+      - 'lib/opportunity-props.mjs'
+      - 'lib/opportunity-prop-selection.mjs'
+      - 'scripts/build-opportunity-props.mjs'
+      - 'scripts/test-opportunity-props.mjs'
+      - 'data/probability/generated/opportunity-prop-priors-2021-2025.json'
       - 'scripts/test-prop-player-identity.mjs'
       - 'scripts/merge-guarded-production-pr.sh'
       - '.github/workflows/adaptive-player-prop-refresh.yml'
@@ -109,6 +119,8 @@ jobs:
           node scripts/test-market-ingestion-settings.mjs
           node scripts/test-prop-board-quotes.mjs
           node scripts/test-prop-board-model.mjs
+          node scripts/test-opportunity-props.mjs
+          node scripts/test-opportunity-prop-selection.mjs
           node scripts/test-prop-coverage-recovery.mjs
       - name: Validate live market ingestion contract
         run: node scripts/validate-live-market-ingestion-contract.mjs
@@ -184,6 +196,7 @@ jobs:
           fi
           node scripts/build-weekly-projection-generator.mjs
           node scripts/build-weekly-probability-engine.mjs
+          node scripts/build-opportunity-props.mjs --live --allow-unavailable
           node scripts/build-player-prop-recommendations.mjs
           node scripts/build-unified-opportunity-engine.mjs
           node scripts/build-weekly-parlay-recommendations.mjs
@@ -198,7 +211,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          paths=(data/market/supplemental-weekly-props-2026.json data/market/player-prop-board-model-2026.json data/market/player-prop-board-quotes-2026.json data/ingestion/current-quarterback-scenarios-2026.json data/probability/weekly-projection-inputs-2026.json data/probability/generated/weekly-probability-distributions-2026.json data/market/cloudflare-player-prop-current-2026.json data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
+          paths=(data/market/opportunity-props-2026.json data/market/supplemental-weekly-props-2026.json data/market/player-prop-board-model-2026.json data/market/player-prop-board-quotes-2026.json data/ingestion/current-quarterback-scenarios-2026.json data/probability/weekly-projection-inputs-2026.json data/probability/generated/weekly-probability-distributions-2026.json data/market/cloudflare-player-prop-current-2026.json data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${paths[@]}"
