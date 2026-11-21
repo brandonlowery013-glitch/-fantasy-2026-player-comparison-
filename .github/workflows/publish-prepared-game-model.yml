@@ -8,6 +8,10 @@ on:
     paths:
       - '.github/workflows/publish-prepared-game-model.yml'
       - 'scripts/publish-prepared-game-model.mjs'
+      - 'scripts/live-market-publication.mjs'
+      - 'scripts/test-live-market-publication.mjs'
+      - 'lib/game-market-probability.mjs'
+      - 'lib/fair-market-probability.mjs'
       - 'scripts/prepared-model-publisher-loop.mjs'
       - 'scripts/publish-prepared-model-cycle.sh'
       - 'data/market/game-model-consumer-2026.json'
@@ -36,6 +40,10 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /scripts/publish-prepared-game-model.mjs
+            /scripts/live-market-publication.mjs
+            /scripts/test-live-market-publication.mjs
+            /lib/game-market-probability.mjs
+            /lib/fair-market-probability.mjs
             /scripts/prepared-model-publisher-loop.mjs
             /scripts/publish-prepared-model-cycle.sh
             /scripts/test-prepared-model-publisher-loop.mjs
@@ -57,6 +65,8 @@ jobs:
         with:
           node-version: '22'
       - name: Validate the bounded background publisher
-        run: node producer/scripts/test-prepared-model-publisher-loop.mjs
+        run: |
+          node producer/scripts/test-prepared-model-publisher-loop.mjs
+          node producer/scripts/test-live-market-publication.mjs
       - name: Maintain five-minute model publication through schedule delays
         run: node producer/scripts/prepared-model-publisher-loop.mjs
