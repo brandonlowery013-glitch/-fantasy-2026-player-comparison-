@@ -15,6 +15,9 @@ on:
       - 'lib/prop-player-identity.mjs'
       - 'lib/current-prop-quotes.mjs'
       - 'lib/player-prop-availability.mjs'
+      - 'lib/prop-availability-evidence.mjs'
+      - 'scripts/refresh-prop-availability.mjs'
+      - 'scripts/test-prop-availability-evidence.mjs'
       - 'lib/qb-receiver-projections.mjs'
       - 'lib/distribution-tail-math.mjs'
       - 'scripts/import-cloudflare-qb-scenarios.mjs'
@@ -47,6 +50,9 @@ on:
       - 'lib/prop-player-identity.mjs'
       - 'lib/current-prop-quotes.mjs'
       - 'lib/player-prop-availability.mjs'
+      - 'lib/prop-availability-evidence.mjs'
+      - 'scripts/refresh-prop-availability.mjs'
+      - 'scripts/test-prop-availability-evidence.mjs'
       - 'lib/qb-receiver-projections.mjs'
       - 'lib/distribution-tail-math.mjs'
       - 'scripts/import-cloudflare-qb-scenarios.mjs'
@@ -100,6 +106,7 @@ jobs:
           node scripts/test-prop-player-identity.mjs
           node scripts/test-current-prop-quotes.mjs
           node scripts/test-player-prop-availability.mjs
+          node scripts/test-prop-availability-evidence.mjs
           node scripts/test-qb-receiver-projections.mjs
           node scripts/test-qb-scenario-import.mjs
           node scripts/test-qb-publisher-integration.mjs
@@ -160,6 +167,8 @@ jobs:
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: node scripts/adaptive-player-prop-refresh.mjs
+      - name: Refresh game-day player availability
+        run: node scripts/refresh-prop-availability.mjs
       - name: Import scheduled QB replacement scenarios
         run: node scripts/import-cloudflare-qb-scenarios.mjs
       - name: Preserve original scheduled quotes for publication recovery
@@ -178,7 +187,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ "${GITHUB_EVENT_NAME}" != "push" ] && git diff --quiet -- data/market/player-prop-market-snapshots-2026.json && git diff --quiet -- data/market/cloudflare-player-prop-current-2026.json data/ingestion/current-quarterback-scenarios-2026.json && [ -z "$(git ls-files --others --exclude-standard -- data/market/cloudflare-player-prop-current-2026.json data/ingestion/current-quarterback-scenarios-2026.json)" ]; then
+          if [ "${GITHUB_EVENT_NAME}" != "push" ] && git diff --quiet -- data/market/player-prop-market-snapshots-2026.json && git diff --quiet -- data/market/cloudflare-player-prop-current-2026.json data/ingestion/current-quarterback-scenarios-2026.json data/ingestion/prop-availability-2026.json && [ -z "$(git ls-files --others --exclude-standard -- data/market/cloudflare-player-prop-current-2026.json data/ingestion/current-quarterback-scenarios-2026.json data/ingestion/prop-availability-2026.json)" ]; then
             echo 'No prop quote changes; retaining validated website outputs.'
             exit 0
           fi
@@ -198,7 +207,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          paths=(data/market/supplemental-weekly-props-2026.json data/market/player-prop-board-model-2026.json data/market/player-prop-board-quotes-2026.json data/ingestion/current-quarterback-scenarios-2026.json data/probability/weekly-projection-inputs-2026.json data/probability/generated/weekly-probability-distributions-2026.json data/market/cloudflare-player-prop-current-2026.json data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
+          paths=(data/ingestion/prop-availability-2026.json data/market/supplemental-weekly-props-2026.json data/market/player-prop-board-model-2026.json data/market/player-prop-board-quotes-2026.json data/ingestion/current-quarterback-scenarios-2026.json data/probability/weekly-projection-inputs-2026.json data/probability/generated/weekly-probability-distributions-2026.json data/market/cloudflare-player-prop-current-2026.json data/market/browser-pick-history-2026.json data/market/player-prop-market-snapshots-2026.json data/market/adaptive-player-prop-refresh-status-2026.json data/market/player-prop-recommendations-2026.json data/market/unified-opportunities-2026.json data/market/parlay-recommendations-2026.json data/market/final-betting-ui-feed-2026.json data/market/issued-pick-history-2026.json)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "${paths[@]}"

@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {propAvailabilityEvidence as resolve} from '../lib/prop-availability-evidence.mjs';
+const now=Date.parse('2026-11-15T17:00:00Z'),at=new Date(now).toISOString();
+const game={week:10,event_id:'espn123',event_start:'2026-11-15T18:00:00Z',home_team:'ATL',away_team:'KC'};
+const context={signals:{role:{captured_at:'2026-11-10T00:00:00Z',evidence:{team:'ATL',depth_rank:1}},injury:{evidence:{status:'Questionable',source_updated_at:'2026-11-10T00:00:00Z'}}}};
+const feed={week:10,observed_at:at,rosters:{ATL:{captured_at:at,players:[{name:'Test Player',team:'ATL',roster_status:'Active'}]}},games:[{event_id:'espn123',team:'ATL',kickoff:game.event_start,complete:true,inactive_names:['Another Player'],observed_at:at,source_url:'https://www.nfl.com/inactives/'}],injuries:[]};
+const base={name:'Test Player',game,context,feed,now};
+assert.equal(resolve(base).availability.expected_active,true);
+assert.equal(resolve({...base,feed:{...feed,games:[{...feed.games[0],inactive_names:['Test Player']}]}}).availability.expected_active,false);
+assert.notEqual(resolve({...base,feed:{...feed,games:[{...feed.games[0],event_id:'wrong'}]}}).availability.expected_active,true);
+assert.notEqual(resolve({...base,feed:{...feed,observed_at:'2026-11-14T00:00:00Z'}}).availability.expected_active,true);
+assert.notEqual(resolve({...base,feed:{...feed,week:9}}).availability.expected_active,true);
+assert.equal(resolve({...base,feed:{...feed,injuries:[{name:'Test Player',team:'ATL',status:'Injured Reserve',source_updated_at:at}]}}).availability.expected_active,false);
+assert.equal(resolve({...base,feed:{...feed,games:[],injuries:[{name:'Test Player',team:'ATL',status:'Active',source_updated_at:at}]}}).availability.expected_active,true);
+assert.notEqual(resolve({...base,feed:{...feed,games:[],injuries:[]}}).availability.expected_active,true);
+console.log('PASS: current official clearance, live absences, exact event/week, stale evidence rejection, and unresolved status stays conditional');
