@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {opportunityProp} from '../lib/opportunity-prop-selection.mjs';
+import {evaluateOpportunityQuote} from '../lib/opportunity-prop-quote.mjs';
+import {lineProbabilities} from './lib/distribution-tail-math.mjs';
+const now=Date.parse('2026-11-15T16:00:00Z'),kickoff='2026-11-15T18:00:00Z',generated_at=new Date(now-60000).toISOString();
+const samples=Array.from({length:128},(_,i)=>i%4),spec={family:'empirical_joint',status:'SHADOW_ONLY',mean:1.5,sd:1,p10:0,p90:3,parameters:{samples},market_price_used_in_probability:false};
+const opportunity={version:'ctd-opportunity-props-v1',season:2026,week:10,sportsbook_inputs_used:false,generated_at,expires_at:new Date(now+60000).toISOString(),validation:{status:'EXPERIMENTAL_NOT_PROMOTED',eligible_for_pick:false},games:{g:{kickoff}},players:{'Test Receiver':{position:'WR',team:'BUF',game_id:'g',kickoff,expected_active:true,opportunity_method:'EARLIER_TARGET_SHARE_FALLBACK',history_games:8,eligible_for_pick:false,missing:['Routes unavailable'],distributions:{receptions:spec}}}};
+const quote={horizon:'WEEKLY',player:'Test Receiver',position:'WR',team:'BUF',game_id:'g',season:2026,week:10,kickoff,captured_at:generated_at,stat:'receptions',line:2,book:'fixture',over_price:-110,under_price:-110};
+const context={opportunity,schedule:{season:2026,week:10,games:{g:{home_team:'BUF',away_team:'NYJ',event_start:kickoff}}},now};
+const result=evaluateOpportunityQuote(quote,context);assert.equal(result.recommendation.decision,'WAIT');assert.equal(result.eligibility.eligible_for_pick,false);assert.equal(result.model.push_probability,.25);assert.equal(result.model_pick.side,'UNDER');
+assert.deepEqual(lineProbabilities(spec,2),{over:.25,under:.5,push:.25});
+const price=evaluateOpportunityQuote({...quote,over_price:200,under_price:-250},context);assert.deepEqual(price.model,result.model);assert.notEqual(price.sides[0].expected_value,result.sides[0].expected_value);
+const line=evaluateOpportunityQuote({...quote,line:.5},context);assert.equal(line.model_pick.side,'OVER');
+for(const change of [{week:9},{game_id:'wrong'},{team:'KC'},{position:'RB'},{player:'Unknown'},{captured_at:new Date(now-61*60000).toISOString()},{kickoff:new Date(now-1).toISOString()}])assert.equal(evaluateOpportunityQuote({...quote,...change},context),null);
+for(const change of [{sportsbook_inputs_used:true},{week:9},{generated_at:new Date(now+1).toISOString()},{expires_at:new Date(now-1).toISOString()}])assert.equal(evaluateOpportunityQuote(quote,{...context,opportunity:{...opportunity,...change}}),null);
+assert.equal(evaluateOpportunityQuote(quote,{...context,availability:{state:'UNAVAILABLE'}}),null);
+const corrupted=structuredClone(opportunity);corrupted.players['Test Receiver'].distributions.receptions.parameters.samples=[null];assert.equal(opportunityProp(corrupted,{player:quote.player,stat:'receptions',season:2026,week:10,gameId:'g',kickoff,now}),null);
+console.log('PASS: fresh identity/week/kickoff matching, price/probability separation, empirical integer pushes, invalid/stale inputs rejected and unvalidated model cannot issue a bet.');
